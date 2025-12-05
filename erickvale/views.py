@@ -8,11 +8,12 @@ def homepage(request):
     
     apps = [
         {
-            'name': 'Card Maker',
+            'name': 'The Power of Cards',
             'slug': 'cards',
             'description': 'Create custom cards based on your favorite subjects, novels, and games. Starting with Dungeon Crawler Carl characters, build your own card collection with stats, images, and descriptions.',
             'icon': '🃏',
             'url': '/apps/cards/',
+            'cover_image': 'erickvale/images/king_and_death.avif',
             'features': [
                 'Custom card creation',
                 'DCC stat system (STR, INT, CON, DEX, CHR)',

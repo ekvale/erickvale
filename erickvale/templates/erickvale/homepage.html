@@ -374,6 +374,11 @@
                 {% for app in apps %}
                     {% if app.is_current_month %}
                     <div class="app-card">
+                        {% if app.cover_image %}
+                        <div class="app-cover-image" style="width: 100%; height: 300px; overflow: hidden; border-bottom: 1px solid var(--border);">
+                            <img src="{% static app.cover_image %}" alt="{{ app.name }}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                        </div>
+                        {% endif %}
                         <div class="app-header">
                             <div class="app-header-content">
                                 <div class="app-icon">{{ app.icon }}</div>
