@@ -1,6 +1,4 @@
 from django.shortcuts import render
-
-
 from datetime import datetime
 
 def homepage(request):
@@ -66,4 +64,9 @@ def homepage(request):
     }
     
     return render(request, 'erickvale/homepage.html', context)
+
+
+def about(request):
+    """About page view."""
+    return render(request, 'erickvale/about.html')
 

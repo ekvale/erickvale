@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import homepage
+from .views import homepage, about
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,6 +26,7 @@ urlpatterns = [
     path('apps/blog/', include('blog.urls')),
     path('apps/cards/', include('card_maker.urls')),
     path('ckeditor/', include('ckeditor_uploader.urls')),
+    path('about/', about, name='about'),
     path('', homepage, name='homepage'),
 ]
 
