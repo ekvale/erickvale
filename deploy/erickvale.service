@@ -1,0 +1,19 @@
+[Unit]
+Description=Gunicorn instance to serve erickvale.com
+After=network.target
+
+[Service]
+User=erickvale
+Group=erickvale
+WorkingDirectory=/home/erickvale/erickvale
+Environment="PATH=/home/erickvale/venv/bin"
+ExecStart=/home/erickvale/venv/bin/gunicorn \
+    --config /home/erickvale/erickvale/deploy/gunicorn_config.py \
+    erickvale.wsgi:application
+
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+

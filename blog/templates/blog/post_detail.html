@@ -1,0 +1,440 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ post.title }} - eric kvale</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-card: rgba(255, 255, 255, 0.05);
+            --text: #ffffff;
+            --text-secondary: #b0b0b0;
+            --text-light: #808080;
+            --border: rgba(255, 255, 255, 0.1);
+            --accent: #ffffff;
+            --hover: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            background-image: 
+                linear-gradient(to right, rgba(10, 10, 10, 0.7) 0%, rgba(10, 10, 10, 0.85) 50%, rgba(10, 10, 10, 0.95) 100%),
+                url('{% static "erickvale/images/di_vinci_notebook.jpeg" %}');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            color: var(--text);
+            line-height: 1.6;
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            min-height: 100vh;
+        }
+
+        .blog-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 80px 24px;
+        }
+
+        .blog-header {
+            margin-bottom: 60px;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            margin-bottom: 24px;
+            transition: color 0.2s ease;
+        }
+
+        .back-link:hover {
+            color: var(--text);
+        }
+
+        .blog-header h1 {
+            font-size: 36px;
+            font-weight: 400;
+            letter-spacing: -0.5px;
+            margin-bottom: 12px;
+            color: var(--text);
+            line-height: 1.2;
+        }
+
+        .post-detail {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+        }
+
+        .post-header {
+            padding: 32px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .post-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: var(--text-light);
+        }
+
+        .post-category {
+            color: var(--text);
+            text-decoration: none;
+            border-bottom: 1px solid var(--text);
+            transition: opacity 0.2s ease;
+        }
+
+        .post-category:hover {
+            opacity: 0.6;
+        }
+
+        .post-author {
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 400;
+        }
+
+        .post-featured-image {
+            width: 100%;
+            max-height: 400px;
+            overflow: hidden;
+        }
+
+        .post-featured-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .post-content-text {
+            padding: 32px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            font-size: 16px;
+            font-weight: 300;
+        }
+
+        .post-content-text h1,
+        .post-content-text h2,
+        .post-content-text h3,
+        .post-content-text h4 {
+            color: var(--text);
+            margin-top: 32px;
+            margin-bottom: 16px;
+            font-weight: 500;
+            letter-spacing: -0.3px;
+        }
+
+        .post-content-text h1 {
+            font-size: 28px;
+        }
+
+        .post-content-text h2 {
+            font-size: 24px;
+        }
+
+        .post-content-text h3 {
+            font-size: 20px;
+        }
+
+        .post-content-text p {
+            margin-bottom: 16px;
+        }
+
+        .post-content-text a {
+            color: var(--text);
+            text-decoration: none;
+            border-bottom: 1px solid var(--text);
+            transition: opacity 0.2s ease;
+        }
+
+        .post-content-text a:hover {
+            opacity: 0.6;
+        }
+
+        .post-content-text img {
+            max-width: 100%;
+            height: auto;
+            margin: 24px 0;
+        }
+
+        .post-content-text ul,
+        .post-content-text ol {
+            margin-left: 24px;
+            margin-bottom: 16px;
+        }
+
+        .post-content-text li {
+            margin-bottom: 8px;
+        }
+
+        .post-content-text blockquote {
+            border-left: 2px solid var(--border);
+            padding-left: 24px;
+            margin: 24px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-tags {
+            padding: 32px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .post-tags strong {
+            font-size: 13px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text);
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 4px 10px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .tag:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            color: var(--text);
+        }
+
+        .comments-section {
+            padding: 32px;
+            border-top: 1px solid var(--border);
+        }
+
+        .comments-section h3 {
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 24px;
+            color: var(--text);
+        }
+
+        .comments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .comment {
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .comment:last-child {
+            border-bottom: none;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .comment-header strong {
+            color: var(--text);
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .comment-date {
+            color: var(--text-light);
+            font-size: 12px;
+        }
+
+        .comment-content {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            font-size: 14px;
+        }
+
+        .no-comments {
+            color: var(--text-light);
+            font-size: 14px;
+            font-style: italic;
+        }
+
+        .related-posts {
+            padding: 32px;
+            border-top: 1px solid var(--border);
+        }
+
+        .related-posts h3 {
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 24px;
+            color: var(--text);
+        }
+
+        .related-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .related-card {
+            padding: 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            transition: border-color 0.2s ease;
+        }
+
+        .related-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .related-card h4 {
+            font-size: 16px;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+
+        .related-card a {
+            color: var(--text);
+            text-decoration: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .related-card a:hover {
+            opacity: 0.6;
+        }
+
+        .related-meta {
+            color: var(--text-light);
+            font-size: 13px;
+        }
+
+        @media (max-width: 768px) {
+            .blog-container {
+                padding: 40px 16px;
+            }
+
+            .blog-header h1 {
+                font-size: 28px;
+            }
+
+            .post-header,
+            .post-content-text,
+            .post-tags,
+            .comments-section,
+            .related-posts {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="blog-container">
+        <header class="blog-header">
+            <a href="{% url 'blog:post_list' %}" class="back-link">← Back to Blog</a>
+            <h1>{{ post.title }}</h1>
+        </header>
+
+        <article class="post-detail">
+            <div class="post-header">
+                <div class="post-meta">
+                    <span class="post-date">{{ post.publish_date|date:"F d, Y" }}</span>
+                    {% if post.category %}
+                    <a href="{% url 'blog:category' post.category.slug %}" class="post-category">{{ post.category.name }}</a>
+                    {% endif %}
+                    <span class="post-views">{{ post.views }} views</span>
+                </div>
+                <div class="post-author">
+                    <strong>By {{ post.author.get_full_name|default:post.author.username }}</strong>
+                </div>
+            </div>
+
+            {% if post.featured_image %}
+            <div class="post-featured-image">
+                <img src="{{ post.featured_image.url }}" alt="{{ post.title }}">
+            </div>
+            {% endif %}
+
+            <div class="post-content-text">
+                {{ post.content|safe }}
+            </div>
+
+            {% if post.tags.all %}
+            <div class="post-tags">
+                <strong>Tags:</strong>
+                {% for tag in post.tags.all %}
+                <a href="{% url 'blog:tag' tag.slug %}" class="tag">{{ tag.name }}</a>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <section class="comments-section">
+                <h3>Comments ({{ comments.count }})</h3>
+                
+                {% if comments %}
+                <div class="comments-list">
+                    {% for comment in comments %}
+                    <div class="comment">
+                        <div class="comment-header">
+                            <strong>{{ comment.author_name }}</strong>
+                            <span class="comment-date">{{ comment.created_at|date:"F d, Y g:i A" }}</span>
+                        </div>
+                        <div class="comment-content">
+                            {{ comment.content|linebreaks }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="no-comments">No comments yet. Be the first to comment!</p>
+                {% endif %}
+            </section>
+
+            {% if related_posts %}
+            <section class="related-posts">
+                <h3>Related Posts</h3>
+                <div class="related-grid">
+                    {% for related_post in related_posts %}
+                    <div class="related-card">
+                        <h4><a href="{{ related_post.get_absolute_url }}">{{ related_post.title }}</a></h4>
+                        <p class="related-meta">{{ related_post.publish_date|date:"F d, Y" }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+        </article>
+    </div>
+</body>
+</html>

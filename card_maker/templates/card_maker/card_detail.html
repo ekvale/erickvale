@@ -1,0 +1,351 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ card.name }} - Card Maker - eric kvale</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0a0a0a;
+            --bg-card: rgba(255, 255, 255, 0.05);
+            --text: #ffffff;
+            --text-secondary: #b0b0b0;
+            --text-light: #808080;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 80px 24px;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            margin-bottom: 24px;
+            transition: color 0.2s ease;
+        }
+
+        .back-link:hover {
+            color: var(--text);
+        }
+
+        .card-detail {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+        }
+
+        .card-header {
+            padding: 40px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 20px;
+        }
+
+        .card-name-section h1 {
+            font-size: 32px;
+            font-weight: 500;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+
+        .card-meta {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .rarity-badge {
+            padding: 4px 12px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+        }
+
+        .card-image-section {
+            padding: 40px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-image-large {
+            max-width: 100%;
+            max-height: 500px;
+            object-fit: contain;
+            border: 1px solid var(--border);
+        }
+
+        .card-image-placeholder {
+            width: 100%;
+            height: 400px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 120px;
+        }
+
+        .card-content {
+            padding: 40px;
+        }
+
+        .stats-section {
+            margin-bottom: 40px;
+        }
+
+        .stats-section h2 {
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 24px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+        }
+
+        .stat-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 500;
+        }
+
+        .description-section {
+            margin-bottom: 40px;
+        }
+
+        .description-section h2 {
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }
+
+        .description-text {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            font-size: 15px;
+        }
+
+        .abilities-section {
+            margin-bottom: 40px;
+        }
+
+        .abilities-section h2 {
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }
+
+        .abilities-text {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            font-size: 15px;
+            white-space: pre-line;
+        }
+
+        .other-cards {
+            margin-top: 60px;
+            padding-top: 40px;
+            border-top: 1px solid var(--border);
+        }
+
+        .other-cards h2 {
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 24px;
+        }
+
+        .other-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .other-card-link {
+            display: block;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 20px;
+            text-decoration: none;
+            color: inherit;
+            transition: border-color 0.2s ease, background 0.2s ease;
+        }
+
+        .other-card-link:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .other-card-name {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .other-card-stats {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 40px 16px;
+            }
+
+            .card-header,
+            .card-image-section,
+            .card-content {
+                padding: 24px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'card_maker:set_detail' slug=card.card_set.slug %}" class="back-link">← Back to {{ card.card_set.name }}</a>
+
+        <div class="card-detail">
+            <div class="card-header">
+                <div class="card-header-top">
+                    <div class="card-name-section">
+                        <h1>{{ card.name }}</h1>
+                        <div class="card-meta">
+                            <span>Level {{ card.level }}</span>
+                            <span>•</span>
+                            <span>{{ card.get_card_type_display }}</span>
+                            <span class="rarity-badge">{{ card.get_rarity_display }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-image-section">
+                {% if card.card_image %}
+                <img src="{{ card.card_image.url }}" alt="{{ card.card_image_alt|default:card.name }}" class="card-image-large">
+                {% else %}
+                <div class="card-image-placeholder">🃏</div>
+                {% endif %}
+            </div>
+
+            <div class="card-content">
+                <div class="stats-section">
+                    <h2>Stats</h2>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-label">STR</div>
+                            <div class="stat-value">{{ card.strength }}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">INT</div>
+                            <div class="stat-value">{{ card.intelligence }}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">CON</div>
+                            <div class="stat-value">{{ card.constitution }}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">DEX</div>
+                            <div class="stat-value">{{ card.dexterity }}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">CHR</div>
+                            <div class="stat-value">{{ card.charisma }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="description-section">
+                    <h2>Description</h2>
+                    <div class="description-text">{{ card.description }}</div>
+                </div>
+
+                {% if card.abilities %}
+                <div class="abilities-section">
+                    <h2>Abilities</h2>
+                    <div class="abilities-text">{{ card.abilities }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if other_cards %}
+        <div class="other-cards">
+            <h2>Other Cards in {{ card.card_set.name }}</h2>
+            <div class="other-cards-grid">
+                {% for other_card in other_cards %}
+                <a href="{% url 'card_maker:card_detail' set_slug=card.card_set.slug card_slug=other_card.slug %}" class="other-card-link">
+                    <div class="other-card-name">{{ other_card.name }}</div>
+                    <div class="other-card-stats">{{ other_card.stat_summary }}</div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
+
+
+

@@ -1,0 +1,285 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Maker - eric kvale</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0a0a0a;
+            --bg-card: rgba(255, 255, 255, 0.05);
+            --text: #ffffff;
+            --text-secondary: #b0b0b0;
+            --text-light: #808080;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 24px;
+        }
+
+        .header {
+            margin-bottom: 80px;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            margin-bottom: 24px;
+            transition: color 0.2s ease;
+        }
+
+        .back-link:hover {
+            color: var(--text);
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 400;
+            letter-spacing: -0.5px;
+            margin-bottom: 12px;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 16px;
+            font-weight: 300;
+        }
+
+        .coming-soon {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .coming-soon h2 {
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+
+        .coming-soon p {
+            color: var(--text-secondary);
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .card-preview {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            transition: border-color 0.2s ease, background 0.2s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .card-preview:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .card-info {
+            padding: 20px;
+        }
+
+        .card-name {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .card-stats {
+            font-size: 13px;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+
+        .card-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .set-selector {
+            width: 100%;
+            max-width: 400px;
+            padding: 12px 16px;
+            background: #1a1a1a;
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-size: 16px;
+            font-family: inherit;
+            border-radius: 0;
+            cursor: pointer;
+            transition: border-color 0.2s ease;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+        }
+
+        .set-selector:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .set-selector:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .set-selector option {
+            background: #1a1a1a;
+            color: var(--text);
+            padding: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 40px 16px;
+            }
+
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <script>
+        // Handle set selection
+        document.addEventListener('DOMContentLoaded', function() {
+            const setSelector = document.getElementById('set-selector');
+            if (setSelector) {
+                setSelector.addEventListener('change', function() {
+                    const selectedSlug = this.value;
+                    if (selectedSlug) {
+                        window.location.href = '?set=' + selectedSlug;
+                    } else {
+                        window.location.href = '{% url "card_maker:index" %}';
+                    }
+                });
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <a href="/" class="back-link">← Back to Home</a>
+            <h1>Card Maker</h1>
+            <p>Create custom cards based on your favorite subjects, novels, and games</p>
+        </header>
+
+        <!-- Set Selector -->
+        {% if all_sets %}
+        <section style="margin-bottom: 40px;">
+            <label for="set-selector" style="display: block; font-size: 14px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px;">
+                Select Card Set
+            </label>
+            <select id="set-selector" class="set-selector">
+                <option value="">-- Choose a set --</option>
+                {% for set in all_sets %}
+                <option value="{{ set.slug }}" {% if selected_set and selected_set.slug == set.slug %}selected{% endif %}>
+                    {{ set.name }} ({{ set.cards.count }} card{{ set.cards.count|pluralize }})
+                </option>
+                {% endfor %}
+            </select>
+        </section>
+        {% endif %}
+
+        <!-- Selected Set Cards -->
+        {% if selected_set %}
+        <section style="margin-bottom: 60px;">
+            <div style="margin-bottom: 24px;">
+                <h2 style="font-size: 24px; font-weight: 400; margin-bottom: 12px;">{{ selected_set.name }}</h2>
+                {% if selected_set.description %}
+                <p style="color: var(--text-secondary); max-width: 600px; line-height: 1.6;">{{ selected_set.description }}</p>
+                {% endif %}
+            </div>
+            
+            {% if cards %}
+            <div class="card-grid">
+                {% for card in cards %}
+                <a href="{% url 'card_maker:card_detail' set_slug=card.card_set.slug card_slug=card.slug %}" class="card-preview">
+                    {% if card.card_image %}
+                    <img src="{{ card.card_image.url }}" alt="{{ card.card_image_alt|default:card.name }}" class="card-image">
+                    {% else %}
+                    <div class="card-image" style="background: var(--bg-card); display: flex; align-items: center; justify-content: center; color: var(--text-light);">
+                        <span style="font-size: 48px;">🃏</span>
+                    </div>
+                    {% endif %}
+                    <div class="card-info">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                            <div class="card-name">{{ card.name }}</div>
+                            <span style="font-size: 11px; text-transform: uppercase; color: var(--text-light);">{{ card.rarity }}</span>
+                        </div>
+                        <div class="card-stats">{{ card.stat_summary }}</div>
+                        <div class="card-description">{{ card.description|truncatewords:20 }}</div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div style="background: var(--bg-card); backdrop-filter: blur(10px); border: 1px solid var(--border); padding: 40px; text-align: center;">
+                <p style="color: var(--text-secondary);">No cards available in this set yet.</p>
+            </div>
+            {% endif %}
+        </section>
+        {% elif all_sets %}
+        <section style="margin-bottom: 60px;">
+            <div style="background: var(--bg-card); backdrop-filter: blur(10px); border: 1px solid var(--border); padding: 40px; text-align: center;">
+                <p style="color: var(--text-secondary);">Please select a card set from the dropdown above to view cards.</p>
+            </div>
+        </section>
+        {% else %}
+        <section style="margin-bottom: 60px;">
+            <div style="background: var(--bg-card); backdrop-filter: blur(10px); border: 1px solid var(--border); padding: 40px; text-align: center;">
+                <p style="color: var(--text-secondary);">No card sets available yet.</p>
+            </div>
+        </section>
+        {% endif %}
+    </div>
+</body>
+</html>
+

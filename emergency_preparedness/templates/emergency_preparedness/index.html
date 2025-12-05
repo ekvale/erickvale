@@ -1,0 +1,435 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Preparedness - POD Optimization</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'emergency_preparedness/css/style.css' %}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div style="margin-bottom: 10px;">
+                <a href="/" style="color: white; text-decoration: none; font-size: 0.9em; opacity: 0.9;">
+                    ← Back to Home
+                </a>
+            </div>
+            <h1>Emergency Preparedness - POD Optimization</h1>
+            <p>Minnesota Point of Distribution Location Planning</p>
+            <div id="coverage-stats" style="margin-top: 10px; font-size: 0.9em; opacity: 0.95; display: none;">
+                <span id="coverage-percentage">0%</span> Coverage | 
+                <span id="total-covered">0</span> People Covered | 
+                <span id="total-pods-count">0</span> PODs
+            </div>
+        </header>
+
+        <div class="main-content" style="display: flex; height: calc(100vh - 150px);">
+            <!-- Control Panel -->
+            <div class="control-panel" style="flex-shrink: 0;">
+                <h2>Controls</h2>
+                
+                <div class="control-group">
+                    <label for="num-pods">Number of PODs:</label>
+                    <input type="number" id="num-pods" min="1" max="20" value="5">
+                </div>
+                
+                <div class="control-group">
+                    <label for="max-drive-time">Max Drive Time (minutes):</label>
+                    <input type="number" id="max-drive-time" min="10" max="120" value="60">
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        <input type="checkbox" id="show-gap-analysis" checked>
+                        Show Gap Analysis
+                    </label>
+                </div>
+                
+                <div class="control-group">
+                    <button id="generate-optimal" class="btn btn-primary">Generate Optimal PODs</button>
+                </div>
+                
+                <div class="control-group" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
+                    <small style="color: #666; font-size: 0.85em;">
+                        <strong>Enhanced Features:</strong><br>
+                        • Dynamic coverage radius<br>
+                        • Capacity constraints<br>
+                        • Infrastructure scoring<br>
+                        • Vulnerable population priority<br>
+                        • Redundancy planning
+                    </small>
+                </div>
+                
+                <div class="control-group">
+                    <button id="add-pod" class="btn btn-secondary">Add POD</button>
+                </div>
+                
+                <div class="control-group">
+                    <button id="add-scenario" class="btn btn-secondary">Add Scenario</button>
+                </div>
+                
+                <div class="control-group">
+                    <label for="active-scenario">Active Scenario:</label>
+                    <select id="active-scenario">
+                        <option value="">None</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <button id="analyze-scenario" class="btn btn-info">Analyze Scenario</button>
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        <input type="checkbox" id="show-risk-points" checked>
+                        Show Risk Points
+                    </label>
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        <input type="checkbox" id="show-coverage" checked>
+                        Show Coverage Areas
+                    </label>
+                </div>
+                
+                <div class="control-group">
+                    <button id="info-btn" class="btn btn-info">How Optimization Works</button>
+                </div>
+                
+                <div class="control-group" style="margin-top: 15px;">
+                    <button id="export-pods" class="btn btn-secondary" style="font-size: 0.9em;">Export PODs to CSV</button>
+                </div>
+                
+                <div class="control-group">
+                    <button id="clear-pods" class="btn btn-secondary" style="font-size: 0.9em; background: #dc3545;">Clear All PODs</button>
+                </div>
+            </div>
+
+            <!-- Map Container -->
+            <div class="map-container" style="flex: 1; position: relative;">
+                <div id="map" style="width: 100%; height: 100%; min-height: 600px; position: absolute; top: 0; left: 0;"></div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="sidebar" style="flex-shrink: 0;">
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="pods">PODs</button>
+                    <button class="tab-btn" data-tab="scenarios">Scenarios</button>
+                </div>
+                
+                <div class="tab-content">
+                    <div id="pods-tab" class="tab-pane active">
+                        <h3>PODs</h3>
+                        <div id="pods-list"></div>
+                    </div>
+                    
+                    <div id="scenarios-tab" class="tab-pane">
+                        <h3>Scenarios</h3>
+                        <div id="scenarios-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- POD Modal -->
+    <div id="pod-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="pod-modal-title">Add POD</h2>
+            <form id="pod-form">
+                <input type="hidden" id="pod-id">
+                <div class="form-group">
+                    <label for="pod-name">Name:</label>
+                    <input type="text" id="pod-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="pod-lat">Latitude:</label>
+                    <input type="number" id="pod-lat" step="0.000001" required>
+                </div>
+                <div class="form-group">
+                    <label for="pod-lon">Longitude:</label>
+                    <input type="number" id="pod-lon" step="0.000001" required>
+                </div>
+                <div class="form-group">
+                    <label for="pod-radius">Coverage Radius (km):</label>
+                    <input type="number" id="pod-radius" step="0.1" value="50" required>
+                </div>
+                <div class="form-group">
+                    <label for="pod-status">Status:</label>
+                    <select id="pod-status">
+                        <option value="proposed">Proposed</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="pod-occupancy">Occupancy:</label>
+                    <input type="number" id="pod-occupancy" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="pod-parking">Parking Lot Size (acres):</label>
+                    <input type="number" id="pod-parking" step="0.1" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="pod-acreage">Acreage:</label>
+                    <input type="number" id="pod-acreage" step="0.1" value="0">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn btn-secondary" id="cancel-pod">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scenario Modal -->
+    <div id="scenario-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="scenario-modal-title">Add Scenario</h2>
+            <form id="scenario-form">
+                <input type="hidden" id="scenario-id">
+                <div class="form-group">
+                    <label for="scenario-name">Name:</label>
+                    <input type="text" id="scenario-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="scenario-description">Description:</label>
+                    <textarea id="scenario-description" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="scenario-type">Type:</label>
+                    <select id="scenario-type">
+                        <option value="general">General</option>
+                        <option value="pandemic">Pandemic</option>
+                        <option value="natural_disaster">Natural Disaster</option>
+                        <option value="severe_weather">Severe Weather</option>
+                        <option value="infrastructure_failure">Infrastructure Failure</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="scenario-severity">Severity (0.5-3.0):</label>
+                    <input type="number" id="scenario-severity" step="0.1" min="0.5" max="3.0" value="1.0" required>
+                </div>
+                <div class="form-group">
+                    <label for="scenario-areas">Affected Areas (comma-separated):</label>
+                    <input type="text" id="scenario-areas" placeholder="e.g., Minneapolis, St. Paul">
+                </div>
+                <div class="form-group">
+                    <label>Associated PODs:</label>
+                    <div id="scenario-pods-list"></div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn btn-secondary" id="cancel-scenario">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Info Modal -->
+    <div id="info-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>How Optimization Works</h2>
+            <div class="info-content">
+                <p>The POD optimization algorithm uses a greedy approach to find optimal locations:</p>
+                <ol>
+                    <li>Loads demographic data and calculates risk scores for each city</li>
+                    <li>Sorts cities by (Population × Risk Score) in descending order</li>
+                    <li>For each POD to place:
+                        <ul>
+                            <li>Evaluates the top 30 candidate cities</li>
+                            <li>Calculates coverage score: (Population × 0.5) + (Risk × 1000 × 0.3) + ((Max Drive Time - Avg Drive Time) × 10 × 0.2)</li>
+                            <li>Selects the highest scoring location</li>
+                            <li>Removes nearby candidates (within 30km) to prevent clustering</li>
+                        </ul>
+                    </li>
+                </ol>
+                <p><strong>Risk Score Formula:</strong> Risk = (Population Density/2000 × 0.4) + (Hazard × 0.3) + ((1-Infrastructure) × 0.3)</p>
+                <p>All risk scores are normalized to a 0-1 range.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    
+    <!-- Immediate Map Initialization -->
+    <script>
+        // Initialize map as soon as Leaflet loads
+        (function() {
+            let mapInitialized = false;
+            
+            function initMapNow() {
+                // Prevent multiple initializations
+                if (mapInitialized) {
+                    console.log('Map already initialized, skipping...');
+                    return;
+                }
+                
+                // Check if map container already has a Leaflet instance
+                const mapEl = document.getElementById('map');
+                if (!mapEl) {
+                    console.error('Map element not found');
+                    return;
+                }
+                
+                // Check if Leaflet has already initialized this container
+                if (mapEl._leaflet_id) {
+                    console.log('Map container already has Leaflet instance, skipping initialization');
+                    mapInitialized = true;
+                    return;
+                }
+                
+                if (typeof L === 'undefined') {
+                    console.error('Leaflet not loaded yet');
+                    setTimeout(initMapNow, 100);
+                    return;
+                }
+                
+                console.log('=== Immediate map initialization ===');
+                console.log('✅ Leaflet loaded:', L.version);
+                
+                // Set explicit dimensions
+                const mapContainer = mapEl.parentElement;
+                if (mapContainer) {
+                    mapContainer.style.height = '600px';
+                    mapContainer.style.width = '100%';
+                }
+                mapEl.style.width = '100%';
+                mapEl.style.height = '600px';
+                mapEl.style.position = 'absolute';
+                mapEl.style.top = '0';
+                mapEl.style.left = '0';
+                
+                // Create map
+                try {
+                    window.mapInstance = L.map('map', {
+                        center: [46.7296, -94.6859],
+                        zoom: 6,
+                        zoomControl: true
+                    });
+                    
+                    mapInitialized = true;
+                    console.log('✅ Map created immediately');
+                    
+                    // Add tile layer
+                    const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© OpenStreetMap contributors',
+                        maxZoom: 19
+                    });
+                    
+                    tileLayer.addTo(window.mapInstance);
+                    console.log('✅ Tile layer added');
+                    
+                    // Make it available globally
+                    window.map = window.mapInstance;
+                    
+                    // Invalidate size after a delay
+                    setTimeout(() => {
+                        if (window.mapInstance) {
+                            window.mapInstance.invalidateSize();
+                            console.log('✅ Map size invalidated');
+                        }
+                    }, 300);
+                    
+                } catch (error) {
+                    console.error('Error creating map:', error);
+                    if (error.message.includes('already initialized')) {
+                        console.log('Map was already initialized, this is OK');
+                        mapInitialized = true;
+                    } else {
+                        mapEl.innerHTML = '<div style="padding: 20px; text-align: center; color: #ef4444;"><strong>Error:</strong> ' + error.message + '</div>';
+                    }
+                }
+            }
+            
+            // Try immediately
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initMapNow);
+            } else {
+                initMapNow();
+            }
+        })();
+    </script>
+    
+    <!-- CSRF Token -->
+    {% csrf_token %}
+    <script>
+        // Get CSRF token from cookies or form input
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // Try to get CSRF token from multiple sources
+        function getCSRFTokenFromPage() {
+            // First try hidden input (from {% csrf_token %} template tag)
+            const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+            if (csrfInput && csrfInput.value) {
+                console.log('CSRF token found in hidden input');
+                return csrfInput.value;
+            }
+            
+            // Try cookie
+            const cookieToken = getCookie('csrftoken');
+            if (cookieToken) {
+                console.log('CSRF token found in cookie');
+                return cookieToken;
+            }
+            
+            return null;
+        }
+        
+        // Set global CSRF token - wait for DOM to be ready
+        let csrftoken = null;
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                csrftoken = getCSRFTokenFromPage();
+                if (!csrftoken) {
+                    console.error('CSRF token not found! This will cause POST requests to fail.');
+                    console.log('Cookies:', document.cookie);
+                    console.log('CSRF input element:', document.querySelector('[name=csrfmiddlewaretoken]'));
+                } else {
+                    console.log('CSRF token initialized:', csrftoken.substring(0, 10) + '...');
+                }
+            });
+        } else {
+            csrftoken = getCSRFTokenFromPage();
+            if (!csrftoken) {
+                console.error('CSRF token not found! This will cause POST requests to fail.');
+                console.log('Cookies:', document.cookie);
+                console.log('CSRF input element:', document.querySelector('[name=csrfmiddlewaretoken]'));
+            } else {
+                console.log('CSRF token initialized:', csrftoken.substring(0, 10) + '...');
+            }
+        }
+    </script>
+    
+    <!-- Custom JS -->
+    <script src="{% static 'emergency_preparedness/js/app.js' %}"></script>
+</body>
+</html>
+

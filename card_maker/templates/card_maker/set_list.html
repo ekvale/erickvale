@@ -1,0 +1,161 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Sets - Card Maker - eric kvale</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0a0a0a;
+            --bg-card: rgba(255, 255, 255, 0.05);
+            --text: #ffffff;
+            --text-secondary: #b0b0b0;
+            --text-light: #808080;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 24px;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            margin-bottom: 24px;
+            transition: color 0.2s ease;
+        }
+
+        .back-link:hover {
+            color: var(--text);
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 400;
+            letter-spacing: -0.5px;
+            margin-bottom: 12px;
+        }
+
+        .sets-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 40px;
+        }
+
+        .set-item {
+            display: block;
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            padding: 24px;
+            text-decoration: none;
+            color: inherit;
+            transition: border-color 0.2s ease, background 0.2s ease;
+        }
+
+        .set-item:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .set-item-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .set-info h3 {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .set-info p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .set-meta {
+            color: var(--text-light);
+            font-size: 14px;
+            text-align: right;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 40px 16px;
+            }
+
+            .set-item-content {
+                flex-direction: column;
+                align-items: start;
+                gap: 12px;
+            }
+
+            .set-meta {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'card_maker:index' %}" class="back-link">← Back to Card Maker</a>
+
+        <div class="header">
+            <h1>All Card Sets</h1>
+        </div>
+
+        {% if sets %}
+        <div class="sets-list">
+            {% for set in sets %}
+            <a href="{% url 'card_maker:set_detail' slug=set.slug %}" class="set-item">
+                <div class="set-item-content">
+                    <div class="set-info">
+                        <h3>{{ set.name }}</h3>
+                        {% if set.description %}
+                        <p>{{ set.description|truncatewords:20 }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="set-meta">
+                        {{ set.cards.count }} card{{ set.cards.count|pluralize }}
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color: var(--text-secondary); text-align: center; padding: 40px;">No card sets available.</p>
+        {% endif %}
+    </div>
+</body>
+</html>
+
+
+
