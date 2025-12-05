@@ -10,7 +10,7 @@ def homepage(request):
         {
             'name': 'The Power of Cards',
             'slug': 'cards',
-            'description': 'Create custom cards based on your favorite subjects, novels, and games. Starting with Dungeon Crawler Carl characters, build your own card collection with stats, images, and descriptions.',
+            'description': 'Cards transfix both youth and adults alike. Even money is a card with flavor text and mythological images not far removed from fantasy games. From baseball cards to tarot, to Brian Eno\'s Oblique Strategies, they have a way of grabbing attention and anchoring knowledge in playful and often unexpected ways.',
             'icon': '🃏',
             'url': '/apps/cards/',
             'cover_image': 'erickvale/images/king_and_death.avif',
