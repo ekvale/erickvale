@@ -375,8 +375,14 @@
                     {% if app.is_current_month %}
                     <div class="app-card">
                         {% if app.cover_image %}
-                        <div class="app-cover-image" style="width: 100%; height: 200px; overflow: hidden; border-bottom: 1px solid var(--border); background: var(--bg-card); display: flex; align-items: center; justify-content: center;">
-                            <img src="{% static app.cover_image %}" alt="{{ app.name }}" style="max-width: 100%; max-height: 100%; object-fit: contain; object-position: center 25%; display: block;">
+                        <div class="app-cover-image-container" style="border-bottom: 1px solid var(--border); background: var(--bg-card);">
+                            <div class="app-cover-image" style="width: 100%; height: 200px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                                <img src="{% static app.cover_image %}" alt="Left: Workshop of Bonifacio Bembo (Italian, Cremonese, active ca. 1442–died before 1482). Pope, from The Visconti-Sforza Tarot, ca. 1450. Made in Milan, Italy. Paper (pasteboard) with opaque paint on tooled gold ground; 6 3/4 x 7 3/8 in. (17.3 x 8.7 cm). The Morgan Library & Museum, New York (MS M.630.4). Right: Death, from The Visconti-Sforza Tarot, ca. 1450. Made in Milan, Italy. Paper (pasteboard) with opaque paint on tooled gold ground; 6 3/4 x 7 3/8 in. (17.3 x 8.7 cm). Beinecke Rare Book & Manuscript Library, Yale University, New Haven, Connecticut (ITA 109)" style="max-width: 100%; max-height: 100%; object-fit: contain; object-position: center 25%; display: block;">
+                            </div>
+                            <div class="app-cover-caption" style="padding: 12px 20px; font-size: 11px; color: var(--text-light); line-height: 1.5; border-top: 1px solid var(--border);">
+                                <div style="margin-bottom: 4px; font-weight: 500; color: var(--text-secondary);">The Visconti-Sforza Tarot, ca. 1450</div>
+                                <div style="font-size: 10px;">Left: Workshop of Bonifacio Bembo (Italian, Cremonese, active ca. 1442–died before 1482). Pope. The Morgan Library & Museum, New York (MS M.630.4). Right: Death. Beinecke Rare Book & Manuscript Library, Yale University (ITA 109)</div>
+                            </div>
                         </div>
                         {% endif %}
                         <div class="app-header">
