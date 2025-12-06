@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'ckeditor',
     'ckeditor_uploader',
+    'erickvale',
     'emergency_preparedness',
     'blog',
     'card_maker',

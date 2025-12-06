@@ -1,63 +1,31 @@
 from django.shortcuts import render
 from datetime import datetime
+from .models import FeaturedApp
+
 
 def homepage(request):
     """Homepage view showcasing monthly apps."""
     current_date = datetime.now()
     current_month = current_date.strftime('%B %Y')
     
-    apps = [
-        {
-            'name': 'The Power of Cards',
-            'slug': 'cards',
-            'description': 'Cards transfix both youth and adults alike. Even money is a card with flavor text and mythological images not far removed from fantasy games. From baseball cards to tarot, to Brian Eno\'s Oblique Strategies, they have a way of grabbing attention and anchoring knowledge in playful and often unexpected ways.',
-            'icon': '🃏',
-            'url': '/apps/cards/',
-            'cover_image': 'erickvale/images/king_and_death.avif',
-            'features': [
-                'Custom card creation',
-                'DCC stat system (STR, INT, CON, DEX, CHR)',
-                'Card sets and collections',
-                'Character cards from favorite books'
-            ],
-            'month': 'January 2025',
+    # Get all published apps
+    published_apps = FeaturedApp.objects.filter(is_published=True)
+    
+    # Convert to dict format for template compatibility
+    apps = []
+    for app in published_apps:
+        apps.append({
+            'name': app.name,
+            'slug': app.slug,
+            'description': app.description,
+            'icon': app.icon,
+            'url': app.url,
+            'cover_image': app.cover_image if app.cover_image else None,
+            'features': app.features if app.features else [],
+            'month': app.month,
             'status': 'active',
-            'is_current_month': True
-        },
-        {
-            'name': 'Emergency Preparedness',
-            'slug': 'emergency',
-            'description': 'Spatial risk analysis and Point of Distribution (POD) location optimization for emergency planning in Minnesota. This month\'s featured application explores advanced geospatial analytics for disaster preparedness.',
-            'icon': '🚨',
-            'url': '/apps/emergency/',
-            'features': [
-                'Interactive Leaflet.js mapping',
-                'POD optimization algorithm',
-                'Scenario-based risk analysis',
-                'Demographic data integration'
-            ],
-            'month': 'December 2024',
-            'status': 'active',
-            'is_current_month': False
-        },
-        {
-            'name': 'Blog',
-            'slug': 'blog',
-            'description': 'Read about our monthly applications, development insights, upcoming projects, and technical deep-dives. The blog chronicles the journey of building each app and shares knowledge along the way.',
-            'icon': '📝',
-            'url': '/apps/blog/',
-            'features': [
-                'Monthly app coverage',
-                'Development insights',
-                'Technical articles',
-                'Upcoming app previews'
-            ],
-            'month': 'Ongoing',
-            'status': 'active',
-            'is_current_month': False
-        },
-        # Future apps can be added here
-    ]
+            'is_current_month': app.is_current_month,
+        })
     
     context = {
         'apps': apps,
