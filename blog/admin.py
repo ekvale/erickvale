@@ -23,7 +23,6 @@ class PostAdmin(admin.ModelAdmin):
     search_fields = ['title', 'content', 'excerpt']
     prepopulated_fields = {'slug': ('title',)}
     date_hierarchy = 'publish_date'
-    raw_id_fields = ['author']
     filter_horizontal = ['tags']
     
     fieldsets = (
@@ -41,6 +40,18 @@ class PostAdmin(admin.ModelAdmin):
             'fields': ('views',)
         }),
     )
+    
+    def save_model(self, request, obj, form, change):
+        """Auto-set author to current user if not set."""
+        if not change:  # Only for new posts
+            obj.author = request.user
+        super().save_model(request, obj, form, change)
+    
+    def get_readonly_fields(self, request, obj=None):
+        """Make author read-only after creation."""
+        if obj:  # Editing an existing post
+            return ['author']
+        return []
     
     class Media:
         css = {
