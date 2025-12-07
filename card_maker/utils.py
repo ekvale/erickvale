@@ -56,170 +56,143 @@ def generate_kvale_card(
     output_path=None
 ):
     """
-    Generate a Kvale card image with TCG-style layout.
+    Generate a Kvale card image with DORA-style TCG layout.
     
     Card dimensions: 750x1050px (standard playing card size at 300 DPI)
-    Layout: Stats in top corners, artwork center, description bottom
+    Layout: Cost top-left, stats circles, name, artwork, text box, bottom info
     """
     # Card dimensions
     CARD_WIDTH = 750
     CARD_HEIGHT = 1050
-    BACKGROUND_COLOR = '#0F1419'
+    BACKGROUND_COLOR = '#1a1a1a'
     BORDER_COLOR = '#2a2a2a'
+    TEXT_COLOR = '#E0E0E0'
+    LIGHT_TEXT = '#B0B0B0'
     
     # Create base image
     img = Image.new('RGB', (CARD_WIDTH, CARD_HEIGHT), BACKGROUND_COLOR)
     draw = ImageDraw.Draw(img)
     
     # Get fonts
-    font_title = get_font(40, bold=True)
-    font_rarity = get_font(18, bold=True)
-    font_album = get_font(11)
-    font_stat_value = get_font(32, bold=True)
+    font_cost = get_font(36, bold=True)
+    font_name = get_font(28, bold=True)
+    font_stat_value = get_font(24, bold=True)
     font_stat_label = get_font(10)
-    font_trigger = get_font(22, bold=True)
-    font_description = get_font(16)
-    font_tag = get_font(11)
-    font_footer = get_font(11)
+    font_description = get_font(14)
+    font_ability = get_font(13, bold=True)
+    font_footer = get_font(10)
+    font_type = get_font(11)
     
     # Get rarity color
     rarity_color = get_rarity_color(rarity)
     
-    # Draw card border with rarity color
-    border_width = 4
+    # Draw card border
+    border_width = 3
     draw.rounded_rectangle(
         [(border_width, border_width), 
          (CARD_WIDTH - border_width, CARD_HEIGHT - border_width)],
-        radius=15,
+        radius=12,
         fill=BACKGROUND_COLOR,
         outline=rarity_color,
         width=border_width
     )
     
-    # TOP SECTION - Stats in corners
-    top_margin = 30
-    corner_stat_size = 80
-    corner_stat_radius = 40
+    # TOP SECTION - Cost and Name
+    top_section_height = 80
+    top_section_y = 20
     
-    # Energy (top left corner)
-    energy_x = 30
-    energy_y = top_margin
+    # Cost circle (top left)
+    cost_circle_size = 50
+    cost_x = 25
+    cost_y = top_section_y + 15
     
-    # Draw energy circle
+    # Draw cost circle
     draw.ellipse(
-        [(energy_x, energy_y),
-         (energy_x + corner_stat_size, energy_y + corner_stat_size)],
-        fill='#1a1a1a',
-        outline=rarity_color,
-        width=3
-    )
-    
-    # Energy value
-    energy_text = str(energy)
-    energy_bbox = draw.textbbox((0, 0), energy_text, font=font_stat_value)
-    energy_text_width = energy_bbox[2] - energy_bbox[0]
-    energy_text_height = energy_bbox[3] - energy_bbox[1]
-    energy_text_x = energy_x + (corner_stat_size - energy_text_width) // 2
-    energy_text_y = energy_y + (corner_stat_size - energy_text_height) // 2 - 8
-    draw.text((energy_text_x, energy_text_y), energy_text, fill='#FFFFFF', font=font_stat_value)
-    
-    # Energy label
-    energy_label = "ENERGY"
-    energy_label_bbox = draw.textbbox((0, 0), energy_label, font=font_stat_label)
-    energy_label_width = energy_label_bbox[2] - energy_label_bbox[0]
-    energy_label_x = energy_x + (corner_stat_size - energy_label_width) // 2
-    energy_label_y = energy_y + corner_stat_size - 15
-    draw.text((energy_label_x, energy_label_y), energy_label, fill='#808080', font=font_stat_label)
-    
-    # Power (top right corner)
-    power_x = CARD_WIDTH - corner_stat_size - 30
-    power_y = top_margin
-    
-    # Draw power circle
-    draw.ellipse(
-        [(power_x, power_y),
-        (power_x + corner_stat_size, power_y + corner_stat_size)],
-        fill='#1a1a1a',
-        outline=rarity_color,
-        width=3
-    )
-    
-    # Power value
-    power_text = str(power)
-    power_bbox = draw.textbbox((0, 0), power_text, font=font_stat_value)
-    power_text_width = power_bbox[2] - power_bbox[0]
-    power_text_height = power_bbox[3] - power_bbox[1]
-    power_text_x = power_x + (corner_stat_size - power_text_width) // 2
-    power_text_y = power_y + (corner_stat_size - power_text_height) // 2 - 8
-    draw.text((power_text_x, power_text_y), power_text, fill='#FFFFFF', font=font_stat_value)
-    
-    # Power label
-    power_label = "POWER"
-    power_label_bbox = draw.textbbox((0, 0), power_label, font=font_stat_label)
-    power_label_width = power_label_bbox[2] - power_label_bbox[0]
-    power_label_x = power_x + (corner_stat_size - power_label_width) // 2
-    power_label_y = power_y + corner_stat_size - 15
-    draw.text((power_label_x, power_label_y), power_label, fill='#808080', font=font_stat_label)
-    
-    # Title Section (centered, below stats)
-    title_y = top_margin + corner_stat_size + 20
-    title_text = title.upper()
-    title_bbox = draw.textbbox((0, 0), title_text, font=font_title)
-    title_width = title_bbox[2] - title_bbox[0]
-    title_x = (CARD_WIDTH - title_width) // 2
-    
-    # Draw title shadow
-    draw.text((title_x + 2, title_y + 2), title_text, fill='#000000', font=font_title)
-    # Draw main title
-    draw.text((title_x, title_y), title_text, fill='#FFFFFF', font=font_title)
-    
-    title_bottom = title_y + (title_bbox[3] - title_bbox[1]) + 10
-    
-    # Rarity Badge (below title)
-    badge_width = 200
-    badge_height = 35
-    badge_x = (CARD_WIDTH - badge_width) // 2
-    badge_y = title_bottom + 10
-    
-    # Draw rounded rectangle for badge
-    draw.rounded_rectangle(
-        [(badge_x, badge_y), (badge_x + badge_width, badge_y + badge_height)],
-        radius=8,
-        fill='#1a1a1a',
+        [(cost_x, cost_y),
+         (cost_x + cost_circle_size, cost_y + cost_circle_size)],
+        fill='#2a2a2a',
         outline=rarity_color,
         width=2
     )
     
-    # Badge text
-    badge_text = f"★ {rarity.upper()} ★"
-    badge_bbox = draw.textbbox((0, 0), badge_text, font=font_rarity)
-    badge_text_width = badge_bbox[2] - badge_bbox[0]
-    badge_text_x = badge_x + (badge_width - badge_text_width) // 2
-    badge_text_y = badge_y + (badge_height - (badge_bbox[3] - badge_bbox[1])) // 2
-    draw.text((badge_text_x, badge_text_y), badge_text, fill=rarity_color, font=font_rarity)
+    # Cost value (using energy as cost)
+    cost_text = str(energy)
+    cost_bbox = draw.textbbox((0, 0), cost_text, font=font_cost)
+    cost_text_width = cost_bbox[2] - cost_bbox[0]
+    cost_text_height = cost_bbox[3] - cost_bbox[1]
+    cost_text_x = cost_x + (cost_circle_size - cost_text_width) // 2
+    cost_text_y = cost_y + (cost_circle_size - cost_text_height) // 2
+    draw.text((cost_text_x, cost_text_y), cost_text, fill=TEXT_COLOR, font=font_cost)
     
-    badge_bottom = badge_y + badge_height + 15
+    # Card Name (centered, below cost)
+    name_y = cost_y + cost_circle_size + 10
+    name_text = title.upper()
+    name_bbox = draw.textbbox((0, 0), name_text, font=font_name)
+    name_width = name_bbox[2] - name_bbox[0]
+    name_x = (CARD_WIDTH - name_width) // 2
+    draw.text((name_x, name_y), name_text, fill=TEXT_COLOR, font=font_name)
     
-    # Album Label (if provided, below rarity)
-    if album_label:
-        album_text = album_label.upper()
-        album_bbox = draw.textbbox((0, 0), album_text, font=font_album)
-        album_width = album_bbox[2] - album_bbox[0]
-        album_x = (CARD_WIDTH - album_width) // 2
-        draw.text((album_x, badge_bottom), album_text, fill='#808080', font=font_album)
-        badge_bottom += 20
+    name_bottom = name_y + (name_bbox[3] - name_bbox[1]) + 15
     
-    # Card Artwork (550x300px, centered)
-    artwork_width = 550
-    artwork_height = 300
-    artwork_x = (CARD_WIDTH - artwork_width) // 2
-    artwork_y = badge_bottom + 15
+    # STAT CIRCLES (three circles below name, like DORA)
+    stat_circle_size = 55
+    stat_circle_spacing = 20
+    stat_section_y = name_bottom + 10
+    stat_section_width = (stat_circle_size * 3) + (stat_circle_spacing * 2)
+    stat_section_x = (CARD_WIDTH - stat_section_width) // 2
     
-    # Draw frame
+    # Calculate health/defense (could be power or a derived stat)
+    health = max(1, power // 2) if power > 0 else 1
+    
+    stats = [
+        ('ENERGY', energy),
+        ('POWER', power),
+        ('HEALTH', health),
+    ]
+    
+    for i, (label, value) in enumerate(stats):
+        circle_x = stat_section_x + (i * (stat_circle_size + stat_circle_spacing))
+        circle_y = stat_section_y
+        
+        # Draw stat circle
+        draw.ellipse(
+            [(circle_x, circle_y),
+             (circle_x + stat_circle_size, circle_y + stat_circle_size)],
+            fill='#2a2a2a',
+            outline=rarity_color,
+            width=2
+        )
+        
+        # Stat value
+        stat_text = str(value)
+        stat_bbox = draw.textbbox((0, 0), stat_text, font=font_stat_value)
+        stat_text_width = stat_bbox[2] - stat_bbox[0]
+        stat_text_height = stat_bbox[3] - stat_bbox[1]
+        stat_text_x = circle_x + (stat_circle_size - stat_text_width) // 2
+        stat_text_y = circle_y + (stat_circle_size - stat_text_height) // 2 - 8
+        draw.text((stat_text_x, stat_text_y), stat_text, fill=TEXT_COLOR, font=font_stat_value)
+        
+        # Stat label
+        label_bbox = draw.textbbox((0, 0), label, font=font_stat_label)
+        label_width = label_bbox[2] - label_bbox[0]
+        label_x = circle_x + (stat_circle_size - label_width) // 2
+        label_y = circle_y + stat_circle_size - 12
+        draw.text((label_x, label_y), label, fill=LIGHT_TEXT, font=font_stat_label)
+    
+    stat_section_bottom = stat_section_y + stat_circle_size + 20
+    
+    # ARTWORK SECTION (large central area)
+    artwork_margin = 30
+    artwork_width = CARD_WIDTH - (artwork_margin * 2)
+    artwork_height = 380
+    artwork_x = artwork_margin
+    artwork_y = stat_section_bottom
+    
+    # Draw artwork frame
     draw.rounded_rectangle(
-        [(artwork_x - 3, artwork_y - 3),
-         (artwork_x + artwork_width + 3, artwork_y + artwork_height + 3)],
-        radius=10,
+        [(artwork_x - 2, artwork_y - 2),
+         (artwork_x + artwork_width + 2, artwork_y + artwork_height + 2)],
+        radius=8,
         fill='#000000',
         outline=BORDER_COLOR,
         width=2
@@ -236,7 +209,7 @@ def generate_kvale_card(
             mask_draw = ImageDraw.Draw(mask)
             mask_draw.rounded_rectangle(
                 [(0, 0), (artwork_width, artwork_height)],
-                radius=10,
+                radius=8,
                 fill=255
             )
             
@@ -246,155 +219,152 @@ def generate_kvale_card(
             draw.rounded_rectangle(
                 [(artwork_x, artwork_y),
                  (artwork_x + artwork_width, artwork_y + artwork_height)],
-                radius=10,
-                fill='#1a1a1a',
+                radius=8,
+                fill='#0a0a0a',
                 outline=BORDER_COLOR
             )
             placeholder_text = "ARTWORK"
-            placeholder_bbox = draw.textbbox((0, 0), placeholder_text, font=font_title)
+            placeholder_bbox = draw.textbbox((0, 0), placeholder_text, font=font_name)
             placeholder_x = artwork_x + (artwork_width - (placeholder_bbox[2] - placeholder_bbox[0])) // 2
             placeholder_y = artwork_y + (artwork_height - (placeholder_bbox[3] - placeholder_bbox[1])) // 2
-            draw.text((placeholder_x, placeholder_y), placeholder_text, fill='#404040', font=font_title)
+            draw.text((placeholder_x, placeholder_y), placeholder_text, fill='#404040', font=font_name)
     else:
         # Placeholder
         draw.rounded_rectangle(
             [(artwork_x, artwork_y),
              (artwork_x + artwork_width, artwork_y + artwork_height)],
-            radius=10,
-            fill='#1a1a1a',
+            radius=8,
+            fill='#0a0a0a',
             outline=BORDER_COLOR
         )
     
-    # Darkening overlay for artwork
-    overlay = Image.new('RGBA', (artwork_width, artwork_height), (0, 0, 0, 20))
-    img.paste(overlay, (artwork_x, artwork_y), overlay)
+    artwork_bottom = artwork_y + artwork_height + 15
     
-    artwork_bottom = artwork_y + artwork_height + 20
+    # TEXT BOX (description and abilities)
+    text_box_height = 180
+    text_box_x = artwork_x
+    text_box_y = artwork_bottom
+    text_box_width = artwork_width
     
-    # Ability Trigger Bar (if provided, below artwork)
-    if trigger:
-        trigger_height = 40
-        trigger_x = artwork_x
-        trigger_y = artwork_bottom
-        trigger_width = artwork_width
-        
-        draw.rounded_rectangle(
-            [(trigger_x, trigger_y),
-             (trigger_x + trigger_width, trigger_y + trigger_height)],
-            radius=8,
-            fill='#1a1a1a',
-            outline=rarity_color,
-            width=2
-        )
-        
-        trigger_text = f"⚡ {trigger.upper()}"
-        trigger_bbox = draw.textbbox((0, 0), trigger_text, font=font_trigger)
-        trigger_text_width = trigger_bbox[2] - trigger_bbox[0]
-        trigger_text_x = trigger_x + (trigger_width - trigger_text_width) // 2
-        trigger_text_y = trigger_y + (trigger_height - (trigger_bbox[3] - trigger_bbox[1])) // 2
-        draw.text((trigger_text_x, trigger_text_y), trigger_text, fill=rarity_color, font=font_trigger)
-        
-        artwork_bottom = trigger_y + trigger_height + 15
-    
-    # Description Box (bottom section, 180px height)
-    desc_height = 180
-    desc_x = artwork_x
-    desc_y = CARD_HEIGHT - desc_height - 80  # Leave room for tags and footer
-    desc_width = artwork_width
-    
+    # Draw text box background
     draw.rounded_rectangle(
-        [(desc_x, desc_y),
-         (desc_x + desc_width, desc_y + desc_height)],
-        radius=8,
-        fill=BACKGROUND_COLOR,
+        [(text_box_x, text_box_y),
+         (text_box_x + text_box_width, text_box_y + text_box_height)],
+        radius=6,
+        fill='#0f0f0f',
         outline=BORDER_COLOR,
         width=1
     )
     
-    # Wrap description text (max 6 lines, 24px line height)
+    # Description text
+    text_start_y = text_box_y + 12
+    text_start_x = text_box_x + 12
+    max_text_width = text_box_width - 24
+    line_height = 20
+    
     if description:
         words = description.split()
         lines = []
         current_line = []
-        line_height = 24
-        max_width = desc_width - 20
         
         for word in words:
             test_line = ' '.join(current_line + [word]) if current_line else word
-            # Measure text width
             try:
-                # Try textlength first (Pillow 9.2+)
                 test_width = draw.textlength(test_line, font=font_description)
             except AttributeError:
-                # Fallback for older PIL versions
                 test_bbox = draw.textbbox((0, 0), test_line, font=font_description)
                 test_width = test_bbox[2] - test_bbox[0]
             
-            if test_width <= max_width and len(lines) < 6:
+            if test_width <= max_text_width and len(lines) < 6:
                 current_line.append(word)
             else:
                 if current_line:
                     lines.append(' '.join(current_line))
                 current_line = [word]
                 if len(lines) >= 6:
-                    # Truncate last word if needed
                     break
         
         if current_line and len(lines) < 6:
             lines.append(' '.join(current_line))
         
-        # Draw lines
+        # Draw description lines
         for i, line in enumerate(lines):
-            line_y = desc_y + 10 + (i * line_height)
-            draw.text((desc_x + 10, line_y), line, fill='#E0E0E0', font=font_description)
-    
-    # Tags (above description box)
-    if tags:
-        tag_y = desc_y - 35
-        tag_x = desc_x
-        tag_spacing = 10
-        max_tags = min(len(tags), 4)
+            line_y = text_start_y + (i * line_height)
+            draw.text((text_start_x, line_y), line, fill=TEXT_COLOR, font=font_description)
         
-        for i, tag in enumerate(tags[:max_tags]):
-            tag_text = f"#{tag.upper()}"
-            tag_bbox = draw.textbbox((0, 0), tag_text, font=font_tag)
-            tag_width = tag_bbox[2] - tag_bbox[0] + 16
-            tag_height = tag_bbox[3] - tag_bbox[1] + 8
-            
-            # Draw pill
-            draw.rounded_rectangle(
-                [(tag_x, tag_y),
-                 (tag_x + tag_width, tag_y + tag_height)],
-                radius=10,
-                fill='#1a1a1a',
-                outline=BORDER_COLOR,
-                width=1
-            )
-            
-            # Draw text
-            draw.text((tag_x + 8, tag_y + 4), tag_text, fill='#E0E0E0', font=font_tag)
-            
-            tag_x += tag_width + tag_spacing
+        text_start_y += len(lines) * line_height + 8
     
-    # Footer (bottom)
-    footer_height = 30
-    footer_y = CARD_HEIGHT - footer_height - 20
-    footer_x = 0
+    # Ability/Trigger text (if provided)
+    if trigger:
+        ability_text = f"⚡ {trigger.upper()}"
+        draw.text((text_start_x, text_start_y), ability_text, fill=rarity_color, font=font_ability)
+        text_start_y += line_height + 5
     
+    text_box_bottom = text_box_y + text_box_height
+    
+    # BOTTOM SECTION (type, edition, collection)
+    bottom_section_height = 50
+    bottom_y = CARD_HEIGHT - bottom_section_height - 15
+    
+    # Draw bottom section background
+    draw.rounded_rectangle(
+        [(artwork_x, bottom_y),
+         (artwork_x + artwork_width, bottom_y + bottom_section_height)],
+        radius=6,
+        fill='#0f0f0f',
+        outline=BORDER_COLOR,
+        width=1
+    )
+    
+    # Card type (from tags or card_type)
+    type_text = ''
+    if tags and isinstance(tags, list) and len(tags) > 0:
+        type_text = tags[0].upper()
+    elif album_label:
+        type_text = album_label.upper()
+    
+    if type_text:
+        type_bbox = draw.textbbox((0, 0), type_text, font=font_type)
+        type_x = text_start_x
+        type_y = bottom_y + 15
+        draw.text((type_x, type_y), type_text, fill=LIGHT_TEXT, font=font_type)
+    
+    # Edition/Collection (right side)
+    footer_text = ''
     if edition and collection:
         footer_text = f"{edition.upper()} • {collection.upper()}"
     elif edition:
         footer_text = edition.upper()
     elif collection:
         footer_text = collection.upper()
-    else:
-        footer_text = ""
     
     if footer_text:
         footer_bbox = draw.textbbox((0, 0), footer_text, font=font_footer)
         footer_text_width = footer_bbox[2] - footer_bbox[0]
-        footer_text_x = (CARD_WIDTH - footer_text_width) // 2
-        draw.text((footer_text_x, footer_y), footer_text, fill='#808080', font=font_footer)
+        footer_text_x = artwork_x + artwork_width - footer_text_width - 12
+        footer_text_y = bottom_y + 15
+        draw.text((footer_text_x, footer_text_y), footer_text, fill=LIGHT_TEXT, font=font_footer)
+    
+    # Rarity indicator (small badge in bottom right corner)
+    rarity_badge_size = 30
+    rarity_badge_x = CARD_WIDTH - rarity_badge_size - 15
+    rarity_badge_y = bottom_y + 10
+    
+    draw.rounded_rectangle(
+        [(rarity_badge_x, rarity_badge_y),
+         (rarity_badge_x + rarity_badge_size, rarity_badge_y + rarity_badge_size)],
+        radius=4,
+        fill='#2a2a2a',
+        outline=rarity_color,
+        width=1
+    )
+    
+    # Rarity star
+    star_text = "★"
+    star_bbox = draw.textbbox((0, 0), star_text, font=font_stat_label)
+    star_x = rarity_badge_x + (rarity_badge_size - (star_bbox[2] - star_bbox[0])) // 2
+    star_y = rarity_badge_y + (rarity_badge_size - (star_bbox[3] - star_bbox[1])) // 2
+    draw.text((star_x, star_y), star_text, fill=rarity_color, font=font_stat_label)
     
     # Save image
     if output_path:
