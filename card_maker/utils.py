@@ -56,14 +56,16 @@ def generate_kvale_card(
     output_path=None
 ):
     """
-    Generate a Kvale card image with the specified layout.
+    Generate a Kvale card image with TCG-style layout.
     
     Card dimensions: 750x1050px (standard playing card size at 300 DPI)
+    Layout: Stats in top corners, artwork center, description bottom
     """
     # Card dimensions
     CARD_WIDTH = 750
     CARD_HEIGHT = 1050
     BACKGROUND_COLOR = '#0F1419'
+    BORDER_COLOR = '#2a2a2a'
     
     # Create base image
     img = Image.new('RGB', (CARD_WIDTH, CARD_HEIGHT), BACKGROUND_COLOR)
@@ -73,7 +75,7 @@ def generate_kvale_card(
     font_title = get_font(40, bold=True)
     font_rarity = get_font(18, bold=True)
     font_album = get_font(11)
-    font_stat_value = get_font(22, bold=True)
+    font_stat_value = get_font(32, bold=True)
     font_stat_label = get_font(10)
     font_trigger = get_font(22, bold=True)
     font_description = get_font(16)
@@ -83,32 +85,107 @@ def generate_kvale_card(
     # Get rarity color
     rarity_color = get_rarity_color(rarity)
     
-    y_position = 40  # Start position
+    # Draw card border with rarity color
+    border_width = 4
+    draw.rounded_rectangle(
+        [(border_width, border_width), 
+         (CARD_WIDTH - border_width, CARD_HEIGHT - border_width)],
+        radius=15,
+        fill=BACKGROUND_COLOR,
+        outline=rarity_color,
+        width=border_width
+    )
     
-    # 1. Title Section (uppercase with text shadow)
+    # TOP SECTION - Stats in corners
+    top_margin = 30
+    corner_stat_size = 80
+    corner_stat_radius = 40
+    
+    # Energy (top left corner)
+    energy_x = 30
+    energy_y = top_margin
+    
+    # Draw energy circle
+    draw.ellipse(
+        [(energy_x, energy_y),
+         (energy_x + corner_stat_size, energy_y + corner_stat_size)],
+        fill='#1a1a1a',
+        outline=rarity_color,
+        width=3
+    )
+    
+    # Energy value
+    energy_text = str(energy)
+    energy_bbox = draw.textbbox((0, 0), energy_text, font=font_stat_value)
+    energy_text_width = energy_bbox[2] - energy_bbox[0]
+    energy_text_height = energy_bbox[3] - energy_bbox[1]
+    energy_text_x = energy_x + (corner_stat_size - energy_text_width) // 2
+    energy_text_y = energy_y + (corner_stat_size - energy_text_height) // 2 - 8
+    draw.text((energy_text_x, energy_text_y), energy_text, fill='#FFFFFF', font=font_stat_value)
+    
+    # Energy label
+    energy_label = "ENERGY"
+    energy_label_bbox = draw.textbbox((0, 0), energy_label, font=font_stat_label)
+    energy_label_width = energy_label_bbox[2] - energy_label_bbox[0]
+    energy_label_x = energy_x + (corner_stat_size - energy_label_width) // 2
+    energy_label_y = energy_y + corner_stat_size - 15
+    draw.text((energy_label_x, energy_label_y), energy_label, fill='#808080', font=font_stat_label)
+    
+    # Power (top right corner)
+    power_x = CARD_WIDTH - corner_stat_size - 30
+    power_y = top_margin
+    
+    # Draw power circle
+    draw.ellipse(
+        [(power_x, power_y),
+        (power_x + corner_stat_size, power_y + corner_stat_size)],
+        fill='#1a1a1a',
+        outline=rarity_color,
+        width=3
+    )
+    
+    # Power value
+    power_text = str(power)
+    power_bbox = draw.textbbox((0, 0), power_text, font=font_stat_value)
+    power_text_width = power_bbox[2] - power_bbox[0]
+    power_text_height = power_bbox[3] - power_bbox[1]
+    power_text_x = power_x + (corner_stat_size - power_text_width) // 2
+    power_text_y = power_y + (corner_stat_size - power_text_height) // 2 - 8
+    draw.text((power_text_x, power_text_y), power_text, fill='#FFFFFF', font=font_stat_value)
+    
+    # Power label
+    power_label = "POWER"
+    power_label_bbox = draw.textbbox((0, 0), power_label, font=font_stat_label)
+    power_label_width = power_label_bbox[2] - power_label_bbox[0]
+    power_label_x = power_x + (corner_stat_size - power_label_width) // 2
+    power_label_y = power_y + corner_stat_size - 15
+    draw.text((power_label_x, power_label_y), power_label, fill='#808080', font=font_stat_label)
+    
+    # Title Section (centered, below stats)
+    title_y = top_margin + corner_stat_size + 20
     title_text = title.upper()
     title_bbox = draw.textbbox((0, 0), title_text, font=font_title)
     title_width = title_bbox[2] - title_bbox[0]
     title_x = (CARD_WIDTH - title_width) // 2
     
-    # Draw shadow
-    draw.text((title_x + 2, y_position + 2), title_text, fill='#000000', font=font_title)
-    # Draw main text
-    draw.text((title_x, y_position), title_text, fill='#FFFFFF', font=font_title)
+    # Draw title shadow
+    draw.text((title_x + 2, title_y + 2), title_text, fill='#000000', font=font_title)
+    # Draw main title
+    draw.text((title_x, title_y), title_text, fill='#FFFFFF', font=font_title)
     
-    y_position += 60
+    title_bottom = title_y + (title_bbox[3] - title_bbox[1]) + 10
     
-    # 2. Rarity Badge (200px wide, centered)
+    # Rarity Badge (below title)
     badge_width = 200
-    badge_height = 40
+    badge_height = 35
     badge_x = (CARD_WIDTH - badge_width) // 2
-    badge_y = y_position
+    badge_y = title_bottom + 10
     
     # Draw rounded rectangle for badge
     draw.rounded_rectangle(
         [(badge_x, badge_y), (badge_x + badge_width, badge_y + badge_height)],
-        radius=10,
-        fill=BACKGROUND_COLOR,
+        radius=8,
+        fill='#1a1a1a',
         outline=rarity_color,
         width=2
     )
@@ -121,112 +198,22 @@ def generate_kvale_card(
     badge_text_y = badge_y + (badge_height - (badge_bbox[3] - badge_bbox[1])) // 2
     draw.text((badge_text_x, badge_text_y), badge_text, fill=rarity_color, font=font_rarity)
     
-    y_position += badge_height + 15
+    badge_bottom = badge_y + badge_height + 15
     
-    # 3. Album Label (if provided)
+    # Album Label (if provided, below rarity)
     if album_label:
         album_text = album_label.upper()
         album_bbox = draw.textbbox((0, 0), album_text, font=font_album)
         album_width = album_bbox[2] - album_bbox[0]
         album_x = (CARD_WIDTH - album_width) // 2
-        draw.text((album_x, y_position), album_text, fill='#808080', font=font_album)
-        y_position += 25
+        draw.text((album_x, badge_bottom), album_text, fill='#808080', font=font_album)
+        badge_bottom += 20
     
-    # 4. Stat Circles (Energy left, Power right)
-    stat_circle_diameter = 70
-    stat_circle_radius = stat_circle_diameter // 2
-    stat_frame_width = 90
-    stat_frame_height = 100
-    
-    # Energy (left)
-    energy_frame_x = (CARD_WIDTH // 2 - stat_frame_width) // 2
-    energy_frame_y = y_position
-    
-    # Draw frame
-    draw.rounded_rectangle(
-        [(energy_frame_x, energy_frame_y), 
-         (energy_frame_x + stat_frame_width, energy_frame_y + stat_frame_height)],
-        radius=8,
-        fill=BACKGROUND_COLOR,
-        outline='#404040',
-        width=2
-    )
-    
-    # Draw circle
-    energy_circle_x = energy_frame_x + stat_frame_width // 2
-    energy_circle_y = energy_frame_y + 25
-    draw.ellipse(
-        [(energy_circle_x - stat_circle_radius, energy_circle_y - stat_circle_radius),
-         (energy_circle_x + stat_circle_radius, energy_circle_y + stat_circle_radius)],
-        fill='#1a1a1a',
-        outline='#606060',
-        width=2
-    )
-    
-    # Energy value
-    energy_text = str(energy)
-    energy_bbox = draw.textbbox((0, 0), energy_text, font=font_stat_value)
-    energy_text_width = energy_bbox[2] - energy_bbox[0]
-    energy_text_x = energy_circle_x - energy_text_width // 2
-    energy_text_y = energy_circle_y - (energy_bbox[3] - energy_bbox[1]) // 2
-    draw.text((energy_text_x, energy_text_y), energy_text, fill='#FFFFFF', font=font_stat_value)
-    
-    # Energy label
-    energy_label = "ENERGY"
-    energy_label_bbox = draw.textbbox((0, 0), energy_label, font=font_stat_label)
-    energy_label_width = energy_label_bbox[2] - energy_label_bbox[0]
-    energy_label_x = energy_frame_x + (stat_frame_width - energy_label_width) // 2
-    energy_label_y = energy_frame_y + stat_frame_height - 20
-    draw.text((energy_label_x, energy_label_y), energy_label, fill='#808080', font=font_stat_label)
-    
-    # Power (right)
-    power_frame_x = CARD_WIDTH // 2 + (CARD_WIDTH // 2 - stat_frame_width) // 2
-    power_frame_y = y_position
-    
-    # Draw frame
-    draw.rounded_rectangle(
-        [(power_frame_x, power_frame_y),
-         (power_frame_x + stat_frame_width, power_frame_y + stat_frame_height)],
-        radius=8,
-        fill=BACKGROUND_COLOR,
-        outline='#404040',
-        width=2
-    )
-    
-    # Draw circle
-    power_circle_x = power_frame_x + stat_frame_width // 2
-    power_circle_y = power_frame_y + 25
-    draw.ellipse(
-        [(power_circle_x - stat_circle_radius, power_circle_y - stat_circle_radius),
-         (power_circle_x + stat_circle_radius, power_circle_y + stat_circle_radius)],
-        fill='#1a1a1a',
-        outline='#606060',
-        width=2
-    )
-    
-    # Power value
-    power_text = str(power)
-    power_bbox = draw.textbbox((0, 0), power_text, font=font_stat_value)
-    power_text_width = power_bbox[2] - power_bbox[0]
-    power_text_x = power_circle_x - power_text_width // 2
-    power_text_y = power_circle_y - (power_bbox[3] - power_bbox[1]) // 2
-    draw.text((power_text_x, power_text_y), power_text, fill='#FFFFFF', font=font_stat_value)
-    
-    # Power label
-    power_label = "POWER"
-    power_label_bbox = draw.textbbox((0, 0), power_label, font=font_stat_label)
-    power_label_width = power_label_bbox[2] - power_label_bbox[0]
-    power_label_x = power_frame_x + (stat_frame_width - power_label_width) // 2
-    power_label_y = power_frame_y + stat_frame_height - 20
-    draw.text((power_label_x, power_label_y), power_label, fill='#808080', font=font_stat_label)
-    
-    y_position += stat_frame_height + 20
-    
-    # 5. Card Artwork (550x240px)
+    # Card Artwork (550x300px, centered)
     artwork_width = 550
-    artwork_height = 240
+    artwork_height = 300
     artwork_x = (CARD_WIDTH - artwork_width) // 2
-    artwork_y = y_position
+    artwork_y = badge_bottom + 15
     
     # Draw frame
     draw.rounded_rectangle(
@@ -234,7 +221,7 @@ def generate_kvale_card(
          (artwork_x + artwork_width + 3, artwork_y + artwork_height + 3)],
         radius=10,
         fill='#000000',
-        outline='#404040',
+        outline=BORDER_COLOR,
         width=2
     )
     
@@ -261,7 +248,7 @@ def generate_kvale_card(
                  (artwork_x + artwork_width, artwork_y + artwork_height)],
                 radius=10,
                 fill='#1a1a1a',
-                outline='#404040'
+                outline=BORDER_COLOR
             )
             placeholder_text = "ARTWORK"
             placeholder_bbox = draw.textbbox((0, 0), placeholder_text, font=font_title)
@@ -275,27 +262,27 @@ def generate_kvale_card(
              (artwork_x + artwork_width, artwork_y + artwork_height)],
             radius=10,
             fill='#1a1a1a',
-            outline='#404040'
+            outline=BORDER_COLOR
         )
     
-    # Darkening overlay
-    overlay = Image.new('RGBA', (artwork_width, artwork_height), (0, 0, 0, 30))
+    # Darkening overlay for artwork
+    overlay = Image.new('RGBA', (artwork_width, artwork_height), (0, 0, 0, 20))
     img.paste(overlay, (artwork_x, artwork_y), overlay)
     
-    y_position += artwork_height + 20
+    artwork_bottom = artwork_y + artwork_height + 20
     
-    # 6. Ability Trigger Bar (if provided)
+    # Ability Trigger Bar (if provided, below artwork)
     if trigger:
         trigger_height = 40
         trigger_x = artwork_x
-        trigger_y = y_position
+        trigger_y = artwork_bottom
         trigger_width = artwork_width
         
         draw.rounded_rectangle(
             [(trigger_x, trigger_y),
              (trigger_x + trigger_width, trigger_y + trigger_height)],
             radius=8,
-            fill=BACKGROUND_COLOR,
+            fill='#1a1a1a',
             outline=rarity_color,
             width=2
         )
@@ -307,12 +294,12 @@ def generate_kvale_card(
         trigger_text_y = trigger_y + (trigger_height - (trigger_bbox[3] - trigger_bbox[1])) // 2
         draw.text((trigger_text_x, trigger_text_y), trigger_text, fill=rarity_color, font=font_trigger)
         
-        y_position += trigger_height + 15
+        artwork_bottom = trigger_y + trigger_height + 15
     
-    # 7. Description Box (140px height)
-    desc_height = 140
+    # Description Box (bottom section, 180px height)
+    desc_height = 180
     desc_x = artwork_x
-    desc_y = y_position
+    desc_y = CARD_HEIGHT - desc_height - 80  # Leave room for tags and footer
     desc_width = artwork_width
     
     draw.rounded_rectangle(
@@ -320,11 +307,11 @@ def generate_kvale_card(
          (desc_x + desc_width, desc_y + desc_height)],
         radius=8,
         fill=BACKGROUND_COLOR,
-        outline='#404040',
+        outline=BORDER_COLOR,
         width=1
     )
     
-    # Wrap description text (max 5 lines, 24px line height)
+    # Wrap description text (max 6 lines, 24px line height)
     if description:
         words = description.split()
         lines = []
@@ -343,17 +330,17 @@ def generate_kvale_card(
                 test_bbox = draw.textbbox((0, 0), test_line, font=font_description)
                 test_width = test_bbox[2] - test_bbox[0]
             
-            if test_width <= max_width and len(lines) < 5:
+            if test_width <= max_width and len(lines) < 6:
                 current_line.append(word)
             else:
                 if current_line:
                     lines.append(' '.join(current_line))
                 current_line = [word]
-                if len(lines) >= 5:
+                if len(lines) >= 6:
                     # Truncate last word if needed
                     break
         
-        if current_line and len(lines) < 5:
+        if current_line and len(lines) < 6:
             lines.append(' '.join(current_line))
         
         # Draw lines
@@ -361,12 +348,10 @@ def generate_kvale_card(
             line_y = desc_y + 10 + (i * line_height)
             draw.text((desc_x + 10, line_y), line, fill='#E0E0E0', font=font_description)
     
-    y_position += desc_height + 15
-    
-    # 8. Tags (max 4, pill-shaped)
+    # Tags (above description box)
     if tags:
+        tag_y = desc_y - 35
         tag_x = desc_x
-        tag_y = y_position
         tag_spacing = 10
         max_tags = min(len(tags), 4)
         
@@ -382,7 +367,7 @@ def generate_kvale_card(
                  (tag_x + tag_width, tag_y + tag_height)],
                 radius=10,
                 fill='#1a1a1a',
-                outline='#404040',
+                outline=BORDER_COLOR,
                 width=1
             )
             
@@ -391,7 +376,7 @@ def generate_kvale_card(
             
             tag_x += tag_width + tag_spacing
     
-    # 9. Footer
+    # Footer (bottom)
     footer_height = 30
     footer_y = CARD_HEIGHT - footer_height - 20
     footer_x = 0
@@ -416,4 +401,3 @@ def generate_kvale_card(
         img.save(output_path, 'PNG', quality=95)
     
     return img
-
