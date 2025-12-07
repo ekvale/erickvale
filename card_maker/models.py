@@ -73,6 +73,15 @@ class Card(models.Model):
     # Abilities/Skills (rich text)
     abilities = models.TextField(blank=True, help_text='Card abilities or special skills')
     
+    # Kvale card format fields
+    energy = models.IntegerField(default=0, validators=[MinValueValidator(0)], help_text='Energy stat for Kvale cards')
+    power = models.IntegerField(default=0, validators=[MinValueValidator(0)], help_text='Power stat for Kvale cards')
+    trigger = models.CharField(max_length=100, blank=True, help_text='Ability trigger text for Kvale cards')
+    album_label = models.CharField(max_length=100, blank=True, help_text='Album label for Kvale cards')
+    tags = models.JSONField(default=list, blank=True, help_text='Tags as list of strings (e.g., ["nature", "science"])')
+    edition = models.CharField(max_length=100, blank=True, help_text='Edition name for Kvale cards')
+    collection = models.CharField(max_length=100, blank=True, help_text='Collection name for Kvale cards')
+    
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
