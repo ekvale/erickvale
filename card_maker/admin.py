@@ -81,6 +81,16 @@ class CardAdmin(admin.ModelAdmin):
             ),
             'description': 'DCC stat system: STR, INT, CON, DEX, CHR'
         }),
+        ('Kvale Card Stats', {
+            'fields': (
+                ('energy', 'power'),
+                ('trigger', 'album_label'),
+                ('tags',),
+                ('edition', 'collection'),
+            ),
+            'description': 'Stats for Kvale printable card format',
+            'classes': ('collapse',)
+        }),
         ('Additional Stats', {
             'fields': ('additional_stats',),
             'classes': ('collapse',)
