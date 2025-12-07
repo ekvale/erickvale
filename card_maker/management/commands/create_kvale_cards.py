@@ -4,6 +4,7 @@ Management command to create Kvale card set and generate printable card images.
 import os
 from django.core.management.base import BaseCommand
 from django.conf import settings
+from django.core.files import File
 from card_maker.models import CardSet, Card
 from card_maker.utils import generate_kvale_card
 
@@ -100,6 +101,7 @@ class Command(BaseCommand):
             card_image_path = os.path.join(output_dir, card_image_filename)
             
             try:
+                # Generate the card image
                 generate_kvale_card(
                     title=card_data['name'],
                     rarity=card_data['rarity'],
@@ -117,6 +119,8 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.SUCCESS(f'Generated card image: {card_image_filename}'))
             except Exception as e:
                 self.stdout.write(self.style.ERROR(f'Error generating card {card_data["name"]}: {str(e)}'))
+                import traceback
+                self.stdout.write(self.style.ERROR(traceback.format_exc()))
                 continue
             
             # Create card in database
@@ -134,11 +138,20 @@ class Command(BaseCommand):
                     'tags': card_data.get('tags', []),
                     'edition': card_data.get('edition', ''),
                     'collection': card_data.get('collection', ''),
-                    'card_image': f'cards/kvale/{card_image_filename}',
                     'is_active': True,
                     'order': created_count,
                 }
             )
+            
+            # Save the generated card image to the card_image field
+            if os.path.exists(card_image_path):
+                with open(card_image_path, 'rb') as f:
+                    card.card_image.save(
+                        card_image_filename,
+                        File(f),
+                        save=True
+                    )
+                self.stdout.write(self.style.SUCCESS(f'Saved card image to database: {card.name}'))
             
             if card_created:
                 created_count += 1
