@@ -213,43 +213,36 @@ class Card(models.Model):
     
     def save(self, *args, **kwargs):
         """Override save to auto-generate card image for Kvale cards."""
-        # Check if this is a new card or if Kvale fields have changed
-        is_new = self.pk is None
-        artwork_path = None
-        
-        if not is_new:
+        # Only auto-generate for Kvale cards
+        is_kvale = hasattr(self, 'card_set_id') and self.card_set_id
+        if is_kvale:
             try:
-                old_card = Card.objects.get(pk=self.pk)
-                kvale_fields_changed = (
-                    old_card.energy != self.energy or
-                    old_card.power != self.power or
-                    old_card.rarity != self.rarity or
-                    old_card.description != self.description or
-                    old_card.trigger != self.trigger or
-                    old_card.tags != self.tags or
-                    old_card.edition != self.edition or
-                    old_card.collection != self.collection or
-                    old_card.album_label != self.album_label or
-                    old_card.name != self.name
-                )
-                # If card_image changed and it's not already a generated card, use it as artwork
-                if old_card.card_image != self.card_image and self.card_image:
-                    if "_card" not in self.card_image.name and os.path.exists(self.card_image.path):
-                        artwork_path = self.card_image.path
-            except Card.DoesNotExist:
-                kvale_fields_changed = True
-        else:
-            kvale_fields_changed = True
-            # For new cards, if card_image is uploaded, use it as artwork
-            if self.card_image and hasattr(self.card_image, 'path'):
-                if "_card" not in self.card_image.name:
-                    artwork_path = self.card_image.path
+                # Get the card_set to check slug
+                if not hasattr(self, '_card_set_cache'):
+                    from django.db import models
+                    self._card_set_cache = self.card_set
+                is_kvale = self._card_set_cache.slug == 'kvale'
+            except:
+                is_kvale = False
         
-        # Save first to get pk and ensure card_image is saved
+        # Save first to get pk and ensure card_image is saved to disk
         super().save(*args, **kwargs)
         
-        # Generate card image if it's a Kvale card and fields changed
-        if self.card_set.slug == 'kvale' and (is_new or kvale_fields_changed):
-            self.generate_kvale_card_image(artwork_path=artwork_path)
-            # Save again to update the card_image field
-            super().save(update_fields=['card_image'])
+        # Generate card image if it's a Kvale card
+        if is_kvale:
+            # Check if card_image exists and is not already a generated card
+            artwork_path = None
+            if self.card_image:
+                try:
+                    # Check if it's already a generated card
+                    if "_card" not in str(self.card_image.name):
+                        # Use current image as artwork if it exists on disk
+                        if hasattr(self.card_image, 'path') and os.path.exists(self.card_image.path):
+                            artwork_path = self.card_image.path
+                except:
+                    pass
+            
+            # Try to generate the card
+            if self.generate_kvale_card_image(artwork_path=artwork_path):
+                # Save again to update the card_image field
+                super().save(update_fields=['card_image'])
