@@ -141,7 +141,14 @@ class Card(models.Model):
     
     def generate_kvale_card_image(self, artwork_path=None):
         """Generate the full card image for Kvale cards."""
-        if self.card_set.slug != 'kvale':
+        try:
+            # Ensure we have card_set loaded
+            if not hasattr(self, 'card_set') or not self.card_set:
+                return False
+            
+            if self.card_set.slug != 'kvale':
+                return False
+        except:
             return False
         
         try:
@@ -150,45 +157,56 @@ class Card(models.Model):
             # Get artwork path
             if not artwork_path:
                 # First try: use the current card_image if it exists and is not already a generated card
-                if self.card_image and os.path.exists(self.card_image.path):
-                    # Check if it's already a generated card (has "_card" in filename)
-                    if "_card" not in self.card_image.name:
-                        artwork_path = self.card_image.path
+                if self.card_image:
+                    try:
+                        if hasattr(self.card_image, 'path') and os.path.exists(self.card_image.path):
+                            # Check if it's already a generated card (has "_card" in filename)
+                            if "_card" not in str(self.card_image.name):
+                                artwork_path = self.card_image.path
+                    except Exception as e:
+                        print(f"Error checking card_image.path: {e}")
                 
                 # Second try: find artwork in uploaded_images directory
                 if not artwork_path:
                     images_dir = os.path.join(settings.BASE_DIR, 'card_maker', 'kvale_set', 'uploaded_images')
-                    # Try common image names based on card name
-                    possible_names = [
-                        f"{self.name}.webp",
-                        f"{self.name}.jpg",
-                        f"{self.name}.png",
-                        f"{self.slug}.webp",
-                        f"{self.slug}.jpg",
-                        f"{self.slug}.png",
-                    ]
-                    for name in possible_names:
-                        test_path = os.path.join(images_dir, name)
-                        if os.path.exists(test_path):
-                            artwork_path = test_path
-                            break
+                    if os.path.exists(images_dir):
+                        # Try common image names based on card name
+                        possible_names = [
+                            f"{self.name}.webp",
+                            f"{self.name}.jpg",
+                            f"{self.name}.png",
+                            f"{self.slug}.webp",
+                            f"{self.slug}.jpg",
+                            f"{self.slug}.png",
+                        ]
+                        for name in possible_names:
+                            test_path = os.path.join(images_dir, name)
+                            if os.path.exists(test_path):
+                                artwork_path = test_path
+                                break
             
             if not artwork_path or not os.path.exists(artwork_path):
-                return False
+                print(f"Warning: No artwork found for card {self.name}. Artwork path: {artwork_path}")
+                # Still generate card without artwork (will show placeholder)
+                artwork_path = None
             
             # Generate card to temporary file
             with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmp_file:
                 temp_path = tmp_file.name
             
+            # Ensure we have valid values
+            energy_val = self.energy if self.energy else 0
+            power_val = self.power if self.power else 0
+            
             generate_kvale_card(
                 title=self.name,
-                rarity=self.rarity,
+                rarity=self.rarity or 'common',
                 album_label=self.album_label or '',
-                energy=self.energy,
-                power=self.power,
+                energy=energy_val,
+                power=power_val,
                 artwork_path=artwork_path,
                 trigger=self.trigger or '',
-                description=self.description,
+                description=self.description or '',
                 tags=self.tags if isinstance(self.tags, list) else [],
                 edition=self.edition or '',
                 collection=self.collection or '',
@@ -213,20 +231,16 @@ class Card(models.Model):
     
     def save(self, *args, **kwargs):
         """Override save to auto-generate card image for Kvale cards."""
-        # Only auto-generate for Kvale cards
-        is_kvale = hasattr(self, 'card_set_id') and self.card_set_id
-        if is_kvale:
-            try:
-                # Get the card_set to check slug
-                if not hasattr(self, '_card_set_cache'):
-                    from django.db import models
-                    self._card_set_cache = self.card_set
-                is_kvale = self._card_set_cache.slug == 'kvale'
-            except:
-                is_kvale = False
-        
         # Save first to get pk and ensure card_image is saved to disk
         super().save(*args, **kwargs)
+        
+        # Check if this is a Kvale card - refresh from DB to get card_set
+        try:
+            # Refresh to ensure we have the latest card_set relationship
+            self.refresh_from_db()
+            is_kvale = self.card_set.slug == 'kvale'
+        except:
+            is_kvale = False
         
         # Generate card image if it's a Kvale card
         if is_kvale:
@@ -239,10 +253,27 @@ class Card(models.Model):
                         # Use current image as artwork if it exists on disk
                         if hasattr(self.card_image, 'path') and os.path.exists(self.card_image.path):
                             artwork_path = self.card_image.path
-                except:
-                    pass
+                except Exception as e:
+                    print(f"Error checking card_image path: {e}")
+            
+            # Also try to find artwork in uploaded_images directory
+            if not artwork_path:
+                images_dir = os.path.join(settings.BASE_DIR, 'card_maker', 'kvale_set', 'uploaded_images')
+                if os.path.exists(images_dir):
+                    # Try to find image by card name or slug
+                    possible_names = [
+                        f"{self.name}.webp", f"{self.name}.jpg", f"{self.name}.png",
+                        f"{self.slug}.webp", f"{self.slug}.jpg", f"{self.slug}.png",
+                    ]
+                    for name in possible_names:
+                        test_path = os.path.join(images_dir, name)
+                        if os.path.exists(test_path):
+                            artwork_path = test_path
+                            break
             
             # Try to generate the card
-            if self.generate_kvale_card_image(artwork_path=artwork_path):
-                # Save again to update the card_image field
-                super().save(update_fields=['card_image'])
+            if artwork_path or self.card_image:
+                success = self.generate_kvale_card_image(artwork_path=artwork_path)
+                if success:
+                    # Save again to update the card_image field
+                    super().save(update_fields=['card_image'])
