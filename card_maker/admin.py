@@ -61,14 +61,24 @@ class CardAdmin(admin.ModelAdmin):
     list_filter = ['card_set', 'card_type', 'rarity', 'is_active', 'created_at']
     search_fields = ['name', 'description', 'abilities']
     prepopulated_fields = {'slug': ('name',)}
-    readonly_fields = ['created_at', 'updated_at', 'total_stats', 'thumbnail_preview']
+    readonly_fields = ['created_at', 'updated_at', 'total_stats', 'thumbnail_preview', 'regenerate_card_button']
+    
+    def regenerate_card_button(self, obj):
+        """Button to manually regenerate Kvale card image."""
+        if obj.pk and obj.card_set.slug == 'kvale':
+            return format_html(
+                '<a href="{}" class="button" style="background: #417690; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; display: inline-block;">Regenerate Card Image</a>',
+                f'/admin/card_maker/card/{obj.pk}/regenerate_card/'
+            )
+        return format_html('<span style="color: #888;">Only available for Kvale cards</span>')
+    regenerate_card_button.short_description = 'Card Generation'
     
     fieldsets = (
         ('Basic Information', {
             'fields': ('name', 'slug', 'card_set', 'card_type', 'rarity', 'order', 'is_active')
         }),
         ('Visual', {
-            'fields': ('card_image', 'card_image_alt', 'thumbnail_preview')
+            'fields': ('card_image', 'card_image_alt', 'thumbnail_preview', 'regenerate_card_button')
         }),
         ('Description', {
             'fields': ('description',)
