@@ -1687,7 +1687,7 @@ class ReportGenerator:
             
             <h3>Report Generation</h3>
             <p>Report generated on {self.analysis.updated_at.strftime('%B %d, %Y at %I:%M %p')} 
-            using the Literary Analysis Framework.</p>
+            using the Qualitative Analysis for Literature Framework.</p>
         </section>
         """
         return html

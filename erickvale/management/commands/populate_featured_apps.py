@@ -10,7 +10,7 @@ class Command(BaseCommand):
         literary_app, created = FeaturedApp.objects.update_or_create(
             slug='literary-analysis',
             defaults={
-                'name': 'Literary Analysis',
+                'name': 'Qualitative Analysis for Literature',
                 'description': 'A comprehensive qualitative analysis framework for literary texts. Upload works, apply systematic coding methodologies, and generate publication-quality reports with statistical analysis, visualizations, and thematic exploration. Currently featuring a complete analysis of Samuel R. Delany\'s Dhalgren.',
                 'icon': '📚',
                 'url': '/apps/literary/',
