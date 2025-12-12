@@ -20,6 +20,7 @@ urlpatterns = [
     path('analyses/<int:pk>/dashboard/', views.analysis_dashboard, name='analysis_dashboard'),
     path('analyses/<int:pk>/generate-report/', views.generate_report, name='generate_report'),
     path('analyses/<int:pk>/report/', views.view_report, name='view_report'),
+    path('analyses/<int:pk>/export/', views.export_analysis, name='export_analysis'),
     path('api/segments/', views.create_segment, name='api_create_segment'),
     path('api/segments/<int:pk>/', views.update_segment, name='api_update_segment'),
     path('api/segments/<int:pk>/delete/', views.delete_segment, name='api_delete_segment'),

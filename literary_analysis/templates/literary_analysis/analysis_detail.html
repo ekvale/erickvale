@@ -137,11 +137,31 @@
         </div>
         
         <div class="section">
+            <h2>Progress</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">{{ total_segments }}</div>
+                    <div class="stat-label">Coded Segments</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ total_codes_applied }}</div>
+                    <div class="stat-label">Total Code Applications</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ progress_percentage|floatformat:1 }}%</div>
+                    <div class="stat-label">Text Coverage</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
             <h2>Actions</h2>
             {% if request.user == analysis.analyst or request.user.is_superuser %}
             <a href="{% url 'literary_analysis:coding_interface' analysis.pk %}" class="btn">Code Text</a>
             <a href="{% url 'literary_analysis:analysis_dashboard' analysis.pk %}" class="btn">View Dashboard</a>
             <a href="{% url 'literary_analysis:generate_report' analysis.pk %}" class="btn btn-secondary">Generate Report</a>
+            <a href="{% url 'literary_analysis:export_analysis' analysis.pk %}?format=json" class="btn" style="background: #2a2a2a;">Export JSON</a>
+            <a href="{% url 'literary_analysis:export_analysis' analysis.pk %}?format=csv" class="btn" style="background: #2a2a2a;">Export CSV</a>
             {% endif %}
             {% if analysis.report_html %}
             <a href="{% url 'literary_analysis:view_report' analysis.pk %}" class="btn" style="background: #9a4;">View Report</a>

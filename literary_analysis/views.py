@@ -11,6 +11,7 @@ from django.db.models import Q
 import json
 
 from .models import LiteraryWork, CodebookTemplate, Code, Analysis, CodedSegment, AnalyticalMemo
+from .utils import export_analysis_csv, export_analysis_json, validate_segment_positions
 
 
 def index(request):
@@ -215,71 +216,125 @@ def analysis_dashboard(request, pk):
 @login_required
 @require_http_methods(["POST"])
 def create_segment(request):
-    """API endpoint to create a coded segment."""
-    analysis_id = request.POST.get('analysis_id')
-    start_pos = int(request.POST.get('start_position'))
-    end_pos = int(request.POST.get('end_position'))
-    code_ids = request.POST.getlist('codes')
-    memo = request.POST.get('memo', '')
-    location = request.POST.get('location', '')
-    
-    analysis = get_object_or_404(Analysis, pk=analysis_id)
-    
-    # Get text excerpt
-    text_excerpt = analysis.literary_work.get_segment(start_pos, end_pos)
-    
-    segment = CodedSegment.objects.create(
-        analysis=analysis,
-        start_position=start_pos,
-        end_position=end_pos,
-        text_excerpt=text_excerpt,
-        location=location,
-        memo=memo,
-        created_by=request.user
-    )
-    
-    # Add codes
-    for code_id in code_ids:
+    """API endpoint to create a coded segment with validation."""
+    try:
+        analysis_id = request.POST.get('analysis_id')
+        if not analysis_id:
+            return JsonResponse({'success': False, 'error': 'Analysis ID is required'}, status=400)
+        
         try:
-            code = Code.objects.get(pk=code_id, codebook=analysis.codebook)
-            segment.codes.add(code)
-        except Code.DoesNotExist:
-            pass
+            start_pos = int(request.POST.get('start_position'))
+            end_pos = int(request.POST.get('end_position'))
+        except (ValueError, TypeError):
+            return JsonResponse({'success': False, 'error': 'Invalid position values'}, status=400)
+        
+        analysis = get_object_or_404(Analysis, pk=analysis_id)
+        
+        # Check permissions
+        if analysis.analyst != request.user and not request.user.is_superuser:
+            return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
+        
+        # Validate positions
+        max_length = analysis.literary_work.text_length
+        validation_errors = validate_segment_positions(start_pos, end_pos, max_length)
+        if validation_errors:
+            return JsonResponse({'success': False, 'error': '; '.join(validation_errors)}, status=400)
+        
+        code_ids = request.POST.getlist('codes')
+        if not code_ids:
+            return JsonResponse({'success': False, 'error': 'At least one code must be selected'}, status=400)
+        
+        memo = request.POST.get('memo', '')
+        location = request.POST.get('location', '')
+        
+        # Check for overlapping segments (optional - can be disabled for overlapping codes)
+        # overlapping = CodedSegment.objects.filter(
+        #     analysis=analysis,
+        #     start_position__lt=end_pos,
+        #     end_position__gt=start_pos
+        # ).exists()
+        # if overlapping:
+        #     return JsonResponse({'success': False, 'error': 'Segment overlaps with existing segment'}, status=400)
+        
+        # Get text excerpt
+        text_excerpt = analysis.literary_work.get_segment(start_pos, end_pos)
+        if not text_excerpt:
+            return JsonResponse({'success': False, 'error': 'Could not extract text segment'}, status=400)
+        
+        segment = CodedSegment.objects.create(
+            analysis=analysis,
+            start_position=start_pos,
+            end_position=end_pos,
+            text_excerpt=text_excerpt,
+            location=location,
+            memo=memo,
+            created_by=request.user
+        )
+        
+        # Add codes with validation
+        valid_codes = []
+        for code_id in code_ids:
+            try:
+                code = Code.objects.get(pk=code_id, codebook=analysis.codebook)
+                valid_codes.append(code)
+            except Code.DoesNotExist:
+                pass  # Silently skip invalid codes
+        
+        if not valid_codes:
+            segment.delete()  # Rollback if no valid codes
+            return JsonResponse({'success': False, 'error': 'No valid codes found'}, status=400)
+        
+        segment.codes.set(valid_codes)
+        
+        return JsonResponse({
+            'success': True,
+            'segment_id': segment.pk,
+            'message': 'Segment created successfully'
+        })
     
-    return JsonResponse({
-        'success': True,
-        'segment_id': segment.pk,
-        'message': 'Segment created successfully'
-    })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': f'Server error: {str(e)}'}, status=500)
 
 
 @login_required
 @require_http_methods(["POST"])
 def update_segment(request, pk):
-    """API endpoint to update a coded segment."""
-    segment = get_object_or_404(CodedSegment, pk=pk)
+    """API endpoint to update a coded segment with validation."""
+    try:
+        segment = get_object_or_404(CodedSegment, pk=pk)
+        
+        if segment.created_by != request.user and not request.user.is_superuser:
+            return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
+        
+        code_ids = request.POST.getlist('codes')
+        if not code_ids:
+            return JsonResponse({'success': False, 'error': 'At least one code must be selected'}, status=400)
+        
+        memo = request.POST.get('memo', '')
+        location = request.POST.get('location', '')
+        
+        segment.memo = memo
+        segment.location = location
+        segment.save()
+        
+        # Update codes with validation
+        valid_codes = []
+        for code_id in code_ids:
+            try:
+                code = Code.objects.get(pk=code_id, codebook=segment.analysis.codebook)
+                valid_codes.append(code)
+            except Code.DoesNotExist:
+                pass
+        
+        if not valid_codes:
+            return JsonResponse({'success': False, 'error': 'No valid codes found'}, status=400)
+        
+        segment.codes.set(valid_codes)
+        
+        return JsonResponse({'success': True, 'message': 'Segment updated successfully'})
     
-    if segment.created_by != request.user and not request.user.is_superuser:
-        return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
-    
-    code_ids = request.POST.getlist('codes')
-    memo = request.POST.get('memo', '')
-    location = request.POST.get('location', '')
-    
-    segment.memo = memo
-    segment.location = location
-    segment.save()
-    
-    # Update codes
-    segment.codes.clear()
-    for code_id in code_ids:
-        try:
-            code = Code.objects.get(pk=code_id, codebook=segment.analysis.codebook)
-            segment.codes.add(code)
-        except Code.DoesNotExist:
-            pass
-    
-    return JsonResponse({'success': True, 'message': 'Segment updated successfully'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': f'Server error: {str(e)}'}, status=500)
 
 
 @login_required

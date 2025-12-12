@@ -121,12 +121,13 @@ class Analysis(models.Model):
     
     def get_code_frequency(self):
         """Calculate code frequency from coded segments."""
+        from collections import Counter
         segments = self.coded_segments.all()
-        frequency = {}
+        frequency = Counter()
         for segment in segments:
             for code in segment.codes.all():
-                frequency[code.code_name] = frequency.get(code.code_name, 0) + 1
-        return frequency
+                frequency[code.code_name] += 1
+        return dict(frequency)
 
 
 class CodedSegment(models.Model):
