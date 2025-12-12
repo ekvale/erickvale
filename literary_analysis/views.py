@@ -348,3 +348,52 @@ def view_report(request, pk):
         return redirect('literary_analysis:generate_report', pk=pk)
     
     return HttpResponse(analysis.report_html)
+
+
+@login_required
+def edit_text(request, pk):
+    """Edit literary work text to fix typos."""
+    work = get_object_or_404(LiteraryWork, pk=pk)
+    
+    # Check permissions
+    if work.uploaded_by != request.user and not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to edit this work.')
+        return redirect('literary_analysis:work_detail', pk=pk)
+    
+    # Load text
+    try:
+        with work.text_file.open('r', encoding='utf-8') as f:
+            text_content = f.read()
+    except Exception as e:
+        messages.error(request, f'Error reading text file: {e}')
+        return redirect('literary_analysis:work_detail', pk=pk)
+    
+    # Handle POST - save edited text
+    if request.method == 'POST':
+        edited_text = request.POST.get('text_content', '')
+        if edited_text:
+            # Save to file
+            try:
+                with work.text_file.open('w', encoding='utf-8') as f:
+                    f.write(edited_text)
+                work.text_length = len(edited_text)
+                work.save()
+                messages.success(request, 'Text updated successfully!')
+                return redirect('literary_analysis:work_detail', pk=pk)
+            except Exception as e:
+                messages.error(request, f'Error saving text: {e}')
+    
+    # Detect typos
+    from .utils import detect_common_typos, find_suspicious_words
+    typos = detect_common_typos(text_content)
+    suspicious = find_suspicious_words(text_content)
+    
+    context = {
+        'work': work,
+        'text_content': text_content,
+        'typos': typos[:100],  # Limit to first 100 for display
+        'suspicious_words': suspicious[:50],  # Limit to first 50
+        'total_typos': len(typos),
+        'text_length': len(text_content),
+    }
+    return render(request, 'literary_analysis/edit_text.html', context)
