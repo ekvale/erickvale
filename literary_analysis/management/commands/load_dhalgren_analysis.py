@@ -60,10 +60,9 @@ class Command(BaseCommand):
             }
         )
         
-        # Upload text file if not already uploaded
-        if not work.text_file or not work.text_file.name:
-            with open(text_path, 'rb') as f:
-                work.text_file.save('dhalgren.txt', File(f), save=False)
+        # Upload/update text file with clean version
+        with open(text_path, 'rb') as f:
+            work.text_file.save('dhalgren.txt', File(f), save=False)
         
         # Calculate text length
         try:
