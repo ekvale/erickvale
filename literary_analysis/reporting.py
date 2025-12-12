@@ -1496,33 +1496,64 @@ class ReportGenerator:
         return html
     
     def _section_code_hierarchy(self):
-        """Section 14: Code Hierarchy Tree."""
+        """Section 14: Code Hierarchy Tree with proper parent-child relationships."""
         html = """
-        <section class="section">
+        <section class="section" id="hierarchy">
             <h2>Code Hierarchy Tree</h2>
+            <p>Codes organized by type and hierarchy. Child codes are indented under their parent codes.</p>
             <div class="hierarchy-tree">
         """
         
         code_freq = self._get_code_frequency()
         
-        # Group by type
+        # Build a proper tree structure
+        def build_tree(codes_list):
+            """Build a tree structure from codes."""
+            # Find root codes (no parent)
+            root_codes = [code for code in codes_list if code.parent_code is None]
+            # Build a map of parent -> children
+            children_map = defaultdict(list)
+            for code in codes_list:
+                if code.parent_code:
+                    children_map[code.parent_code.pk].append(code)
+            
+            def render_code(code, level=0):
+                """Recursively render a code and its children."""
+                freq = code_freq.get(code.code_name, 0)
+                indent = '<span class="tree-indent"></span>' * level
+                bar_width = min(200, freq * 10) if freq > 0 else 0
+                bar_html = f'<span style="display: inline-block; width: {bar_width}px; height: 12px; background: #417690; margin-left: 10px;"></span>' if bar_width > 0 else ''
+                
+                html_parts = [f"""
+                <div class="tree-item" style="margin-left: {level * 25}px;">
+                    {indent}<strong>{code.code_name}</strong> {bar_html}
+                    <span style="color: #888; margin-left: 10px;">({freq})</span>
+                </div>
+                """]
+                
+                # Render children
+                children = sorted(children_map.get(code.pk, []), key=lambda c: (c.order, c.code_name))
+                for child in children:
+                    html_parts.extend(render_code(child, level + 1))
+                
+                return html_parts
+            
+            # Render all root codes and their children
+            result = []
+            for root in sorted(root_codes, key=lambda c: (c.order, c.code_name)):
+                result.extend(render_code(root, 0))
+            
+            return result
+        
+        # Group by type and build trees
         by_type = defaultdict(list)
         for code in self.codebook.codes.all():
             by_type[code.code_type].append(code)
         
-        for code_type, codes_list in by_type.items():
-            html += f'<div class="tree-item"><strong>{code_type.upper()}</strong></div>'
-            for code in codes_list:
-                freq = code_freq.get(code.code_name, 0)
-                bar_width = min(200, freq * 10)
-                indent = '<span class="tree-indent"></span>' if code.parent_code else ''
-                html += f"""
-                <div class="tree-item">
-                    {indent}{code.code_name} 
-                    <span style="display: inline-block; width: {bar_width}px; height: 12px; background: #417690; margin-left: 10px;"></span>
-                    ({freq})
-                </div>
-                """
+        for code_type, codes_list in sorted(by_type.items()):
+            html += f'<div class="tree-item" style="margin-top: 20px; margin-bottom: 10px;"><strong style="font-size: 18px; color: #a0c4ff;">{code_type.upper()}</strong></div>'
+            tree_items = build_tree(codes_list)
+            html += ''.join(tree_items)
         
         html += """
             </div>
