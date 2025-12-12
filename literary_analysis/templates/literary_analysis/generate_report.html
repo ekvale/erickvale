@@ -1,0 +1,151 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Report - {{ analysis.literary_work.title }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 30px;
+            color: #888;
+            text-decoration: none;
+        }
+        h1 {
+            font-size: 36px;
+            font-weight: 300;
+            margin-bottom: 30px;
+            color: #fff;
+        }
+        .form-section {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            padding: 30px;
+            border-radius: 8px;
+        }
+        .checkbox-group {
+            margin-bottom: 15px;
+        }
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+        }
+        .btn {
+            padding: 12px 24px;
+            background: #417690;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        .btn:hover {
+            background: #5a8ba5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'literary_analysis:analysis_detail' analysis.pk %}" class="back-link">← Back to Analysis</a>
+        <h1>Generate Comprehensive Report</h1>
+        
+        <div class="form-section">
+            <p style="margin-bottom: 20px;">Select which sections to include in the report:</p>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" name="include_statistical" checked>
+                        Statistical Analysis (chi-square tests)
+                    </label>
+                </div>
+                
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" name="include_word_cloud" checked>
+                        Word Cloud & Lexical Analysis
+                    </label>
+                </div>
+                
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" name="include_theme_excerpts" checked>
+                        Theme-Specific Text Excerpts
+                    </label>
+                </div>
+                
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" name="include_progression" checked>
+                        Segment Progression Timeline
+                    </label>
+                </div>
+                
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" name="include_ngrams" checked>
+                        N-gram Analysis
+                    </label>
+                </div>
+                
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" name="include_comparative" checked>
+                        Comparative Analysis (Beginning/Middle/End)
+                    </label>
+                </div>
+                
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" name="include_heatmap" checked>
+                        Code Application Heatmap
+                    </label>
+                </div>
+                
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" name="include_sentiment" checked>
+                        Sentiment/Affective Analysis
+                    </label>
+                </div>
+                
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" name="include_hierarchy" checked>
+                        Code Hierarchy Tree
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn">Generate Report</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
+

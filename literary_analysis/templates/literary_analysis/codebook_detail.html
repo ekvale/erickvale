@@ -1,0 +1,89 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ codebook.name }} - Codebook</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 30px;
+            color: #888;
+            text-decoration: none;
+        }
+        h1 {
+            font-size: 36px;
+            font-weight: 300;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        .section {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+        .code-item {
+            padding: 15px;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .code-name {
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+        .code-type {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #2a2a2a;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+        .code-definition {
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'literary_analysis:codebook_list' %}" class="back-link">← Back to Codebooks</a>
+        <h1>{{ codebook.name }}</h1>
+        <p style="color: #888; margin-bottom: 30px;">{{ codebook.description }}</p>
+        
+        <div class="section">
+            <h2>Codes ({{ codes|length }})</h2>
+            {% for code in codes %}
+            <div class="code-item">
+                <div class="code-name">{{ code.code_name }}</div>
+                <span class="code-type">{{ code.get_code_type_display }}</span>
+                <div class="code-definition">{{ code.definition }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
+

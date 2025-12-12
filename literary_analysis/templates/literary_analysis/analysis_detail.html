@@ -1,0 +1,191 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ analysis.literary_work.title }} - Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 30px;
+            color: #888;
+            text-decoration: none;
+        }
+        h1 {
+            font-size: 36px;
+            font-weight: 300;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        .meta {
+            color: #888;
+            margin-bottom: 30px;
+        }
+        .section {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+        .section h2 {
+            font-size: 24px;
+            font-weight: 400;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #417690;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background: #5a8ba5;
+        }
+        .btn-secondary {
+            background: #2a2a2a;
+        }
+        .btn-secondary:hover {
+            background: #3a3a3a;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .stat-card {
+            background: #0a0a0a;
+            padding: 15px;
+            border: 1px solid #2a2a2a;
+            border-radius: 4px;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: 300;
+            color: #fff;
+        }
+        .stat-label {
+            color: #888;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+        .segment-list {
+            list-style: none;
+        }
+        .segment-item {
+            padding: 15px;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .segment-text {
+            margin-bottom: 10px;
+            font-style: italic;
+            color: #ccc;
+        }
+        .segment-codes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .code-badge {
+            padding: 4px 8px;
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #e0e0e0;
+        }
+        .segment-location {
+            color: #888;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'literary_analysis:analysis_list' %}" class="back-link">← Back to Analyses</a>
+        <h1>{{ analysis.literary_work.title }}</h1>
+        <div class="meta">
+            by {{ analysis.literary_work.author }} • Using {{ analysis.codebook.name }} • Created {{ analysis.created_at|date:"F d, Y" }}
+        </div>
+        
+        <div class="section">
+            <h2>Actions</h2>
+            <a href="{% url 'literary_analysis:coding_interface' analysis.pk %}" class="btn">Code Text</a>
+            <a href="{% url 'literary_analysis:analysis_dashboard' analysis.pk %}" class="btn">View Dashboard</a>
+            <a href="{% url 'literary_analysis:generate_report' analysis.pk %}" class="btn btn-secondary">Generate Report</a>
+        </div>
+        
+        <div class="section">
+            <h2>Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">{{ segments|length }}</div>
+                    <div class="stat-label">Coded Segments</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ code_frequency|length }}</div>
+                    <div class="stat-label">Codes Applied</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ analysis.literary_work.text_length|floatformat:0 }}</div>
+                    <div class="stat-label">Text Length (chars)</div>
+                </div>
+            </div>
+        </div>
+        
+        {% if segments %}
+        <div class="section">
+            <h2>Coded Segments ({{ segments|length }})</h2>
+            <ul class="segment-list">
+                {% for segment in segments %}
+                <li class="segment-item">
+                    <div class="segment-text">"{{ segment.text_excerpt|truncatewords:30 }}"</div>
+                    <div class="segment-codes">
+                        {% for code in segment.codes.all %}
+                        <span class="code-badge">{{ code.code_name }}</span>
+                        {% endfor %}
+                    </div>
+                    {% if segment.location %}
+                    <div class="segment-location">{{ segment.location }}</div>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% else %}
+        <div class="section">
+            <p>No segments coded yet. <a href="{% url 'literary_analysis:coding_interface' analysis.pk %}">Start coding</a> to begin your analysis.</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
+

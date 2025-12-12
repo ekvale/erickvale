@@ -1,0 +1,112 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Analysis - Literary Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 36px;
+            font-weight: 300;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 30px;
+            color: #888;
+            text-decoration: none;
+        }
+        .form-section {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            padding: 30px;
+            border-radius: 8px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #e0e0e0;
+            font-weight: 500;
+        }
+        select {
+            width: 100%;
+            padding: 12px;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            color: #e0e0e0;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #417690;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background: #5a8ba5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'literary_analysis:index' %}" class="back-link">← Back to Literary Analysis</a>
+        <h1>Create New Analysis</h1>
+        
+        <div class="form-section">
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="literary_work">Literary Work *</label>
+                    <select id="literary_work" name="literary_work" required>
+                        <option value="">-- Select a work --</option>
+                        {% for work in works %}
+                        <option value="{{ work.pk }}">{{ work.title }} by {{ work.author }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="codebook">Codebook Template *</label>
+                    <select id="codebook" name="codebook" required>
+                        <option value="">-- Select a codebook --</option>
+                        {% for codebook in codebooks %}
+                        <option value="{{ codebook.pk }}">{{ codebook.name }} ({{ codebook.codes.count }} codes)</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn">Create Analysis</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
+

@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'emergency_preparedness',
     'blog',
     'card_maker',
+    'literary_analysis',
 ]
 
 MIDDLEWARE = [

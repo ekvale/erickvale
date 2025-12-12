@@ -1,0 +1,1347 @@
+{
+  "text": {
+    "title": "Dhalgren",
+    "author": "Samuel R. Delany",
+    "chapters": [
+      "Section_2",
+      "Section_3",
+      "Section_4"
+    ]
+  },
+  "codebook": {
+    "name": "Dhalgren - Complete Analysis",
+    "codes": [
+      {
+        "name": "URBAN_DECAY",
+        "type": "descriptive",
+        "definition": "Descriptions of ruins, decay, abandoned spaces",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "BELLONA_CITY",
+        "type": "descriptive",
+        "definition": "Specific references to Bellona as setting",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "SPATIAL_DISORIENTATION",
+        "type": "descriptive",
+        "definition": "Confusion about location/geography",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "ARCHITECTURE",
+        "type": "descriptive",
+        "definition": "Buildings, structures, spatial arrangements",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "FIRE_DESTRUCTION",
+        "type": "descriptive",
+        "definition": "Fire, burning, destruction",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "SOCIAL_COLLAPSE",
+        "type": "descriptive",
+        "definition": "Breakdown of social order/norms",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "TEMPORAL_ANOMALY",
+        "type": "descriptive",
+        "definition": "Time behaving strangely",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "REALITY_BREAK",
+        "type": "descriptive",
+        "definition": "Reality/logic breaking down",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "ISOLATION",
+        "type": "emotion",
+        "definition": "Cut off from outside world",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "SURVIVAL",
+        "type": "process",
+        "definition": "Surviving in hostile environment",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "THRESHOLD",
+        "type": "descriptive",
+        "definition": "Doorways, borders, in-between spaces",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "TWILIGHT_DAWN",
+        "type": "descriptive",
+        "definition": "Dawn, dusk, transitional times",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "CARNIVAL",
+        "type": "descriptive",
+        "definition": "Carnival-like atmosphere, celebration",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "NAME_AMNESIA",
+        "type": "descriptive",
+        "definition": "Protagonist's name/identity issues",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "SELF_CREATION",
+        "type": "process",
+        "definition": "Creating/defining the self",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "IDENTITY_FLUID",
+        "type": "descriptive",
+        "definition": "Fluid or multiple identities",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "MEMORY_LOSS",
+        "type": "descriptive",
+        "definition": "Forgetting, lost memories",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "REFLECTION_MIRROR",
+        "type": "descriptive",
+        "definition": "Mirrors, reflections, self-viewing",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "QUEER_DESIRE",
+        "type": "descriptive",
+        "definition": "Non-heteronormative desire/relationships",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "POLYAMORY",
+        "type": "descriptive",
+        "definition": "Multiple simultaneous relationships",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "SEXUAL_ENCOUNTER",
+        "type": "descriptive",
+        "definition": "Sexual interactions",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "GENDER_PLAY",
+        "type": "descriptive",
+        "definition": "Gender performance/fluidity",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "INTIMACY",
+        "type": "emotion",
+        "definition": "Emotional closeness, connection",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "DOMINANCE_SUBMISSION",
+        "type": "descriptive",
+        "definition": "Power dynamics in relationships",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "VIOLENCE_DESIRE",
+        "type": "descriptive",
+        "definition": "Violence intertwined with desire",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "WRITING_PROCESS",
+        "type": "process",
+        "definition": "Kid writing poetry, journal entries",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "POETRY_PERFORMANCE",
+        "type": "descriptive",
+        "definition": "Performing or reading poetry",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "NOTEBOOK",
+        "type": "descriptive",
+        "definition": "The notebook as object/symbol",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "LANGUAGE_BREAKDOWN",
+        "type": "descriptive",
+        "definition": "Language fragmenting, failing",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "METAFICTION",
+        "type": "structure",
+        "definition": "Text referring to itself",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "ARTISTIC_CIRCLE",
+        "type": "descriptive",
+        "definition": "Artists, poets, creative community",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "AESTHETIC_JUDGMENT",
+        "type": "process",
+        "definition": "Evaluating/discussing art",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "CREATION_ACT",
+        "type": "process",
+        "definition": "Making art, creative acts",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "OBSERVING",
+        "type": "process",
+        "definition": "Watching, witnessing, perceiving",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "SENSORY_DETAIL",
+        "type": "descriptive",
+        "definition": "Rich sensory descriptions",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "OPTICAL_DISTORTION",
+        "type": "descriptive",
+        "definition": "Visual distortions, seeing differently",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "SCORPIONS_GANG",
+        "type": "descriptive",
+        "definition": "The Scorpions gang and activities",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "COMMUNE_LIFE",
+        "type": "descriptive",
+        "definition": "Communal living arrangements",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "OUTSIDER_STATUS",
+        "type": "descriptive",
+        "definition": "Being outside mainstream society",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "HOMELESS_DRIFTER",
+        "type": "descriptive",
+        "definition": "Homelessness, drifting, rootlessness",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "RACIAL_DYNAMICS",
+        "type": "descriptive",
+        "definition": "Race, racism, racial identity",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "CLASS_PRIVILEGE",
+        "type": "descriptive",
+        "definition": "Economic class, privilege, poverty",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "EXPLOITATION",
+        "type": "descriptive",
+        "definition": "Economic/social exploitation",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "ALTERNATIVE_FAMILY",
+        "type": "descriptive",
+        "definition": "Non-traditional family structures",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "MUTUAL_AID",
+        "type": "process",
+        "definition": "Helping each other, sharing resources",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "TRIBAL_IDENTITY",
+        "type": "descriptive",
+        "definition": "Group identity, belonging",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "CIRCULAR_STRUCTURE",
+        "type": "structure",
+        "definition": "Narrative loops, circular patterns",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "FRAGMENTATION",
+        "type": "structure",
+        "definition": "Fragmented narrative, broken sequences",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "TYPOGRAPHIC_PLAY",
+        "type": "structure",
+        "definition": "Unusual typography, spacing, formatting",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "MULTIPLE_PERSPECTIVES",
+        "type": "structure",
+        "definition": "Shifting viewpoints",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "STREAM_CONSCIOUSNESS",
+        "type": "structure",
+        "definition": "Stream of consciousness passages",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "TEMPORAL_CONFUSION",
+        "type": "structure",
+        "definition": "Unclear timeline, time jumps",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "REPETITION_VARIATION",
+        "type": "structure",
+        "definition": "Repeated scenes with variations",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "PROLEPSIS",
+        "type": "structure",
+        "definition": "Flash-forwards, future references",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "ANALEPSIS",
+        "type": "structure",
+        "definition": "Flashbacks, past references",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "UNRELIABLE_NARRATION",
+        "type": "structure",
+        "definition": "Questionable narrator reliability",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "READER_ADDRESS",
+        "type": "structure",
+        "definition": "Direct address to reader",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "TEXTUAL_ARTIFACT",
+        "type": "structure",
+        "definition": "Text as physical object within text",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "HERO_JOURNEY",
+        "type": "structure",
+        "definition": "Elements of hero's journey",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "LABYRINTH",
+        "type": "descriptive",
+        "definition": "Maze-like, labyrinthine elements",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "UNDERWORLD_DESCENT",
+        "type": "descriptive",
+        "definition": "Descent into dark/underground",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "REBIRTH_RENEWAL",
+        "type": "process",
+        "definition": "Transformation, rebirth, renewal",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "ORCHID_CHAINS",
+        "type": "descriptive",
+        "definition": "The orchid/chains imagery",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "OPTICAL_CHAIN",
+        "type": "descriptive",
+        "definition": "Prism, lens, optical devices",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "WEAPON",
+        "type": "descriptive",
+        "definition": "Weapons as symbols",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "LIGHT_SOURCE",
+        "type": "descriptive",
+        "definition": "Lamps, fires, light sources",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "TRICKSTER",
+        "type": "descriptive",
+        "definition": "Trickster-like characters",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "ORACLE_PROPHET",
+        "type": "descriptive",
+        "definition": "Prophetic or oracular figures",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "MENTOR_GUIDE",
+        "type": "descriptive",
+        "definition": "Guide or teacher figures",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "SETTING",
+        "type": "descriptive",
+        "definition": "Description of time, place, or environment",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "CHARACTER",
+        "type": "descriptive",
+        "definition": "Introduction or description of characters",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "DIALOGUE",
+        "type": "descriptive",
+        "definition": "Direct speech between characters",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "INTERIOR_MONOLOGUE",
+        "type": "descriptive",
+        "definition": "Character's internal thoughts",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "NARRATIVE_VOICE",
+        "type": "descriptive",
+        "definition": "Narrator's commentary or perspective",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "SYMBOLISM",
+        "type": "descriptive",
+        "definition": "Symbolic objects, actions, or imagery",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "TEMPORAL_SHIFT",
+        "type": "descriptive",
+        "definition": "Changes in time or chronology",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "PERSPECTIVE_SHIFT",
+        "type": "descriptive",
+        "definition": "Changes in narrative perspective",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "SEARCHING",
+        "type": "process",
+        "definition": "Character seeking or looking for something",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "TRANSFORMING",
+        "type": "process",
+        "definition": "Character or situation undergoing change",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "RESISTING",
+        "type": "process",
+        "definition": "Character opposing or rejecting",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "REMEMBERING",
+        "type": "process",
+        "definition": "Character recalling past events",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "FRAGMENTING",
+        "type": "process",
+        "definition": "Narrative or character breaking apart",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "WANDERING",
+        "type": "process",
+        "definition": "Physical or mental aimless movement",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "DISSOLVING",
+        "type": "process",
+        "definition": "Loss of boundaries or coherence",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "CREATING",
+        "type": "process",
+        "definition": "Character making or building something",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "FEAR",
+        "type": "emotion",
+        "definition": "Fear, terror, anxiety",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "ANGER",
+        "type": "emotion",
+        "definition": "Anger, rage, frustration",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "SADNESS",
+        "type": "emotion",
+        "definition": "Sadness, grief, melancholy",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "JOY",
+        "type": "emotion",
+        "definition": "Joy, happiness, pleasure",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "DISGUST",
+        "type": "emotion",
+        "definition": "Disgust, revulsion, contempt",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "CONFUSION",
+        "type": "emotion",
+        "definition": "Confusion, disorientation, bewilderment",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "ALIENATION",
+        "type": "emotion",
+        "definition": "Sense of separation from others or self",
+        "examples": [],
+        "parent": "SADNESS"
+      },
+      {
+        "name": "PARANOIA",
+        "type": "emotion",
+        "definition": "Excessive suspicion and distrust",
+        "examples": [],
+        "parent": "FEAR"
+      },
+      {
+        "name": "ECSTASY",
+        "type": "emotion",
+        "definition": "Overwhelming joy or transcendence",
+        "examples": [],
+        "parent": "JOY"
+      },
+      {
+        "name": "DESPAIR",
+        "type": "emotion",
+        "definition": "Loss of hope",
+        "examples": [],
+        "parent": "SADNESS"
+      },
+      {
+        "name": "SHAME",
+        "type": "emotion",
+        "definition": "Sense of inadequacy or unworthiness",
+        "examples": [],
+        "parent": "SADNESS"
+      },
+      {
+        "name": "AUTONOMY",
+        "type": "values",
+        "definition": "Value placed on independence and self-direction",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "COMMUNITY",
+        "type": "values",
+        "definition": "Value placed on collective belonging",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "ORDER",
+        "type": "values",
+        "definition": "Value placed on structure and stability",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "CHAOS",
+        "type": "values",
+        "definition": "Value placed on disruption and uncertainty",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "TRUTH",
+        "type": "values",
+        "definition": "Value placed on authenticity and reality",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "BEAUTY",
+        "type": "values",
+        "definition": "Value placed on aesthetic experience",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "POWER",
+        "type": "values",
+        "definition": "Value placed on control and influence",
+        "examples": [],
+        "parent": null
+      },
+      {
+        "name": "JUSTICE",
+        "type": "values",
+        "definition": "Value placed on fairness and equity",
+        "examples": [],
+        "parent": null
+      }
+    ]
+  },
+  "coded_segments": [
+    {
+      "text": "\"You have confused the true and the real.'\nGEORGE STANLEYfln conversation\nContents\nThe Recombinant City: A Foreword by William Gibson xi\nI Prism, Mirror, Lens 1\nII The Ruins of Morning 55\nIII House of the Ax 109\nIV In Time of Plague 281\nV Creatures of Light and Darkness 385\nVI Palimpsest 503\nVII The Anathemata: a plague journal 651\nPrism, Mirror, Lens\nto wound the autumnal city.\nSo howled out for the world to give him a name.\nThe in-dark answered with wind.\nAll you know 1 know: careening astrona",
+      "location": "Pos 0-500",
+      "codes": [
+        "CIRCULAR_STRUCTURE",
+        "SPATIAL_DISORIENTATION",
+        "BELLONA_CITY"
+      ],
+      "memo": "Opening sequence - establishes circular structure",
+      "timestamp": "2025-12-11T15:26:27.660035"
+    },
+    {
+      "text": "d Letters\nShorter Views\nSamuel R. Delany\nDhalgren\nSamuel R. Delany was born and grew up in New York\nCity's Harlem. He is best known as the author of science\nfiction aud fantasy novels, and his books have won both\nHugo and Nebula awards. He has also published several\nbooks of nonfiction, including critical studies of literature,\na volume of memoirs, and the bestselling Times Square\nRed, Times Square Blue. Delany is a professor of creative\nwriting and English at Temple University in Philadelphia. ",
+      "location": "Section_4",
+      "codes": [
+        "CIRCULAR_STRUCTURE",
+        "METAFICTION",
+        "TEXTUAL_ARTIFACT"
+      ],
+      "memo": "Closing sequence - completes circular structure",
+      "timestamp": "2025-12-11T15:26:27.660226"
+    },
+    {
+      "text": "reted his falling inflection either.\nShe said: \"I don't really knOw.\"\nHe said, after the silent bridge: \"Well, you have to think something!\"\nShe reached into the coiled blanket and lifted out ... the notebook?\nHe recognized the charred cover.\nBiling at her lip, she began ruilling pages. Suddenly she stopped,\nhanded it to him-\" Are any of these names yours?\"\nThe list, neatly printed in ballpOint, filled two columns:\nGeoff Rivers\nKit Darkfeather\nDavid Wise\nMichael Roberts\n]erryShank\nFrank Yoshikami\nHarold",
+      "location": "Section_4",
+      "codes": [
+        "WRITING_PROCESS",
+        "NOTEBOOK",
+        "CREATION_ACT",
+        "METAFICTION"
+      ],
+      "memo": "Kid's writing process",
+      "timestamp": "2025-12-11T15:26:27.660367"
+    },
+    {
+      "text": "ike elegant plastics, internally lit and misty. they wobbled forward. When dragon and mantis swayed into each other, theymeshed!\nHe thought of images, slightly unfocused, on a movie screen, lapping.\n\"Scorpions ... !\" Tak whispered.\nTaks shoulder pushed his.\nHis hand was on a tree trunk. Twig shadows webbed his forearm,\nthe back of his hand, the bark. The figures neared; the web slid. The\nfigures passed; the web slid off. They were, he realized, as eye-unsettling as pictures on a three-dimensional postca",
+      "location": "Section_4",
+      "codes": [
+        "SCORPIONS_GANG",
+        "COMMUNE_LIFE",
+        "TRIBAL_IDENTITY"
+      ],
+      "memo": "Scorpions gang dynamics",
+      "timestamp": "2025-12-11T15:26:27.660477"
+    },
+    {
+      "text": "ecombinant City: A Foreword by William Gibson xi\nI Prism, Mirror, Lens 1\nII The Ruins of Morning 55\nIII House of the Ax 109\nIV In Time of Plague 281\nV Creatures of Light and Darkness 385\nVI Palimpsest 503\n",
+      "location": "Pos 88-293",
+      "codes": [
+        "URBAN_DECAY",
+        "FIRE_DESTRUCTION"
+      ],
+      "memo": "Decay imagery 1",
+      "timestamp": "2025-12-11T15:26:27.678622"
+    },
+    {
+      "text": "g, next\nstep.\nBeyond a dead limb, a dish of hrass wide as a car tire had nearly\nburned to embers. Something in the remaining fire snapped, spilling\nsparks on wet stone.\nAhead, where the flicker leaked high ",
+      "location": "Section_4",
+      "codes": [
+        "URBAN_DECAY",
+        "FIRE_DESTRUCTION"
+      ],
+      "memo": "Decay imagery 2",
+      "timestamp": "2025-12-11T15:26:27.678943"
+    },
+    {
+      "text": "rass wide as a car tire had nearly\nburned to embers. Something in the remaining fire snapped, spilling\nsparks on wet stone.\nAhead, where the flicker leaked high up into the narrowing slash,\nsomething caug",
+      "location": "Section_4",
+      "codes": [
+        "URBAN_DECAY",
+        "FIRE_DESTRUCTION"
+      ],
+      "memo": "Decay imagery 3",
+      "timestamp": "2025-12-11T15:26:27.678962"
+    },
+    {
+      "text": "back flashings.\nHe climbed around one boulder, paused; the echo from breath and\nburning cast up intimations of the cavern's size. He gauged a crevice,\nleaped the meter, and scrambled on the far slope. Things",
+      "location": "Section_4",
+      "codes": [
+        "URBAN_DECAY",
+        "FIRE_DESTRUCTION"
+      ],
+      "memo": "Decay imagery 4",
+      "timestamp": "2025-12-11T15:26:27.678972"
+    },
+    {
+      "text": "hes.\nPrism, Mirror; Lens 11\nThey stopped. The driver sucked in the sides of his ruined cheeks,\nlooked over, still blank.\nHe nodded, sort of smiled, fumbled the door, dropped to the road;\nthe door slammed an",
+      "location": "Section_4",
+      "codes": [
+        "URBAN_DECAY",
+        "FIRE_DESTRUCTION"
+      ],
+      "memo": "Decay imagery 5",
+      "timestamp": "2025-12-11T15:26:27.679238"
+    },
+    {
+      "text": " side, bare foot the other. Girders\nwheeled by him, left and right. Beyond, the burning city squatted on\nweak, inverted images of its fires.\nHe gazed across the wale of night water, all wind-runneled, and\nsn",
+      "location": "Section_4",
+      "codes": [
+        "URBAN_DECAY",
+        "FIRE_DESTRUCTION"
+      ],
+      "memo": "Decay imagery 6",
+      "timestamp": "2025-12-11T15:26:27.679285"
+    },
+    {
+      "text": "ft and right. Beyond, the burning city squatted on\nweak, inverted images of its fires.\nHe gazed across the wale of night water, all wind-runneled, and\nsniffed for burning. A gust parted the hair at the bac",
+      "location": "Section_4",
+      "codes": [
+        "URBAN_DECAY",
+        "FIRE_DESTRUCTION"
+      ],
+      "memo": "Decay imagery 7",
+      "timestamp": "2025-12-11T15:26:27.679291"
+    },
+    {
+      "text": "es.\nHe gazed across the wale of night water, all wind-runneled, and\nsniffed for burning. A gust parted the hair at the back of his neck;\nsmoke was moving \u00b7offthe river.\n\"Hey. you!\"\nHe looked up at the surpri",
+      "location": "Section_4",
+      "codes": [
+        "URBAN_DECAY",
+        "FIRE_DESTRUCTION"
+      ],
+      "memo": "Decay imagery 8",
+      "timestamp": "2025-12-11T15:26:27.679299"
+    },
+    {
+      "text": "Some men carne by, shot up the house we were living in, tore\nup the place, then burned usout.\"\n\"She was making this sculpture,\" the whiny voice explained; \"this big\nsculpture. Of a lion. Out of junk metal a",
+      "location": "Section_4",
+      "codes": [
+        "URBAN_DECAY",
+        "FIRE_DESTRUCTION"
+      ],
+      "memo": "Decay imagery 9",
+      "timestamp": "2025-12-11T15:26:27.679360"
+    },
+    {
+      "text": "ng.\n\"Name is Loufer. Tak Loufer. You know what that means, Loufer?\nRed Wolf; or Fire Wolf.\"\n'Or Iron Wolf.\" He squinted. \"Hello.\"\n\"Iron Wolf? Well, yeah ... \" The man emerged, dim on the top step.\n\"Don't ",
+      "location": "Section_4",
+      "codes": [
+        "URBAN_DECAY",
+        "FIRE_DESTRUCTION"
+      ],
+      "memo": "Decay imagery 10",
+      "timestamp": "2025-12-11T15:26:27.679647"
+    },
+    {
+      "text": "urnal 651\nPrism, Mirror, Lens\nto wound the autumnal city.\nSo howled out for the world to give him a name.\nThe in-dark answered with wind.\nAll you know 1 know: careening astronauts and bank clerks glancing\nat the clock before lunch; acuesses cowling at li",
+      "location": "Section_4",
+      "codes": [
+        "NAME_AMNESIA",
+        "IDENTITY_FLUID"
+      ],
+      "memo": "Identity ref 1",
+      "timestamp": "2025-12-11T15:26:27.741342"
+    },
+    {
+      "text": "t snarl under the moon. \" ... hhhHHhhhb ... \" which\nhad more sound in it than that, perhaps was his name, even. But the\nwind, wind ...\nShe stepped.\nMotion rearranged the shadows, baring one breast. There was a\nlozenge of light over one eye. Call and ankl",
+      "location": "Section_4",
+      "codes": [
+        "NAME_AMNESIA",
+        "IDENTITY_FLUID"
+      ],
+      "memo": "Identity ref 2",
+      "timestamp": "2025-12-11T15:26:27.741401"
+    },
+    {
+      "text": "pale hand\nover his great One (Such big hands for a little ape of a guy, sOmeone had\nkindly said. He remembered that) on her ribs-\"beautiful Youve come\nfrom somewhere. You're. going somewbere.\" She Sighed.\n\"But ... \" He swaHowed the things in his throat (he was",
+      "location": "Section_4",
+      "codes": [
+        "NAME_AMNESIA",
+        "IDENTITY_FLUID"
+      ],
+      "memo": "Identity ref 3",
+      "timestamp": "2025-12-11T15:26:27.741560"
+    },
+    {
+      "text": "Night\nwas some color between clear and cloud. \u00b7You came here, to find me.\nCan't you tell me what my name is?\"\nCold spread down his side, where she had been, like butter.\nHe turned his head.\n\"Come!\" As she sat, her hair writhed toward him. A handful of\nle",
+      "location": "Section_4",
+      "codes": [
+        "NAME_AMNESIA",
+        "IDENTITY_FLUID"
+      ],
+      "memo": "Identity ref 4",
+      "timestamp": "2025-12-11T15:26:27.741657"
+    },
+    {
+      "text": "going. Hey, so long!\"\n\"So long. n Their beams swept by. \"AI,d thanks.' Artichokes? But he\ncould not remember where the word had come from to ring so brightly.\nHe raised the orchid aker them.\nCaged in blades, his gnarled hand was silhouetted with river glitte",
+      "location": "Section_4",
+      "codes": [
+        "NAME_AMNESIA",
+        "IDENTITY_FLUID"
+      ],
+      "memo": "Identity ref 5",
+      "timestamp": "2025-12-11T15:26:27.742246"
+    },
+    {
+      "text": "m the wall, his breath unraveled the- silence,\nshocked him as much as if someone had called his ... name? Pondering, he crossed the street toward the corner of the loading porch. On\nthe tracks under the awning, four- and six-foot butcher hooks swung\ngent",
+      "location": "Section_4",
+      "codes": [
+        "NAME_AMNESIA",
+        "IDENTITY_FLUID"
+      ],
+      "memo": "Identity ref 6",
+      "timestamp": "2025-12-11T15:26:27.742398"
+    },
+    {
+      "text": "ey\nhad a dog with them.\"\nAfter silence, gravelly laughter grew. 'You really haven't been here\nlong, kid ... ?\"\n\"1_\" and realized the repetition-\"just got here.\"\n''You out to go explOring by yourself? Or you want company for a bit.\"\nThe guy's eyes, he re",
+      "location": "Section_4",
+      "codes": [
+        "NAME_AMNESIA",
+        "IDENTITY_FLUID"
+      ],
+      "memo": "Identity ref 7",
+      "timestamp": "2025-12-11T15:26:27.742444"
+    },
+    {
+      "text": ", he figured the man\nhad changed his mind.\n\"Here you go,' from the one he'd set aside for ducking.\n\"Name is Loufer. Tak Loufer. You know what that means, Loufer?\nRed Wolf; or Fire Wolf.\"\n'Or Iron Wolf.\" He squinted. \"Hello.\"\n\"Iron Wolf? Well, yeah ... \" ",
+      "location": "Section_4",
+      "codes": [
+        "NAME_AMNESIA",
+        "IDENTITY_FLUID"
+      ],
+      "memo": "Identity ref 8",
+      "timestamp": "2025-12-11T15:26:27.742464"
+    },
+    {
+      "text": "n flapping zipper teeth, were a tangle of brass\nhair. The fingers were massive, matted-UWhat's your name?\"-but\nclean, with neat and cared-for nails.\n\"Urn . .. well, I'll tell you: I don't know.\" It sounded funny, so he\nlaughed. \"I don't know.\"\nLoufer sto",
+      "location": "Section_4",
+      "codes": [
+        "NAME_AMNESIA",
+        "IDENTITY_FLUID"
+      ],
+      "memo": "Identity ref 9",
+      "timestamp": "2025-12-11T15:26:27.742492"
+    },
+    {
+      "text": "arl for three months ... about six or\nseven years ago. But thats as close as I come. So you're a no-name kid?\nWhat are you, seventeen? Eighteen? No, I bet you're even-\"\n\"Twenty-seven.\"\n. Tak's head cocked the other way. Light topped his cheek bones.\n\"Neu",
+      "location": "Section_4",
+      "codes": [
+        "NAME_AMNESIA",
+        "IDENTITY_FLUID"
+      ],
+      "memo": "Identity ref 10",
+      "timestamp": "2025-12-11T15:26:27.742529"
+    },
+    {
+      "text": "-were inches from his raveled knees.\nShe reached, two fingers extended, pushed back plaid wool, and\ntouched his thest; ran her fingers down. He could hear his own crisp\nItair.\nlaughter raised her face to the moon. He leaned forward; the odor\noflemons filled",
+      "location": "Section_4",
+      "codes": [
+        "INTIMACY",
+        "SEXUAL_ENCOUNTER"
+      ],
+      "memo": "Relational 1",
+      "timestamp": "2025-12-11T15:26:27.802808"
+    },
+    {
+      "text": " leaves; that made\nher blink and laugh again. Her breath was like noon and smelled of\nlemons ...\nHe kissed her; she caught his wrists. The joined meal of their\nmouths came alive. The sltape of her breasts, her hand half on his chest\nand half on wool, was l",
+      "location": "Section_4",
+      "codes": [
+        "INTIMACY",
+        "SEXUAL_ENCOUNTER"
+      ],
+      "memo": "Relational 2",
+      "timestamp": "2025-12-11T15:26:27.802860"
+    },
+    {
+      "text": " lost with her weight against him.\nTheir fmgers met and meshed at his belt; a gasp bubbled in their kiss\n(his heart was stuttering loudly), was blown away; then air on his thigh.\nThey lay down.\nWith her fingertips she moved his cock head rougltly in her ",
+      "location": "Section_4",
+      "codes": [
+        "INTIMACY",
+        "SEXUAL_ENCOUNTER"
+      ],
+      "memo": "Relational 3",
+      "timestamp": "2025-12-11T15:26:27.802883"
+    },
+    {
+      "text": "on the\nyellow ham and heel.\n\"There ... \" She pointed into the cave. \u00b7Can you see it?\"\nHe started to touch her shoulder, but no.\nShe said: \"Go ahead. Go in.\"\nHe dropped his sandal: a lisp of brush. He dropped his shirt: that\nsmothered the lisping.\nShe look",
+      "location": "Section_4",
+      "codes": [
+        "INTIMACY",
+        "SEXUAL_ENCOUNTER"
+      ],
+      "memo": "Relational 4",
+      "timestamp": "2025-12-11T15:26:27.803143"
+    },
+    {
+      "text": " a crack that slanted into roofless shadow.\nOne end looped a plume of ferns.\nHe reached for it; his body blocked the light from the brazier below:\nglimmer ceased.\nHe felt another apprehension than that of the unexpected seen before, or aCcidentally revea",
+      "location": "Section_4",
+      "codes": [
+        "INTIMACY",
+        "SEXUAL_ENCOUNTER"
+      ],
+      "memo": "Relational 5",
+      "timestamp": "2025-12-11T15:26:27.803220"
+    },
+    {
+      "text": "e creasing between joint and joint.\nHe passed the longest end around his back: the bits layout cold kisses on his shoulder blades. Then across his chest; his back once more;\nhis belly. Holding the length in one hand (it still hung down on the\nstone), he un",
+      "location": "Section_4",
+      "codes": [
+        "INTIMACY",
+        "SEXUAL_ENCOUNTER"
+      ],
+      "memo": "Relational 6",
+      "timestamp": "2025-12-11T15:26:27.803286"
+    },
+    {
+      "text": "is mind wandered, it was\nbrought back by his foot in cold water; and the links were warm around\nhis body. He halted to feel for more heat; but the chain was only neutral weight.\nHe stepped out oato moss.\nHis shirt lay across a bush, his sandal, sale up, ",
+      "location": "Section_4",
+      "codes": [
+        "INTIMACY",
+        "SEXUAL_ENCOUNTER"
+      ],
+      "memo": "Relational 7",
+      "timestamp": "2025-12-11T15:26:27.803315"
+    },
+    {
+      "text": "kness covered one flank. Her pale belly jerked\nwith a breath.\n\"No,l\" She bent away when he tried to touch her; and stayed bent.\nOne arm, branched and branching ten reet over him, pulled a web of\nshadow across the grass.\n'You ... !\" was the word he tried; ",
+      "location": "Section_4",
+      "codes": [
+        "INTIMACY",
+        "SEXUAL_ENCOUNTER"
+      ],
+      "memo": "Relational 8",
+      "timestamp": "2025-12-11T15:26:27.803430"
+    },
+    {
+      "text": "ers face.\nThey shook On down the highway.\nHe could think of nothing more, except: I was just making love to\nthis woman, see, and you'll never guess ... No, the Daphne bit would\nnot passIt was'he who wanted to talk! The driver was content to dispense\nwith",
+      "location": "Section_4",
+      "codes": [
+        "INTIMACY",
+        "SEXUAL_ENCOUNTER"
+      ],
+      "memo": "Relational 9",
+      "timestamp": "2025-12-11T15:26:27.803540"
+    },
+    {
+      "text": "iver glitter\nS!Tdcm..g between the bridge strtlts. Watching them go, he felt the\nvaguest flutter of desire. Only one of their flashlights was on. Then one\nof them blocked that. They were footsteps on metal plates; some laughter drifting back; rustlings . .",
+      "location": "Section_4",
+      "codes": [
+        "INTIMACY",
+        "SEXUAL_ENCOUNTER"
+      ],
+      "memo": "Relational 10",
+      "timestamp": "2025-12-11T15:26:27.803759"
+    },
+    {
+      "text": "s of Morning 55\nIII House of the Ax 109\nIV In Time of Plague 281\nV Creatures of Light and Darkness 385\nVI Palimpsest 503\nVII The Anathemata: a plague journal 651\nPrism, Mirror, Lens\nto wound the autumnal c",
+      "location": "Pos 172-377",
+      "codes": [
+        "OBSERVING",
+        "OPTICAL_DISTORTION"
+      ],
+      "memo": "Optical 1",
+      "timestamp": "2025-12-11T15:26:27.862374"
+    },
+    {
+      "text": "ronauts and bank clerks glancing\nat the clock before lunch; acuesses cowling at light-ringed mirror.; and\nfreight elevator operator.; grinding a thumbful of grease on a steel handle; student riots; know th",
+      "location": "Section_4",
+      "codes": [
+        "OBSERVING",
+        "OPTICAL_DISTORTION"
+      ],
+      "memo": "Optical 2",
+      "timestamp": "2025-12-11T15:26:27.862394"
+    },
+    {
+      "text": "epped.\nMotion rearranged the shadows, baring one breast. There was a\nlozenge of light over one eye. Call and ankle were luminous before\nleaves.\nDown her lower leg was a scratch.\nHis hair tugged back from h",
+      "location": "Section_4",
+      "codes": [
+        "OBSERVING",
+        "OPTICAL_DISTORTION"
+      ],
+      "memo": "Optical 3",
+      "timestamp": "2025-12-11T15:26:27.862455"
+    },
+    {
+      "text": "earranged the shadows, baring one breast. There was a\nlozenge of light over one eye. Call and ankle were luminous before\nleaves.\nDown her lower leg was a scratch.\nHis hair tugged back from his forehead. ",
+      "location": "Section_4",
+      "codes": [
+        "OBSERVING",
+        "OPTICAL_DISTORTION"
+      ],
+      "memo": "Optical 4",
+      "timestamp": "2025-12-11T15:26:27.862459"
+    },
+    {
+      "text": "s.\nDown her lower leg was a scratch.\nHis hair tugged back from his forehead. He watched hers flung forward. She moved with her hair, stepping over leaves, toes spread on\nstone, in a tip-toe pause, to quit th",
+      "location": "Section_4",
+      "codes": [
+        "OBSERVING",
+        "OPTICAL_DISTORTION"
+      ],
+      "memo": "Optical 5",
+      "timestamp": "2025-12-11T15:26:27.862466"
+    },
+    {
+      "text": "eoles were wide, her nipples small. \u00b7You ... ?\"\nShe said that, three feet away, looking down; and he still could\nnot make out her expression for the leaf dappling; but her cheek bones\nwere Orientally high. S",
+      "location": "Section_4",
+      "codes": [
+        "OBSERVING",
+        "OPTICAL_DISTORTION"
+      ],
+      "memo": "Optical 6",
+      "timestamp": "2025-12-11T15:26:27.862482"
+    },
+    {
+      "text": "the odor\noflemons filled the breezeless gap. Her round face was compelling, her\neyebrows un-Orientally heavy. He judged her over tRirty, but the only\nlines were two small ones about her mouth.\nPrism. Mirror. ",
+      "location": "Section_4",
+      "codes": [
+        "OBSERVING",
+        "OPTICAL_DISTORTION"
+      ],
+      "memo": "Optical 7",
+      "timestamp": "2025-12-11T15:26:27.862523"
+    },
+    {
+      "text": " \"You're beautiful, 1 think\" He laughed, without opening his lips. Closely, she looked at one of his eyes, looked at\nthe other (he blinked), looked at his chin (behind his lips he closed\nhis teeth so tltat ",
+      "location": "Section_4",
+      "codes": [
+        "OBSERVING",
+        "OPTICAL_DISTORTION"
+      ],
+      "memo": "Optical 8",
+      "timestamp": "2025-12-11T15:26:27.862561"
+    },
+    {
+      "text": " think\" He laughed, without opening his lips. Closely, she looked at one of his eyes, looked at\nthe other (he blinked), looked at his chin (behind his lips he closed\nhis teeth so tltat his jaw moved), the",
+      "location": "Section_4",
+      "codes": [
+        "OBSERVING",
+        "OPTICAL_DISTORTION"
+      ],
+      "memo": "Optical 9",
+      "timestamp": "2025-12-11T15:26:27.862565"
+    },
+    {
+      "text": "\" He laughed, without opening his lips. Closely, she looked at one of his eyes, looked at\nthe other (he blinked), looked at his chin (behind his lips he closed\nhis teeth so tltat his jaw moved), then at his",
+      "location": "Section_4",
+      "codes": [
+        "OBSERVING",
+        "OPTICAL_DISTORTION"
+      ],
+      "memo": "Optical 10",
+      "timestamp": "2025-12-11T15:26:27.862568"
+    },
+    {
+      "text": " William Gibson xi\nI Prism, Mirror, Lens 1\nII The Ruins of Morning 55\nIII House of the Ax 109\nIV In Time of Plague 281\nV Creatures of Light and Darkness 385\nVI Palimpsest 503\nVII The Anathemata: a plague journal 651\nPrism, Mirror, Lens\nto wound the autum",
+      "location": "Pos 118-372",
+      "codes": [
+        "TEMPORAL_ANOMALY",
+        "TEMPORAL_CONFUSION"
+      ],
+      "memo": "Temporal 1",
+      "timestamp": "2025-12-11T15:26:27.926440"
+    },
+    {
+      "text": "ed at him again. \"But that really\nisn'ti\u00b7m-\"\nHe rolled back in the loud leaves. you know who I am?\" Night\nwas some color between clear and cloud. \u00b7You came here, to find me.\nCan't you tell me what my name is?\"\nCold spread down his side, where she had been",
+      "location": "Section_4",
+      "codes": [
+        "TEMPORAL_ANOMALY",
+        "TEMPORAL_CONFUSION"
+      ],
+      "memo": "Temporal 2",
+      "timestamp": "2025-12-11T15:26:27.926734"
+    },
+    {
+      "text": "oulders; h. had assumed it was only a yard or so\ndeep.\nPrism, Mirror, Lens 7\nHe had to climb a long time. One face, fifteen feet high, stopped him\na while. He went to the side and clambered up the more uneven outcrappings. He found a thick ridge that, he",
+      "location": "Section_4",
+      "codes": [
+        "TEMPORAL_ANOMALY",
+        "TEMPORAL_CONFUSION"
+      ],
+      "memo": "Temporal 3",
+      "timestamp": "2025-12-11T15:26:27.926806"
+    },
+    {
+      "text": "s aware of the bindings. But, chest flat on the stone, they were\nmerely lines and did not cut.\nThis time he went to whete the crevice was only a foot wide and\nstepped far of the lip. The cave mouth was a lambda of moon mist,\nedged with leaf-lace.\nThe roc",
+      "location": "Section_4",
+      "codes": [
+        "TEMPORAL_ANOMALY",
+        "TEMPORAL_CONFUSION"
+      ],
+      "memo": "Temporal 4",
+      "timestamp": "2025-12-11T15:26:27.926900"
+    },
+    {
+      "text": "only as it passed. He glanced back; the truck's red, rear eyes sank\ntogether. He walked for another hour, saw no other vehicle.\nA Mack with a double van belched twenty feet behind him, sagged to\na stop twenty feet ahead. He hadn't even been thumbing. He ",
+      "location": "Section_4",
+      "codes": [
+        "TEMPORAL_ANOMALY",
+        "TEMPORAL_CONFUSION"
+      ],
+      "memo": "Temporal 5",
+      "timestamp": "2025-12-11T15:26:27.927061"
+    },
+    {
+      "text": "eyond, the burning city squatted on\nweak, inverted images of its fires.\nHe gazed across the wale of night water, all wind-runneled, and\nsniffed for burning. A gust parted the hair at the back of his neck;\nsmoke was moving \u00b7offthe river.\n\"Hey. you!\"\nHe loo",
+      "location": "Section_4",
+      "codes": [
+        "TEMPORAL_ANOMALY",
+        "TEMPORAL_CONFUSION"
+      ],
+      "memo": "Temporal 6",
+      "timestamp": "2025-12-11T15:26:27.927148"
+    },
+    {
+      "text": "ift.\"\n\"What about the traffic going out?\"\nHe shrugged. \"But I guess girls shouldn't have too hard a time,\nthough. I mean, if a car passes, you'll probably get a ride. Where you\nheading?'\n\"Two of us wanted to get to New York. Judy wants to go to San Franc",
+      "location": "Section_4",
+      "codes": [
+        "TEMPORAL_ANOMALY",
+        "TEMPORAL_CONFUSION"
+      ],
+      "memo": "Temporal 7",
+      "timestamp": "2025-12-11T15:26:27.927174"
+    },
+    {
+      "text": "ce: a whiny voice came down. \"I've got\na fever! I should be in bed. I was in bed for the last three days.\"\nHe said: \"You've got a ways to go, either direction.'\n\"Nothing's happened to San Francisco-?\"\n\"-or New York?'\n\"No.\" He tried to see behind the ligh",
+      "location": "Section_4",
+      "codes": [
+        "TEMPORAL_ANOMALY",
+        "TEMPORAL_CONFUSION"
+      ],
+      "memo": "Temporal 8",
+      "timestamp": "2025-12-11T15:26:27.927186"
+    },
+    {
+      "text": "said: \"tt's pretty rough.\"\nThe one who'd spoken first said: \"But like you say, girls have an easier time.\"\nThey laughed.\nHe did too. \"Is there anything you can tell me? I mean that might\nbe helpful? Since I'm going in?\"\n\"Yeah. Some men carne by, shot up ",
+      "location": "Section_4",
+      "codes": [
+        "TEMPORAL_ANOMALY",
+        "TEMPORAL_CONFUSION"
+      ],
+      "memo": "Temporal 9",
+      "timestamp": "2025-12-11T15:26:27.927226"
+    },
+    {
+      "text": "rustlings . . . '\nHe walked again, holding his hand from his side.\nThis parched evening seasons the night with remembrances of rain.\nVery few suspect the existence of this city. It is as if not only the media\nbut the laws of perspective themselves have re",
+      "location": "Section_4",
+      "codes": [
+        "TEMPORAL_ANOMALY",
+        "TEMPORAL_CONFUSION"
+      ],
+      "memo": "Temporal 10",
+      "timestamp": "2025-12-11T15:26:27.927349"
+    }
+  ],
+  "memos": [
+    {
+      "title": "Circular Structure",
+      "content": "Dhalgren's circular structure creates endless loop reflecting temporal anomalies in Bellona",
+      "related_codes": [
+        "CIRCULAR_STRUCTURE",
+        "TEMPORAL_ANOMALY",
+        "METAFICTION"
+      ],
+      "timestamp": "2025-12-11T15:26:27.987069"
+    },
+    {
+      "title": "Identity Without Origin",
+      "content": "Kid's amnesia enables identity construction outside dominant categories",
+      "related_codes": [
+        "NAME_AMNESIA",
+        "IDENTITY_FLUID",
+        "SELF_CREATION"
+      ],
+      "timestamp": "2025-12-11T15:26:27.987090"
+    },
+    {
+      "title": "Queer Relationality",
+      "content": "Polyamory and fluid sexuality presented as viable alternatives",
+      "related_codes": [
+        "QUEER_DESIRE",
+        "POLYAMORY",
+        "ALTERNATIVE_FAMILY"
+      ],
+      "timestamp": "2025-12-11T15:26:27.987096"
+    }
+  ],
+  "code_frequencies": {
+    "CIRCULAR_STRUCTURE": 2,
+    "SPATIAL_DISORIENTATION": 1,
+    "BELLONA_CITY": 1,
+    "METAFICTION": 2,
+    "TEXTUAL_ARTIFACT": 1,
+    "WRITING_PROCESS": 1,
+    "NOTEBOOK": 1,
+    "CREATION_ACT": 1,
+    "SCORPIONS_GANG": 1,
+    "COMMUNE_LIFE": 1,
+    "TRIBAL_IDENTITY": 1,
+    "URBAN_DECAY": 10,
+    "FIRE_DESTRUCTION": 10,
+    "NAME_AMNESIA": 10,
+    "IDENTITY_FLUID": 10,
+    "INTIMACY": 10,
+    "SEXUAL_ENCOUNTER": 10,
+    "OBSERVING": 10,
+    "OPTICAL_DISTORTION": 10,
+    "TEMPORAL_ANOMALY": 10,
+    "TEMPORAL_CONFUSION": 10
+  },
+  "export_date": "2025-12-11T15:26:27.991598"
+}

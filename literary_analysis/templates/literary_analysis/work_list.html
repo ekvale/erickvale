@@ -1,0 +1,15 @@
+{% extends 'literary_analysis/index.html' %}
+{% block content %}
+<h1>Literary Works</h1>
+<ul class="item-list">
+    {% for work in works %}
+    <li>
+        <a href="{% url 'literary_analysis:work_detail' work.pk %}">{{ work.title }}</a>
+        <div class="meta">by {{ work.author }} • {{ work.text_length|floatformat:0 }} characters • {{ work.uploaded_at|date:"F d, Y" }}</div>
+    </li>
+    {% empty %}
+    <li>No works uploaded yet.</li>
+    {% endfor %}
+</ul>
+{% endblock %}
+

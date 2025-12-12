@@ -1,0 +1,309 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coding Interface - {{ analysis.literary_work.title }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+        .header {
+            background: #1a1a1a;
+            border-bottom: 1px solid #2a2a2a;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .back-link {
+            color: #888;
+            text-decoration: none;
+            margin-right: 20px;
+        }
+        .back-link:hover {
+            color: #fff;
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: 300;
+            color: #fff;
+        }
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+        }
+        .sidebar {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 20px;
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+        .sidebar h2 {
+            font-size: 18px;
+            font-weight: 400;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+        .code-list {
+            list-style: none;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .code-item {
+            padding: 8px;
+            margin-bottom: 8px;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .code-item:hover {
+            background: #2a2a2a;
+        }
+        .code-item input[type="checkbox"] {
+            margin-right: 8px;
+        }
+        .text-container {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 30px;
+        }
+        #text-display {
+            font-family: 'Georgia', serif;
+            font-size: 18px;
+            line-height: 1.8;
+            color: #e0e0e0;
+            white-space: pre-wrap;
+            user-select: text;
+        }
+        .segment-highlight {
+            background: rgba(65, 119, 144, 0.3);
+            border: 1px solid rgba(65, 119, 144, 0.5);
+            padding: 2px 4px;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+        .segment-highlight:hover {
+            background: rgba(65, 119, 144, 0.5);
+        }
+        .form-panel {
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #e0e0e0;
+            font-weight: 500;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            color: #e0e0e0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        textarea {
+            min-height: 100px;
+            font-family: inherit;
+        }
+        .btn {
+            padding: 10px 20px;
+            background: #417690;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background: #5a8ba5;
+        }
+        .btn-secondary {
+            background: #2a2a2a;
+        }
+        .btn-secondary:hover {
+            background: #3a3a3a;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div>
+                <a href="{% url 'literary_analysis:analysis_detail' analysis.pk %}" class="back-link">← Back</a>
+                <h1>{{ analysis.literary_work.title }}</h1>
+            </div>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <div class="sidebar">
+            <h2>Codes</h2>
+            <ul class="code-list">
+                {% for code in codes %}
+                <li class="code-item">
+                    <label>
+                        <input type="checkbox" name="codes" value="{{ code.pk }}" data-code-name="{{ code.code_name }}">
+                        {{ code.code_name }}
+                    </label>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+        <div class="text-container">
+            <div id="text-display">{{ text_content }}</div>
+            
+            <div class="form-panel" id="segment-form" style="display: none;">
+                <h3>Code Segment</h3>
+                <form id="segment-form-element">
+                    {% csrf_token %}
+                    <input type="hidden" name="analysis_id" value="{{ analysis.pk }}">
+                    <input type="hidden" name="start_position" id="start-pos">
+                    <input type="hidden" name="end_position" id="end-pos">
+                    
+                    <div class="form-group">
+                        <label>Selected Codes</label>
+                        <div id="selected-codes-display"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="location">Location (optional)</label>
+                        <input type="text" id="location" name="location" placeholder="e.g., Page 45, Chapter 3">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="memo">Memo (optional)</label>
+                        <textarea id="memo" name="memo" placeholder="Analytical note about this segment"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn">Save Segment</button>
+                    <button type="button" class="btn btn-secondary" onclick="cancelSelection()">Cancel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let selectedText = '';
+        let startPos = 0;
+        let endPos = 0;
+        
+        const textDisplay = document.getElementById('text-display');
+        const segmentForm = document.getElementById('segment-form');
+        const formElement = document.getElementById('segment-form-element');
+        
+        // Handle text selection
+        textDisplay.addEventListener('mouseup', function() {
+            const selection = window.getSelection();
+            if (selection.toString().trim().length > 0) {
+                selectedText = selection.toString();
+                const range = selection.getRangeAt(0);
+                
+                // Calculate positions
+                const preSelectionRange = range.cloneRange();
+                preSelectionRange.selectNodeContents(textDisplay);
+                preSelectionRange.setEnd(range.startContainer, range.startOffset);
+                startPos = preSelectionRange.toString().length;
+                endPos = startPos + selectedText.length;
+                
+                // Show form
+                document.getElementById('start-pos').value = startPos;
+                document.getElementById('end-pos').value = endPos;
+                updateSelectedCodes();
+                segmentForm.style.display = 'block';
+            }
+        });
+        
+        function updateSelectedCodes() {
+            const checkboxes = document.querySelectorAll('input[name="codes"]:checked');
+            const display = document.getElementById('selected-codes-display');
+            if (checkboxes.length === 0) {
+                display.innerHTML = '<span style="color: #888;">No codes selected</span>';
+            } else {
+                display.innerHTML = Array.from(checkboxes).map(cb => 
+                    `<span style="display: inline-block; padding: 4px 8px; background: #2a2a2a; border-radius: 4px; margin-right: 8px; margin-bottom: 8px;">${cb.dataset.codeName}</span>`
+                ).join('');
+            }
+        }
+        
+        // Update selected codes display when checkboxes change
+        document.querySelectorAll('input[name="codes"]').forEach(cb => {
+            cb.addEventListener('change', updateSelectedCodes);
+        });
+        
+        function cancelSelection() {
+            segmentForm.style.display = 'none';
+            window.getSelection().removeAllRanges();
+        }
+        
+        // Handle form submission
+        formElement.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(formElement);
+            const checkboxes = document.querySelectorAll('input[name="codes"]:checked');
+            checkboxes.forEach(cb => {
+                formData.append('codes', cb.value);
+            });
+            
+            try {
+                const response = await fetch('{% url "literary_analysis:api_create_segment" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    alert('Segment saved successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Error saving segment: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>
+

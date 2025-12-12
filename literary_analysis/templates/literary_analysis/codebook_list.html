@@ -1,0 +1,74 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codebooks - Literary Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 30px;
+            color: #888;
+            text-decoration: none;
+        }
+        h1 {
+            font-size: 36px;
+            font-weight: 300;
+            margin-bottom: 30px;
+            color: #fff;
+        }
+        .codebook-item {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+        .codebook-item a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 20px;
+        }
+        .codebook-item a:hover {
+            color: #417690;
+        }
+        .meta {
+            color: #888;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'literary_analysis:index' %}" class="back-link">← Back to Literary Analysis</a>
+        <h1>Codebook Templates</h1>
+        
+        {% for codebook in codebooks %}
+        <div class="codebook-item">
+            <a href="{% url 'literary_analysis:codebook_detail' codebook.pk %}">{{ codebook.name }}</a>
+            <div class="meta">{{ codebook.description|truncatewords:30 }} • {{ codebook.codes.count }} codes • {{ codebook.get_template_type_display }}</div>
+        </div>
+        {% empty %}
+        <p>No codebooks available.</p>
+        {% endfor %}
+    </div>
+</body>
+</html>
+
