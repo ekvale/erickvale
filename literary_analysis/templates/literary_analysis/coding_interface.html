@@ -110,6 +110,64 @@
         .text-container {
             max-height: calc(100vh - 200px);
             overflow-y: auto;
+            position: relative;
+        }
+        .search-bar {
+            position: sticky;
+            top: 0;
+            background: #1a1a1a;
+            padding: 15px;
+            border-bottom: 1px solid #2a2a2a;
+            z-index: 10;
+            margin: -30px -30px 20px -30px;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 10px;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 4px;
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+        .search-bar input:focus {
+            outline: none;
+            border-color: #417690;
+        }
+        .search-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            align-items: center;
+        }
+        .search-count {
+            color: #888;
+            font-size: 12px;
+        }
+        .search-nav-btn {
+            padding: 5px 15px;
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            color: #e0e0e0;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .search-nav-btn:hover {
+            background: #3a3a3a;
+        }
+        .search-nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .search-highlight {
+            background: rgba(255, 255, 0, 0.4);
+            padding: 2px 0;
+            border-radius: 2px;
+        }
+        .search-highlight.current {
+            background: rgba(255, 200, 0, 0.6);
+            box-shadow: 0 0 5px rgba(255, 200, 0, 0.5);
         }
         .segment-highlight {
             background: rgba(65, 119, 144, 0.3);
@@ -233,7 +291,16 @@
                 <p style="margin-top: 10px;">Please upload a text file for this literary work.</p>
             </div>
             {% else %}
-            <div id="text-display">{{ text_content }}</div>
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="Search text... (Ctrl+F or Cmd+F)">
+                <div class="search-controls">
+                    <span class="search-count" id="search-count"></span>
+                    <button class="search-nav-btn" id="search-prev" disabled>↑ Previous</button>
+                    <button class="search-nav-btn" id="search-next" disabled>↓ Next</button>
+                    <button class="search-nav-btn" id="search-clear" style="display: none;">Clear</button>
+                </div>
+            </div>
+            <div id="text-display" data-plain-text="{{ text_content|escapejs }}">{{ text_content }}</div>
             {% endif %}
             
             <div class="form-panel" id="segment-form" style="display: none;">
@@ -347,40 +414,230 @@
             return div.innerHTML;
         }
         
+        // Store plain text on page load
+        if (textDisplay) {
+            plainText = textDisplay.getAttribute('data-plain-text') || textDisplay.textContent || textDisplay.innerText;
+        }
+        
         // Run highlighting after page loads
         if (textDisplay && textDisplay.textContent && existingSegments.length > 0) {
             highlightExistingSegments();
         }
         
-        // Handle text selection - need to account for HTML spans
-        textDisplay.addEventListener('mouseup', function() {
-            const selection = window.getSelection();
-            if (selection.toString().trim().length > 0 && selection.rangeCount > 0) {
-                selectedText = selection.toString();
-                const range = selection.getRangeAt(0);
-                
-                // Get the plain text version to calculate positions
-                const plainText = textDisplay.textContent || textDisplay.innerText;
-                
-                // Calculate positions based on plain text
-                const preSelectionRange = range.cloneRange();
-                preSelectionRange.selectNodeContents(textDisplay);
-                preSelectionRange.setEnd(range.startContainer, range.startOffset);
-                
-                // Get text before selection
-                const beforeText = preSelectionRange.toString();
-                startPos = beforeText.length;
-                endPos = startPos + selectedText.length;
-                
-                // Show form
-                document.getElementById('start-pos').value = startPos;
-                document.getElementById('end-pos').value = endPos;
-                updateSelectedCodes();
-                segmentForm.style.display = 'block';
-                // Initialize CKEditor when form is shown
-                setTimeout(initMemoEditor, 100);
+        // Store plain text for position calculations
+        let plainText = '';
+        
+        // Function to get character position in plain text from DOM position
+        function getTextPosition(node, offset) {
+            let position = 0;
+            const walker = document.createTreeWalker(
+                textDisplay,
+                NodeFilter.SHOW_TEXT,
+                null
+            );
+            
+            let current;
+            while (current = walker.nextNode()) {
+                if (current === node) {
+                    return position + offset;
+                }
+                position += current.textContent.length;
             }
+            return position;
+        }
+        
+        // Handle text selection - works with HTML structure
+        textDisplay.addEventListener('mouseup', function(e) {
+            // Small delay to ensure selection is complete
+            setTimeout(function() {
+                const selection = window.getSelection();
+                if (selection.toString().trim().length > 0 && selection.rangeCount > 0) {
+                    selectedText = selection.toString();
+                    const range = selection.getRangeAt(0);
+                    
+                    // Get plain text if not already stored
+                    if (!plainText) {
+                        plainText = textDisplay.getAttribute('data-plain-text') || textDisplay.textContent || textDisplay.innerText;
+                    }
+                    
+                    // Calculate start position
+                    const startNode = range.startContainer;
+                    const startOffset = range.startOffset;
+                    startPos = getTextPosition(startNode, startOffset);
+                    
+                    // Calculate end position
+                    const endNode = range.endContainer;
+                    const endOffset = range.endOffset;
+                    endPos = getTextPosition(endNode, endOffset);
+                    
+                    // Validate positions
+                    if (startPos >= 0 && endPos > startPos && endPos <= plainText.length) {
+                        // Show form
+                        document.getElementById('start-pos').value = startPos;
+                        document.getElementById('end-pos').value = endPos;
+                        updateSelectedCodes();
+                        segmentForm.style.display = 'block';
+                        // Scroll form into view
+                        segmentForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        // Initialize CKEditor when form is shown
+                        setTimeout(initMemoEditor, 100);
+                    }
+                }
+            }, 10);
         });
+        
+        // Search functionality
+        let searchResults = [];
+        let currentSearchIndex = -1;
+        const searchInput = document.getElementById('search-input');
+        const searchCount = document.getElementById('search-count');
+        const searchPrev = document.getElementById('search-prev');
+        const searchNext = document.getElementById('search-next');
+        const searchClear = document.getElementById('search-clear');
+        
+        function performSearch() {
+            const searchTerm = searchInput.value.trim();
+            
+            if (!searchTerm) {
+                clearSearch();
+                return;
+            }
+            
+            // Get plain text
+            if (!plainText) {
+                plainText = textDisplay.getAttribute('data-plain-text') || textDisplay.textContent || textDisplay.innerText;
+            }
+            
+            // Find all matches (case-insensitive)
+            searchResults = [];
+            const regex = new RegExp(searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+            let match;
+            while ((match = regex.exec(plainText)) !== null) {
+                searchResults.push({
+                    start: match.index,
+                    end: match.index + match[0].length,
+                    text: match[0]
+                });
+            }
+            
+            // Update UI
+            if (searchResults.length > 0) {
+                searchCount.textContent = `${currentSearchIndex + 1} of ${searchResults.length}`;
+                searchPrev.disabled = false;
+                searchNext.disabled = false;
+                searchClear.style.display = 'inline-block';
+                highlightSearchResults();
+                navigateToSearchResult(0);
+            } else {
+                searchCount.textContent = 'No results found';
+                searchPrev.disabled = true;
+                searchNext.disabled = true;
+                searchClear.style.display = 'inline-block';
+            }
+        }
+        
+        function highlightSearchResults() {
+            // First, restore original text with coded segments
+            if (existingSegments.length > 0) {
+                highlightExistingSegments();
+            } else {
+                if (!plainText) {
+                    plainText = textDisplay.getAttribute('data-plain-text') || textDisplay.textContent || textDisplay.innerText;
+                }
+                textDisplay.innerHTML = escapeHtml(plainText);
+            }
+            
+            // Then add search highlights
+            if (searchResults.length === 0) return;
+            
+            const text = textDisplay.textContent || textDisplay.innerText;
+            let html = textDisplay.innerHTML;
+            
+            // Sort by position (descending) to insert from end
+            const sortedResults = [...searchResults].sort((a, b) => b.start - a.start);
+            
+            sortedResults.forEach((result, index) => {
+                const before = escapeHtml(text.substring(0, result.start));
+                const match = escapeHtml(text.substring(result.start, result.end));
+                const after = escapeHtml(text.substring(result.end));
+                
+                const highlightClass = index === currentSearchIndex ? 'search-highlight current' : 'search-highlight';
+                html = before + `<span class="${highlightClass}" data-search-index="${index}">${match}</span>` + after;
+            });
+            
+            textDisplay.innerHTML = html;
+            
+            // Scroll to current result
+            if (currentSearchIndex >= 0) {
+                const currentHighlight = textDisplay.querySelector(`.search-highlight.current`);
+                if (currentHighlight) {
+                    currentHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }
+        
+        function navigateToSearchResult(index) {
+            if (searchResults.length === 0) return;
+            currentSearchIndex = Math.max(0, Math.min(index, searchResults.length - 1));
+            searchCount.textContent = `${currentSearchIndex + 1} of ${searchResults.length}`;
+            highlightSearchResults();
+        }
+        
+        function clearSearch() {
+            searchInput.value = '';
+            searchResults = [];
+            currentSearchIndex = -1;
+            searchCount.textContent = '';
+            searchPrev.disabled = true;
+            searchNext.disabled = true;
+            searchClear.style.display = 'none';
+            
+            // Restore original highlighting
+            if (existingSegments.length > 0) {
+                highlightExistingSegments();
+            } else {
+                if (!plainText) {
+                    plainText = textDisplay.getAttribute('data-plain-text') || textDisplay.textContent || textDisplay.innerText;
+                }
+                textDisplay.innerHTML = escapeHtml(plainText);
+            }
+        }
+        
+        // Search event listeners
+        if (searchInput) {
+            searchInput.addEventListener('input', performSearch);
+            searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (e.shiftKey) {
+                        navigateToSearchResult(currentSearchIndex - 1);
+                    } else {
+                        navigateToSearchResult(currentSearchIndex + 1);
+                    }
+                } else if (e.key === 'Escape') {
+                    clearSearch();
+                }
+            });
+            
+            // Keyboard shortcut (Ctrl+F / Cmd+F)
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                    e.preventDefault();
+                    searchInput.focus();
+                    searchInput.select();
+                }
+            });
+        }
+        
+        if (searchPrev) {
+            searchPrev.addEventListener('click', () => navigateToSearchResult(currentSearchIndex - 1));
+        }
+        if (searchNext) {
+            searchNext.addEventListener('click', () => navigateToSearchResult(currentSearchIndex + 1));
+        }
+        if (searchClear) {
+            searchClear.addEventListener('click', clearSearch);
+        }
         
         function updateSelectedCodes() {
             const checkboxes = document.querySelectorAll('input[name="codes"]:checked');
