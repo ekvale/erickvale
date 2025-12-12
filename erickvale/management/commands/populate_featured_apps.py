@@ -6,6 +6,34 @@ class Command(BaseCommand):
     help = 'Populate initial featured apps data'
 
     def handle(self, *args, **options):
+        # Create or update Literary Analysis (current month)
+        literary_app, created = FeaturedApp.objects.update_or_create(
+            slug='literary-analysis',
+            defaults={
+                'name': 'Literary Analysis',
+                'description': 'A comprehensive qualitative analysis framework for literary texts. Upload works, apply systematic coding methodologies, and generate publication-quality reports with statistical analysis, visualizations, and thematic exploration. Currently featuring a complete analysis of Samuel R. Delany\'s Dhalgren.',
+                'icon': '📚',
+                'url': '/apps/literary/',
+                'cover_image': None,
+                'features': [
+                    'Systematic qualitative coding',
+                    'Comprehensive report generation (17 sections)',
+                    'Statistical analysis (chi-square tests)',
+                    'Thematic analysis and visualization',
+                    'Word cloud and lexical analysis',
+                    'Co-occurrence networks',
+                    'Pre-built codebook templates'
+                ],
+                'month': 'December 2025',
+                'is_current_month': True,
+                'is_published': True,
+                'order': 1,
+            }
+        )
+        self.stdout.write(
+            self.style.SUCCESS(f'{"Created" if created else "Updated"} Literary Analysis')
+        )
+
         # Create or update The Power of Cards
         cards_app, created = FeaturedApp.objects.update_or_create(
             slug='cards',
@@ -22,9 +50,9 @@ class Command(BaseCommand):
                     'Character cards from favorite books'
                 ],
                 'month': 'January 2025',
-                'is_current_month': True,
+                'is_current_month': False,
                 'is_published': True,
-                'order': 1,
+                'order': 2,
             }
         )
         self.stdout.write(
@@ -48,7 +76,7 @@ class Command(BaseCommand):
                 'month': 'December 2024',
                 'is_current_month': False,
                 'is_published': False,  # Unpublished as requested
-                'order': 2,
+                'order': 3,
             }
         )
         self.stdout.write(
@@ -72,7 +100,7 @@ class Command(BaseCommand):
                 'month': 'Ongoing',
                 'is_current_month': False,
                 'is_published': True,
-                'order': 3,
+                'order': 4,
             }
         )
         self.stdout.write(
