@@ -444,6 +444,89 @@ def export_analysis(request, pk):
         return redirect('literary_analysis:analysis_detail', pk=pk)
 
 
+@login_required
+def create_memo(request, pk):
+    """Create a new analytical memo."""
+    analysis = get_object_or_404(Analysis, pk=pk)
+    
+    # Check permissions
+    if analysis.analyst != request.user and not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to create memos for this analysis.')
+        return redirect('literary_analysis:analysis_detail', pk=pk)
+    
+    if request.method == 'POST':
+        title = request.POST.get('title', '').strip()
+        content = request.POST.get('content', '').strip()
+        
+        if not title:
+            messages.error(request, 'Memo title is required.')
+        elif not content:
+            messages.error(request, 'Memo content is required.')
+        else:
+            memo = AnalyticalMemo.objects.create(
+                analysis=analysis,
+                title=title,
+                content=content,
+                created_by=request.user
+            )
+            messages.success(request, f'Memo "{memo.title}" created successfully.')
+            return redirect('literary_analysis:analysis_detail', pk=pk)
+    
+    return render(request, 'literary_analysis/create_memo.html', {
+        'analysis': analysis
+    })
+
+
+@login_required
+def edit_memo(request, pk, memo_id):
+    """Edit an existing analytical memo."""
+    analysis = get_object_or_404(Analysis, pk=pk)
+    memo = get_object_or_404(AnalyticalMemo, pk=memo_id, analysis=analysis)
+    
+    # Check permissions
+    if memo.created_by != request.user and not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to edit this memo.')
+        return redirect('literary_analysis:analysis_detail', pk=pk)
+    
+    if request.method == 'POST':
+        title = request.POST.get('title', '').strip()
+        content = request.POST.get('content', '').strip()
+        
+        if not title:
+            messages.error(request, 'Memo title is required.')
+        elif not content:
+            messages.error(request, 'Memo content is required.')
+        else:
+            memo.title = title
+            memo.content = content
+            memo.save()
+            messages.success(request, f'Memo "{memo.title}" updated successfully.')
+            return redirect('literary_analysis:analysis_detail', pk=pk)
+    
+    return render(request, 'literary_analysis/edit_memo.html', {
+        'analysis': analysis,
+        'memo': memo
+    })
+
+
+@login_required
+@require_http_methods(["POST"])
+def delete_memo(request, pk, memo_id):
+    """Delete an analytical memo."""
+    analysis = get_object_or_404(Analysis, pk=pk)
+    memo = get_object_or_404(AnalyticalMemo, pk=memo_id, analysis=analysis)
+    
+    # Check permissions
+    if memo.created_by != request.user and not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to delete this memo.')
+        return redirect('literary_analysis:analysis_detail', pk=pk)
+    
+    memo_title = memo.title
+    memo.delete()
+    messages.success(request, f'Memo "{memo_title}" deleted successfully.')
+    return redirect('literary_analysis:analysis_detail', pk=pk)
+
+
 def view_report(request, pk):
     """View generated analysis report (publicly accessible)."""
     analysis = get_object_or_404(Analysis, pk=pk)
