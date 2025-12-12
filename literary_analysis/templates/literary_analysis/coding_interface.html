@@ -477,30 +477,37 @@
         let plainText = '';
         
         // Initialize on page load with error handling
-        try {
-            // Store plain text on page load
-            if (textDisplay) {
-                plainText = textDisplay.getAttribute('data-plain-text') || textDisplay.textContent || textDisplay.innerText;
-                
-                // Run highlighting after page loads
-                if (plainText) {
-                    // Small delay to ensure DOM is ready
-                    setTimeout(function() {
+        // Run highlighting after page loads (only once)
+        let highlightingInitialized = false;
+        function initializeHighlighting() {
+            if (highlightingInitialized) return;
+            highlightingInitialized = true;
+            
+            try {
+                // Store plain text on page load
+                if (textDisplay) {
+                    plainText = textDisplay.getAttribute('data-plain-text') || textDisplay.textContent || textDisplay.innerText;
+                    
+                    // Run highlighting after page loads
+                    if (plainText) {
                         try {
                             highlightExistingSegments();
                         } catch (e) {
                             console.error('Error highlighting segments:', e);
                             // Fallback: just display plain text
-                            if (plainText) {
+                            if (plainText && textDisplay) {
                                 textDisplay.innerHTML = escapeHtml(plainText);
                             }
                         }
-                    }, 100);
+                    }
                 }
+            } catch (e) {
+                console.error('Error initializing text display:', e);
             }
-        } catch (e) {
-            console.error('Error initializing text display:', e);
         }
+        
+        // Initialize after a short delay
+        setTimeout(initializeHighlighting, 200);
         
         // Function to get character position in plain text from DOM position
         function getTextPosition(node, offset) {
