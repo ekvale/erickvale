@@ -528,8 +528,10 @@
             }
         }
         
-        // Handle text selection - works with HTML structure
-        if (textDisplay) {
+        // Handle text selection - works with HTML structure (prevent duplicate listeners)
+        let selectionListenerAttached = false;
+        if (textDisplay && !selectionListenerAttached) {
+            selectionListenerAttached = true;
             textDisplay.addEventListener('mouseup', function(e) {
                 // Small delay to ensure selection is complete
                 setTimeout(function() {
@@ -583,15 +585,20 @@
                         console.error('Error handling text selection:', error);
                     }
                 }, 10);
-            });
+            }, { once: false }); // Allow multiple selections but prevent duplicate listeners
         }
         
         // Search functionality
         let searchResults = [];
         let currentSearchIndex = -1;
+        let searchInitialized = false;
+        let searchTimeout = null;
         
         // Wait for DOM to be ready
         function initSearch() {
+            if (searchInitialized) return; // Prevent multiple initializations
+            searchInitialized = true;
+            
             const searchInput = document.getElementById('search-input');
             const searchCount = document.getElementById('search-count');
             const searchPrev = document.getElementById('search-prev');
@@ -618,16 +625,30 @@
                 plainText = textDisplay.getAttribute('data-plain-text') || textDisplay.textContent || textDisplay.innerText;
             }
             
-            // Find all matches (case-insensitive)
+            // Find all matches (case-insensitive) with safety limit
             searchResults = [];
-            const regex = new RegExp(searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-            let match;
-            while ((match = regex.exec(plainText)) !== null) {
-                searchResults.push({
-                    start: match.index,
-                    end: match.index + match[0].length,
-                    text: match[0]
-                });
+            try {
+                const escapedTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const regex = new RegExp(escapedTerm, 'gi');
+                let match;
+                let matchCount = 0;
+                const MAX_MATCHES = 1000; // Limit to prevent performance issues
+                
+                while ((match = regex.exec(plainText)) !== null && matchCount < MAX_MATCHES) {
+                    searchResults.push({
+                        start: match.index,
+                        end: match.index + match[0].length,
+                        text: match[0]
+                    });
+                    matchCount++;
+                }
+                
+                if (matchCount >= MAX_MATCHES) {
+                    console.warn('Search limited to first 1000 matches');
+                }
+            } catch (e) {
+                console.error('Error in search regex:', e);
+                searchResults = [];
             }
             
             // Update UI
@@ -652,42 +673,69 @@
         }
         
         function highlightSearchResults() {
-            // First, restore original text with coded segments
-            if (existingSegments.length > 0) {
-                highlightExistingSegments();
-            } else {
-                if (!plainText) {
-                    plainText = textDisplay.getAttribute('data-plain-text') || textDisplay.textContent || textDisplay.innerText;
+            if (!textDisplay || !plainText) return;
+            
+            try {
+                // First, restore original text with coded segments (but don't rebuild if not needed)
+                if (existingSegments.length > 0) {
+                    // Only rebuild if we don't already have the highlighted version
+                    if (!textDisplay.querySelector('.segment-highlight.coded')) {
+                        highlightExistingSegments();
+                    }
+                } else {
+                    if (!textDisplay.querySelector('.search-highlight')) {
+                        // Only set if not already set
+                        textDisplay.innerHTML = escapeHtml(plainText);
+                    }
                 }
-                textDisplay.innerHTML = escapeHtml(plainText);
-            }
-            
-            // Then add search highlights
-            if (searchResults.length === 0) return;
-            
-            const text = textDisplay.textContent || textDisplay.innerText;
-            let html = textDisplay.innerHTML;
-            
-            // Sort by position (descending) to insert from end
-            const sortedResults = [...searchResults].sort((a, b) => b.start - a.start);
-            
-            sortedResults.forEach((result, index) => {
-                const before = escapeHtml(text.substring(0, result.start));
-                const match = escapeHtml(text.substring(result.start, result.end));
-                const after = escapeHtml(text.substring(result.end));
                 
-                const highlightClass = index === currentSearchIndex ? 'search-highlight current' : 'search-highlight';
-                html = before + `<span class="${highlightClass}" data-search-index="${index}">${match}</span>` + after;
-            });
-            
-            textDisplay.innerHTML = html;
-            
-            // Scroll to current result
-            if (currentSearchIndex >= 0) {
-                const currentHighlight = textDisplay.querySelector(`.search-highlight.current`);
-                if (currentHighlight) {
-                    currentHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Then add search highlights
+                if (searchResults.length === 0) return;
+                
+                // Get current text content
+                const currentText = textDisplay.textContent || textDisplay.innerText;
+                if (!currentText) return;
+                
+                // Build HTML efficiently
+                let html = '';
+                let lastIndex = currentText.length;
+                
+                // Sort by position (descending) to insert from end
+                const sortedResults = [...searchResults].sort((a, b) => b.start - a.start);
+                
+                sortedResults.forEach((result, index) => {
+                    if (result.start >= 0 && result.end <= currentText.length && result.end <= lastIndex) {
+                        // Add text after this match
+                        if (result.end < lastIndex) {
+                            html = escapeHtml(currentText.substring(result.end, lastIndex)) + html;
+                        }
+                        
+                        // Add highlighted match
+                        const highlightClass = index === currentSearchIndex ? 'search-highlight current' : 'search-highlight';
+                        html = `<span class="${highlightClass}" data-search-index="${index}">${escapeHtml(currentText.substring(result.start, result.end))}</span>` + html;
+                        
+                        lastIndex = result.start;
+                    }
+                });
+                
+                // Add remaining text
+                if (lastIndex > 0) {
+                    html = escapeHtml(currentText.substring(0, lastIndex)) + html;
                 }
+                
+                textDisplay.innerHTML = html;
+                
+                // Scroll to current result
+                if (currentSearchIndex >= 0) {
+                    setTimeout(function() {
+                        const currentHighlight = textDisplay.querySelector('.search-highlight.current');
+                        if (currentHighlight) {
+                            currentHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }, 50);
+                }
+            } catch (e) {
+                console.error('Error highlighting search results:', e);
             }
         }
         
@@ -725,8 +773,15 @@
             }
         }
         
-            // Search event listeners
-            searchInput.addEventListener('input', performSearch);
+            // Search event listeners with debouncing
+            searchInput.addEventListener('input', function() {
+                // Debounce search to prevent performance issues
+                if (searchTimeout) {
+                    clearTimeout(searchTimeout);
+                }
+                searchTimeout = setTimeout(performSearch, 300);
+            });
+            
             searchInput.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
@@ -760,11 +815,13 @@
             });
         }
         
-        // Initialize search when DOM is ready
+        // Initialize search when DOM is ready (only once)
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initSearch);
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(initSearch, 100);
+            });
         } else {
-            initSearch();
+            setTimeout(initSearch, 100);
         }
         
         function updateSelectedCodes() {
@@ -781,19 +838,25 @@
             }
         }
         
-        // Update selected codes display when checkboxes change
-        document.addEventListener('DOMContentLoaded', function() {
+        // Update selected codes display when checkboxes change (prevent duplicate listeners)
+        let codesListenersAttached = false;
+        function attachCodeListeners() {
+            if (codesListenersAttached) return;
+            codesListenersAttached = true;
+            
             document.querySelectorAll('input[name="codes"]').forEach(cb => {
-                cb.addEventListener('change', updateSelectedCodes);
+                // Remove existing listener if any, then add new one
+                const newCb = cb.cloneNode(true);
+                cb.parentNode.replaceChild(newCb, cb);
+                newCb.addEventListener('change', updateSelectedCodes);
             });
-        });
+        }
         
-        // Also set up listeners immediately if elements exist
-        setTimeout(function() {
-            document.querySelectorAll('input[name="codes"]').forEach(cb => {
-                cb.addEventListener('change', updateSelectedCodes);
-            });
-        }, 100);
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', attachCodeListeners);
+        } else {
+            setTimeout(attachCodeListeners, 100);
+        }
         
         function cancelSelection() {
             segmentForm.style.display = 'none';
