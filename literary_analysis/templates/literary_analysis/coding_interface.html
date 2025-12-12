@@ -304,7 +304,7 @@
                 {% for code in codes %}
                 <li class="code-item">
                     <label>
-                        <input type="checkbox" name="codes" value="{{ code.pk }}" data-code-name="{{ code.code_name }}">
+                        <input type="checkbox" name="codes" value="{{ code.pk }}" data-code-name="{{ code.code_name }}" data-code-order="{{ code.order|default:0 }}">
                         {{ code.code_name }}
                     </label>
                 </li>
@@ -962,8 +962,21 @@
             if (checkboxes.length === 0) {
                 display.innerHTML = '<span style="color: #888;">No codes selected</span>';
             } else {
-                display.innerHTML = Array.from(checkboxes).map(cb => 
-                    `<span style="display: inline-block; padding: 4px 8px; background: #2a2a2a; border-radius: 4px; margin-right: 8px; margin-bottom: 8px;">${cb.dataset.codeName}</span>`
+                // Sort codes by order, then by name
+                const sortedCodes = Array.from(checkboxes).sort((a, b) => {
+                    const orderA = parseInt(a.dataset.codeOrder || '0', 10);
+                    const orderB = parseInt(b.dataset.codeOrder || '0', 10);
+                    if (orderA !== orderB) {
+                        return orderA - orderB;
+                    }
+                    // If order is the same, sort alphabetically by name
+                    const nameA = (a.dataset.codeName || '').toLowerCase();
+                    const nameB = (b.dataset.codeName || '').toLowerCase();
+                    return nameA.localeCompare(nameB);
+                });
+                
+                display.innerHTML = sortedCodes.map(cb => 
+                    `<span style="display: inline-block; padding: 4px 8px; background: #2a2a2a; border-radius: 4px; margin-right: 8px; margin-bottom: 8px;">${escapeHtml(cb.dataset.codeName)}</span>`
                 ).join('');
             }
         }

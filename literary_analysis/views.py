@@ -292,7 +292,8 @@ def coding_interface(request, pk):
     segments = analysis.coded_segments.all().order_by('start_position').prefetch_related('codes')
     segments_data = []
     for seg in segments:
-        codes_list = [code.code_name for code in seg.codes.all()]
+        # Get codes ordered by order field, then by code_name for logical display
+        codes_list = [code.code_name for code in seg.codes.all().order_by('order', 'code_name')]
         segments_data.append({
             'id': seg.pk,
             'start': seg.start_position,
