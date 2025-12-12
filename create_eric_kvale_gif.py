@@ -13,18 +13,18 @@ import math
 def create_eric_kvale_ascii_gif():
     """Create an animated ASCII GIF that spells ERIC KVALE"""
     
-    # Configuration
-    width = 900
-    height = 400
+    # Configuration - Higher resolution for better quality
+    width = 1200
+    height = 600
     bg_color = '#1a1a2e'  # Dark background
     text_color = '#e94560'  # Pink/red color (same as Dhalgren)
     
-    # Font setup
+    # Font setup - Larger font for better visibility
     try:
         # Try to use a monospace font for ASCII art feel
-        font_size = 65
+        font_size = 90  # Increased from 65
         font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf", font_size)
-        small_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf", 12)
+        small_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf", 14)  # Slightly larger
     except:
         font = ImageFont.load_default()
         small_font = ImageFont.load_default()
@@ -36,12 +36,12 @@ def create_eric_kvale_ascii_gif():
     ascii_chars = ['@', '#', '$', '%', '&', '*', '+', '=', '-', ':', '.', ' ']
     
     frames = []
-    total_frames = 180  # INCREASED from 120 - makes it 50% slower
+    # Extended phases - longer ASCII snow, no fade out
+    total_frames = 200
     
-    # Phase 1: Random noise (frames 0-30) - INCREASED from 20
-    # Phase 2: Letters appearing one by one (frames 30-135) - INCREASED from 20-80
-    # Phase 3: Final name stable (frames 135-150) - INCREASED from 80-100
-    # Phase 4: Fade to loop (frames 150-180) - INCREASED from 100-120
+    # Phase 1: Random ASCII snow (frames 0-60) - EXTENDED from 30
+    # Phase 2: Letters appearing one by one (frames 60-160) - Extended
+    # Phase 3: Final name stable (frames 160-200) - Hold at end, no fade
     
     for frame_num in range(total_frames):
         # Create new frame
@@ -49,9 +49,9 @@ def create_eric_kvale_ascii_gif():
         draw = ImageDraw.Draw(img)
         
         # Determine which phase we're in
-        if frame_num < 30:
-            # Phase 1: Random noise (SLOWER)
-            progress = frame_num / 30
+        if frame_num < 60:
+            # Phase 1: Random ASCII snow (EXTENDED - 60 frames)
+            progress = frame_num / 60
             
             # Draw random ASCII characters in a grid
             for y in range(0, height, 20):
@@ -62,9 +62,9 @@ def create_eric_kvale_ascii_gif():
                         color = f'#{alpha:02x}{alpha:02x}{alpha:02x}'
                         draw.text((x, y), char, font=small_font, fill=color)
         
-        elif frame_num < 135:
-            # Phase 2 & 3: Letters appearing (MUCH SLOWER - 105 frames vs 70)
-            progress = (frame_num - 30) / 105  # INCREASED duration
+        elif frame_num < 160:
+            # Phase 2: Letters appearing one by one
+            progress = (frame_num - 60) / 100  # 100 frames for letter building
             
             # Calculate how many letters to show
             letters_to_show = int(progress * len(name)) + 1
@@ -119,8 +119,8 @@ def create_eric_kvale_ascii_gif():
                 
                 x_offset += letter_width + 3
         
-        elif frame_num < 150:
-            # Phase 3: Stable name (LONGER hold time)
+        else:
+            # Phase 3: Stable name - hold at end (no fade, plays once)
             # Draw complete name
             bbox = font.getbbox(name)
             text_width = bbox[2] - bbox[0]
@@ -130,27 +130,11 @@ def create_eric_kvale_ascii_gif():
             
             draw.text((start_x, start_y), name, font=font, fill=text_color)
         
-        else:
-            # Phase 4: Fade out for loop (SLOWER fade)
-            fade_progress = (frame_num - 150) / 30
-            
-            # Draw complete name
-            bbox = font.getbbox(name)
-            text_width = bbox[2] - bbox[0]
-            text_height = bbox[3] - bbox[1]
-            start_x = (width - text_width) // 2
-            start_y = (height - text_height) // 2
-            
-            # Fade out
-            alpha = int(233 * (1 - fade_progress))
-            fade_color = f'#{alpha:02x}{int(alpha*0.27):02x}{int(alpha*0.38):02x}'  # Pink/red
-            draw.text((start_x, start_y), name, font=font, fill=fade_color)
-        
         # Add subtle title at bottom
-        if frame_num >= 60 and frame_num < 145:
-            subtitle_alpha = min(255, int((frame_num - 60) * 6))  # SLOWER fade in
-            if frame_num >= 135:
-                subtitle_alpha = int(subtitle_alpha * (1 - (frame_num - 135) / 30))
+        if frame_num >= 100 and frame_num < 180:
+            subtitle_alpha = min(255, int((frame_num - 100) * 4))  # Fade in during letter building
+            if frame_num >= 160:
+                subtitle_alpha = 255  # Keep at full opacity in final phase
             
             subtitle_color = f'#{subtitle_alpha:02x}{subtitle_alpha:02x}{subtitle_alpha:02x}'
             subtitle = "Hermeneutic Learning Cartographer | Spaceship Earth"
@@ -170,23 +154,25 @@ def create_eric_kvale_ascii_gif():
     # Save as GIF
     output_path = './eric_kvale_ascii_animation.gif'
     
-    # Use every other frame to reduce file size (but still slower than Dhalgren)
-    frames_reduced = frames[::2]
+    # Use all frames for smooth animation (higher resolution needs it)
+    # Could reduce to every frame for smaller file, but quality is priority
     
-    frames_reduced[0].save(
+    frames[0].save(
         output_path,
         save_all=True,
-        append_images=frames_reduced[1:],
-        duration=80,  # 80ms per frame = ~12.5fps (slower than Dhalgren's 66ms)
-        loop=0,  # Loop forever
+        append_images=frames[1:],
+        duration=80,  # 80ms per frame
+        loop=1,  # Play once (loop=1 means play once, then stop)
         optimize=True
     )
     
     print(f"✓ Created animated GIF: {output_path}")
-    print(f"  Frames: {len(frames_reduced)}")
-    print(f"  Duration: ~{len(frames_reduced) * 80 / 1000:.1f} seconds per loop")
-    print(f"  Size: {width}x{height}")
-    print(f"  Speed: 50% slower letter creation than DHALGREN")
+    print(f"  Frames: {len(frames)}")
+    print(f"  Duration: ~{len(frames) * 80 / 1000:.1f} seconds (plays once)")
+    print(f"  Size: {width}x{height} (higher resolution)")
+    print(f"  Font size: {font_size}px")
+    print(f"  ASCII snow: 60 frames (extended)")
+    print(f"  Loop: Once (stops at end)")
     
     return output_path
 
