@@ -322,7 +322,10 @@ class ReportGenerator:
                 <tbody>
             """
             
-            for (code1, code2), stats in list(code_pairs.items())[:20]:  # Top 20 pairs
+            # Sort by chi-square value (most significant first)
+            sorted_pairs = sorted(code_pairs.items(), key=lambda x: x[1]['chi2'], reverse=True)[:20]
+            
+            for (code1, code2), stats in sorted_pairs:
                 p_value = stats['p_value']
                 observed = stats['observed']
                 expected = stats['expected']
@@ -992,23 +995,37 @@ class ReportGenerator:
         return freq
     
     def _get_code_pairs(self):
-        """Get code pairs with chi-square statistics."""
+        """Get code pairs with chi-square statistics (optimized)."""
+        if not self.segments:
+            return {}
+        
         pairs = {}
         
+        # Pre-compute code occurrences for all segments (much faster)
+        segment_codes = {}  # segment_id -> set of code names
+        code_counts = Counter()  # code_name -> count
+        
+        for seg in self.segments:
+            code_names = {c.code_name for c in seg.codes.all()}
+            segment_codes[seg.id] = code_names
+            for code_name in code_names:
+                code_counts[code_name] += 1
+        
+        # Only process codes that actually appear
+        active_codes = [code for code in self.codes.keys() if code_counts[code] > 0]
+        
+        # Limit to top 30 most frequent codes to avoid combinatorial explosion
+        active_codes = sorted(active_codes, key=lambda x: code_counts[x], reverse=True)[:30]
+        
         # Get all code pairs that co-occur
-        code_list = list(self.codes.keys())
-        for code1, code2 in combinations(code_list, 2):
-            # Count co-occurrences
-            together = sum(1 for seg in self.segments 
-                          if any(c.code_name == code1 for c in seg.codes.all()) and
-                          any(c.code_name == code2 for c in seg.codes.all()))
+        for code1, code2 in combinations(active_codes, 2):
+            # Count co-occurrences (fast set intersection)
+            together = sum(1 for seg_id, codes in segment_codes.items() 
+                          if code1 in codes and code2 in codes)
             
             if together > 0:
-                # Count individual occurrences
-                code1_count = sum(1 for seg in self.segments 
-                                 if any(c.code_name == code1 for c in seg.codes.all()))
-                code2_count = sum(1 for seg in self.segments 
-                                 if any(c.code_name == code2 for c in seg.codes.all()))
+                code1_count = code_counts[code1]
+                code2_count = code_counts[code2]
                 
                 # Expected frequency
                 expected = (code1_count * code2_count) / len(self.segments) if self.segments else 0
@@ -1017,8 +1034,6 @@ class ReportGenerator:
                 observed = together
                 if expected > 0 and len(self.segments) > 0:
                     # Create contingency table
-                    # [code1&code2, code1&not_code2]
-                    # [not_code1&code2, not_code1&not_code2]
                     a = together  # both
                     b = code1_count - together  # code1 but not code2
                     c = code2_count - together  # code2 but not code1
