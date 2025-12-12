@@ -414,6 +414,9 @@
             return div.innerHTML;
         }
         
+        // Store plain text for position calculations
+        let plainText = '';
+        
         // Store plain text on page load
         if (textDisplay) {
             plainText = textDisplay.getAttribute('data-plain-text') || textDisplay.textContent || textDisplay.innerText;
@@ -423,9 +426,6 @@
         if (textDisplay && textDisplay.textContent && existingSegments.length > 0) {
             highlightExistingSegments();
         }
-        
-        // Store plain text for position calculations
-        let plainText = '';
         
         // Function to get character position in plain text from DOM position
         function getTextPosition(node, offset) {
@@ -447,55 +447,74 @@
         }
         
         // Handle text selection - works with HTML structure
-        textDisplay.addEventListener('mouseup', function(e) {
-            // Small delay to ensure selection is complete
-            setTimeout(function() {
-                const selection = window.getSelection();
-                if (selection.toString().trim().length > 0 && selection.rangeCount > 0) {
-                    selectedText = selection.toString();
-                    const range = selection.getRangeAt(0);
+        if (textDisplay) {
+            textDisplay.addEventListener('mouseup', function(e) {
+                // Small delay to ensure selection is complete
+                setTimeout(function() {
+                    const selection = window.getSelection();
+                    const selectedTextStr = selection.toString().trim();
                     
-                    // Get plain text if not already stored
-                    if (!plainText) {
-                        plainText = textDisplay.getAttribute('data-plain-text') || textDisplay.textContent || textDisplay.innerText;
+                    if (selectedTextStr.length > 0 && selection.rangeCount > 0) {
+                        selectedText = selectedTextStr;
+                        const range = selection.getRangeAt(0);
+                        
+                        // Get plain text if not already stored
+                        if (!plainText) {
+                            plainText = textDisplay.getAttribute('data-plain-text') || textDisplay.textContent || textDisplay.innerText;
+                        }
+                        
+                        // Calculate start position
+                        const startNode = range.startContainer;
+                        const startOffset = range.startOffset;
+                        startPos = getTextPosition(startNode, startOffset);
+                        
+                        // Calculate end position
+                        const endNode = range.endContainer;
+                        const endOffset = range.endOffset;
+                        endPos = getTextPosition(endNode, endOffset);
+                        
+                        // Validate positions
+                        if (startPos >= 0 && endPos > startPos && endPos <= plainText.length) {
+                            // Show form
+                            const startPosInput = document.getElementById('start-pos');
+                            const endPosInput = document.getElementById('end-pos');
+                            if (startPosInput) startPosInput.value = startPos;
+                            if (endPosInput) endPosInput.value = endPos;
+                            
+                            updateSelectedCodes();
+                            if (segmentForm) {
+                                segmentForm.style.display = 'block';
+                                // Scroll form into view
+                                segmentForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                            }
+                            // Initialize CKEditor when form is shown
+                            setTimeout(initMemoEditor, 100);
+                        }
                     }
-                    
-                    // Calculate start position
-                    const startNode = range.startContainer;
-                    const startOffset = range.startOffset;
-                    startPos = getTextPosition(startNode, startOffset);
-                    
-                    // Calculate end position
-                    const endNode = range.endContainer;
-                    const endOffset = range.endOffset;
-                    endPos = getTextPosition(endNode, endOffset);
-                    
-                    // Validate positions
-                    if (startPos >= 0 && endPos > startPos && endPos <= plainText.length) {
-                        // Show form
-                        document.getElementById('start-pos').value = startPos;
-                        document.getElementById('end-pos').value = endPos;
-                        updateSelectedCodes();
-                        segmentForm.style.display = 'block';
-                        // Scroll form into view
-                        segmentForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                        // Initialize CKEditor when form is shown
-                        setTimeout(initMemoEditor, 100);
-                    }
-                }
-            }, 10);
-        });
+                }, 10);
+            });
+        }
         
         // Search functionality
         let searchResults = [];
         let currentSearchIndex = -1;
-        const searchInput = document.getElementById('search-input');
-        const searchCount = document.getElementById('search-count');
-        const searchPrev = document.getElementById('search-prev');
-        const searchNext = document.getElementById('search-next');
-        const searchClear = document.getElementById('search-clear');
+        
+        // Wait for DOM to be ready
+        function initSearch() {
+            const searchInput = document.getElementById('search-input');
+            const searchCount = document.getElementById('search-count');
+            const searchPrev = document.getElementById('search-prev');
+            const searchNext = document.getElementById('search-next');
+            const searchClear = document.getElementById('search-clear');
+            
+            if (!searchInput || !searchCount || !searchPrev || !searchNext || !searchClear) {
+                return; // Elements don't exist (no text content)
+            }
         
         function performSearch() {
+            const searchInput = document.getElementById('search-input');
+            if (!searchInput) return;
+            
             const searchTerm = searchInput.value.trim();
             
             if (!searchTerm) {
@@ -521,18 +540,23 @@
             }
             
             // Update UI
+            const searchCount = document.getElementById('search-count');
+            const searchPrev = document.getElementById('search-prev');
+            const searchNext = document.getElementById('search-next');
+            const searchClear = document.getElementById('search-clear');
+            
             if (searchResults.length > 0) {
-                searchCount.textContent = `${currentSearchIndex + 1} of ${searchResults.length}`;
-                searchPrev.disabled = false;
-                searchNext.disabled = false;
-                searchClear.style.display = 'inline-block';
+                if (searchCount) searchCount.textContent = `${currentSearchIndex + 1} of ${searchResults.length}`;
+                if (searchPrev) searchPrev.disabled = false;
+                if (searchNext) searchNext.disabled = false;
+                if (searchClear) searchClear.style.display = 'inline-block';
                 highlightSearchResults();
                 navigateToSearchResult(0);
             } else {
-                searchCount.textContent = 'No results found';
-                searchPrev.disabled = true;
-                searchNext.disabled = true;
-                searchClear.style.display = 'inline-block';
+                if (searchCount) searchCount.textContent = 'No results found';
+                if (searchPrev) searchPrev.disabled = true;
+                if (searchNext) searchNext.disabled = true;
+                if (searchClear) searchClear.style.display = 'inline-block';
             }
         }
         
@@ -579,18 +603,25 @@
         function navigateToSearchResult(index) {
             if (searchResults.length === 0) return;
             currentSearchIndex = Math.max(0, Math.min(index, searchResults.length - 1));
-            searchCount.textContent = `${currentSearchIndex + 1} of ${searchResults.length}`;
+            const searchCount = document.getElementById('search-count');
+            if (searchCount) searchCount.textContent = `${currentSearchIndex + 1} of ${searchResults.length}`;
             highlightSearchResults();
         }
         
         function clearSearch() {
-            searchInput.value = '';
+            const searchInput = document.getElementById('search-input');
+            const searchCount = document.getElementById('search-count');
+            const searchPrev = document.getElementById('search-prev');
+            const searchNext = document.getElementById('search-next');
+            const searchClear = document.getElementById('search-clear');
+            
+            if (searchInput) searchInput.value = '';
             searchResults = [];
             currentSearchIndex = -1;
-            searchCount.textContent = '';
-            searchPrev.disabled = true;
-            searchNext.disabled = true;
-            searchClear.style.display = 'none';
+            if (searchCount) searchCount.textContent = '';
+            if (searchPrev) searchPrev.disabled = true;
+            if (searchNext) searchNext.disabled = true;
+            if (searchClear) searchClear.style.display = 'none';
             
             // Restore original highlighting
             if (existingSegments.length > 0) {
@@ -603,8 +634,7 @@
             }
         }
         
-        // Search event listeners
-        if (searchInput) {
+            // Search event listeners
             searchInput.addEventListener('input', performSearch);
             searchInput.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
@@ -619,6 +649,16 @@
                 }
             });
             
+            searchPrev.addEventListener('click', function() {
+                navigateToSearchResult(currentSearchIndex - 1);
+            });
+            
+            searchNext.addEventListener('click', function() {
+                navigateToSearchResult(currentSearchIndex + 1);
+            });
+            
+            searchClear.addEventListener('click', clearSearch);
+            
             // Keyboard shortcut (Ctrl+F / Cmd+F)
             document.addEventListener('keydown', function(e) {
                 if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
@@ -629,19 +669,18 @@
             });
         }
         
-        if (searchPrev) {
-            searchPrev.addEventListener('click', () => navigateToSearchResult(currentSearchIndex - 1));
-        }
-        if (searchNext) {
-            searchNext.addEventListener('click', () => navigateToSearchResult(currentSearchIndex + 1));
-        }
-        if (searchClear) {
-            searchClear.addEventListener('click', clearSearch);
+        // Initialize search when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initSearch);
+        } else {
+            initSearch();
         }
         
         function updateSelectedCodes() {
             const checkboxes = document.querySelectorAll('input[name="codes"]:checked');
             const display = document.getElementById('selected-codes-display');
+            if (!display) return;
+            
             if (checkboxes.length === 0) {
                 display.innerHTML = '<span style="color: #888;">No codes selected</span>';
             } else {
@@ -652,9 +691,18 @@
         }
         
         // Update selected codes display when checkboxes change
-        document.querySelectorAll('input[name="codes"]').forEach(cb => {
-            cb.addEventListener('change', updateSelectedCodes);
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('input[name="codes"]').forEach(cb => {
+                cb.addEventListener('change', updateSelectedCodes);
+            });
         });
+        
+        // Also set up listeners immediately if elements exist
+        setTimeout(function() {
+            document.querySelectorAll('input[name="codes"]').forEach(cb => {
+                cb.addEventListener('change', updateSelectedCodes);
+            });
+        }, 100);
         
         function cancelSelection() {
             segmentForm.style.display = 'none';
