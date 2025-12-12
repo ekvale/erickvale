@@ -51,7 +51,7 @@ def index(request):
     """Card maker app index page."""
     all_sets = CardSet.objects.filter(is_active=True).order_by('-created_at')
     
-    # Get selected set from query parameter or default to first set
+    # Get selected set from query parameter or default to Dungeon Crawler Carl Book 1
     selected_set_slug = request.GET.get('set')
     selected_set = None
     cards = []
@@ -63,9 +63,15 @@ def index(request):
         except CardSet.DoesNotExist:
             selected_set = None
     elif all_sets.exists():
-        # Default to first set if no set is selected
-        selected_set = all_sets.first()
-        cards = selected_set.cards.filter(is_active=True).order_by('order', 'name')
+        # Default to Dungeon Crawler Carl Book 1 if it exists, otherwise first set
+        try:
+            selected_set = CardSet.objects.get(slug='dungeon-crawler-carl-book-1', is_active=True)
+            cards = selected_set.cards.filter(is_active=True).order_by('order', 'name')
+        except CardSet.DoesNotExist:
+            # Fall back to first set if DCC Book 1 doesn't exist
+            selected_set = all_sets.first()
+            if selected_set:
+                cards = selected_set.cards.filter(is_active=True).order_by('order', 'name')
     
     context = {
         'selected_set': selected_set,
