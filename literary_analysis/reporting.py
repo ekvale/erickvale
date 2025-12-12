@@ -120,7 +120,19 @@ class ReportGenerator:
         </header>
         
         <div class="controls-bar">
-            <input type="text" id="search-input" placeholder="Search report..." class="search-box">
+            <input type="text" id="search-input" placeholder="🔍 Search report..." class="search-box">
+            <select id="section-filter" class="section-filter">
+                <option value="">All Sections</option>
+                <option value="executive">Executive Summary</option>
+                <option value="statistical">Statistical Analysis</option>
+                <option value="word">Word Cloud</option>
+                <option value="thematic">Thematic Analysis</option>
+                <option value="codebook">Codebook</option>
+                <option value="frequency">Code Frequency</option>
+                <option value="co-occurrence">Co-occurrence</option>
+                <option value="segments">Coded Segments</option>
+                <option value="memos">Memos</option>
+            </select>
             <button onclick="scrollToTop()" class="btn-top">↑ Top</button>
         </div>
         
@@ -128,41 +140,121 @@ class ReportGenerator:
             // Chart data
             const chartData = {json.dumps(chart_data)};
             
-            // Search functionality
+            // Enhanced search with highlighting
+            let searchTimeout;
             document.getElementById('search-input').addEventListener('input', function(e) {{
-                const searchTerm = e.target.value.toLowerCase();
-                const sections = document.querySelectorAll('.section');
-                sections.forEach(section => {{
-                    const text = section.textContent.toLowerCase();
-                    if (text.includes(searchTerm) || searchTerm === '') {{
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {{
+                    const searchTerm = e.target.value.trim().toLowerCase();
+                    const sectionFilter = document.getElementById('section-filter').value;
+                    
+                    // Remove previous highlights
+                    document.querySelectorAll('.highlight').forEach(el => {{
+                        const parent = el.parentNode;
+                        parent.replaceChild(document.createTextNode(el.textContent), el);
+                        parent.normalize();
+                    }});
+                    
+                    if (searchTerm === '') {{
+                        document.querySelectorAll('.section').forEach(s => {{
+                            s.style.display = 'block';
+                            s.classList.remove('hidden');
+                        }});
+                        return;
+                    }}
+                    
+                    // Filter by section
+                    document.querySelectorAll('.section').forEach(section => {{
+                        const sectionId = section.id || '';
+                        if (sectionFilter && !sectionId.includes(sectionFilter)) {{
+                            section.style.display = 'none';
+                            section.classList.add('hidden');
+                            return;
+                        }}
+                        
+                        const text = section.textContent.toLowerCase();
+                        if (text.includes(searchTerm)) {{
+                            section.style.display = 'block';
+                            section.classList.remove('hidden');
+                            
+                            // Highlight matches
+                            const walker = document.createTreeWalker(
+                                section,
+                                NodeFilter.SHOW_TEXT,
+                                null,
+                                false
+                            );
+                            
+                            const textNodes = [];
+                            let node;
+                            while (node = walker.nextNode()) {{
+                                if (node.textContent.toLowerCase().includes(searchTerm)) {{
+                                    textNodes.push(node);
+                                }}
+                            }}
+                            
+                            textNodes.forEach(textNode => {{
+                                const text = textNode.textContent;
+                                const regex = new RegExp(`(${{searchTerm}})`, 'gi');
+                                const highlighted = text.replace(regex, '<span class="highlight">$1</span>');
+                                const wrapper = document.createElement('span');
+                                wrapper.innerHTML = highlighted;
+                                textNode.parentNode.replaceChild(wrapper, textNode);
+                            }});
+                        }} else {{
+                            section.style.display = 'none';
+                            section.classList.add('hidden');
+                        }}
+                    }});
+                }}, 300);
+            }});
+            
+            // Section filter
+            document.getElementById('section-filter').addEventListener('change', function(e) {{
+                const filter = e.target.value;
+                document.querySelectorAll('.section').forEach(section => {{
+                    const sectionId = section.id || '';
+                    if (!filter || sectionId.includes(filter)) {{
                         section.style.display = 'block';
+                        section.classList.remove('hidden');
                     }} else {{
                         section.style.display = 'none';
+                        section.classList.add('hidden');
                     }}
                 }});
             }});
             
-            // Sortable tables
+            // Enhanced sortable tables with visual indicators
             function makeSortable(table) {{
                 const headers = table.querySelectorAll('th');
                 headers.forEach((header, index) => {{
+                    header.classList.add('sortable');
                     header.style.cursor = 'pointer';
                     header.addEventListener('click', () => {{
-                        sortTable(table, index);
+                        sortTable(table, index, header);
                     }});
                 }});
             }}
             
-            function sortTable(table, columnIndex) {{
+            function sortTable(table, columnIndex, header) {{
                 const tbody = table.querySelector('tbody');
                 const rows = Array.from(tbody.querySelectorAll('tr'));
-                const isAsc = table.dataset.sortDirection !== 'asc';
+                
+                // Reset all headers
+                table.querySelectorAll('th').forEach(th => {{
+                    th.classList.remove('sort-asc', 'sort-desc');
+                }});
+                
+                // Determine sort direction
+                const currentSort = header.classList.contains('sort-asc') ? 'asc' : 
+                                   header.classList.contains('sort-desc') ? 'desc' : 'none';
+                const isAsc = currentSort !== 'asc';
                 
                 rows.sort((a, b) => {{
                     const aText = a.cells[columnIndex].textContent.trim();
                     const bText = b.cells[columnIndex].textContent.trim();
-                    const aNum = parseFloat(aText);
-                    const bNum = parseFloat(bText);
+                    const aNum = parseFloat(aText.replace(/[^0-9.-]/g, ''));
+                    const bNum = parseFloat(bText.replace(/[^0-9.-]/g, ''));
                     
                     if (!isNaN(aNum) && !isNaN(bNum)) {{
                         return isAsc ? aNum - bNum : bNum - aNum;
@@ -171,22 +263,36 @@ class ReportGenerator:
                 }});
                 
                 rows.forEach(row => tbody.appendChild(row));
-                table.dataset.sortDirection = isAsc ? 'asc' : 'desc';
+                
+                // Update header class
+                header.classList.remove('sort-asc', 'sort-desc');
+                header.classList.add(isAsc ? 'sort-asc' : 'sort-desc');
             }}
             
             function scrollToTop() {{
                 window.scrollTo({{ top: 0, behavior: 'smooth' }});
             }}
             
-            // Initialize sortable tables on load
+            // Initialize on load
             document.addEventListener('DOMContentLoaded', function() {{
                 document.querySelectorAll('table').forEach(makeSortable);
+                
+                // Add IDs to sections for filtering
+                document.querySelectorAll('.section').forEach((section, index) => {{
+                    const h2 = section.querySelector('h2');
+                    if (h2) {{
+                        const id = h2.textContent.toLowerCase()
+                            .replace(/[^a-z0-9]+/g, '-')
+                            .replace(/^-|-$/g, '');
+                        section.id = id;
+                    }}
+                }});
             }});
         </script>
 """
     
     def _get_css(self):
-        """Dark academic styling CSS."""
+        """Enhanced colorful, modern styling CSS."""
         return """
         * {
             margin: 0;
@@ -194,153 +300,358 @@ class ReportGenerator:
             box-sizing: border-box;
         }
         body {
-            font-family: 'Georgia', 'Times New Roman', serif;
-            background: #1a1a1a;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
             color: #e0e0e0;
             line-height: 1.8;
-            padding: 40px 20px;
+            padding: 20px;
         }
         .report-container {
-            max-width: 1000px;
+            max-width: 1400px;
             margin: 0 auto;
             background: #0a0a0a;
-            padding: 60px;
-            border: 1px solid #2a2a2a;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
         .report-header {
             text-align: center;
-            margin-bottom: 60px;
-            padding-bottom: 40px;
-            border-bottom: 2px solid #2a2a2a;
+            margin-bottom: 50px;
+            padding: 40px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 12px;
+            border: 2px solid #2a4a6e;
+            box-shadow: 0 4px 20px rgba(26, 26, 46, 0.5);
         }
         .report-header h1 {
-            font-size: 42px;
-            font-weight: 400;
+            font-size: 48px;
+            font-weight: 300;
             margin-bottom: 10px;
             color: #fff;
+            text-shadow: 0 2px 10px rgba(255,255,255,0.1);
         }
         .report-header h2 {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: 300;
-            color: #ccc;
+            color: #a0c4ff;
             margin-bottom: 20px;
         }
         .subtitle {
-            font-size: 18px;
+            font-size: 20px;
             color: #888;
             margin-bottom: 10px;
         }
         .meta {
             font-size: 14px;
             color: #666;
+            margin-top: 15px;
+        }
+        .controls-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            margin: -20px -20px 30px -20px;
+            border-bottom: 2px solid #2a2a2a;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            padding: 12px 20px;
+            background: #1a1a1a;
+            border: 2px solid #2a2a2a;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .search-box:focus {
+            outline: none;
+            border-color: #417690;
+            box-shadow: 0 0 10px rgba(65, 118, 144, 0.3);
+        }
+        .section-filter {
+            padding: 12px 20px;
+            background: #1a1a1a;
+            border: 2px solid #2a2a2a;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .btn-top {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #417690 0%, #5a8ba5 100%);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(65, 118, 144, 0.3);
+        }
+        .btn-top:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(65, 118, 144, 0.5);
         }
         .section {
             margin-bottom: 60px;
+            padding: 40px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+            border-radius: 12px;
+            border: 2px solid #2a2a2a;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
             page-break-inside: avoid;
+            transition: all 0.3s;
+        }
+        .section:hover {
+            border-color: #3a3a3a;
+            box-shadow: 0 6px 30px rgba(0,0,0,0.4);
+        }
+        .section.hidden {
+            display: none;
         }
         .section h2 {
-            font-size: 32px;
+            font-size: 36px;
             font-weight: 400;
             margin-bottom: 30px;
             color: #fff;
-            border-bottom: 1px solid #2a2a2a;
-            padding-bottom: 10px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid;
+            border-image: linear-gradient(90deg, #417690, #9a4, #4a9) 1;
         }
         .section h3 {
-            font-size: 24px;
+            font-size: 26px;
             font-weight: 400;
             margin-top: 30px;
             margin-bottom: 20px;
-            color: #fff;
+            color: #a0c4ff;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 25px;
+            border-radius: 10px;
+            border: 2px solid #2a4a6e;
+            text-align: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(26, 26, 46, 0.3);
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(26, 26, 46, 0.5);
+            border-color: #3a5a8e;
+        }
+        .stat-value {
+            font-size: 42px;
+            font-weight: 300;
+            color: #a0c4ff;
+            margin-bottom: 8px;
+        }
+        .stat-label {
+            color: #888;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
+            margin: 25px 0;
+            background: #0a0a0a;
+            border-radius: 8px;
+            overflow: hidden;
         }
         th, td {
-            padding: 12px;
+            padding: 15px;
             text-align: left;
             border-bottom: 1px solid #2a2a2a;
         }
         th {
-            background: #1a1a1a;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             color: #fff;
             font-weight: 500;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            transition: background 0.3s;
+        }
+        th:hover {
+            background: linear-gradient(135deg, #2a2a4e 0%, #26314e 100%);
+        }
+        th.sortable::after {
+            content: ' ↕';
+            opacity: 0.5;
+            font-size: 12px;
+        }
+        th.sort-asc::after {
+            content: ' ↑';
+            opacity: 1;
+            color: #4a9;
+        }
+        th.sort-desc::after {
+            content: ' ↓';
+            opacity: 1;
+            color: #9a4;
+        }
+        tr:hover {
+            background: #1a1a1a;
         }
         .code-badge {
             display: inline-block;
-            padding: 4px 8px;
-            background: #2a2a2a;
-            border: 1px solid #3a3a3a;
-            border-radius: 4px;
+            padding: 6px 12px;
+            background: linear-gradient(135deg, #2a4a6e 0%, #1a3a5e 100%);
+            border: 1px solid #3a5a8e;
+            border-radius: 6px;
             font-size: 12px;
             margin-right: 8px;
             margin-bottom: 8px;
+            color: #a0c4ff;
+            font-weight: 500;
         }
         .segment-box {
-            background: #1a1a1a;
-            border: 1px solid #2a2a2a;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 4px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+            border-left: 5px solid #417690;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+        .segment-box:hover {
+            border-left-color: #5a8ba5;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
         }
         .segment-text {
             font-style: italic;
             color: #ccc;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             line-height: 1.8;
+            font-size: 16px;
         }
         .segment-meta {
             font-size: 14px;
             color: #888;
-            margin-top: 10px;
+            margin-top: 15px;
         }
         .stat-significant {
             color: #4a9;
+            font-weight: 600;
         }
         .stat-moderate {
             color: #9a4;
+            font-weight: 600;
         }
         .stat-weak {
             color: #aa4;
         }
         .frequency-bar {
-            height: 20px;
-            background: #417690;
-            border-radius: 2px;
+            height: 24px;
+            background: linear-gradient(90deg, #417690 0%, #5a8ba5 100%);
+            border-radius: 4px;
             display: inline-block;
+            min-width: 4px;
+            box-shadow: 0 2px 8px rgba(65, 118, 144, 0.3);
+        }
+        .chart-container {
+            background: #0a0a0a;
+            padding: 30px;
+            border-radius: 12px;
+            margin: 30px 0;
+            border: 2px solid #2a2a2a;
+            position: relative;
+            height: 400px;
+        }
+        .chart-wrapper {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin: 30px 0;
+        }
+        .chart-card {
+            background: #0a0a0a;
+            padding: 25px;
+            border-radius: 12px;
+            border: 2px solid #2a2a2a;
+            height: 350px;
         }
         .excerpt {
-            background: #1a1a1a;
-            border-left: 4px solid #417690;
-            padding: 20px;
-            margin: 20px 0;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+            border-left: 5px solid #9a4;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
         .timeline-bar {
-            height: 30px;
-            background: #417690;
-            margin: 5px 0;
-            border-radius: 2px;
+            height: 35px;
+            background: linear-gradient(90deg, #417690 0%, #5a8ba5 100%);
+            margin: 8px 0;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(65, 118, 144, 0.3);
+            transition: all 0.3s;
+        }
+        .timeline-bar:hover {
+            transform: scaleX(1.02);
+            box-shadow: 0 4px 12px rgba(65, 118, 144, 0.5);
         }
         .heatmap-cell {
-            width: 30px;
-            height: 30px;
+            width: 35px;
+            height: 35px;
             display: inline-block;
-            margin: 2px;
-            border: 1px solid #2a2a2a;
+            margin: 3px;
+            border: 2px solid #2a2a2a;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .heatmap-cell:hover {
+            transform: scale(1.2);
+            z-index: 10;
+            position: relative;
         }
         .hierarchy-tree {
             font-family: 'Courier New', monospace;
             font-size: 14px;
-            line-height: 1.6;
+            line-height: 1.8;
+            background: #0a0a0a;
+            padding: 25px;
+            border-radius: 8px;
+            border: 2px solid #2a2a2a;
         }
         .tree-item {
-            margin: 5px 0;
+            margin: 8px 0;
+            color: #ccc;
         }
         .tree-indent {
             display: inline-block;
-            width: 20px;
+            width: 25px;
+        }
+        .highlight {
+            background: rgba(154, 164, 0, 0.4);
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+        .search-results {
+            padding: 15px;
+            background: #1a1a2e;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 2px solid #2a4a6e;
+        }
+        .search-results strong {
+            color: #a0c4ff;
         }
         """
     
@@ -352,7 +663,7 @@ class ReportGenerator:
         avg_codes = total_codes / len(self.segments) if self.segments else 0
         
         html = f"""
-        <section class="section">
+        <section class="section" id="executive">
             <h2>Executive Summary</h2>
             <p>This report presents a comprehensive qualitative analysis of <em>{self.work.title}</em> by {self.work.author}, 
             using the {self.codebook.name} codebook. The analysis includes {len(self.segments)} coded segments 
@@ -385,9 +696,9 @@ class ReportGenerator:
         return html
     
     def _section_statistical_analysis(self):
-        """Section 2: Statistical Analysis (chi-square tests)."""
+        """Section 2: Statistical Analysis (chi-square tests) with chart."""
         html = """
-        <section class="section">
+        <section class="section" id="statistical">
             <h2>Statistical Analysis</h2>
             <p>Chi-square tests examine whether code pairs co-occur more or less frequently than expected by chance.</p>
         """
@@ -396,8 +707,17 @@ class ReportGenerator:
         code_pairs = self._get_code_pairs()
         
         if code_pairs:
-            html += """
-            <table>
+            # Prepare chart data
+            sorted_pairs = sorted(code_pairs.items(), key=lambda x: x[1]['chi2'], reverse=True)[:15]
+            pair_labels = [f"{code1} × {code2}" for (code1, code2), _ in sorted_pairs]
+            chi2_values = [stats['chi2'] for _, stats in sorted_pairs]
+            
+            html += f"""
+            <div class="chart-container">
+                <canvas id="statisticalChart"></canvas>
+            </div>
+            
+            <table class="sortable-table">
                 <thead>
                     <tr>
                         <th>Code Pair</th>
@@ -411,9 +731,6 @@ class ReportGenerator:
                 </thead>
                 <tbody>
             """
-            
-            # Sort by chi-square value (most significant first)
-            sorted_pairs = sorted(code_pairs.items(), key=lambda x: x[1]['chi2'], reverse=True)[:20]
             
             for (code1, code2), stats in sorted_pairs:
                 p_value = stats['p_value']
@@ -438,20 +755,69 @@ class ReportGenerator:
                 
                 html += f"""
                     <tr>
-                        <td>{code1} × {code2}</td>
+                        <td><strong>{code1}</strong> × <strong>{code2}</strong></td>
                         <td>{observed}</td>
                         <td>{expected:.2f}</td>
                         <td>{stats['chi2']:.4f}</td>
                         <td>{p_value:.4f}</td>
                         <td class="{sig_class}">{sig}</td>
-                        <td>Co-occur {interpretation} than expected</td>
+                        <td>Co-occur <strong>{interpretation}</strong> than expected</td>
                     </tr>
                 """
             
-            html += """
+            html += f"""
                 </tbody>
             </table>
             <p><small>* p &lt; 0.05, ** p &lt; 0.01, *** p &lt; 0.001</small></p>
+            
+            <script>
+                const statCtx = document.getElementById('statisticalChart');
+                new Chart(statCtx, {{
+                    type: 'bar',
+                    data: {{
+                        labels: {json.dumps(pair_labels)},
+                        datasets: [{{
+                            label: 'Chi-square Value',
+                            data: {json.dumps(chi2_values)},
+                            backgroundColor: Array({len(chi2_values)}).fill(null).map((_, i) => 
+                                i < 3 ? '#4a9' : i < 6 ? '#9a4' : '#417690'
+                            ),
+                            borderColor: '#2a2a2a',
+                            borderWidth: 2,
+                            borderRadius: 6
+                        }}]
+                    }},
+                    options: {{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {{
+                            legend: {{ display: false }},
+                            title: {{
+                                display: true,
+                                text: 'Top 15 Code Pair Associations (Chi-square)',
+                                color: '#a0c4ff',
+                                font: {{ size: 16, weight: 'normal' }}
+                            }}
+                        }},
+                        scales: {{
+                            y: {{
+                                beginAtZero: true,
+                                ticks: {{ color: '#888' }},
+                                grid: {{ color: '#2a2a2a' }}
+                            }},
+                            x: {{
+                                ticks: {{
+                                    color: '#888',
+                                    maxRotation: 45,
+                                    minRotation: 45,
+                                    font: {{ size: 10 }}
+                                }},
+                                grid: {{ display: false }}
+                            }}
+                        }}
+                    }}
+                }});
+            </script>
             """
         else:
             html += "<p>Insufficient data for statistical analysis.</p>"
@@ -460,18 +826,30 @@ class ReportGenerator:
         return html
     
     def _section_word_cloud(self):
-        """Section 3: Word Cloud & Lexical Analysis."""
+        """Section 3: Word Cloud & Lexical Analysis with chart."""
         words = self._extract_words_from_segments()
         word_freq = Counter(words)
         top_words = word_freq.most_common(30)
+        top_20 = word_freq.most_common(20)
         
         html = """
-        <section class="section">
+        <section class="section" id="word">
             <h2>Word Cloud & Lexical Analysis</h2>
             <p>Analysis of word frequency in coded segments (excluding stopwords, minimum 4 characters).</p>
+        """
+        
+        if top_words:
+            # Prepare chart data
+            chart_labels = [word for word, _ in top_20]
+            chart_data = [freq for _, freq in top_20]
+            
+            html += f"""
+            <div class="chart-container">
+                <canvas id="wordChart"></canvas>
+            </div>
             
             <h3>Top 30 Words</h3>
-            <table>
+            <table class="sortable-table">
                 <thead>
                     <tr>
                         <th>Word</th>
@@ -480,25 +858,74 @@ class ReportGenerator:
                     </tr>
                 </thead>
                 <tbody>
-        """
-        
-        max_freq = top_words[0][1] if top_words else 1
-        
-        for word, freq in top_words:
-            bar_width = (freq / max_freq) * 100
-            html += f"""
-                    <tr>
-                        <td>{word}</td>
-                        <td>{freq}</td>
-                        <td><div class="frequency-bar" style="width: {bar_width}%;"></div></td>
-                    </tr>
             """
+            
+            max_freq = top_words[0][1]
+            
+            for word, freq in top_words:
+                bar_width = (freq / max_freq) * 100
+                html += f"""
+                        <tr>
+                            <td><strong>{word}</strong></td>
+                            <td>{freq}</td>
+                            <td><div class="frequency-bar" style="width: {bar_width}%;"></div></td>
+                        </tr>
+                """
+            
+            html += f"""
+                    </tbody>
+                </table>
+                
+                <script>
+                    const wordCtx = document.getElementById('wordChart');
+                    new Chart(wordCtx, {{
+                        type: 'bar',
+                        data: {{
+                            labels: {json.dumps(chart_labels)},
+                            datasets: [{{
+                                label: 'Word Frequency',
+                                data: {json.dumps(chart_data)},
+                                backgroundColor: '#9a4',
+                                borderColor: '#2a2a2a',
+                                borderWidth: 2,
+                                borderRadius: 6
+                            }}]
+                        }},
+                        options: {{
+                            indexAxis: 'y',
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {{
+                                legend: {{ display: false }},
+                                title: {{
+                                    display: true,
+                                    text: 'Top 20 Words (Horizontal Bar)',
+                                    color: '#a0c4ff',
+                                    font: {{ size: 16, weight: 'normal' }}
+                                }}
+                            }},
+                            scales: {{
+                                x: {{
+                                    beginAtZero: true,
+                                    ticks: {{ color: '#888' }},
+                                    grid: {{ color: '#2a2a2a' }}
+                                }},
+                                y: {{
+                                    ticks: {{
+                                        color: '#888',
+                                        font: {{ size: 11 }}
+                                    }},
+                                    grid: {{ display: false }}
+                                }}
+                            }}
+                        }}
+                    }});
+                </script>
+            """
+        else:
+            html += "<p>No words found in coded segments.</p>"
         
-        html += """
-                </tbody>
-            </table>
-        </section>
-        """
+        html += "</section>"
         return html
     
     def _section_thematic_analysis(self):
@@ -509,7 +936,7 @@ class ReportGenerator:
             themes[code.code_type].append(code_name)
         
         html = """
-        <section class="section">
+        <section class="section" id="thematic">
             <h2>Thematic Analysis</h2>
             <p>Codes organized by thematic categories.</p>
         """
@@ -531,7 +958,7 @@ class ReportGenerator:
     def _section_codebook_documentation(self):
         """Section 5: Complete Codebook Documentation."""
         html = """
-        <section class="section">
+        <section class="section" id="codebook">
             <h2>Complete Codebook Documentation</h2>
         """
         
@@ -568,26 +995,37 @@ class ReportGenerator:
         return html
     
     def _section_code_frequency(self):
-        """Section 6: Code Frequency Analysis with charts."""
+        """Section 6: Code Frequency Analysis with multiple chart types."""
         code_freq = self._get_code_frequency()
         sorted_codes = sorted(code_freq.items(), key=lambda x: x[1], reverse=True)
         max_freq = sorted_codes[0][1] if sorted_codes else 1
         
         # Prepare data for charts
         top_10 = sorted_codes[:10]
+        top_15 = sorted_codes[:15]
         chart_labels = [code[0] for code in top_10]
         chart_data = [code[1] for code in top_10]
+        pie_labels = [code[0] for code in top_15]
+        pie_data = [code[1] for code in top_15]
+        
+        # Color palette
         chart_colors = [
             '#417690', '#5a8ba5', '#9a4', '#a0c4ff', '#4a9',
-            '#aa4', '#8a6', '#6a8', '#7a5', '#5a7'
+            '#aa4', '#8a6', '#6a8', '#7a5', '#5a7',
+            '#8a4', '#6a6', '#7a7', '#5a5', '#9a9'
         ]
         
         html = f"""
-        <section class="section">
+        <section class="section" id="frequency">
             <h2>Code Frequency Analysis</h2>
             
-            <div class="chart-container">
-                <canvas id="frequencyChart"></canvas>
+            <div class="chart-wrapper">
+                <div class="chart-card">
+                    <canvas id="frequencyBarChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <canvas id="frequencyPieChart"></canvas>
+                </div>
             </div>
             
             <table class="sortable-table">
@@ -609,7 +1047,7 @@ class ReportGenerator:
             bar_width = (freq / max_freq) * 100
             html += f"""
                     <tr>
-                        <td>{code_name}</td>
+                        <td><strong>{code_name}</strong></td>
                         <td>{freq}</td>
                         <td>{percentage:.1f}%</td>
                         <td><div class="frequency-bar" style="width: {bar_width}%;"></div></td>
@@ -621,45 +1059,38 @@ class ReportGenerator:
             </table>
             
             <script>
-                const ctx = document.getElementById('frequencyChart');
-                new Chart(ctx, {{
+                // Bar Chart
+                const barCtx = document.getElementById('frequencyBarChart');
+                new Chart(barCtx, {{
                     type: 'bar',
                     data: {{
                         labels: {json.dumps(chart_labels)},
                         datasets: [{{
-                            label: 'Code Frequency',
+                            label: 'Frequency',
                             data: {json.dumps(chart_data)},
                             backgroundColor: {json.dumps(chart_colors[:len(chart_data)])},
                             borderColor: '#2a2a2a',
                             borderWidth: 2,
-                            borderRadius: 6
+                            borderRadius: 8
                         }}]
                     }},
                     options: {{
                         responsive: true,
-                        maintainAspectRatio: true,
+                        maintainAspectRatio: false,
                         plugins: {{
-                            legend: {{
-                                display: false
-                            }},
+                            legend: {{ display: false }},
                             title: {{
                                 display: true,
-                                text: 'Top 10 Most Frequent Codes',
-                                color: '#e0e0e0',
-                                font: {{
-                                    size: 18
-                                }}
+                                text: 'Top 10 Codes (Bar)',
+                                color: '#a0c4ff',
+                                font: {{ size: 16, weight: 'normal' }}
                             }}
                         }},
                         scales: {{
                             y: {{
                                 beginAtZero: true,
-                                ticks: {{
-                                    color: '#888'
-                                }},
-                                grid: {{
-                                    color: '#2a2a2a'
-                                }}
+                                ticks: {{ color: '#888' }},
+                                grid: {{ color: '#2a2a2a' }}
                             }},
                             x: {{
                                 ticks: {{
@@ -667,9 +1098,42 @@ class ReportGenerator:
                                     maxRotation: 45,
                                     minRotation: 45
                                 }},
-                                grid: {{
-                                    display: false
+                                grid: {{ display: false }}
+                            }}
+                        }}
+                    }}
+                }});
+                
+                // Pie Chart
+                const pieCtx = document.getElementById('frequencyPieChart');
+                new Chart(pieCtx, {{
+                    type: 'pie',
+                    data: {{
+                        labels: {json.dumps(pie_labels)},
+                        datasets: [{{
+                            data: {json.dumps(pie_data)},
+                            backgroundColor: {json.dumps(chart_colors[:len(pie_data)])},
+                            borderColor: '#0a0a0a',
+                            borderWidth: 3
+                        }}]
+                    }},
+                    options: {{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {{
+                            legend: {{
+                                position: 'right',
+                                labels: {{
+                                    color: '#888',
+                                    font: {{ size: 11 }},
+                                    padding: 10
                                 }}
+                            }},
+                            title: {{
+                                display: true,
+                                text: 'Top 15 Codes (Pie)',
+                                color: '#a0c4ff',
+                                font: {{ size: 16, weight: 'normal' }}
                             }}
                         }}
                     }}
@@ -682,7 +1146,7 @@ class ReportGenerator:
     def _section_co_occurrence(self):
         """Section 7: Co-occurrence Network."""
         html = """
-        <section class="section">
+        <section class="section" id="co-occurrence">
             <h2>Co-occurrence Network</h2>
             <p>Codes that frequently appear together in the same segments.</p>
         """
@@ -1069,7 +1533,7 @@ class ReportGenerator:
     def _section_complete_segments(self):
         """Section 15: Complete Coded Segment Catalog with search."""
         html = """
-        <section class="section">
+        <section class="section" id="segments">
             <h2>Complete Coded Segment Catalog</h2>
             <p>All coded segments with full context. Use the search box above to filter segments.</p>
             <div id="segment-count" style="margin-bottom: 20px; color: #888;"></div>
@@ -1135,7 +1599,7 @@ class ReportGenerator:
         memos = self.analysis.memos.all()
         
         html = f"""
-        <section class="section">
+        <section class="section" id="memos">
             <h2>Analytical Memos</h2>
         """
         
