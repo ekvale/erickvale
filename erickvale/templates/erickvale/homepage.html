@@ -49,12 +49,46 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 80px 24px;
+            padding: 40px 24px 80px 24px;
+        }
+
+        .top-navbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 0;
+            margin-bottom: 40px;
+        }
+
+        .top-navbar .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .top-navbar nav {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+        }
+
+        .top-navbar a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s ease;
+        }
+
+        .top-navbar a:hover {
+            color: var(--accent);
         }
 
         header {
-            margin-bottom: 80px;
-            text-align: left;
+            margin-bottom: 60px;
+            text-align: center;
         }
 
         header h1 {
@@ -112,11 +146,6 @@
             display: flex;
             align-items: flex-start;
             gap: 20px;
-        }
-
-        .app-icon {
-            font-size: 32px;
-            line-height: 1;
         }
 
         .app-title-section {
@@ -275,11 +304,6 @@
             color: var(--accent);
         }
 
-        .app-icon-small {
-            font-size: 20px;
-            line-height: 1;
-        }
-
         .app-name-small {
             flex: 1;
             font-weight: 400;
@@ -355,27 +379,32 @@
     </style>
 </head>
 <body>
+    <div class="top-navbar">
+        <div class="container">
+            <nav>
+                <a href="{% url 'homepage' %}">Home</a>
+                {% for app in apps %}
+                    {% if app.is_current_month %}
+                    <a href="{{ app.url }}">{{ app.name }}</a>
+                    {% endif %}
+                {% endfor %}
+                <a href="{% url 'about' %}">About</a>
+            </nav>
+        </div>
+    </div>
+    
     <div class="container">
         <header>
-            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
-                <div style="flex: 1;">
-                    <div style="margin-bottom: 20px; text-align: center;">
-                        <img src="{% static 'erickvale/eric_kvale_ascii_animation.gif' %}?v=2" 
-                             alt="ERIC KVALE" 
-                             id="eric-kvale-gif"
-                             style="max-width: 100%; width: 1200px; height: auto; display: block; margin: 0 auto; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;">
-                    </div>
-                    <p class="subtitle" style="text-align: center; margin-top: -10px;">Monthly applications</p>
-                </div>
-                <nav style="margin-top: 8px;">
-                    <a href="{% url 'about' %}" style="color: var(--text-secondary); text-decoration: none; font-size: 14px; transition: color 0.2s ease;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-secondary)'">About</a>
-                </nav>
+            <div style="margin-bottom: 20px; text-align: center;">
+                <img src="{% static 'erickvale/eric_kvale_ascii_animation.gif' %}?v=2" 
+                     alt="ERIC KVALE" 
+                     id="eric-kvale-gif"
+                     style="max-width: 100%; width: 1200px; height: auto; display: block; margin: 0 auto; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;">
             </div>
         </header>
 
         <p class="intro-text">
-            Each month, a new application. From geospatial analytics to creative tools, 
-            each project represents a month of learning, building, and sharing.
+            A playground for exploring ideas, new ways of learning, and understanding.
         </p>
 
         <div class="homepage-layout">
@@ -396,7 +425,6 @@
                         {% endif %}
                         <div class="app-header">
                             <div class="app-header-content">
-                                <div class="app-icon">{{ app.icon }}</div>
                                 <div class="app-title-section">
                                     <h2>{{ app.name }}</h2>
                                     <div class="app-meta">
@@ -440,7 +468,6 @@
                         {% if not app.is_current_month %}
                         <li class="app-list-item {% if app.is_current_month %}current-month-sidebar{% endif %}">
                             <a href="{{ app.url }}">
-                                <span class="app-icon-small">{{ app.icon }}</span>
                                 <span class="app-name-small">{{ app.name }}</span>
                                 <span class="app-month-small">{{ app.month }}</span>
                             </a>
@@ -452,7 +479,7 @@
         </div>
 
         <div class="footer">
-            <p>New applications released monthly • <a href="/admin/">Admin</a></p>
+            <p><a href="/admin/">Admin</a></p>
         </div>
     </div>
 </body>
