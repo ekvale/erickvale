@@ -6,7 +6,7 @@ class Command(BaseCommand):
     help = 'Populate initial featured apps data'
 
     def handle(self, *args, **options):
-        # Create or update Literary Analysis (current month)
+        # Create or update Qualitative Analysis for Literature (current month)
         literary_app, created = FeaturedApp.objects.update_or_create(
             slug='literary-analysis',
             defaults={
@@ -31,7 +31,7 @@ class Command(BaseCommand):
             }
         )
         self.stdout.write(
-            self.style.SUCCESS(f'{"Created" if created else "Updated"} Literary Analysis')
+            self.style.SUCCESS(f'{"Created" if created else "Updated"} Qualitative Analysis for Literature')
         )
 
         # Create or update The Power of Cards
