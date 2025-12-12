@@ -333,7 +333,7 @@
                     <button class="search-nav-btn" id="search-clear" style="display: none;">Clear</button>
                 </div>
             </div>
-            <div id="text-display" data-plain-text="{{ text_content|escapejs }}">{{ text_content|safe }}</div>
+            <div id="text-display" data-plain-text="{{ text_content|escapejs }}">{{ text_content }}</div>
             {% endif %}
             
             <div class="form-panel" id="segment-form" style="display: none;">
@@ -550,9 +550,25 @@
                             selectedText = selectedTextStr;
                             const range = selection.getRangeAt(0);
                             
-                            // Get plain text if not already stored
+                            // Get plain text if not already stored (decode if needed)
                             if (!plainText) {
-                                plainText = textDisplay.getAttribute('data-plain-text') || textDisplay.textContent || textDisplay.innerText;
+                                let rawText = textDisplay.getAttribute('data-plain-text') || textDisplay.textContent || textDisplay.innerText;
+                                if (rawText && typeof rawText === 'string') {
+                                    try {
+                                        plainText = JSON.parse('"' + rawText.replace(/"/g, '\\"') + '"');
+                                    } catch (e) {
+                                        plainText = rawText
+                                            .replace(/\\u([0-9a-fA-F]{4})/g, (match, code) => String.fromCharCode(parseInt(code, 16)))
+                                            .replace(/\\n/g, '\n')
+                                            .replace(/\\t/g, '\t')
+                                            .replace(/\\r/g, '\r')
+                                            .replace(/\\"/g, '"')
+                                            .replace(/\\'/g, "'")
+                                            .replace(/\\\\/g, '\\');
+                                    }
+                                } else {
+                                    plainText = rawText;
+                                }
                             }
                             
                             if (!plainText) {
@@ -627,9 +643,25 @@
                 return;
             }
             
-            // Get plain text
+            // Get plain text (decode if needed)
             if (!plainText) {
-                plainText = textDisplay.getAttribute('data-plain-text') || textDisplay.textContent || textDisplay.innerText;
+                let rawText = textDisplay.getAttribute('data-plain-text') || textDisplay.textContent || textDisplay.innerText;
+                if (rawText && typeof rawText === 'string') {
+                    try {
+                        plainText = JSON.parse('"' + rawText.replace(/"/g, '\\"') + '"');
+                    } catch (e) {
+                        plainText = rawText
+                            .replace(/\\u([0-9a-fA-F]{4})/g, (match, code) => String.fromCharCode(parseInt(code, 16)))
+                            .replace(/\\n/g, '\n')
+                            .replace(/\\t/g, '\t')
+                            .replace(/\\r/g, '\r')
+                            .replace(/\\"/g, '"')
+                            .replace(/\\'/g, "'")
+                            .replace(/\\\\/g, '\\');
+                    }
+                } else {
+                    plainText = rawText;
+                }
             }
             
             // Find all matches (case-insensitive) with safety limit
@@ -684,133 +716,84 @@
             
             try {
                 // Always rebuild from plain text to ensure correct positions
-                // First, build base with coded segments
-                let baseHtml = '';
-                if (existingSegments.length > 0) {
-                    // Build HTML with coded segments first
-                    const sortedSegments = [...existingSegments].sort((a, b) => b.start - a.start);
-                    let lastIndex = plainText.length;
-                    
-                    sortedSegments.forEach(segment => {
-                        if (segment && segment.start >= 0 && segment.end <= plainText.length && segment.end <= lastIndex) {
-                            // Add text after this segment
-                            if (segment.end < lastIndex) {
-                                baseHtml = escapeHtml(plainText.substring(segment.end, lastIndex)) + baseHtml;
-                            }
-                            
-                            // Add highlighted segment
-                            const codes = Array.isArray(segment.codes) ? segment.codes : [];
+                // Combine both coded segments and search highlights in one pass
+                
+                // Get all positions that need highlighting (both coded segments and search results)
+                const allHighlights = [];
+                
+                // Add coded segments
+                if (existingSegments && existingSegments.length > 0) {
+                    existingSegments.forEach(segment => {
+                        if (segment && segment.start >= 0 && segment.end <= plainText.length) {
+                            allHighlights.push({
+                                start: segment.start,
+                                end: segment.end,
+                                type: 'coded',
+                                segment: segment
+                            });
+                        }
+                    });
+                }
+                
+                // Add search results
+                if (searchResults && searchResults.length > 0) {
+                    searchResults.forEach((result, index) => {
+                        if (result && result.start >= 0 && result.end <= plainText.length) {
+                            allHighlights.push({
+                                start: result.start,
+                                end: result.end,
+                                type: 'search',
+                                result: result,
+                                index: index
+                            });
+                        }
+                    });
+                }
+                
+                // Sort all highlights by start position (descending) to insert from end to start
+                allHighlights.sort((a, b) => b.start - a.start);
+                
+                let html = '';
+                let lastIndex = plainText.length;
+                
+                allHighlights.forEach(highlight => {
+                    if (highlight.end <= lastIndex) {
+                        // Add text after this highlight
+                        if (highlight.end < lastIndex) {
+                            html = escapeHtml(plainText.substring(highlight.end, lastIndex)) + html;
+                        }
+                        
+                        // Get the text for this highlight
+                        const highlightText = plainText.substring(highlight.start, highlight.end);
+                        
+                        if (highlight.type === 'coded') {
+                            // Coded segment
+                            const codes = Array.isArray(highlight.segment.codes) ? highlight.segment.codes : [];
                             const codesText = codes.length > 0 ? codes.join(', ') : 'No codes';
                             const codesHtml = codes.length > 0 
                                 ? codes.map(c => `<span class="code-badge-inline">${escapeHtml(c)}</span>`).join('')
                                 : '';
                             
-                            baseHtml = `<span class="segment-highlight coded" data-segment-id="${segment.id || ''}" data-start="${segment.start}" data-end="${segment.end}" data-codes="Codes: ${escapeHtml(codesText)}" title="Coded: ${escapeHtml(codesText)}">
+                            html = `<span class="segment-highlight coded" data-segment-id="${highlight.segment.id || ''}" data-start="${highlight.start}" data-end="${highlight.end}" data-codes="Codes: ${escapeHtml(codesText)}" title="Coded: ${escapeHtml(codesText)}">
                                 ${codesHtml}
-                                ${escapeHtml(plainText.substring(segment.start, segment.end))}
-                            </span>` + baseHtml;
-                            
-                            lastIndex = segment.start;
-                        }
-                    });
-                    
-                    // Add remaining text
-                    if (lastIndex > 0) {
-                        baseHtml = escapeHtml(plainText.substring(0, lastIndex)) + baseHtml;
-                    }
-                } else {
-                    // No coded segments, just plain text
-                    baseHtml = escapeHtml(plainText);
-                }
-                
-                // Now add search highlights on top of the base HTML
-                if (searchResults.length === 0) {
-                    textDisplay.innerHTML = baseHtml;
-                    return;
-                }
-                
-                // Get plain text positions for search (not HTML positions)
-                // We need to insert search highlights into the HTML, but using plain text positions
-                const sortedResults = [...searchResults].sort((a, b) => b.start - a.start);
-                
-                // Create a temporary div to work with the HTML
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = baseHtml;
-                
-                // Walk through text nodes and insert search highlights
-                const walker = document.createTreeWalker(
-                    tempDiv,
-                    NodeFilter.SHOW_TEXT,
-                    null
-                );
-                
-                let textPosition = 0;
-                const nodesToProcess = [];
-                
-                let node;
-                while (node = walker.nextNode()) {
-                    const nodeLength = node.textContent.length;
-                    const nodeStart = textPosition;
-                    const nodeEnd = textPosition + nodeLength;
-                    
-                    // Find search results that overlap with this text node
-                    const overlappingResults = sortedResults.filter(result => {
-                        return result.start < nodeEnd && result.end > nodeStart;
-                    });
-                    
-                    if (overlappingResults.length > 0) {
-                        nodesToProcess.push({
-                            node: node,
-                            start: nodeStart,
-                            end: nodeEnd,
-                            results: overlappingResults
-                        });
-                    }
-                    
-                    textPosition = nodeEnd;
-                }
-                
-                // Process nodes and insert search highlights
-                nodesToProcess.forEach(({node, start, end, results}) => {
-                    const nodeText = node.textContent;
-                    let newHTML = '';
-                    let lastPos = 0;
-                    
-                    // Sort results by position within this node
-                    const nodeResults = results.map(r => ({
-                        ...r,
-                        localStart: Math.max(0, r.start - start),
-                        localEnd: Math.min(nodeText.length, r.end - start)
-                    })).sort((a, b) => b.localStart - a.localStart);
-                    
-                    nodeResults.forEach((result, idx) => {
-                        // Add text before this match
-                        if (result.localEnd < nodeText.length - lastPos) {
-                            const beforeText = nodeText.substring(lastPos, result.localStart);
-                            newHTML = escapeHtml(beforeText) + newHTML;
+                                ${escapeHtml(highlightText)}
+                            </span>` + html;
+                        } else {
+                            // Search highlight
+                            const highlightClass = highlight.index === currentSearchIndex ? 'search-highlight current' : 'search-highlight';
+                            html = `<span class="${highlightClass}" data-search-index="${highlight.index}">${escapeHtml(highlightText)}</span>` + html;
                         }
                         
-                        // Add highlighted match
-                        const matchText = nodeText.substring(result.localStart, result.localEnd);
-                        const resultIndex = searchResults.findIndex(r => r.start === result.start && r.end === result.end);
-                        const highlightClass = resultIndex === currentSearchIndex ? 'search-highlight current' : 'search-highlight';
-                        newHTML = `<span class="${highlightClass}" data-search-index="${resultIndex}">${escapeHtml(matchText)}</span>` + newHTML;
-                        
-                        lastPos = result.localEnd;
-                    });
-                    
-                    // Add remaining text
-                    if (lastPos < nodeText.length) {
-                        newHTML = escapeHtml(nodeText.substring(lastPos)) + newHTML;
+                        lastIndex = highlight.start;
                     }
-                    
-                    // Replace the text node with the new HTML
-                    const span = document.createElement('span');
-                    span.innerHTML = newHTML;
-                    node.parentNode.replaceChild(span, node);
                 });
                 
-                textDisplay.innerHTML = tempDiv.innerHTML;
+                // Add remaining text at the beginning
+                if (lastIndex > 0) {
+                    html = escapeHtml(plainText.substring(0, lastIndex)) + html;
+                }
+                
+                textDisplay.innerHTML = html;
                 
                 // Scroll to current result
                 if (currentSearchIndex >= 0) {

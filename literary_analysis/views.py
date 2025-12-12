@@ -17,6 +17,9 @@ from .utils import export_analysis_csv, export_analysis_json, validate_segment_p
 
 def decode_unicode_escapes(text):
     """Decode Unicode escape sequences like \u0022, \u000A, etc."""
+    if not text:
+        return text
+    
     def replace_unicode(match):
         code = match.group(1)
         try:
@@ -30,17 +33,31 @@ def decode_unicode_escapes(text):
             return match.group(0)  # Return original if invalid
         return match.group(0)
     
-    # Replace \uXXXX patterns
-    text = re.sub(r'\\u([0-9a-fA-F]{4})', replace_unicode, text)
-    # Replace \UXXXXXXXX patterns
-    text = re.sub(r'\\U([0-9a-fA-F]{8})', replace_unicode, text)
+    # Replace \uXXXX patterns - this is the main one we need
+    # Use a while loop to handle cases where decoding creates new escape sequences
+    max_iterations = 10
+    iteration = 0
+    while ('\\u' in text or '\\U' in text) and iteration < max_iterations:
+        iteration += 1
+        # Replace \uXXXX patterns (4 hex digits)
+        new_text = re.sub(r'\\u([0-9a-fA-F]{4})', replace_unicode, text)
+        # Replace \UXXXXXXXX patterns (8 hex digits)
+        new_text = re.sub(r'\\U([0-9a-fA-F]{8})', replace_unicode, new_text)
+        
+        if new_text == text:
+            break  # No more changes
+        text = new_text
+    
     # Replace common escape sequences
     text = text.replace('\\n', '\n')
     text = text.replace('\\t', '\t')
     text = text.replace('\\r', '\r')
     text = text.replace('\\"', '"')
     text = text.replace("\\'", "'")
+    # Handle escaped backslashes last - but be careful not to break already decoded text
+    # Only replace \\ that aren't part of \u sequences (which should be gone by now)
     text = text.replace('\\\\', '\\')
+    
     return text
 
 
@@ -249,8 +266,16 @@ def coding_interface(request, pk):
                 text_content = f.read()
             
             # Decode Unicode escape sequences if present
-            if '\\u' in text_content or '\\U' in text_content:
-                text_content = decode_unicode_escapes(text_content)
+            # Check multiple times to handle nested escapes
+            original_length = len(text_content)
+            for _ in range(3):  # Max 3 passes to handle nested escapes
+                if '\\u' in text_content or '\\U' in text_content:
+                    new_content = decode_unicode_escapes(text_content)
+                    if new_content == text_content:
+                        break  # No more changes
+                    text_content = new_content
+                else:
+                    break
             
             # Update text_length if not set
             if analysis.literary_work.text_length == 0 and text_content:
