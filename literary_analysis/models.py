@@ -34,9 +34,12 @@ class LiteraryWork(models.Model):
     def get_segment(self, start_pos, end_pos):
         """Extract a text segment from the file."""
         try:
-            with self.text_file.open('r', encoding='utf-8') as f:
+            if not self.text_file:
+                return ""
+            # Read file using path directly (works across Django versions)
+            with open(self.text_file.path, 'r', encoding='utf-8') as f:
                 text = f.read()
-                return text[start_pos:end_pos]
+            return text[start_pos:end_pos]
         except Exception:
             return ""
 

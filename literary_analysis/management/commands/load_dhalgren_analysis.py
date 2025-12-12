@@ -66,10 +66,11 @@ class Command(BaseCommand):
         
         # Calculate text length
         try:
-            with work.text_file.open('r', encoding='utf-8') as f:
-                text = f.read()
-                work.text_length = len(text)
-                work.save()
+            if work.text_file:
+                with open(work.text_file.path, 'r', encoding='utf-8') as f:
+                    text = f.read()
+                    work.text_length = len(text)
+                    work.save()
         except Exception as e:
             self.stdout.write(self.style.WARNING(f'Could not calculate text length: {e}'))
         
@@ -176,13 +177,14 @@ class Command(BaseCommand):
             
             # Try to find the text in the full text to get accurate positions
             try:
-                with work.text_file.open('r', encoding='utf-8') as f:
-                    full_text = f.read()
-                    # Find the segment in the full text
-                    text_start = full_text.find(text_excerpt[:100])  # Find first 100 chars
-                    if text_start != -1:
-                        start_pos = text_start
-                        end_pos = text_start + len(text_excerpt)
+                if work.text_file:
+                    with open(work.text_file.path, 'r', encoding='utf-8') as f:
+                        full_text = f.read()
+                        # Find the segment in the full text
+                        text_start = full_text.find(text_excerpt[:100])  # Find first 100 chars
+                        if text_start != -1:
+                            start_pos = text_start
+                            end_pos = text_start + len(text_excerpt)
             except:
                 pass
             

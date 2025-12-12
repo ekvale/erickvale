@@ -66,7 +66,7 @@ def upload_work(request):
             
             # Calculate text length
             try:
-                with work.text_file.open('r', encoding='utf-8') as f:
+                with open(work.text_file.path, 'r', encoding='utf-8') as f:
                     text = f.read()
                     work.text_length = len(text)
                     work.save()
@@ -172,9 +172,9 @@ class AnalysisDetailView(DetailView):
         work = self.object.literary_work
         
         # Ensure text_length is set
-        if work.text_length == 0:
+        if work.text_length == 0 and work.text_file:
             try:
-                with work.text_file.open('r', encoding='utf-8') as f:
+                with open(work.text_file.path, 'r', encoding='utf-8') as f:
                     text = f.read()
                     work.text_length = len(text)
                     work.save(update_fields=['text_length'])
@@ -214,7 +214,8 @@ def coding_interface(request, pk):
     text_error = None
     if analysis.literary_work.text_file:
         try:
-            with analysis.literary_work.text_file.open('r', encoding='utf-8') as f:
+            # Read file using path directly (works across Django versions)
+            with open(analysis.literary_work.text_file.path, 'r', encoding='utf-8') as f:
                 text_content = f.read()
             # Update text_length if not set
             if analysis.literary_work.text_length == 0 and text_content:

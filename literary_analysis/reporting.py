@@ -26,8 +26,11 @@ class ReportGenerator:
         
         # Load full text
         try:
-            with self.work.text_file.open('r', encoding='utf-8') as f:
-                self.full_text = f.read()
+            if self.work.text_file:
+                with open(self.work.text_file.path, 'r', encoding='utf-8') as f:
+                    self.full_text = f.read()
+            else:
+                self.full_text = ""
         except Exception:
             self.full_text = ""
     
