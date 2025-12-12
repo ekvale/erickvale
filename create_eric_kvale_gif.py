@@ -3,7 +3,7 @@ Animated ASCII Art GIF - ERIC KVALE
 
 Creates a looping GIF that builds up the name ERIC KVALE using ASCII characters
 
-Slower animation than the DHALGREN version
+Plays once and stops when complete
 """
 
 from PIL import Image, ImageDraw, ImageFont
@@ -13,21 +13,31 @@ import math
 def create_eric_kvale_ascii_gif():
     """Create an animated ASCII GIF that spells ERIC KVALE"""
     
-    # Configuration - Higher resolution for better quality
-    width = 1200
-    height = 600
+    # Configuration - Render at 1.5x resolution for crisp text, then scale down
+    output_width = 1200  # Final output size
+    output_height = 600
+    render_width = 1800  # Render at 1.5x for crisp text (faster than 2x)
+    render_height = 900
     bg_color = '#1a1a2e'  # Dark background
     text_color = '#e94560'  # Pink/red color (same as Dhalgren)
     
-    # Font setup - Larger font for better visibility
+    # Font setup - Large font rendered at high resolution
     try:
-        # Try to use a monospace font for ASCII art feel
-        font_size = 90  # Increased from 65
+        # Render at 1.5x size for crisp text
+        font_size = 135  # Large size for high-res rendering (1.5x of 90)
         font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf", font_size)
-        small_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf", 14)  # Slightly larger
+        small_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf", 21)
     except:
-        font = ImageFont.load_default()
-        small_font = ImageFont.load_default()
+        # Fallback fonts for Windows
+        try:
+            font = ImageFont.truetype("C:/Windows/Fonts/consola.ttf", font_size)
+            small_font = ImageFont.truetype("C:/Windows/Fonts/consola.ttf", 21)
+        except:
+            font = ImageFont.load_default()
+            small_font = ImageFont.load_default()
+    
+    width = render_width
+    height = render_height
     
     # The name we're building
     name = "ERIC KVALE"
@@ -73,10 +83,15 @@ def create_eric_kvale_ascii_gif():
             # For each letter, draw it being "constructed" from ASCII
             current_name = name[:letters_to_show]
             
-            # Calculate centered position
-            bbox = font.getbbox(name)
-            text_width = bbox[2] - bbox[0]
-            text_height = bbox[3] - bbox[1]
+            # Calculate centered position - use textbbox for better accuracy
+            try:
+                bbox = draw.textbbox((0, 0), name, font=font)
+                text_width = bbox[2] - bbox[0]
+                text_height = bbox[3] - bbox[1]
+            except:
+                bbox = font.getbbox(name)
+                text_width = bbox[2] - bbox[0]
+                text_height = bbox[3] - bbox[1]
             start_x = (width - text_width) // 2
             start_y = (height - text_height) // 2
             
@@ -87,10 +102,15 @@ def create_eric_kvale_ascii_gif():
                 letter_progress = (progress * len(name) - i)
                 letter_progress = max(0, min(1, letter_progress))
                 
-                # Get letter bounds
-                letter_bbox = font.getbbox(letter)
-                letter_width = letter_bbox[2] - letter_bbox[0]
-                letter_height = letter_bbox[3] - letter_bbox[1]
+                # Get letter bounds - use textbbox for better accuracy
+                try:
+                    letter_bbox = draw.textbbox((0, 0), letter, font=font)
+                    letter_width = letter_bbox[2] - letter_bbox[0]
+                    letter_height = letter_bbox[3] - letter_bbox[1]
+                except:
+                    letter_bbox = font.getbbox(letter)
+                    letter_width = letter_bbox[2] - letter_bbox[0]
+                    letter_height = letter_bbox[3] - letter_bbox[1]
                 
                 if letter == ' ':
                     # Just add space for the space character
@@ -122,9 +142,14 @@ def create_eric_kvale_ascii_gif():
         else:
             # Phase 3: Stable name - hold at end (no fade, plays once)
             # Draw complete name
-            bbox = font.getbbox(name)
-            text_width = bbox[2] - bbox[0]
-            text_height = bbox[3] - bbox[1]
+            try:
+                bbox = draw.textbbox((0, 0), name, font=font)
+                text_width = bbox[2] - bbox[0]
+                text_height = bbox[3] - bbox[1]
+            except:
+                bbox = font.getbbox(name)
+                text_width = bbox[2] - bbox[0]
+                text_height = bbox[3] - bbox[1]
             start_x = (width - text_width) // 2
             start_y = (height - text_height) // 2
             
@@ -140,39 +165,56 @@ def create_eric_kvale_ascii_gif():
             subtitle = "Hermeneutic Learning Cartographer | Spaceship Earth"
             
             try:
-                subtitle_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 16)
+                subtitle_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 24)
             except:
-                subtitle_font = small_font
+                try:
+                    subtitle_font = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 24)
+                except:
+                    subtitle_font = small_font
             
-            subtitle_bbox = subtitle_font.getbbox(subtitle)
-            subtitle_width = subtitle_bbox[2] - subtitle_bbox[0]
+            try:
+                subtitle_bbox = draw.textbbox((0, 0), subtitle, font=subtitle_font)
+                subtitle_width = subtitle_bbox[2] - subtitle_bbox[0]
+            except:
+                subtitle_bbox = subtitle_font.getbbox(subtitle)
+                subtitle_width = subtitle_bbox[2] - subtitle_bbox[0]
             subtitle_x = (width - subtitle_width) // 2
-            draw.text((subtitle_x, height - 60), subtitle, font=subtitle_font, fill=subtitle_color)
+            draw.text((subtitle_x, height - 120), subtitle, font=subtitle_font, fill=subtitle_color)
         
         frames.append(img)
+    
+    # Resize frames from high-res render to output size using LANCZOS for quality
+    resized_frames = []
+    for frame in frames:
+        resized = frame.resize((output_width, output_height), Image.Resampling.LANCZOS)
+        resized_frames.append(resized)
+    
+    # Add many copies of final frame to hold it (ensures it stops and doesn't loop)
+    final_frame = resized_frames[-1]
+    for _ in range(150):  # Add 12 seconds of final frame (150 * 80ms = 12s)
+        resized_frames.append(final_frame.copy())
     
     # Save as GIF
     output_path = './eric_kvale_ascii_animation.gif'
     
-    # Use all frames for smooth animation (higher resolution needs it)
-    # Could reduce to every frame for smaller file, but quality is priority
-    
-    frames[0].save(
+    # Save with loop=1 (play once) - if browser ignores this, the many final frames will make it appear to stop
+    resized_frames[0].save(
         output_path,
         save_all=True,
-        append_images=frames[1:],
+        append_images=resized_frames[1:],
         duration=80,  # 80ms per frame
-        loop=1,  # Play once (loop=1 means play once, then stop)
-        optimize=True
+        loop=1,  # Play once (1 = play 1 time then stop)
+        optimize=False  # Disable optimization to preserve text quality
     )
     
-    print(f"✓ Created animated GIF: {output_path}")
-    print(f"  Frames: {len(frames)}")
-    print(f"  Duration: ~{len(frames) * 80 / 1000:.1f} seconds (plays once)")
-    print(f"  Size: {width}x{height} (higher resolution)")
-    print(f"  Font size: {font_size}px")
+    print(f"Created animated GIF: {output_path}")
+    print(f"  Render resolution: {render_width}x{render_height}")
+    print(f"  Output resolution: {output_width}x{output_height}")
+    print(f"  Total frames: {len(resized_frames)} (including 150 final hold frames)")
+    print(f"  Duration: ~{len(resized_frames) * 80 / 1000:.1f} seconds (plays once)")
+    print(f"  Font size: {font_size}px (rendered at 1.5x, scaled down for crisp text)")
     print(f"  ASCII snow: 60 frames (extended)")
-    print(f"  Loop: Once (stops at end)")
+    print(f"  Loop: 1 (plays once then stops)")
     
     return output_path
 
@@ -248,7 +290,7 @@ def create_eric_kvale_typewriter_gif():
         optimize=True
     )
     
-    print(f"✓ Created typewriter GIF: {output_path}")
+    print(f"Created typewriter GIF: {output_path}")
     print(f"  Speed: 20% slower than DHALGREN typewriter")
     return output_path
 
@@ -266,7 +308,7 @@ def main():
     typewriter_path = create_eric_kvale_typewriter_gif()
     
     print()
-    print("✓ Done! Created 2 animated GIFs")
+    print("Done! Created 2 animated GIFs")
     print()
     print("Comparison to DHALGREN versions:")
     print("  - ASCII animation: ~7.2s loop (vs 4.0s)")
@@ -276,4 +318,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
