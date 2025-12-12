@@ -183,9 +183,42 @@
         .segment-highlight.coded {
             background: rgba(154, 68, 0, 0.3);
             border: 1px solid rgba(154, 68, 0, 0.6);
+            position: relative;
         }
         .segment-highlight.coded:hover {
             background: rgba(154, 68, 0, 0.5);
+        }
+        .segment-highlight.coded::after {
+            content: attr(data-codes);
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            z-index: 1000;
+            display: none;
+            margin-bottom: 5px;
+            color: #e0e0e0;
+            max-width: 300px;
+            word-wrap: break-word;
+            white-space: normal;
+        }
+        .segment-highlight.coded:hover::after {
+            display: block;
+        }
+        .code-badge-inline {
+            display: inline-block;
+            padding: 2px 6px;
+            background: rgba(154, 68, 0, 0.5);
+            border: 1px solid rgba(154, 68, 0, 0.7);
+            border-radius: 3px;
+            font-size: 10px;
+            margin-right: 4px;
+            margin-top: 2px;
         }
         .segment-tooltip {
             position: absolute;
@@ -335,8 +368,15 @@
     
     <script src="{% static 'ckeditor/ckeditor/ckeditor.js' %}"></script>
     <script>
-        // Load existing segments data
-        const existingSegments = {{ segments_json|safe }};
+        // Load existing segments data with error handling
+        let existingSegments = [];
+        try {
+            const segmentsData = {{ segments_json|safe }};
+            existingSegments = Array.isArray(segmentsData) ? segmentsData : [];
+        } catch (e) {
+            console.error('Error loading segments data:', e);
+            existingSegments = [];
+        }
         
         // Initialize CKEditor for memo field when form is shown
         let memoEditor = null;
@@ -374,27 +414,46 @@
         
         // Highlight existing coded segments by rebuilding the HTML
         function highlightExistingSegments() {
-            if (!textDisplay || existingSegments.length === 0) return;
+            if (!textDisplay) return;
             
-            const text = textDisplay.textContent;
-            if (!text) return;
+            // Get plain text first
+            if (!plainText) {
+                plainText = textDisplay.getAttribute('data-plain-text') || textDisplay.textContent || textDisplay.innerText;
+            }
+            
+            if (!plainText || !existingSegments || existingSegments.length === 0) {
+                // No segments to highlight, just display plain text
+                if (plainText) {
+                    textDisplay.innerHTML = escapeHtml(plainText);
+                }
+                return;
+            }
             
             // Sort segments by start position (descending) to insert from end to start
             const sortedSegments = [...existingSegments].sort((a, b) => b.start - a.start);
             
             let html = '';
-            let lastIndex = text.length;
+            let lastIndex = plainText.length;
             
             sortedSegments.forEach(segment => {
-                if (segment.start >= 0 && segment.end <= text.length && segment.end <= lastIndex) {
+                if (segment && segment.start >= 0 && segment.end <= plainText.length && segment.end <= lastIndex) {
                     // Add text after this segment
                     if (segment.end < lastIndex) {
-                        html = escapeHtml(text.substring(segment.end, lastIndex)) + html;
+                        html = escapeHtml(plainText.substring(segment.end, lastIndex)) + html;
                     }
                     
-                    // Add highlighted segment
-                    const codesText = segment.codes.length > 0 ? segment.codes.join(', ') : 'No codes';
-                    html = `<span class="segment-highlight coded" data-segment-id="${segment.id}" data-start="${segment.start}" data-end="${segment.end}" title="Coded: ${escapeHtml(codesText)}">${escapeHtml(text.substring(segment.start, segment.end))}</span>` + html;
+                    // Get codes for this segment
+                    const codes = Array.isArray(segment.codes) ? segment.codes : [];
+                    const codesText = codes.length > 0 ? codes.join(', ') : 'No codes';
+                    const codesHtml = codes.length > 0 
+                        ? codes.map(c => `<span class="code-badge-inline">${escapeHtml(c)}</span>`).join('')
+                        : '';
+                    
+                    // Add highlighted segment with codes displayed
+                    html = `<span class="segment-highlight coded" data-segment-id="${segment.id || ''}" data-start="${segment.start}" data-end="${segment.end}" data-codes="Codes: ${escapeHtml(codesText)}" title="Coded: ${escapeHtml(codesText)}">
+                        ${codesHtml}
+                        ${escapeHtml(plainText.substring(segment.start, segment.end))}
+                    </span>` + html;
                     
                     lastIndex = segment.start;
                 }
@@ -402,7 +461,7 @@
             
             // Add remaining text at the beginning
             if (lastIndex > 0) {
-                html = escapeHtml(text.substring(0, lastIndex)) + html;
+                html = escapeHtml(plainText.substring(0, lastIndex)) + html;
             }
             
             textDisplay.innerHTML = html;
@@ -417,33 +476,56 @@
         // Store plain text for position calculations
         let plainText = '';
         
-        // Store plain text on page load
-        if (textDisplay) {
-            plainText = textDisplay.getAttribute('data-plain-text') || textDisplay.textContent || textDisplay.innerText;
-        }
-        
-        // Run highlighting after page loads
-        if (textDisplay && textDisplay.textContent && existingSegments.length > 0) {
-            highlightExistingSegments();
+        // Initialize on page load with error handling
+        try {
+            // Store plain text on page load
+            if (textDisplay) {
+                plainText = textDisplay.getAttribute('data-plain-text') || textDisplay.textContent || textDisplay.innerText;
+                
+                // Run highlighting after page loads
+                if (plainText) {
+                    // Small delay to ensure DOM is ready
+                    setTimeout(function() {
+                        try {
+                            highlightExistingSegments();
+                        } catch (e) {
+                            console.error('Error highlighting segments:', e);
+                            // Fallback: just display plain text
+                            if (plainText) {
+                                textDisplay.innerHTML = escapeHtml(plainText);
+                            }
+                        }
+                    }, 100);
+                }
+            }
+        } catch (e) {
+            console.error('Error initializing text display:', e);
         }
         
         // Function to get character position in plain text from DOM position
         function getTextPosition(node, offset) {
-            let position = 0;
-            const walker = document.createTreeWalker(
-                textDisplay,
-                NodeFilter.SHOW_TEXT,
-                null
-            );
+            if (!textDisplay || !node) return 0;
             
-            let current;
-            while (current = walker.nextNode()) {
-                if (current === node) {
-                    return position + offset;
+            try {
+                let position = 0;
+                const walker = document.createTreeWalker(
+                    textDisplay,
+                    NodeFilter.SHOW_TEXT,
+                    null
+                );
+                
+                let current;
+                while (current = walker.nextNode()) {
+                    if (current === node) {
+                        return position + offset;
+                    }
+                    position += current.textContent.length;
                 }
-                position += current.textContent.length;
+                return position;
+            } catch (e) {
+                console.error('Error calculating text position:', e);
+                return 0;
             }
-            return position;
         }
         
         // Handle text selection - works with HTML structure
@@ -451,45 +533,54 @@
             textDisplay.addEventListener('mouseup', function(e) {
                 // Small delay to ensure selection is complete
                 setTimeout(function() {
-                    const selection = window.getSelection();
-                    const selectedTextStr = selection.toString().trim();
-                    
-                    if (selectedTextStr.length > 0 && selection.rangeCount > 0) {
-                        selectedText = selectedTextStr;
-                        const range = selection.getRangeAt(0);
+                    try {
+                        const selection = window.getSelection();
+                        const selectedTextStr = selection.toString().trim();
                         
-                        // Get plain text if not already stored
-                        if (!plainText) {
-                            plainText = textDisplay.getAttribute('data-plain-text') || textDisplay.textContent || textDisplay.innerText;
-                        }
-                        
-                        // Calculate start position
-                        const startNode = range.startContainer;
-                        const startOffset = range.startOffset;
-                        startPos = getTextPosition(startNode, startOffset);
-                        
-                        // Calculate end position
-                        const endNode = range.endContainer;
-                        const endOffset = range.endOffset;
-                        endPos = getTextPosition(endNode, endOffset);
-                        
-                        // Validate positions
-                        if (startPos >= 0 && endPos > startPos && endPos <= plainText.length) {
-                            // Show form
-                            const startPosInput = document.getElementById('start-pos');
-                            const endPosInput = document.getElementById('end-pos');
-                            if (startPosInput) startPosInput.value = startPos;
-                            if (endPosInput) endPosInput.value = endPos;
+                        if (selectedTextStr.length > 0 && selection.rangeCount > 0) {
+                            selectedText = selectedTextStr;
+                            const range = selection.getRangeAt(0);
                             
-                            updateSelectedCodes();
-                            if (segmentForm) {
-                                segmentForm.style.display = 'block';
-                                // Scroll form into view
-                                segmentForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                            // Get plain text if not already stored
+                            if (!plainText) {
+                                plainText = textDisplay.getAttribute('data-plain-text') || textDisplay.textContent || textDisplay.innerText;
                             }
-                            // Initialize CKEditor when form is shown
-                            setTimeout(initMemoEditor, 100);
+                            
+                            if (!plainText) {
+                                console.error('Plain text not available');
+                                return;
+                            }
+                            
+                            // Calculate start position
+                            const startNode = range.startContainer;
+                            const startOffset = range.startOffset;
+                            startPos = getTextPosition(startNode, startOffset);
+                            
+                            // Calculate end position
+                            const endNode = range.endContainer;
+                            const endOffset = range.endOffset;
+                            endPos = getTextPosition(endNode, endOffset);
+                            
+                            // Validate positions
+                            if (startPos >= 0 && endPos > startPos && endPos <= plainText.length) {
+                                // Show form
+                                const startPosInput = document.getElementById('start-pos');
+                                const endPosInput = document.getElementById('end-pos');
+                                if (startPosInput) startPosInput.value = startPos;
+                                if (endPosInput) endPosInput.value = endPos;
+                                
+                                updateSelectedCodes();
+                                if (segmentForm) {
+                                    segmentForm.style.display = 'block';
+                                    // Scroll form into view
+                                    segmentForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                                }
+                                // Initialize CKEditor when form is shown
+                                setTimeout(initMemoEditor, 100);
+                            }
                         }
+                    } catch (error) {
+                        console.error('Error handling text selection:', error);
                     }
                 }, 10);
             });

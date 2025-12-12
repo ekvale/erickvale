@@ -229,14 +229,15 @@ def coding_interface(request, pk):
         messages.warning(request, 'No text file found. Please upload a text file first.')
     
     # Get segments with their codes for highlighting
-    segments = analysis.coded_segments.all().order_by('start_position').select_related()
+    segments = analysis.coded_segments.all().order_by('start_position').prefetch_related('codes')
     segments_data = []
     for seg in segments:
+        codes_list = [code.code_name for code in seg.codes.all()]
         segments_data.append({
             'id': seg.pk,
             'start': seg.start_position,
             'end': seg.end_position,
-            'codes': [code.code_name for code in seg.codes.all()],
+            'codes': codes_list,
             'memo': seg.memo[:100] if seg.memo else '',  # Preview
         })
     
