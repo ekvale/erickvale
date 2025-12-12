@@ -34,7 +34,10 @@ class Command(BaseCommand):
         
         # Load JSON file
         json_path = os.path.join(settings.BASE_DIR, 'literary_analysis', 'data', 'dhalgren_analysis.json')
-        text_path = os.path.join(settings.BASE_DIR, 'literary_analysis', 'data', 'dhalgren.txt')
+        # Try authoritative clean version first, fall back to regular
+        text_path = os.path.join(settings.BASE_DIR, 'literary_analysis', 'data', 'dhalgren_authoritative_clean.txt')
+        if not os.path.exists(text_path):
+            text_path = os.path.join(settings.BASE_DIR, 'literary_analysis', 'data', 'dhalgren.txt')
         
         if not os.path.exists(json_path):
             self.stdout.write(self.style.ERROR(f'JSON file not found: {json_path}'))

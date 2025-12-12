@@ -138,9 +138,14 @@
         
         <div class="section">
             <h2>Actions</h2>
+            {% if request.user == analysis.analyst or request.user.is_superuser %}
             <a href="{% url 'literary_analysis:coding_interface' analysis.pk %}" class="btn">Code Text</a>
             <a href="{% url 'literary_analysis:analysis_dashboard' analysis.pk %}" class="btn">View Dashboard</a>
             <a href="{% url 'literary_analysis:generate_report' analysis.pk %}" class="btn btn-secondary">Generate Report</a>
+            {% endif %}
+            {% if analysis.report_html %}
+            <a href="{% url 'literary_analysis:view_report' analysis.pk %}" class="btn" style="background: #9a4;">View Report</a>
+            {% endif %}
         </div>
         
         <div class="section">

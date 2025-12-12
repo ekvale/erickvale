@@ -332,68 +332,26 @@ def generate_report(request, pk):
         return redirect('literary_analysis:analysis_detail', pk=pk)
 
 
-@login_required
 def view_report(request, pk):
-    """View generated analysis report."""
+    """View generated analysis report (publicly accessible)."""
     analysis = get_object_or_404(Analysis, pk=pk)
     
     if request.method == 'GET' and 'generate' in request.GET:
-        # Show form to select report sections
+        # Show form to select report sections (requires login)
+        if not request.user.is_authenticated:
+            messages.info(request, 'Please log in to generate reports.')
+            return redirect('admin:login')
         return render(request, 'literary_analysis/generate_report.html', {
             'analysis': analysis
         })
     
     if not analysis.report_html:
-        messages.warning(request, 'No report generated yet. Please generate a report first.')
-        return redirect('literary_analysis:generate_report', pk=pk)
+        messages.warning(request, 'No report generated yet.')
+        if request.user.is_authenticated:
+            return redirect('literary_analysis:generate_report', pk=pk)
+        else:
+            return redirect('literary_analysis:analysis_detail', pk=pk)
     
     return HttpResponse(analysis.report_html)
 
 
-@login_required
-def edit_text(request, pk):
-    """Edit literary work text to fix typos."""
-    work = get_object_or_404(LiteraryWork, pk=pk)
-    
-    # Check permissions
-    if work.uploaded_by != request.user and not request.user.is_superuser:
-        messages.error(request, 'You do not have permission to edit this work.')
-        return redirect('literary_analysis:work_detail', pk=pk)
-    
-    # Load text
-    try:
-        with work.text_file.open('r', encoding='utf-8') as f:
-            text_content = f.read()
-    except Exception as e:
-        messages.error(request, f'Error reading text file: {e}')
-        return redirect('literary_analysis:work_detail', pk=pk)
-    
-    # Handle POST - save edited text
-    if request.method == 'POST':
-        edited_text = request.POST.get('text_content', '')
-        if edited_text:
-            # Save to file
-            try:
-                with work.text_file.open('w', encoding='utf-8') as f:
-                    f.write(edited_text)
-                work.text_length = len(edited_text)
-                work.save()
-                messages.success(request, 'Text updated successfully!')
-                return redirect('literary_analysis:work_detail', pk=pk)
-            except Exception as e:
-                messages.error(request, f'Error saving text: {e}')
-    
-    # Detect typos
-    from .utils import detect_common_typos, find_suspicious_words
-    typos = detect_common_typos(text_content)
-    suspicious = find_suspicious_words(text_content)
-    
-    context = {
-        'work': work,
-        'text_content': text_content,
-        'typos': typos[:100],  # Limit to first 100 for display
-        'suspicious_words': suspicious[:50],  # Limit to first 50
-        'total_typos': len(typos),
-        'text_length': len(text_content),
-    }
-    return render(request, 'literary_analysis/edit_text.html', context)
