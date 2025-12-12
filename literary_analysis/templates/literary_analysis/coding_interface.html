@@ -101,6 +101,15 @@
             color: #e0e0e0;
             white-space: pre-wrap;
             user-select: text;
+            max-height: calc(100vh - 300px);
+            overflow-y: auto;
+            padding: 20px;
+            background: #0a0a0a;
+            border-radius: 4px;
+        }
+        .text-container {
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
         }
         .segment-highlight {
             background: rgba(65, 119, 144, 0.3);
@@ -108,9 +117,34 @@
             padding: 2px 4px;
             border-radius: 2px;
             cursor: pointer;
+            position: relative;
         }
         .segment-highlight:hover {
             background: rgba(65, 119, 144, 0.5);
+        }
+        .segment-highlight.coded {
+            background: rgba(154, 68, 0, 0.3);
+            border: 1px solid rgba(154, 68, 0, 0.6);
+        }
+        .segment-highlight.coded:hover {
+            background: rgba(154, 68, 0, 0.5);
+        }
+        .segment-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1000;
+            display: none;
+            margin-bottom: 5px;
+        }
+        .segment-highlight:hover .segment-tooltip {
+            display: block;
         }
         .form-panel {
             background: #0a0a0a;
@@ -188,7 +222,19 @@
         </div>
         
         <div class="text-container">
+            {% if text_error %}
+            <div style="padding: 20px; background: #2a0000; border: 1px solid #6a0000; border-radius: 8px; color: #ff8888;">
+                <strong>Error loading text:</strong> {{ text_error }}
+                <p style="margin-top: 10px;">Please upload a text file for this literary work.</p>
+            </div>
+            {% elif not text_content %}
+            <div style="padding: 20px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; color: #888;">
+                <strong>No text content available.</strong>
+                <p style="margin-top: 10px;">Please upload a text file for this literary work.</p>
+            </div>
+            {% else %}
             <div id="text-display">{{ text_content }}</div>
+            {% endif %}
             
             <div class="form-panel" id="segment-form" style="display: none;">
                 <h3>Code Segment</h3>
@@ -222,6 +268,9 @@
     
     <script src="{% static 'ckeditor/ckeditor/ckeditor.js' %}"></script>
     <script>
+        // Load existing segments data
+        const existingSegments = {{ segments_json|safe }};
+        
         // Initialize CKEditor for memo field when form is shown
         let memoEditor = null;
         
@@ -256,18 +305,71 @@
         const segmentForm = document.getElementById('segment-form');
         const formElement = document.getElementById('segment-form-element');
         
-        // Handle text selection
+        // Highlight existing coded segments by rebuilding the HTML
+        function highlightExistingSegments() {
+            if (!textDisplay || existingSegments.length === 0) return;
+            
+            const text = textDisplay.textContent;
+            if (!text) return;
+            
+            // Sort segments by start position (descending) to insert from end to start
+            const sortedSegments = [...existingSegments].sort((a, b) => b.start - a.start);
+            
+            let html = '';
+            let lastIndex = text.length;
+            
+            sortedSegments.forEach(segment => {
+                if (segment.start >= 0 && segment.end <= text.length && segment.end <= lastIndex) {
+                    // Add text after this segment
+                    if (segment.end < lastIndex) {
+                        html = escapeHtml(text.substring(segment.end, lastIndex)) + html;
+                    }
+                    
+                    // Add highlighted segment
+                    const codesText = segment.codes.length > 0 ? segment.codes.join(', ') : 'No codes';
+                    html = `<span class="segment-highlight coded" data-segment-id="${segment.id}" data-start="${segment.start}" data-end="${segment.end}" title="Coded: ${escapeHtml(codesText)}">${escapeHtml(text.substring(segment.start, segment.end))}</span>` + html;
+                    
+                    lastIndex = segment.start;
+                }
+            });
+            
+            // Add remaining text at the beginning
+            if (lastIndex > 0) {
+                html = escapeHtml(text.substring(0, lastIndex)) + html;
+            }
+            
+            textDisplay.innerHTML = html;
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Run highlighting after page loads
+        if (textDisplay && textDisplay.textContent && existingSegments.length > 0) {
+            highlightExistingSegments();
+        }
+        
+        // Handle text selection - need to account for HTML spans
         textDisplay.addEventListener('mouseup', function() {
             const selection = window.getSelection();
-            if (selection.toString().trim().length > 0) {
+            if (selection.toString().trim().length > 0 && selection.rangeCount > 0) {
                 selectedText = selection.toString();
                 const range = selection.getRangeAt(0);
                 
-                // Calculate positions
+                // Get the plain text version to calculate positions
+                const plainText = textDisplay.textContent || textDisplay.innerText;
+                
+                // Calculate positions based on plain text
                 const preSelectionRange = range.cloneRange();
                 preSelectionRange.selectNodeContents(textDisplay);
                 preSelectionRange.setEnd(range.startContainer, range.startOffset);
-                startPos = preSelectionRange.toString().length;
+                
+                // Get text before selection
+                const beforeText = preSelectionRange.toString();
+                startPos = beforeText.length;
                 endPos = startPos + selectedText.length;
                 
                 // Show form

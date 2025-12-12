@@ -211,17 +211,41 @@ def coding_interface(request, pk):
     
     # Get text content
     text_content = ""
-    try:
-        with analysis.literary_work.text_file.open('r', encoding='utf-8') as f:
-            text_content = f.read()
-    except Exception as e:
-        messages.error(request, f'Error reading text file: {e}')
+    text_error = None
+    if analysis.literary_work.text_file:
+        try:
+            with analysis.literary_work.text_file.open('r', encoding='utf-8') as f:
+                text_content = f.read()
+            # Update text_length if not set
+            if analysis.literary_work.text_length == 0 and text_content:
+                analysis.literary_work.text_length = len(text_content)
+                analysis.literary_work.save(update_fields=['text_length'])
+        except Exception as e:
+            text_error = str(e)
+            messages.error(request, f'Error reading text file: {e}')
+    else:
+        text_error = "No text file uploaded for this work."
+        messages.warning(request, 'No text file found. Please upload a text file first.')
+    
+    # Get segments with their codes for highlighting
+    segments = analysis.coded_segments.all().order_by('start_position').select_related()
+    segments_data = []
+    for seg in segments:
+        segments_data.append({
+            'id': seg.pk,
+            'start': seg.start_position,
+            'end': seg.end_position,
+            'codes': [code.code_name for code in seg.codes.all()],
+            'memo': seg.memo[:100] if seg.memo else '',  # Preview
+        })
     
     context = {
         'analysis': analysis,
         'text_content': text_content,
+        'text_error': text_error,
         'codes': analysis.codebook.codes.all().order_by('order', 'code_name'),
-        'segments': analysis.coded_segments.all().order_by('start_position'),
+        'segments': segments,
+        'segments_json': json.dumps(segments_data),
     }
     return render(request, 'literary_analysis/coding_interface.html', context)
 
