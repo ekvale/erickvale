@@ -28,7 +28,27 @@ class ReportGenerator:
         try:
             if self.work.text_file:
                 with open(self.work.text_file.path, 'r', encoding='utf-8') as f:
-                    self.full_text = f.read()
+                    text = f.read()
+                
+                # Decode Unicode escape sequences if present
+                if '\\u' in text or '\\U' in text:
+                    import re
+                    def replace_unicode(match):
+                        code = match.group(1)
+                        try:
+                            if len(code) == 4:
+                                return chr(int(code, 16))
+                            elif len(code) == 8:
+                                return chr(int(code, 16))
+                        except (ValueError, OverflowError):
+                            return match.group(0)
+                        return match.group(0)
+                    text = re.sub(r'\\u([0-9a-fA-F]{4})', replace_unicode, text)
+                    text = re.sub(r'\\U([0-9a-fA-F]{8})', replace_unicode, text)
+                    text = text.replace('\\n', '\n').replace('\\t', '\t').replace('\\r', '\r')
+                    text = text.replace('\\"', '"').replace("\\'", "'").replace('\\\\', '\\')
+                
+                self.full_text = text
             else:
                 self.full_text = ""
         except Exception:

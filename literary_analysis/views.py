@@ -9,9 +9,39 @@ from django.views.decorators.http import require_http_methods
 from django.contrib import messages
 from django.db.models import Q
 import json
+import re
 
 from .models import LiteraryWork, CodebookTemplate, Code, Analysis, CodedSegment, AnalyticalMemo
 from .utils import export_analysis_csv, export_analysis_json, validate_segment_positions
+
+
+def decode_unicode_escapes(text):
+    """Decode Unicode escape sequences like \u0022, \u000A, etc."""
+    def replace_unicode(match):
+        code = match.group(1)
+        try:
+            # Handle \uXXXX (4 hex digits)
+            if len(code) == 4:
+                return chr(int(code, 16))
+            # Handle \UXXXXXXXX (8 hex digits)
+            elif len(code) == 8:
+                return chr(int(code, 16))
+        except (ValueError, OverflowError):
+            return match.group(0)  # Return original if invalid
+        return match.group(0)
+    
+    # Replace \uXXXX patterns
+    text = re.sub(r'\\u([0-9a-fA-F]{4})', replace_unicode, text)
+    # Replace \UXXXXXXXX patterns
+    text = re.sub(r'\\U([0-9a-fA-F]{8})', replace_unicode, text)
+    # Replace common escape sequences
+    text = text.replace('\\n', '\n')
+    text = text.replace('\\t', '\t')
+    text = text.replace('\\r', '\r')
+    text = text.replace('\\"', '"')
+    text = text.replace("\\'", "'")
+    text = text.replace('\\\\', '\\')
+    return text
 
 
 def index(request):
@@ -217,6 +247,11 @@ def coding_interface(request, pk):
             # Read file using path directly (works across Django versions)
             with open(analysis.literary_work.text_file.path, 'r', encoding='utf-8') as f:
                 text_content = f.read()
+            
+            # Decode Unicode escape sequences if present
+            if '\\u' in text_content or '\\U' in text_content:
+                text_content = decode_unicode_escapes(text_content)
+            
             # Update text_length if not set
             if analysis.literary_work.text_length == 0 and text_content:
                 analysis.literary_work.text_length = len(text_content)

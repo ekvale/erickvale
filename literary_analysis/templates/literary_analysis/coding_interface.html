@@ -333,7 +333,7 @@
                     <button class="search-nav-btn" id="search-clear" style="display: none;">Clear</button>
                 </div>
             </div>
-            <div id="text-display" data-plain-text="{{ text_content|escapejs }}">{{ text_content }}</div>
+            <div id="text-display" data-plain-text="{{ text_content|escapejs }}">{{ text_content|safe }}</div>
             {% endif %}
             
             <div class="form-panel" id="segment-form" style="display: none;">
