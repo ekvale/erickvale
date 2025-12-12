@@ -387,6 +387,33 @@ def generate_report(request, pk):
         return redirect('literary_analysis:analysis_detail', pk=pk)
 
 
+@login_required
+def export_analysis(request, pk):
+    """Export analysis data in various formats."""
+    analysis = get_object_or_404(Analysis, pk=pk)
+    
+    # Check permissions
+    if analysis.analyst != request.user and not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to export this analysis.')
+        return redirect('literary_analysis:analysis_detail', pk=pk)
+    
+    format_type = request.GET.get('format', 'json')
+    
+    if format_type == 'csv':
+        csv_data = export_analysis_csv(analysis)
+        response = HttpResponse(csv_data, content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="analysis_{analysis.pk}.csv"'
+        return response
+    elif format_type == 'json':
+        json_data = export_analysis_json(analysis)
+        response = HttpResponse(json_data, content_type='application/json')
+        response['Content-Disposition'] = f'attachment; filename="analysis_{analysis.pk}.json"'
+        return response
+    else:
+        messages.error(request, 'Invalid export format.')
+        return redirect('literary_analysis:analysis_detail', pk=pk)
+
+
 def view_report(request, pk):
     """View generated analysis report (publicly accessible)."""
     analysis = get_object_or_404(Analysis, pk=pk)
