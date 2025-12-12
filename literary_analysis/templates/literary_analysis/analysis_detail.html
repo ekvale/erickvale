@@ -176,11 +176,11 @@
                     <div class="stat-label">Coded Segments</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value">{{ code_frequency|length }}</div>
-                    <div class="stat-label">Codes Applied</div>
+                    <div class="stat-value">{{ code_frequency|length|default:0 }}</div>
+                    <div class="stat-label">Unique Codes</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value">{{ analysis.literary_work.text_length|floatformat:0 }}</div>
+                    <div class="stat-value">{{ text_length|default:0|floatformat:0 }}</div>
                     <div class="stat-label">Text Length (chars)</div>
                 </div>
             </div>
