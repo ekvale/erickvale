@@ -89,13 +89,23 @@ class ReportGenerator:
         return html
     
     def _get_html_header(self):
-        """HTML header with embedded CSS."""
+        """HTML header with embedded CSS and Chart.js."""
+        code_freq = self._get_code_frequency()
+        sorted_codes = sorted(code_freq.items(), key=lambda x: x[1], reverse=True)[:20]  # Top 20 for charts
+        
+        # Prepare chart data
+        chart_data = {
+            'labels': [code[0] for code in sorted_codes],
+            'frequencies': [code[1] for code in sorted_codes],
+        }
+        
         return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Analysis Report: {self.work.title}</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         {self._get_css()}
     </style>
@@ -108,6 +118,71 @@ class ReportGenerator:
             <p class="subtitle">Qualitative Analysis Report</p>
             <p class="meta">Codebook: {self.codebook.name} | Segments: {len(self.segments)} | Generated: {self.analysis.updated_at.strftime('%B %d, %Y')}</p>
         </header>
+        
+        <div class="controls-bar">
+            <input type="text" id="search-input" placeholder="Search report..." class="search-box">
+            <button onclick="scrollToTop()" class="btn-top">↑ Top</button>
+        </div>
+        
+        <script>
+            // Chart data
+            const chartData = {json.dumps(chart_data)};
+            
+            // Search functionality
+            document.getElementById('search-input').addEventListener('input', function(e) {{
+                const searchTerm = e.target.value.toLowerCase();
+                const sections = document.querySelectorAll('.section');
+                sections.forEach(section => {{
+                    const text = section.textContent.toLowerCase();
+                    if (text.includes(searchTerm) || searchTerm === '') {{
+                        section.style.display = 'block';
+                    }} else {{
+                        section.style.display = 'none';
+                    }}
+                }});
+            }});
+            
+            // Sortable tables
+            function makeSortable(table) {{
+                const headers = table.querySelectorAll('th');
+                headers.forEach((header, index) => {{
+                    header.style.cursor = 'pointer';
+                    header.addEventListener('click', () => {{
+                        sortTable(table, index);
+                    }});
+                }});
+            }}
+            
+            function sortTable(table, columnIndex) {{
+                const tbody = table.querySelector('tbody');
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                const isAsc = table.dataset.sortDirection !== 'asc';
+                
+                rows.sort((a, b) => {{
+                    const aText = a.cells[columnIndex].textContent.trim();
+                    const bText = b.cells[columnIndex].textContent.trim();
+                    const aNum = parseFloat(aText);
+                    const bNum = parseFloat(bText);
+                    
+                    if (!isNaN(aNum) && !isNaN(bNum)) {{
+                        return isAsc ? aNum - bNum : bNum - aNum;
+                    }}
+                    return isAsc ? aText.localeCompare(bText) : bText.localeCompare(aText);
+                }});
+                
+                rows.forEach(row => tbody.appendChild(row));
+                table.dataset.sortDirection = isAsc ? 'asc' : 'desc';
+            }}
+            
+            function scrollToTop() {{
+                window.scrollTo({{ top: 0, behavior: 'smooth' }});
+            }}
+            
+            // Initialize sortable tables on load
+            document.addEventListener('DOMContentLoaded', function() {{
+                document.querySelectorAll('table').forEach(makeSortable);
+            }});
+        </script>
 """
     
     def _get_css(self):
@@ -270,10 +345,11 @@ class ReportGenerator:
         """
     
     def _section_executive_summary(self):
-        """Section 1: Executive Summary."""
+        """Section 1: Executive Summary with visual stats."""
         code_freq = self._get_code_frequency()
         total_codes = sum(code_freq.values())
         unique_codes = len(code_freq)
+        avg_codes = total_codes / len(self.segments) if self.segments else 0
         
         html = f"""
         <section class="section">
@@ -282,14 +358,28 @@ class ReportGenerator:
             using the {self.codebook.name} codebook. The analysis includes {len(self.segments)} coded segments 
             representing {total_codes} code applications across {unique_codes} distinct codes.</p>
             
-            <h3>Key Statistics</h3>
-            <ul>
-                <li><strong>Text Length:</strong> {len(self.full_text):,} characters</li>
-                <li><strong>Coded Segments:</strong> {len(self.segments)}</li>
-                <li><strong>Unique Codes Applied:</strong> {unique_codes}</li>
-                <li><strong>Total Code Applications:</strong> {total_codes}</li>
-                <li><strong>Average Codes per Segment:</strong> {total_codes / len(self.segments) if self.segments else 0:.2f}</li>
-            </ul>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">{len(self.full_text):,}</div>
+                    <div class="stat-label">Characters</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{len(self.segments)}</div>
+                    <div class="stat-label">Coded Segments</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{unique_codes}</div>
+                    <div class="stat-label">Unique Codes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{total_codes}</div>
+                    <div class="stat-label">Total Applications</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{avg_codes:.2f}</div>
+                    <div class="stat-label">Avg Codes/Segment</div>
+                </div>
+            </div>
         </section>
         """
         return html
@@ -478,15 +568,29 @@ class ReportGenerator:
         return html
     
     def _section_code_frequency(self):
-        """Section 6: Code Frequency Analysis."""
+        """Section 6: Code Frequency Analysis with charts."""
         code_freq = self._get_code_frequency()
         sorted_codes = sorted(code_freq.items(), key=lambda x: x[1], reverse=True)
         max_freq = sorted_codes[0][1] if sorted_codes else 1
         
-        html = """
+        # Prepare data for charts
+        top_10 = sorted_codes[:10]
+        chart_labels = [code[0] for code in top_10]
+        chart_data = [code[1] for code in top_10]
+        chart_colors = [
+            '#417690', '#5a8ba5', '#9a4', '#a0c4ff', '#4a9',
+            '#aa4', '#8a6', '#6a8', '#7a5', '#5a7'
+        ]
+        
+        html = f"""
         <section class="section">
             <h2>Code Frequency Analysis</h2>
-            <table>
+            
+            <div class="chart-container">
+                <canvas id="frequencyChart"></canvas>
+            </div>
+            
+            <table class="sortable-table">
                 <thead>
                     <tr>
                         <th>Code</th>
@@ -512,9 +616,65 @@ class ReportGenerator:
                     </tr>
             """
         
-        html += """
+        html += f"""
                 </tbody>
             </table>
+            
+            <script>
+                const ctx = document.getElementById('frequencyChart');
+                new Chart(ctx, {{
+                    type: 'bar',
+                    data: {{
+                        labels: {json.dumps(chart_labels)},
+                        datasets: [{{
+                            label: 'Code Frequency',
+                            data: {json.dumps(chart_data)},
+                            backgroundColor: {json.dumps(chart_colors[:len(chart_data)])},
+                            borderColor: '#2a2a2a',
+                            borderWidth: 2,
+                            borderRadius: 6
+                        }}]
+                    }},
+                    options: {{
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {{
+                            legend: {{
+                                display: false
+                            }},
+                            title: {{
+                                display: true,
+                                text: 'Top 10 Most Frequent Codes',
+                                color: '#e0e0e0',
+                                font: {{
+                                    size: 18
+                                }}
+                            }}
+                        }},
+                        scales: {{
+                            y: {{
+                                beginAtZero: true,
+                                ticks: {{
+                                    color: '#888'
+                                }},
+                                grid: {{
+                                    color: '#2a2a2a'
+                                }}
+                            }},
+                            x: {{
+                                ticks: {{
+                                    color: '#888',
+                                    maxRotation: 45,
+                                    minRotation: 45
+                                }},
+                                grid: {{
+                                    display: false
+                                }}
+                            }}
+                        }}
+                    }}
+                }});
+            </script>
         </section>
         """
         return html
@@ -907,29 +1067,67 @@ class ReportGenerator:
         return html
     
     def _section_complete_segments(self):
-        """Section 15: Complete Coded Segment Catalog."""
+        """Section 15: Complete Coded Segment Catalog with search."""
         html = """
         <section class="section">
             <h2>Complete Coded Segment Catalog</h2>
-            <p>All coded segments with full context.</p>
+            <p>All coded segments with full context. Use the search box above to filter segments.</p>
+            <div id="segment-count" style="margin-bottom: 20px; color: #888;"></div>
         """
         
         for i, segment in enumerate(self.segments, 1):
             code_names = ', '.join([c.code_name for c in segment.codes.all()])
+            code_badges = ''.join([f'<span class="code-badge">{c.code_name}</span>' for c in segment.codes.all()])
             html += f"""
-            <div class="segment-box">
+            <div class="segment-box" data-segment-index="{i}" data-codes="{code_names.lower()}" data-text="{segment.text_excerpt.lower()}">
                 <div class="segment-text">"{segment.text_excerpt}"</div>
+                <div style="margin: 15px 0;">
+                    {code_badges}
+                </div>
                 <div class="segment-meta">
                     <strong>Segment {i}</strong> | 
-                    Position: {segment.start_position}-{segment.end_position} | 
-                    Codes: {code_names}
+                    Position: {segment.start_position}-{segment.end_position}
                     {f'<br><strong>Location:</strong> {segment.location}' if segment.location else ''}
                     {f'<br><strong>Memo:</strong> {segment.memo}' if segment.memo else ''}
                 </div>
             </div>
             """
         
-        html += "</section>"
+        html += """
+            <script>
+                // Update segment count
+                function updateSegmentCount() {
+                    const visible = document.querySelectorAll('.segment-box[style*="display: block"], .segment-box:not([style*="display: none"])').length;
+                    const total = document.querySelectorAll('.segment-box').length;
+                    document.getElementById('segment-count').textContent = `Showing ${visible} of ${total} segments`;
+                }
+                
+                // Enhanced search for segments
+                const searchInput = document.getElementById('search-input');
+                const originalSearch = searchInput.oninput;
+                searchInput.addEventListener('input', function(e) {
+                    const searchTerm = e.target.value.toLowerCase();
+                    const segments = document.querySelectorAll('.segment-box');
+                    let visible = 0;
+                    
+                    segments.forEach(segment => {
+                        const text = segment.dataset.text || '';
+                        const codes = segment.dataset.codes || '';
+                        if (text.includes(searchTerm) || codes.includes(searchTerm) || searchTerm === '') {
+                            segment.style.display = 'block';
+                            visible++;
+                        } else {
+                            segment.style.display = 'none';
+                        }
+                    });
+                    
+                    document.getElementById('segment-count').textContent = `Showing ${visible} of ${segments.length} segments`;
+                });
+                
+                updateSegmentCount();
+            </script>
+        </section>
+        """
         return html
     
     def _section_memos(self):
