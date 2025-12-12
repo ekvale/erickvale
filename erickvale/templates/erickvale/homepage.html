@@ -354,9 +354,13 @@
     <div class="container">
         <header>
             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
-                <div>
-                    <h1>eric kvale</h1>
-                    <p class="subtitle">Monthly applications</p>
+                <div style="flex: 1;">
+                    <div style="margin-bottom: 20px; text-align: center;">
+                        <img src="{% static 'erickvale/eric_kvale_ascii_animation.gif' %}" 
+                             alt="ERIC KVALE" 
+                             style="max-width: 100%; max-width: 900px; height: auto; display: block; margin: 0 auto;">
+                    </div>
+                    <p class="subtitle" style="text-align: center; margin-top: -10px;">Monthly applications</p>
                 </div>
                 <nav style="margin-top: 8px;">
                     <a href="{% url 'about' %}" style="color: var(--text-secondary); text-decoration: none; font-size: 14px; transition: color 0.2s ease;">About</a>
