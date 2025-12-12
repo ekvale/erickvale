@@ -416,9 +416,28 @@
         function highlightExistingSegments() {
             if (!textDisplay) return;
             
-            // Get plain text first
+            // Get plain text first - decode from data attribute if it has escape sequences
             if (!plainText) {
-                plainText = textDisplay.getAttribute('data-plain-text') || textDisplay.textContent || textDisplay.innerText;
+                let rawText = textDisplay.getAttribute('data-plain-text') || textDisplay.textContent || textDisplay.innerText;
+                // Decode JavaScript escape sequences from the data attribute
+                if (rawText && typeof rawText === 'string') {
+                    try {
+                        // Use JSON.parse to decode JavaScript string escapes
+                        plainText = JSON.parse('"' + rawText.replace(/"/g, '\\"') + '"');
+                    } catch (e) {
+                        // If JSON.parse fails, try manual decoding
+                        plainText = rawText
+                            .replace(/\\u([0-9a-fA-F]{4})/g, (match, code) => String.fromCharCode(parseInt(code, 16)))
+                            .replace(/\\n/g, '\n')
+                            .replace(/\\t/g, '\t')
+                            .replace(/\\r/g, '\r')
+                            .replace(/\\"/g, '"')
+                            .replace(/\\'/g, "'")
+                            .replace(/\\\\/g, '\\');
+                    }
+                } else {
+                    plainText = rawText;
+                }
             }
             
             if (!plainText || !existingSegments || existingSegments.length === 0) {
@@ -484,9 +503,28 @@
             highlightingInitialized = true;
             
             try {
-                // Store plain text on page load
+                // Store plain text on page load - decode escape sequences
                 if (textDisplay) {
-                    plainText = textDisplay.getAttribute('data-plain-text') || textDisplay.textContent || textDisplay.innerText;
+                    let rawText = textDisplay.getAttribute('data-plain-text') || textDisplay.textContent || textDisplay.innerText;
+                    // Decode JavaScript escape sequences
+                    if (rawText && typeof rawText === 'string') {
+                        try {
+                            // Use JSON.parse to decode JavaScript string escapes from escapejs filter
+                            plainText = JSON.parse('"' + rawText.replace(/"/g, '\\"') + '"');
+                        } catch (e) {
+                            // If JSON.parse fails, try manual decoding
+                            plainText = rawText
+                                .replace(/\\u([0-9a-fA-F]{4})/g, (match, code) => String.fromCharCode(parseInt(code, 16)))
+                                .replace(/\\n/g, '\n')
+                                .replace(/\\t/g, '\t')
+                                .replace(/\\r/g, '\r')
+                                .replace(/\\"/g, '"')
+                                .replace(/\\'/g, "'")
+                                .replace(/\\\\/g, '\\');
+                        }
+                    } else {
+                        plainText = rawText;
+                    }
                     
                     // Run highlighting after page loads
                     if (plainText) {
@@ -843,7 +881,23 @@
                 highlightExistingSegments();
             } else {
                 if (!plainText) {
-                    plainText = textDisplay.getAttribute('data-plain-text') || textDisplay.textContent || textDisplay.innerText;
+                    let rawText = textDisplay.getAttribute('data-plain-text') || textDisplay.textContent || textDisplay.innerText;
+                    if (rawText && typeof rawText === 'string') {
+                        try {
+                            plainText = JSON.parse('"' + rawText.replace(/"/g, '\\"') + '"');
+                        } catch (e) {
+                            plainText = rawText
+                                .replace(/\\u([0-9a-fA-F]{4})/g, (match, code) => String.fromCharCode(parseInt(code, 16)))
+                                .replace(/\\n/g, '\n')
+                                .replace(/\\t/g, '\t')
+                                .replace(/\\r/g, '\r')
+                                .replace(/\\"/g, '"')
+                                .replace(/\\'/g, "'")
+                                .replace(/\\\\/g, '\\');
+                        }
+                    } else {
+                        plainText = rawText;
+                    }
                 }
                 textDisplay.innerHTML = escapeHtml(plainText);
             }
