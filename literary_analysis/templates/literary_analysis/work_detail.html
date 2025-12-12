@@ -80,6 +80,9 @@
         
         <div class="section">
             <a href="{% url 'literary_analysis:create_analysis' %}" class="btn">Create New Analysis</a>
+            {% if work.uploaded_by == user or user.is_superuser %}
+            <a href="{% url 'literary_analysis:edit_text' work.pk %}" class="btn" style="background: #2a2a2a; margin-left: 10px;">Edit Text (Fix Typos)</a>
+            {% endif %}
         </div>
     </div>
 </body>

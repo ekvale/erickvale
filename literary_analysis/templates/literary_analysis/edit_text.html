@@ -1,0 +1,206 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Text - {{ work.title }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .header {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        .back-link {
+            color: #888;
+            text-decoration: none;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: 300;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+        .stats {
+            color: #888;
+            font-size: 14px;
+        }
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+        }
+        .sidebar {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 20px;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+        .sidebar h2 {
+            font-size: 18px;
+            font-weight: 400;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+        .typo-item {
+            padding: 10px;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+        .typo-item strong {
+            color: #417690;
+        }
+        .typo-context {
+            color: #888;
+            font-style: italic;
+            margin-top: 5px;
+        }
+        .editor-container {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        textarea {
+            width: 100%;
+            min-height: 600px;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            color: #e0e0e0;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: vertical;
+        }
+        .btn {
+            padding: 12px 24px;
+            background: #417690;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 15px;
+            margin-right: 10px;
+        }
+        .btn:hover {
+            background: #5a8ba5;
+        }
+        .btn-secondary {
+            background: #2a2a2a;
+        }
+        .btn-secondary:hover {
+            background: #3a3a3a;
+        }
+        .warning {
+            background: #4a2a2a;
+            border: 1px solid #6a3a3a;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="{% url 'literary_analysis:work_detail' work.pk %}" class="back-link">← Back to Work</a>
+            <h1>Edit Text: {{ work.title }}</h1>
+            <div class="stats">
+                {{ text_length|floatformat:0 }} characters • 
+                {% if total_typos > 0 %}{{ total_typos }} potential typos detected{% else %}No obvious typos detected{% endif %}
+            </div>
+        </div>
+        
+        {% if total_typos > 0 %}
+        <div class="warning">
+            <strong>Note:</strong> {{ total_typos }} potential typos detected. Review the sidebar for suggestions.
+            Only the first 100 are shown here. Use Find & Replace (Ctrl+F) in the editor to locate them.
+        </div>
+        {% endif %}
+        
+        <div class="main-content">
+            <div class="sidebar">
+                <h2>Potential Typos</h2>
+                {% if typos %}
+                    {% for typo in typos %}
+                    <div class="typo-item">
+                        <strong>Line {{ typo.line }}:</strong> "{{ typo.original }}"<br>
+                        <span style="color: #9a4;">→ "{{ typo.suggestion }}"</span><br>
+                        <small style="color: #888;">{{ typo.description }}</small>
+                        <div class="typo-context">...{{ typo.context }}...</div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="color: #888; font-size: 14px;">No obvious typos detected. Review the text manually for errors.</p>
+                {% endif %}
+            </div>
+            
+            <div class="editor-container">
+                <form method="post">
+                    {% csrf_token %}
+                    <textarea name="text_content" id="text-content" spellcheck="true">{{ text_content }}</textarea>
+                    <button type="submit" class="btn">Save Changes</button>
+                    <a href="{% url 'literary_analysis:work_detail' work.pk %}" class="btn btn-secondary" style="text-decoration: none; display: inline-block;">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Auto-save draft to localStorage
+        const textarea = document.getElementById('text-content');
+        const storageKey = 'draft_{{ work.pk }}';
+        
+        // Load draft
+        const draft = localStorage.getItem(storageKey);
+        if (draft && !confirm('Found a draft. Load it?')) {
+            localStorage.removeItem(storageKey);
+        } else if (draft) {
+            textarea.value = draft;
+        }
+        
+        // Save draft on change (debounced)
+        let saveTimeout;
+        textarea.addEventListener('input', function() {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                localStorage.setItem(storageKey, textarea.value);
+            }, 2000);
+        });
+        
+        // Clear draft on successful save
+        document.querySelector('form').addEventListener('submit', function() {
+            localStorage.removeItem(storageKey);
+        });
+    </script>
+</body>
+</html>
+
