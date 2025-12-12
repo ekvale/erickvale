@@ -86,13 +86,18 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for code_name, count in code_frequency.items|dictsortreversed:1 %}
+                    {% for code_name, count in code_frequency.items %}
                     <tr>
                         <td>{{ code_name }}</td>
                         <td>{{ count }}</td>
                         <td>
-                            <div class="frequency-bar" style="width: {{ count|floatformat:0|add:0|mul:10 }}px; max-width: 100%;"></div>
+                            {% widthratio count 1 10 as bar_width %}
+                            <div class="frequency-bar" style="width: {% if bar_width > 500 %}500{% else %}{{ bar_width }}{% endif %}px;"></div>
                         </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3">No codes applied yet.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -101,8 +106,8 @@
         
         <div class="section">
             <h2>Quick Actions</h2>
-            <a href="{% url 'literary_analysis:coding_interface' analysis.pk %}" class="btn">Continue Coding</a>
-            <a href="{% url 'literary_analysis:generate_report' analysis.pk %}" class="btn">Generate Report</a>
+            <a href="{% url 'literary_analysis:coding_interface' analysis.pk %}" class="btn" style="display: inline-block; padding: 12px 24px; background: #417690; color: #fff; text-decoration: none; border-radius: 4px; margin-right: 10px;">Continue Coding</a>
+            <a href="{% url 'literary_analysis:generate_report' analysis.pk %}" class="btn" style="display: inline-block; padding: 12px 24px; background: #417690; color: #fff; text-decoration: none; border-radius: 4px;">Generate Report</a>
         </div>
     </div>
 </body>

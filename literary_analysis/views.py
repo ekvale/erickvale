@@ -200,9 +200,13 @@ def analysis_dashboard(request, pk):
     """Analysis dashboard with statistics and visualizations."""
     analysis = get_object_or_404(Analysis, pk=pk)
     
+    # Get code frequency and sort by count (descending)
+    code_freq = analysis.get_code_frequency()
+    sorted_code_freq = dict(sorted(code_freq.items(), key=lambda x: x[1], reverse=True))
+    
     context = {
         'analysis': analysis,
-        'code_frequency': analysis.get_code_frequency(),
+        'code_frequency': sorted_code_freq,
         'segments': analysis.coded_segments.all(),
     }
     return render(request, 'literary_analysis/dashboard.html', context)
