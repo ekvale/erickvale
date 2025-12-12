@@ -144,11 +144,11 @@
                     <div class="stat-label">Coded Segments</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value">{{ total_codes_applied }}</div>
+                    <div class="stat-value">{{ total_codes_applied|default:"0" }}</div>
                     <div class="stat-label">Total Code Applications</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value">{{ progress_percentage|floatformat:1 }}%</div>
+                    <div class="stat-value">{{ progress_percentage|default:"0"|floatformat:1 }}%</div>
                     <div class="stat-label">Text Coverage</div>
                 </div>
             </div>

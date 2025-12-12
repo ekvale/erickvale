@@ -163,9 +163,39 @@ class AnalysisDetailView(DetailView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['segments'] = self.object.coded_segments.all().order_by('start_position')
+        segments = list(self.object.coded_segments.all().order_by('start_position'))
+        context['segments'] = segments
         context['memos'] = self.object.memos.all()
         context['code_frequency'] = self.object.get_code_frequency()
+        
+        # Calculate progress metrics
+        work = self.object.literary_work
+        
+        # Ensure text_length is set
+        if work.text_length == 0:
+            try:
+                with work.text_file.open('r', encoding='utf-8') as f:
+                    text = f.read()
+                    work.text_length = len(text)
+                    work.save(update_fields=['text_length'])
+            except Exception as e:
+                # If we can't read the file, set a default
+                work.text_length = 0
+        
+        total_chars = work.text_length or 0
+        coded_chars = sum(seg.end_position - seg.start_position for seg in segments) if segments else 0
+        context['progress_percentage'] = (coded_chars / total_chars * 100) if total_chars > 0 else 0.0
+        context['total_segments'] = len(segments)
+        
+        # Count total code applications
+        total_codes = 0
+        for seg in segments:
+            total_codes += seg.codes.count()
+        context['total_codes_applied'] = total_codes
+        
+        # Also add text_length for the statistics section
+        context['text_length'] = total_chars
+        
         return context
 
 
