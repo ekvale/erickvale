@@ -2,6 +2,8 @@
 Admin interface for literary analysis app.
 """
 from django.contrib import admin
+from ckeditor_uploader.widgets import CKEditorUploadingWidget
+from django import forms
 from .models import LiteraryWork, CodebookTemplate, Code, Analysis, CodedSegment, AnalyticalMemo
 
 
@@ -37,8 +39,18 @@ class AnalysisAdmin(admin.ModelAdmin):
     readonly_fields = ['created_at', 'updated_at', 'report_generated_at']
 
 
+class CodedSegmentAdminForm(forms.ModelForm):
+    class Meta:
+        model = CodedSegment
+        fields = '__all__'
+        widgets = {
+            'memo': CKEditorUploadingWidget(config_name='default'),
+        }
+
+
 @admin.register(CodedSegment)
 class CodedSegmentAdmin(admin.ModelAdmin):
+    form = CodedSegmentAdminForm
     list_display = ['analysis', 'start_position', 'end_position', 'location', 'created_by', 'created_at']
     list_filter = ['created_at', 'analysis']
     search_fields = ['text_excerpt', 'location', 'memo']
@@ -46,8 +58,18 @@ class CodedSegmentAdmin(admin.ModelAdmin):
     readonly_fields = ['created_at', 'updated_at']
 
 
+class AnalyticalMemoAdminForm(forms.ModelForm):
+    class Meta:
+        model = AnalyticalMemo
+        fields = '__all__'
+        widgets = {
+            'content': CKEditorUploadingWidget(config_name='default'),
+        }
+
+
 @admin.register(AnalyticalMemo)
 class AnalyticalMemoAdmin(admin.ModelAdmin):
+    form = AnalyticalMemoAdminForm
     list_display = ['title', 'analysis', 'created_by', 'created_at']
     list_filter = ['created_at', 'analysis']
     search_fields = ['title', 'content']

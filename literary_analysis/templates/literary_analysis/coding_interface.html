@@ -220,7 +220,34 @@
         </div>
     </div>
     
+    <script src="{% static 'ckeditor/ckeditor/ckeditor.js' %}"></script>
     <script>
+        // Initialize CKEditor for memo field when form is shown
+        let memoEditor = null;
+        
+        function initMemoEditor() {
+            if (!memoEditor && document.getElementById('memo')) {
+                memoEditor = CKEDITOR.replace('memo', {
+                    toolbar: 'Custom',
+                    toolbar_Custom: [
+                        ['Bold', 'Italic', 'Underline'],
+                        ['NumberedList', 'BulletedList'],
+                        ['Link', 'Unlink'],
+                        ['Image'],
+                        ['RemoveFormat', 'Source'],
+                    ],
+                    height: 200,
+                    width: '100%',
+                    filebrowserUploadUrl: '/ckeditor/upload/',
+                    filebrowserBrowseUrl: '/ckeditor/browse/',
+                });
+            }
+        }
+        
+        // Initialize editor when form is shown
+        const originalShowForm = function() {
+            initMemoEditor();
+        };
         let selectedText = '';
         let startPos = 0;
         let endPos = 0;
@@ -248,6 +275,8 @@
                 document.getElementById('end-pos').value = endPos;
                 updateSelectedCodes();
                 segmentForm.style.display = 'block';
+                // Initialize CKEditor when form is shown
+                setTimeout(initMemoEditor, 100);
             }
         });
         
@@ -271,6 +300,10 @@
         function cancelSelection() {
             segmentForm.style.display = 'none';
             window.getSelection().removeAllRanges();
+            // Clear CKEditor content
+            if (memoEditor) {
+                memoEditor.setData('');
+            }
         }
         
         // Handle form submission
@@ -282,6 +315,12 @@
             checkboxes.forEach(cb => {
                 formData.append('codes', cb.value);
             });
+            
+            // Get content from CKEditor if it exists
+            if (memoEditor) {
+                const memoContent = memoEditor.getData();
+                formData.set('memo', memoContent);
+            }
             
             try {
                 const response = await fetch('{% url "literary_analysis:api_create_segment" %}', {

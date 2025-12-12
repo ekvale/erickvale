@@ -5,6 +5,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.core.validators import FileExtensionValidator
+from ckeditor_uploader.fields import RichTextUploadingField
 
 
 class LiteraryWork(models.Model):
@@ -137,7 +138,7 @@ class CodedSegment(models.Model):
     end_position = models.IntegerField()
     text_excerpt = models.TextField(help_text='The actual text segment')
     location = models.CharField(max_length=200, blank=True, help_text='Descriptive location like "Page 45, Chapter 3"')
-    memo = models.TextField(blank=True, help_text='Analytical note about this segment')
+    memo = RichTextUploadingField(blank=True, help_text='Analytical note about this segment')
     codes = models.ManyToManyField(Code, related_name='segments')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -160,7 +161,7 @@ class AnalyticalMemo(models.Model):
     """Standalone analytical memos for an analysis."""
     analysis = models.ForeignKey(Analysis, on_delete=models.CASCADE, related_name='memos')
     title = models.CharField(max_length=200)
-    content = models.TextField()
+    content = RichTextUploadingField(help_text='Analytical memo content with rich text editor')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='analytical_memos')

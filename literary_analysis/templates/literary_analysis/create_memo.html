@@ -119,6 +119,27 @@
             </form>
         </div>
     </div>
+    
+    <script src="{% static 'ckeditor/ckeditor/ckeditor.js' %}"></script>
+    <script>
+        CKEDITOR.replace('content', {
+            toolbar: 'Custom',
+            toolbar_Custom: [
+                ['Bold', 'Italic', 'Underline', 'Strike'],
+                ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent'],
+                ['Link', 'Unlink'],
+                ['Image', 'Table', 'HorizontalRule'],
+                ['Styles', 'Format'],
+                ['TextColor', 'BGColor'],
+                ['RemoveFormat', 'Source'],
+                ['Maximize'],
+            ],
+            height: 400,
+            width: '100%',
+            filebrowserUploadUrl: '/ckeditor/upload/',
+            filebrowserBrowseUrl: '/ckeditor/browse/',
+        });
+    </script>
 </body>
 </html>
 
