@@ -956,7 +956,8 @@ class ReportGenerator:
         # Group codes by type
         themes = defaultdict(list)
         for code_name, code in self.codes.items():
-            themes[code.code_type].append(code_name)
+            code_type = code.code_type or 'descriptive'  # Default to 'descriptive' if None
+            themes[code_type].append(code_name)
         
         html = """
         <section class="section" id="thematic">
@@ -1447,7 +1448,7 @@ class ReportGenerator:
             for code_type in code_types:
                 html += f"<tr><td>{code_type}</td>"
                 for group in segment_groups:
-                    count = sum(1 for seg in group for code in seg.codes.all() if code.code_type == code_type)
+                    count = sum(1 for seg in group for code in seg.codes.all() if (code.code_type or 'descriptive') == code_type)
                     intensity = min(255, count * 50)  # Scale intensity
                     html += f'<td class="heatmap-cell" style="background: rgb({intensity}, {intensity//2}, {intensity//3});" title="{count}"></td>'
                 html += "</tr>"
@@ -1572,7 +1573,8 @@ class ReportGenerator:
         # Group by type and build trees
         by_type = defaultdict(list)
         for code in self.codebook.codes.all():
-            by_type[code.code_type].append(code)
+            code_type = code.code_type or 'descriptive'  # Default to 'descriptive' if None
+            by_type[code_type].append(code)
         
         for code_type, codes_list in sorted(by_type.items()):
             html += f'<div class="tree-item" style="margin-top: 20px; margin-bottom: 10px;"><strong style="font-size: 18px; color: #a0c4ff;">{code_type.upper()}</strong></div>'
