@@ -1216,7 +1216,8 @@ class ReportGenerator:
         theme_segments = defaultdict(list)
         for segment in self.segments:
             for code in segment.codes.all():
-                theme_segments[code.code_type].append((segment, code.code_name))
+                code_type = code.code_type or 'descriptive'  # Default to 'descriptive' if None
+                theme_segments[code_type].append((segment, code.code_name))
         
         html = """
         <section class="section">
@@ -1258,7 +1259,7 @@ class ReportGenerator:
             html += '<div style="margin: 20px 0;">'
             for i, segment in enumerate(self.segments):
                 # Get dominant code type for color
-                code_types = [code.code_type for code in segment.codes.all()]
+                code_types = [code.code_type or 'descriptive' for code in segment.codes.all() if code.code_type]
                 dominant_type = max(set(code_types), key=code_types.count) if code_types else 'descriptive'
                 
                 # Color mapping
@@ -1292,7 +1293,7 @@ class ReportGenerator:
             """
             
             for i, segment in enumerate(self.segments):
-                code_types = [code.code_type for code in segment.codes.all()]
+                code_types = [code.code_type or 'descriptive' for code in segment.codes.all() if code.code_type]
                 dominant_type = max(set(code_types), key=code_types.count) if code_types else 'N/A'
                 code_names = ', '.join([c.code_name for c in segment.codes.all()])
                 
