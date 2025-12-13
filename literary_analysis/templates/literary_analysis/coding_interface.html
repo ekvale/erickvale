@@ -548,6 +548,7 @@
         setTimeout(initializeHighlighting, 200);
         
         // Function to get character position in plain text from DOM position
+        // This function needs to account for HTML structure (spans, code badges, etc.)
         function getTextPosition(node, offset) {
             if (!textDisplay || !node) return 0;
             
@@ -556,7 +557,23 @@
                 const walker = document.createTreeWalker(
                     textDisplay,
                     NodeFilter.SHOW_TEXT,
-                    null
+                    {
+                        acceptNode: function(node) {
+                            // Skip text nodes that are inside code badges or other non-content elements
+                            let parent = node.parentElement;
+                            while (parent && parent !== textDisplay) {
+                                // Skip code badges and other UI elements
+                                if (parent.classList && (
+                                    parent.classList.contains('code-badge-inline') ||
+                                    parent.classList.contains('search-highlight')
+                                )) {
+                                    return NodeFilter.FILTER_REJECT;
+                                }
+                                parent = parent.parentElement;
+                            }
+                            return NodeFilter.FILTER_ACCEPT;
+                        }
+                    }
                 );
                 
                 let current;
@@ -564,7 +581,21 @@
                     if (current === node) {
                         return position + offset;
                     }
-                    position += current.textContent.length;
+                    // Only count text that's not in code badges
+                    let textToCount = current.textContent;
+                    // If this text node is inside a code badge, skip it
+                    let parent = current.parentElement;
+                    let isInBadge = false;
+                    while (parent && parent !== textDisplay) {
+                        if (parent.classList && parent.classList.contains('code-badge-inline')) {
+                            isInBadge = true;
+                            break;
+                        }
+                        parent = parent.parentElement;
+                    }
+                    if (!isInBadge) {
+                        position += textToCount.length;
+                    }
                 }
                 return position;
             } catch (e) {
