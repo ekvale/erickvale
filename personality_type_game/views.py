@@ -23,24 +23,48 @@ def game_home(request):
 def start_game(request):
     """Start a new game session."""
     if request.method == 'POST':
-        data = json.loads(request.body)
-        category = data.get('category', 'business')
-        difficulty = data.get('difficulty', 'medium')
-        training_mode = data.get('training_mode', False)
-        
-        # Create new session
-        session_id = str(uuid.uuid4())
-        session = GameSession.objects.create(
-            session_id=session_id,
-            category=category,
-            difficulty=difficulty,
-            training_mode=training_mode
-        )
-        
-        return JsonResponse({
-            'session_id': session_id,
-            'success': True
-        })
+        try:
+            data = json.loads(request.body)
+            category = data.get('category', 'business')
+            difficulty = data.get('difficulty', 'medium')
+            training_mode = data.get('training_mode', False)
+            
+            # Validate category
+            valid_categories = ['business', 'relationship']
+            if category not in valid_categories:
+                return JsonResponse({
+                    'success': False, 
+                    'error': f'Invalid category. Must be one of: {", ".join(valid_categories)}'
+                }, status=400)
+            
+            # Validate difficulty
+            valid_difficulties = ['easy', 'medium', 'hard']
+            if difficulty not in valid_difficulties:
+                return JsonResponse({
+                    'success': False, 
+                    'error': f'Invalid difficulty. Must be one of: {", ".join(valid_difficulties)}'
+                }, status=400)
+            
+            # Create new session
+            session_id = str(uuid.uuid4())
+            session = GameSession.objects.create(
+                session_id=session_id,
+                category=category,
+                difficulty=difficulty,
+                training_mode=training_mode
+            )
+            
+            return JsonResponse({
+                'session_id': session_id,
+                'success': True
+            })
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=500)
     
     return JsonResponse({'success': False, 'error': 'Invalid method'}, status=405)
 

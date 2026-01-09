@@ -43,29 +43,44 @@ async function handleStartGame(e) {
     const difficulty = formData.get('difficulty') || 'medium';
     const trainingMode = formData.get('training_mode') === 'on';
 
+    console.log('Starting game with:', { category, difficulty, trainingMode });
+
     try {
+        const requestBody = {
+            category: category,
+            difficulty: difficulty,
+            training_mode: trainingMode
+        };
+        console.log('Request body:', requestBody);
+        
         const response = await fetch(getBaseUrl() + 'start/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': getCookie('csrftoken')
             },
-            body: JSON.stringify({
-                category: category,
-                difficulty: difficulty,
-                training_mode: trainingMode
-            })
+            body: JSON.stringify(requestBody)
         });
+        
+        console.log('Response status:', response.status);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Server error:', response.status, errorText);
+            alert(`Failed to start game: ${response.status} ${errorText}`);
+            return;
+        }
 
         const data = await response.json();
         if (data.success) {
             window.location.href = `/apps/personality-game/play/${data.session_id}/`;
         } else {
-            alert('Failed to start game. Please try again.');
+            console.error('Game start failed:', data);
+            alert(`Failed to start game: ${data.error || 'Unknown error'}`);
         }
     } catch (error) {
         console.error('Error starting game:', error);
-        alert('Failed to start game. Please try again.');
+        alert(`Failed to start game: ${error.message || 'Please try again.'}`);
     }
 }
 
