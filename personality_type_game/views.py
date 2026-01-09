@@ -85,6 +85,11 @@ def get_scenario(request, session_id):
     # Filter scenarios by category and difficulty
     scenarios = Scenario.objects.filter(category=session.category, difficulty=session.difficulty)
     
+    # Debug: Log what we're filtering for
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.debug(f"Session {session_id}: category={session.category}, difficulty={session.difficulty}, scenarios found={scenarios.count()}")
+    
     # Exclude recent scenarios
     if recent_ids:
         scenarios = scenarios.exclude(id__in=recent_ids)
@@ -96,10 +101,21 @@ def get_scenario(request, session_id):
             scenarios = scenarios.exclude(id__in=recent_ids)
     
     if not scenarios.exists():
-        # Last resort: allow any scenario in this category
-        scenarios = Scenario.objects.filter(category=session.category, difficulty=session.difficulty)
+        # Last resort: allow any scenario in this category (any difficulty)
+        scenarios = Scenario.objects.filter(category=session.category)
+        if recent_ids:
+            scenarios = scenarios.exclude(id__in=recent_ids)
     
-    scenario = random.choice(scenarios)
+    if not scenarios.exists():
+        # Absolute last resort: any scenario in this category
+        scenarios = Scenario.objects.filter(category=session.category)
+    
+    if not scenarios.exists():
+        return JsonResponse({
+            'error': f'No scenarios found for {session.get_category_display()} category. Please try a different category.'
+        }, status=404)
+    
+    scenario = random.choice(list(scenarios))
     
     # Get round number
     round_number = GameRound.objects.filter(session=session).count() + 1
