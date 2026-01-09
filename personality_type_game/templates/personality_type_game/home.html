@@ -1,0 +1,104 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personality Type Game - eric kvale</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'personality_type_game/css/style.css' %}">
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <a href="{% url 'homepage' %}" class="back-link">← Back to Home</a>
+            <h1>Personality Type Game</h1>
+            <p class="subtitle">Learn to identify Chase Hughes' six personality types from dialogue transcripts</p>
+        </div>
+
+        <div class="instructions">
+            <div class="card">
+                <h2>How to Play</h2>
+                <ol>
+                    <li>You'll see a short transcript (4-10 lines) with a scenario label</li>
+                    <li>Identify which personality type is dominant (1-6)</li>
+                    <li>Choose the best response option (A-D) to de-escalate or influence effectively</li>
+                    <li>Optionally identify the key "tell" category (control, visibility, belonging, accuracy, freedom, safety)</li>
+                </ol>
+            </div>
+
+            <div class="card">
+                <h2>Scoring</h2>
+                <ul>
+                    <li><strong>+2 points</strong> if you correctly identify the personality type</li>
+                    <li><strong>+2 points</strong> if you choose the correct response</li>
+                    <li><strong>+1 bonus point</strong> if you identify the tell category correctly</li>
+                    <li><strong>-1 point</strong> if you use a hint in training mode</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h2>The Six Personality Types</h2>
+                <div class="type-grid">
+                    <div class="type-item">
+                        <h3>1. Driver</h3>
+                        <p>Wants: Options, outcomes, speed, autonomy</p>
+                        <p>Tell: Control</p>
+                    </div>
+                    <div class="type-item">
+                        <h3>2. Expressive</h3>
+                        <p>Wants: Recognition, excitement, visibility</p>
+                        <p>Tell: Visibility</p>
+                    </div>
+                    <div class="type-item">
+                        <h3>3. Relational</h3>
+                        <p>Wants: Connection, harmony, appreciation</p>
+                        <p>Tell: Belonging</p>
+                    </div>
+                    <div class="type-item">
+                        <h3>4. Analyzer</h3>
+                        <p>Wants: Clarity, logic, data, definitions</p>
+                        <p>Tell: Accuracy</p>
+                    </div>
+                    <div class="type-item">
+                        <h3>5. Free Spirit</h3>
+                        <p>Wants: Autonomy, flexibility, choices</p>
+                        <p>Tell: Freedom</p>
+                    </div>
+                    <div class="type-item">
+                        <h3>6. Guardian</h3>
+                        <p>Wants: Safety, protocol, risk coverage</p>
+                        <p>Tell: Safety</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Start Game</h2>
+                <form id="start-form">
+                    <div class="form-group">
+                        <label for="difficulty">Difficulty Level:</label>
+                        <select id="difficulty" name="difficulty" required>
+                            <option value="easy">Easy - Obvious tells, pure types</option>
+                            <option value="medium" selected>Medium - Mixed types but one dominant</option>
+                            <option value="hard">Hard - Subtle tells, stress language, misleading content</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="training-mode" name="training_mode">
+                            Training Mode (hints cost 1 point)
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Start Game</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'personality_type_game/js/game.js' %}"></script>
+</body>
+</html>
+

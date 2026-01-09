@@ -1,0 +1,103 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playing Game - Personality Type Game</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'personality_type_game/css/style.css' %}">
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <a href="{% url 'personality_type_game:home' %}" class="back-link">← Back to Home</a>
+            <div class="stats-bar" id="stats-bar">
+                <div class="stat">
+                    <span class="stat-label">Score:</span>
+                    <span class="stat-value" id="total-score">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Round:</span>
+                    <span class="stat-value" id="round-number">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Streak:</span>
+                    <span class="stat-value" id="current-streak">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="loading-screen" class="loading-screen">
+            <p>Loading scenario...</p>
+        </div>
+
+        <div id="game-screen" class="game-screen" style="display: none;">
+            <div class="card">
+                <h2 id="scenario-title"></h2>
+                <div class="transcript-box" id="transcript-box"></div>
+            </div>
+
+            <div class="card">
+                <h3>Step 1: Identify the Personality Type</h3>
+                <div class="type-options" id="type-options">
+                    {% for value, label in personality_types %}
+                    <label class="type-option">
+                        <input type="radio" name="personality-type" value="{{ value }}">
+                        <span class="option-number">{{ forloop.counter }}</span>
+                        <span class="option-label">{{ label }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Step 2: Choose the Best Response</h3>
+                <div class="response-options" id="response-options"></div>
+            </div>
+
+            <div class="card">
+                <h3>Step 3: Identify the Tell Category (Optional - +1 bonus point)</h3>
+                <div class="tell-options" id="tell-options">
+                    {% for value, label in tell_categories %}
+                    <label class="tell-option">
+                        <input type="radio" name="tell-category" value="{{ value }}">
+                        <span class="option-label">{{ label }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="hint-section">
+                    <button id="hint-btn" class="btn btn-secondary" style="display: none;">
+                        Get Hint (-1 point)
+                    </button>
+                    <div id="hint-display" class="hint-display" style="display: none;"></div>
+                </div>
+                <button id="submit-btn" class="btn btn-primary">Submit Answer</button>
+            </div>
+        </div>
+
+        <div id="feedback-screen" class="feedback-screen" style="display: none;">
+            <div class="card">
+                <h2>Feedback</h2>
+                <div id="feedback-content"></div>
+                <button id="next-btn" class="btn btn-primary">Next Round</button>
+                <button id="finish-btn" class="btn btn-secondary" style="display: none;">Finish Game</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SESSION_ID = "{{ session.session_id|default:'' }}";
+        const CSRF_TOKEN = "{{ csrf_token }}";
+        const BASE_URL = "/apps/personality-game/api/";
+        const SUMMARY_BASE_URL = "/apps/personality-game/summary/";
+    </script>
+    <script src="{% static 'personality_type_game/js/game.js' %}"></script>
+</body>
+</html>
+

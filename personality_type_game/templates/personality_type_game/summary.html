@@ -1,0 +1,113 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Summary - Personality Type Game</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'personality_type_game/css/style.css' %}">
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <a href="{% url 'personality_type_game:home' %}" class="back-link">← Back to Home</a>
+            <h1>Game Summary</h1>
+        </div>
+
+        <div class="summary-stats card">
+            <h2>Final Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-value">{{ session.total_score }}</div>
+                    <div class="stat-label">Total Score</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">{{ session.total_rounds }}</div>
+                    <div class="stat-label">Total Rounds</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">{{ session.get_accuracy }}%</div>
+                    <div class="stat-label">Accuracy</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">{{ session.best_streak }}</div>
+                    <div class="stat-label">Best Streak</div>
+                </div>
+            </div>
+        </div>
+
+        {% if type_accuracy %}
+        <div class="card">
+            <h2>Accuracy by Personality Type</h2>
+            <table class="type-accuracy-table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Correct</th>
+                        <th>Total</th>
+                        <th>Accuracy</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for type, stats in type_accuracy.items %}
+                    <tr>
+                        <td>{{ type|title }}</td>
+                        <td>{{ stats.correct }}</td>
+                        <td>{{ stats.total }}</td>
+                        <td>{{ stats.accuracy }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        {% if missed_rounds %}
+        <div class="card">
+            <h2>Review: Missed Questions</h2>
+            {% for round in missed_rounds %}
+            <div class="review-item">
+                <h3>Round {{ round.round_number }}: {{ round.scenario.scenario_title }}</h3>
+                <div class="transcript-box">
+                    {% for line in round.scenario.transcript %}
+                    <p>{{ line }}</p>
+                    {% endfor %}
+                </div>
+                <div class="review-answers">
+                    <div class="answer-section">
+                        <h4>Your Answer:</h4>
+                        <p><strong>Type:</strong> {{ round.get_player_type_guess_display|default:"Not answered" }}</p>
+                        <p><strong>Response:</strong> {{ round.player_response_choice|default:"Not answered" }}</p>
+                        <p><strong>Tell Category:</strong> {{ round.get_player_tell_category_display|default:"Not answered" }}</p>
+                    </div>
+                    <div class="answer-section correct">
+                        <h4>Correct Answer:</h4>
+                        <p><strong>Type:</strong> {{ round.scenario.get_correct_type_display }}</p>
+                        <p><strong>Response:</strong> {{ round.scenario.correct_response }}</p>
+                        <p><strong>Tell Category:</strong> {{ round.scenario.get_tell_category_display }}</p>
+                    </div>
+                </div>
+                <div class="explanation">
+                    <p><strong>Tell Explanation:</strong> {{ round.scenario.tell_explanation }}</p>
+                    <p><strong>Response Explanation:</strong> {{ round.scenario.response_explanation }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="card">
+            <h2>Perfect Game!</h2>
+            <p>You got all questions correct. Excellent work!</p>
+        </div>
+        {% endif %}
+
+        <div class="card">
+            <a href="{% url 'personality_type_game:home' %}" class="btn btn-primary">Play Again</a>
+        </div>
+    </div>
+</body>
+</html>
+

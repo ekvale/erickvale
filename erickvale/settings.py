@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'blog',
     'card_maker',
     'literary_analysis',
+    'personality_type_game',
 ]
 
 MIDDLEWARE = [
