@@ -1441,12 +1441,363 @@ class Command(BaseCommand):
                 'correct_response': 'B',
                 'response_explanation': 'Even when saying no to full protocol delays, Guardians need safety protocols maintained. Providing essential safeguards quickly addresses both speed (Driver element) and safety (Guardian need).',
                 'is_feels_unheard': False
+            },
+            
+            # RELATIONSHIP/ROMANTIC SCENARIOS
+            {
+                'category': 'relationship',
+                'difficulty': 'easy',
+                'scenario_title': 'Date Planning - Driver',
+                'transcript': [
+                    'Partner: "I want to plan our anniversary celebration. What do you think?"',
+                    'Driver: "When? What are our options? I need to know the timeline and what we\'re deciding on."',
+                    'Partner: "I thought we could discuss it together..."',
+                    'Driver: "Sure, but I need specifics. What dates work? What are the choices? Let\'s decide now so I can plan."',
+                    'Partner: "Maybe we could just see what feels right?"',
+                    'Driver: "I need a plan. Give me options and I\'ll choose the best one."'
+                ],
+                'correct_type': 'driver',
+                'tell_category': 'control',
+                'tell_explanation': 'The driver needs options, timeline, and decision-making control, showing a need for structure and autonomy in planning.',
+                'response_choices': {
+                    'A': 'Let\'s just go with the flow and see what happens.',
+                    'B': 'Here are our options: Option 1 is dinner at that place you mentioned (Saturday 7pm). Option 2 is a weekend getaway (I can book by Tuesday). Option 3 is a surprise I plan (you choose the date). Which do you prefer?',
+                    'C': 'I understand you want to plan. How are you feeling about the anniversary?',
+                    'D': 'Let\'s analyze all possible date options and venues before deciding.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Drivers need options and control. Providing clear choices with timelines addresses their control need in relationships.',
+                'is_feels_unheard': False
+            },
+            {
+                'category': 'relationship',
+                'difficulty': 'medium',
+                'scenario_title': 'Saying No - Driver (Unrealistic Plan)',
+                'transcript': [
+                    'Driver: "I want to visit three countries in one week. We can maximize our vacation time."',
+                    'Partner: "That sounds exhausting. Can we slow down a bit?"',
+                    'Driver: "Why? We can do it efficiently. What are your concerns? I need to know so I can address them."',
+                    'Partner: "I just want to relax and enjoy one place."',
+                    'Driver: "Then give me options. What\'s the fastest way to make you happy while still seeing multiple places?"'
+                ],
+                'correct_type': 'driver',
+                'tell_category': 'control',
+                'tell_explanation': 'The driver wants to control the vacation itinerary and maximize efficiency, showing a need for options and outcomes.',
+                'response_choices': {
+                    'A': 'I\'m sorry, but three countries in a week is too much. We\'ll just do one.',
+                    'B': 'I understand you want to maximize the trip. While three countries feels rushed, here are options: Option 1 is two countries with 3 days each. Option 2 is one country but we plan day trips. Option 3 is you plan the itinerary and I\'ll follow, but we build in rest days.',
+                    'C': 'I hear that you want to see a lot. How does slowing down make you feel?',
+                    'D': 'We need to analyze travel times and logistics before planning multiple countries.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Even when saying no to the original plan, Drivers need options and control. Presenting alternatives with clear outcomes respects their control need.',
+                'is_feels_unheard': False
+            },
+            {
+                'category': 'relationship',
+                'difficulty': 'easy',
+                'scenario_title': 'Romantic Gesture - Expressive',
+                'transcript': [
+                    'Expressive: "I want to throw you a surprise party for your birthday! We\'ll invite all our friends, decorate the whole place, make it amazing and memorable!"',
+                    'Partner: "That sounds like a lot..."',
+                    'Expressive: "But it\'ll be so special! Everyone will see how much I love you! It\'ll be the party everyone talks about!"',
+                    'Partner: "I appreciate the thought, but..."',
+                    'Expressive: "This is our moment to celebrate! I want everyone to know how amazing you are!"'
+                ],
+                'correct_type': 'expressive',
+                'tell_category': 'visibility',
+                'tell_explanation': 'The expressive person wants to make the celebration visible and memorable, showing a need for recognition and excitement.',
+                'response_choices': {
+                    'A': 'I don\'t really want a big party. Let\'s keep it small.',
+                    'B': 'I love your enthusiasm and that you want to celebrate us! While a huge party might be overwhelming, let\'s create something special: A smaller gathering with close friends, but we\'ll make it really memorable with decorations and photos we can share. Your love and effort will definitely be visible!',
+                    'C': 'I understand you want to celebrate. How important is the big party to you?',
+                    'D': 'We need to consider logistics and guest preferences before planning a large event.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Expressives need their enthusiasm and love acknowledged. Validating their vision while offering a scaled-down but still visible celebration addresses their visibility need.',
+                'is_feels_unheard': False
+            },
+            {
+                'category': 'relationship',
+                'difficulty': 'medium',
+                'scenario_title': 'Saying No - Expressive (Expensive Gift)',
+                'transcript': [
+                    'Expressive: "I want to buy you that expensive watch you mentioned! It\'s perfect and everyone will see how much I care!"',
+                    'Partner: "That\'s really sweet, but it\'s way too expensive."',
+                    'Expressive: "But it shows my love! People will see how special you are to me! Can\'t we make it work?"',
+                    'Partner: "We have other financial priorities."',
+                    'Expressive: "But this is about us! About showing everyone how much I value you!"'
+                ],
+                'correct_type': 'expressive',
+                'tell_category': 'visibility',
+                'tell_explanation': 'The expressive person wants to show love through visible, impressive gestures, prioritizing recognition over budget.',
+                'response_choices': {
+                    'A': 'No, we simply can\'t afford it. End of discussion.',
+                    'B': 'I\'m so touched that you want to show your love so visibly! While we can\'t do the watch now, let\'s create something special: I\'ll save for it together with you, and in the meantime, we can plan smaller visible gestures that show your love - maybe a special date night we post about, or a meaningful but affordable gift that still shows everyone how much you care.',
+                    'C': 'I understand you want to show your love. How does not being able to afford it make you feel?',
+                    'D': 'We need to analyze our budget and savings goals before making large purchases.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Even when saying no to expensive gifts, Expressives need their love and desire to show it acknowledged. Offering alternative visible ways to express love addresses their visibility need.',
+                'is_feels_unheard': False
+            },
+            {
+                'category': 'relationship',
+                'difficulty': 'easy',
+                'scenario_title': 'Conflict Resolution - Relational',
+                'transcript': [
+                    'Partner: "I\'m upset about what happened yesterday."',
+                    'Relational: "Oh no, I\'m so sorry. Are you okay? I feel terrible that you\'re hurt."',
+                    'Partner: "I just need some space."',
+                    'Relational: "But I want to make sure you\'re okay. Can we talk? I don\'t want this to come between us. Our connection matters."',
+                    'Partner: "I need time."',
+                    'Relational: "I understand, but I\'m worried about us. I want to make sure we\'re okay and that you feel heard."'
+                ],
+                'correct_type': 'relational',
+                'tell_category': 'belonging',
+                'tell_explanation': 'The relational person prioritizes connection and ensuring the partner feels heard, showing a need for relationship harmony.',
+                'response_choices': {
+                    'A': 'Fine, take your space. I\'ll wait.',
+                    'B': 'I understand you need space, and I respect that. I want you to know I\'m here when you\'re ready to talk, and I care about our relationship. Let\'s check in tomorrow to make sure you\'re okay.',
+                    'C': 'I\'m so sorry you\'re hurt. Your feelings are completely valid.',
+                    'D': 'We need to systematically address what happened and establish communication protocols.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Relational types need connection and to ensure their partner feels heard. Respecting space while maintaining connection addresses their belonging need.',
+                'is_feels_unheard': False
+            },
+            {
+                'category': 'relationship',
+                'difficulty': 'medium',
+                'scenario_title': 'Saying No - Relational (Too Much Togetherness)',
+                'transcript': [
+                    'Relational: "I want us to spend every weekend together. I feel so connected when we\'re together, and I worry when we\'re apart."',
+                    'Partner: "I need some time for myself and my friends too."',
+                    'Relational: "But our relationship is the most important thing! Don\'t you want to be together? I feel disconnected when we\'re apart."',
+                    'Partner: "I do, but I also need balance."',
+                    'Relational: "I\'m worried this means you don\'t value our connection as much as I do."'
+                ],
+                'correct_type': 'relational',
+                'tell_category': 'belonging',
+                'tell_explanation': 'The relational person needs constant connection and fears disconnection, showing a need for belonging and relationship security.',
+                'response_choices': {
+                    'A': 'I need my space. You\'re being too clingy.',
+                    'B': 'I absolutely value our connection and love spending time together. While I need some balance with friends and personal time, let\'s plan regular quality time together - maybe Friday nights are just us, and we can check in daily. Our relationship is important, and I want you to feel secure in our connection.',
+                    'C': 'I understand you need connection. How does having space make you feel disconnected?',
+                    'D': 'We need to analyze time allocation to optimize relationship satisfaction.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Even when saying no to constant togetherness, Relational types need their connection valued and security maintained. Providing structured quality time addresses their belonging need.',
+                'is_feels_unheard': False
+            },
+            {
+                'category': 'relationship',
+                'difficulty': 'easy',
+                'scenario_title': 'Future Planning - Analyzer',
+                'transcript': [
+                    'Partner: "Where do you see us in five years?"',
+                    'Analyzer: "That\'s a vague question. What specifically do you mean? Career, location, relationship status, financial goals? I need clear parameters to answer accurately."',
+                    'Partner: "Just generally, what do you think?"',
+                    'Analyzer: "Generally isn\'t specific enough. What are the variables? What assumptions should I make? I need data to give you a logical answer."',
+                    'Partner: "It\'s just a conversation."',
+                    'Analyzer: "But without specifics, any answer would be imprecise. What exactly are you asking?"'
+                ],
+                'correct_type': 'analyzer',
+                'tell_category': 'accuracy',
+                'tell_explanation': 'The analyzer needs precise definitions and logical structure, showing a need for accuracy over casual conversation.',
+                'response_choices': {
+                    'A': 'Just answer generally. It\'s not that serious.',
+                    'B': 'Good question. Let me break this down: Career-wise, I see us both advancing. Location-wise, we should discuss preferences. Relationship-wise, I\'m committed. Financially, let\'s set specific goals. Here\'s my logical framework for each area...',
+                    'C': 'I understand you need specifics. How does vague planning make you feel?',
+                    'D': 'We need to systematically define all variables and create a comprehensive five-year plan with measurable goals.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Analyzers need logical structure and clear definitions. Breaking down the question into specific areas with frameworks addresses their accuracy need.',
+                'is_feels_unheard': False
+            },
+            {
+                'category': 'relationship',
+                'difficulty': 'hard',
+                'scenario_title': 'Saying No - Analyzer (Spontaneous Trip)',
+                'transcript': [
+                    'Partner: "Let\'s take a spontaneous trip this weekend! Just pack and go!"',
+                    'Analyzer: "Spontaneous? What does that mean exactly? Where? What\'s the budget? What are the logistics? I need to research hotels, transportation, activities..."',
+                    'Partner: "That\'s the point - no planning! Just adventure!"',
+                    'Analyzer: "But without proper planning, we could end up with poor accommodations, overspending, or safety issues. I need data to make logical decisions."',
+                    'Partner: "Sometimes you just have to go with it."',
+                    'Analyzer: "Going with it isn\'t a valid decision-making process. I need structure and information."'
+                ],
+                'correct_type': 'analyzer',
+                'tell_category': 'accuracy',
+                'tell_explanation': 'The analyzer needs structure, data, and logical planning, rejecting spontaneity without information.',
+                'response_choices': {
+                    'A': 'Just relax and go with it. Spontaneity is fun!',
+                    'B': 'I understand you want adventure. While full spontaneity feels risky to me, here\'s what I can do: I\'ll quickly research three destination options with basic logistics (hotels, transport) by tonight. You pick one, and we\'ll have structure but still feel adventurous.',
+                    'C': 'I hear that spontaneity is important to you. How does planning feel restrictive?',
+                    'D': 'We need to systematically evaluate all destination options, costs, and logistics before making any travel decisions.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Even when saying no to full spontaneity, Analyzers need structure and data. Providing quick research with choice maintains their need for logical planning while allowing adventure.',
+                'is_feels_unheard': False
+            },
+            {
+                'category': 'relationship',
+                'difficulty': 'easy',
+                'scenario_title': 'Commitment Talk - Free Spirit',
+                'transcript': [
+                    'Partner: "I think we should move in together."',
+                    'Free Spirit: "Move in? That feels so permanent. What if things change? I need flexibility."',
+                    'Partner: "But we\'ve been together for two years."',
+                    'Free Spirit: "I know, but I don\'t want to feel trapped. Can we find a way that gives me freedom while still being together?"',
+                    'Partner: "Living together is a commitment."',
+                    'Free Spirit: "I\'m committed, but I need space to be myself. Can\'t we do this in a way that doesn\'t feel restrictive?"'
+                ],
+                'correct_type': 'free_spirit',
+                'tell_category': 'freedom',
+                'tell_explanation': 'The free spirit needs autonomy and flexibility, feeling constrained by permanent commitments.',
+                'response_choices': {
+                    'A': 'If you\'re not ready to commit, maybe we shouldn\'t be together.',
+                    'B': 'I understand you need freedom and space. While I want to live together, let\'s design it in a way that gives you autonomy: You can have your own space/room, we can keep some separate activities, and we can try it with flexibility to adjust. Your independence matters to me.',
+                    'C': 'I hear that commitment feels restrictive. How can we make this more comfortable?',
+                    'D': 'We need to analyze the benefits and drawbacks of cohabitation systematically.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Free spirits need autonomy and flexibility. Offering structured freedom within commitment addresses their freedom need.',
+                'is_feels_unheard': False
+            },
+            {
+                'category': 'relationship',
+                'difficulty': 'medium',
+                'scenario_title': 'Saying No - Free Spirit (Rigid Schedule)',
+                'transcript': [
+                    'Partner: "I want us to have a set schedule - date night every Friday, call every night at 9pm, visit my family every Sunday."',
+                    'Free Spirit: "That feels so rigid. I love spending time with you, but I need flexibility. Can\'t we be spontaneous?"',
+                    'Partner: "Structure helps relationships."',
+                    'Free Spirit: "But I feel trapped by all these rules. I need freedom to be myself and do things when it feels right."',
+                    'Partner: "Consistency is important."',
+                    'Free Spirit: "I want consistency too, but I need it to feel natural, not forced."'
+                ],
+                'correct_type': 'free_spirit',
+                'tell_category': 'freedom',
+                'tell_explanation': 'The free spirit feels constrained by rigid schedules and needs flexibility and spontaneity.',
+                'response_choices': {
+                    'A': 'Structure is important. You need to commit to the schedule.',
+                    'B': 'I understand you need flexibility. While I value consistency, let\'s find balance: We\'ll have regular connection (maybe 3-4 times a week) but you choose when, and we can be spontaneous about dates. Your freedom matters, and I want this to feel natural for you.',
+                    'C': 'I hear that schedules feel restrictive. How can we make this work for you?',
+                    'D': 'We need to analyze relationship satisfaction data to determine optimal interaction frequency.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Even when saying no to rigid schedules, Free Spirits need their autonomy respected. Offering flexible consistency addresses their freedom need.',
+                'is_feels_unheard': False
+            },
+            {
+                'category': 'relationship',
+                'difficulty': 'easy',
+                'scenario_title': 'Safety Concerns - Guardian',
+                'transcript': [
+                    'Partner: "Let\'s go on this adventure trip - skydiving, bungee jumping, the works!"',
+                    'Guardian: "What are the safety protocols? What\'s the insurance coverage? Have these companies been vetted? What if something goes wrong?"',
+                    'Partner: "It\'ll be fine! People do this all the time."',
+                    'Guardian: "But we need proper safeguards. What\'s the emergency plan? What about medical coverage? I can\'t support this without proper safety measures."',
+                    'Partner: "You\'re overthinking it."',
+                    'Guardian: "I\'m not overthinking - I\'m ensuring our safety. We need protocols and coverage."'
+                ],
+                'correct_type': 'guardian',
+                'tell_category': 'safety',
+                'tell_explanation': 'The guardian prioritizes safety, protocols, and risk mitigation over adventure excitement.',
+                'response_choices': {
+                    'A': 'Just relax and have fun. Nothing will happen.',
+                    'B': 'I understand you want adventure, and I want us to have fun safely. Let\'s do this: We\'ll research certified companies with good safety records, get proper insurance, and have an emergency plan. Adventure can happen within proper safety frameworks.',
+                    'C': 'I hear that safety is really important to you. How does adventure feel risky?',
+                    'D': 'We need to systematically evaluate risk factors and safety protocols before engaging in any adventure activities.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Guardians need safety protocols and risk mitigation. Framing adventure within safety frameworks addresses their safety need.',
+                'is_feels_unheard': False
+            },
+            {
+                'category': 'relationship',
+                'difficulty': 'medium',
+                'scenario_title': 'Saying No - Guardian (Unsafe Living Situation)',
+                'transcript': [
+                    'Partner: "I found this amazing apartment! It\'s cheap and in a cool neighborhood. Let\'s move in!"',
+                    'Guardian: "What about the safety? What\'s the crime rate? Does it have proper locks? What about fire safety? What\'s the building inspection status?"',
+                    'Partner: "It\'ll be fine. The neighborhood is up and coming."',
+                    'Guardian: "But we need to verify safety protocols. What if something happens? We need proper safeguards before committing."',
+                    'Partner: "You\'re being too cautious."',
+                    'Guardian: "I\'m being responsible. Safety and security matter. We need to ensure proper coverage."'
+                ],
+                'correct_type': 'guardian',
+                'tell_category': 'safety',
+                'tell_explanation': 'The guardian prioritizes safety protocols and risk assessment over excitement about the apartment.',
+                'response_choices': {
+                    'A': 'It\'s fine. Just trust me on this.',
+                    'B': 'I understand you\'re excited about the apartment. While I want to move forward, let\'s ensure safety first: We\'ll check crime statistics, inspect security features, verify building safety, and get renter\'s insurance. Once we confirm it\'s safe, we can move in with confidence.',
+                    'C': 'I hear that safety is important to you. How does this apartment feel risky?',
+                    'D': 'We need to systematically evaluate all safety factors and risk mitigation strategies before making housing decisions.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Even when saying no to immediate move-in, Guardians need safety protocols addressed. Providing safety verification process addresses their safety need.',
+                'is_feels_unheard': False
+            },
+            {
+                'category': 'relationship',
+                'difficulty': 'hard',
+                'scenario_title': 'Feels Unheard - Expressive (Romantic)',
+                'transcript': [
+                    'Expressive: "I planned this amazing romantic evening, but you seem distracted. I feel like my efforts aren\'t being noticed."',
+                    'Partner: "I\'m sorry, I\'ve just been stressed."',
+                    'Expressive: "But I worked so hard to make this special! I wanted you to see how much I love you, and it feels like it doesn\'t matter."',
+                    'Partner: "It does matter, I just..."',
+                    'Expressive: "I feel invisible. Like my love and effort don\'t get recognized."'
+                ],
+                'correct_type': 'expressive',
+                'tell_category': 'visibility',
+                'tell_explanation': 'The expressive person feels their romantic efforts and love aren\'t being recognized, threatening their need for visibility.',
+                'response_choices': {
+                    'A': 'I\'m sorry you feel that way, but I\'ve been busy.',
+                    'B': 'I see how much effort you put into this, and I\'m so sorry I seemed distracted. Your love and thoughtfulness absolutely matter to me. Let me give this evening the attention it deserves - this is beautiful, and I want to celebrate what you\'ve created for us.',
+                    'C': 'I understand you feel unappreciated. Your feelings are valid.',
+                    'D': 'We need to analyze what went wrong and establish better communication protocols.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Expressives need their efforts and love recognized. Acknowledging their work and giving it visible attention addresses their visibility need.',
+                'is_feels_unheard': True
+            },
+            {
+                'category': 'relationship',
+                'difficulty': 'hard',
+                'scenario_title': 'Feels Unheard - Relational (Emotional Distance)',
+                'transcript': [
+                    'Relational: "I feel like we\'re growing apart. You don\'t share your feelings with me anymore."',
+                    'Partner: "I\'ve just been busy with work."',
+                    'Relational: "But our connection matters. I feel disconnected, like you don\'t want to be close to me anymore."',
+                    'Partner: "That\'s not true, I just..."',
+                    'Relational: "I\'m worried we\'re losing what we had. I need to feel connected and valued in this relationship."'
+                ],
+                'correct_type': 'relational',
+                'tell_category': 'belonging',
+                'tell_explanation': 'The relational person feels disconnected and fears losing the relationship connection, showing a need for belonging and emotional intimacy.',
+                'response_choices': {
+                    'A': 'I\'m just busy. You\'re overthinking this.',
+                    'B': 'I hear that you feel disconnected, and I\'m so sorry. Our connection absolutely matters to me. Let\'s make time to reconnect - maybe we can have a quiet evening together this week where we can really talk and I can share what\'s been going on. I want you to feel valued and close to me.',
+                    'C': 'I understand you feel disconnected. Your feelings are completely valid.',
+                    'D': 'We need to systematically address communication patterns and establish regular check-ins.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Relational types need connection and to feel valued. Acknowledging their concern and creating space for emotional intimacy addresses their belonging need.',
+                'is_feels_unheard': True
             }
         ]
 
         # Create scenarios
         created_count = 0
+        updated_count = 0
         for scenario_data in scenarios_data:
+            # Ensure category is set (default to business for existing scenarios)
+            if 'category' not in scenario_data:
+                scenario_data['category'] = 'business'
+            
             scenario, created = Scenario.objects.get_or_create(
                 scenario_title=scenario_data['scenario_title'],
                 defaults=scenario_data
@@ -1454,7 +1805,16 @@ class Command(BaseCommand):
             if created:
                 created_count += 1
                 self.stdout.write(self.style.SUCCESS(f'Created: {scenario.scenario_title}'))
+            else:
+                # Update existing scenario if category is missing
+                if not scenario.category:
+                    scenario.category = scenario_data['category']
+                    scenario.save()
+                    updated_count += 1
+                    self.stdout.write(self.style.SUCCESS(f'Updated: {scenario.scenario_title} (added category)'))
 
-        self.stdout.write(self.style.SUCCESS(f'\nSuccessfully loaded {created_count} scenarios'))
+        self.stdout.write(self.style.SUCCESS(f'\nSuccessfully loaded {created_count} new scenarios'))
+        if updated_count > 0:
+            self.stdout.write(self.style.SUCCESS(f'Updated {updated_count} existing scenarios with category'))
         self.stdout.write(f'Total scenarios in database: {Scenario.objects.count()}')
 

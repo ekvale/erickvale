@@ -39,6 +39,7 @@ function getSummaryBaseUrl() {
 async function handleStartGame(e) {
     e.preventDefault();
     const formData = new FormData(e.target);
+    const category = formData.get('category') || 'business';
     const difficulty = formData.get('difficulty') || 'medium';
     const trainingMode = formData.get('training_mode') === 'on';
 
@@ -50,6 +51,7 @@ async function handleStartGame(e) {
                 'X-CSRFToken': getCookie('csrftoken')
             },
             body: JSON.stringify({
+                category: category,
                 difficulty: difficulty,
                 training_mode: trainingMode
             })

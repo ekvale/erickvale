@@ -34,10 +34,16 @@ RESPONSE_CHOICES = [
     ('D', 'D'),
 ]
 
+CATEGORY_CHOICES = [
+    ('business', 'Business'),
+    ('relationship', 'Relationship/Romantic'),
+]
+
 
 class Scenario(models.Model):
     """Game scenario with transcript and correct answers."""
     id = models.AutoField(primary_key=True)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='business')
     difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES)
     scenario_title = models.CharField(max_length=200)
     transcript = models.JSONField(help_text="List of dialogue lines")
@@ -53,6 +59,7 @@ class Scenario(models.Model):
     class Meta:
         ordering = ['difficulty', 'id']
         indexes = [
+            models.Index(fields=['category', 'difficulty', 'correct_type']),
             models.Index(fields=['difficulty', 'correct_type']),
             models.Index(fields=['correct_type']),
         ]
@@ -64,6 +71,7 @@ class Scenario(models.Model):
 class GameSession(models.Model):
     """Tracks a player's game session."""
     session_id = models.CharField(max_length=100, unique=True, db_index=True)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='business')
     difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES, default='medium')
     total_score = models.IntegerField(default=0)
     total_rounds = models.IntegerField(default=0)

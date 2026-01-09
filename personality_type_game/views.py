@@ -6,7 +6,7 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.db.models import Q
-from .models import Scenario, GameSession, GameRound, PERSONALITY_TYPE_CHOICES, TELL_CATEGORY_CHOICES
+from .models import Scenario, GameSession, GameRound, PERSONALITY_TYPE_CHOICES, TELL_CATEGORY_CHOICES, CATEGORY_CHOICES
 
 
 def game_home(request):
@@ -14,6 +14,7 @@ def game_home(request):
     context = {
         'personality_types': PERSONALITY_TYPE_CHOICES,
         'tell_categories': TELL_CATEGORY_CHOICES,
+        'categories': CATEGORY_CHOICES,
     }
     return render(request, 'personality_type_game/home.html', context)
 
@@ -23,6 +24,7 @@ def start_game(request):
     """Start a new game session."""
     if request.method == 'POST':
         data = json.loads(request.body)
+        category = data.get('category', 'business')
         difficulty = data.get('difficulty', 'medium')
         training_mode = data.get('training_mode', False)
         
@@ -30,6 +32,7 @@ def start_game(request):
         session_id = str(uuid.uuid4())
         session = GameSession.objects.create(
             session_id=session_id,
+            category=category,
             difficulty=difficulty,
             training_mode=training_mode
         )
@@ -55,8 +58,8 @@ def get_scenario(request, session_id):
     recent_rounds = GameRound.objects.filter(session=session).order_by('-round_number')[:2]
     recent_ids = [r.scenario_id for r in recent_rounds]
     
-    # Filter scenarios by difficulty
-    scenarios = Scenario.objects.filter(difficulty=session.difficulty)
+    # Filter scenarios by category and difficulty
+    scenarios = Scenario.objects.filter(category=session.category, difficulty=session.difficulty)
     
     # Exclude recent scenarios
     if recent_ids:
@@ -64,13 +67,13 @@ def get_scenario(request, session_id):
     
     if not scenarios.exists():
         # If we've run out of scenarios, allow repeats but still exclude last 2
-        scenarios = Scenario.objects.filter(difficulty=session.difficulty)
+        scenarios = Scenario.objects.filter(category=session.category, difficulty=session.difficulty)
         if recent_ids:
             scenarios = scenarios.exclude(id__in=recent_ids)
     
     if not scenarios.exists():
-        # Last resort: allow any scenario
-        scenarios = Scenario.objects.filter(difficulty=session.difficulty)
+        # Last resort: allow any scenario in this category
+        scenarios = Scenario.objects.filter(category=session.category, difficulty=session.difficulty)
     
     scenario = random.choice(scenarios)
     
@@ -208,6 +211,7 @@ def play_game(request, session_id=None):
         'session': session,
         'personality_types': PERSONALITY_TYPE_CHOICES,
         'tell_categories': TELL_CATEGORY_CHOICES,
+        'categories': CATEGORY_CHOICES,
     }
     
     return render(request, 'personality_type_game/play.html', context)

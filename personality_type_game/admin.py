@@ -4,14 +4,14 @@ from .models import Scenario, GameSession, GameRound
 
 @admin.register(Scenario)
 class ScenarioAdmin(admin.ModelAdmin):
-    list_display = ['id', 'scenario_title', 'difficulty', 'correct_type', 'tell_category', 'is_feels_unheard']
-    list_filter = ['difficulty', 'correct_type', 'tell_category', 'is_feels_unheard']
+    list_display = ['id', 'scenario_title', 'category', 'difficulty', 'correct_type', 'tell_category', 'is_feels_unheard']
+    list_filter = ['category', 'difficulty', 'correct_type', 'tell_category', 'is_feels_unheard']
     search_fields = ['scenario_title', 'tell_explanation', 'response_explanation']
     readonly_fields = ['created_at']
     
     fieldsets = (
         ('Basic Info', {
-            'fields': ('scenario_title', 'difficulty', 'is_feels_unheard')
+            'fields': ('scenario_title', 'category', 'difficulty', 'is_feels_unheard')
         }),
         ('Content', {
             'fields': ('transcript',)
@@ -30,15 +30,15 @@ class ScenarioAdmin(admin.ModelAdmin):
 
 @admin.register(GameSession)
 class GameSessionAdmin(admin.ModelAdmin):
-    list_display = ['session_id', 'difficulty', 'training_mode', 'total_score', 'total_rounds', 'best_streak', 'started_at', 'completed']
-    list_filter = ['difficulty', 'training_mode', 'completed']
+    list_display = ['session_id', 'category', 'difficulty', 'training_mode', 'total_score', 'total_rounds', 'best_streak', 'started_at', 'completed']
+    list_filter = ['category', 'difficulty', 'training_mode', 'completed']
     search_fields = ['session_id']
     readonly_fields = ['session_id', 'started_at', 'last_activity', 'get_accuracy']
     date_hierarchy = 'started_at'
     
     fieldsets = (
         ('Session Info', {
-            'fields': ('session_id', 'difficulty', 'training_mode', 'completed')
+            'fields': ('session_id', 'category', 'difficulty', 'training_mode', 'completed')
         }),
         ('Statistics', {
             'fields': ('total_score', 'total_rounds', 'current_streak', 'best_streak', 'get_accuracy')

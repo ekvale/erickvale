@@ -79,6 +79,14 @@
                 <h2>Start Game</h2>
                 <form id="start-form">
                     <div class="form-group">
+                        <label for="category">Scenario Category:</label>
+                        <select id="category" name="category" required>
+                            {% for value, label in categories %}
+                            <option value="{{ value }}" {% if value == 'business' %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label for="difficulty">Difficulty Level:</label>
                         <select id="difficulty" name="difficulty" required>
                             <option value="easy">Easy - Obvious tells, pure types</option>
