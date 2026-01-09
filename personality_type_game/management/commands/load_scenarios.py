@@ -1019,6 +1019,428 @@ class Command(BaseCommand):
                 'correct_response': 'D',
                 'response_explanation': 'Analyzers need systematic methodology and comprehensive data. Establishing analytical framework addresses their accuracy need.',
                 'is_feels_unheard': False
+            },
+            
+            # SCENARIOS WHERE "NO" IS THE RIGHT ANSWER (but framed appropriately)
+            {
+                'difficulty': 'medium',
+                'scenario_title': 'Saying No - Driver (Unrealistic Deadline)',
+                'transcript': [
+                    'Driver: "I need this project completed by end of day tomorrow. I\'ve already committed to the client."',
+                    'Manager: "That\'s not possible given our current capacity."',
+                    'Driver: "Make it possible. What are my options? I need a solution now."',
+                    'Manager: "We can\'t deliver quality work in that timeframe."',
+                    'Driver: "Then give me a faster option. I need control of this timeline."',
+                    'Manager: "Here are your choices..."'
+                ],
+                'correct_type': 'driver',
+                'tell_category': 'control',
+                'tell_explanation': 'The driver needs options and control over the timeline, showing urgency and a need for autonomy in decision-making.',
+                'response_choices': {
+                    'A': 'I\'m sorry, but that deadline is impossible. We simply can\'t do it.',
+                    'B': 'I can\'t deliver the full project tomorrow, but here are your options: Option 1 is a partial delivery (core features) by tomorrow. Option 2 is full delivery in 3 days. Option 3 is I can escalate to get you additional resources if you approve the budget.',
+                    'C': 'I understand you\'re feeling pressure. Let\'s talk about why this deadline feels so urgent.',
+                    'D': 'We need to analyze the feasibility data before committing to any timeline.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Even when saying no to the original request, Drivers need options and control. Presenting alternatives with clear outcomes respects their control need.',
+                'is_feels_unheard': False
+            },
+            {
+                'difficulty': 'medium',
+                'scenario_title': 'Saying No - Expressive (Unrealistic Launch)',
+                'transcript': [
+                    'Expressive: "I want to launch our new product with a massive celebration! We should invite media, influencers, celebrities - make it huge and visible!"',
+                    'Manager: "That sounds exciting, but our budget won\'t support that scale."',
+                    'Expressive: "But this is our moment to shine! Everyone will see us! Can\'t we find the budget?"',
+                    'Manager: "We have constraints we need to work within."',
+                    'Expressive: "I need this to be visible. People need to know about our product!"'
+                ],
+                'correct_type': 'expressive',
+                'tell_category': 'visibility',
+                'tell_explanation': 'The expressive person wants maximum visibility and recognition for the launch, showing a need for their work to be seen and celebrated.',
+                'response_choices': {
+                    'A': 'No, we can\'t afford that. We\'ll do a small internal launch instead.',
+                    'B': 'I love your vision for making this visible! While we can\'t do the full celebrity launch now, let\'s create a tiered plan: Phase 1 (this month) is a visible social media campaign highlighting your contribution. Phase 2 (next quarter) can include the bigger launch when budget allows.',
+                    'C': 'I understand you want visibility. How important is this to you personally?',
+                    'D': 'We need to analyze the ROI of each marketing channel before allocating budget.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Even when saying no, Expressives need their vision acknowledged and their contribution recognized. Framing alternatives that maintain visibility respects their need.',
+                'is_feels_unheard': False
+            },
+            {
+                'difficulty': 'medium',
+                'scenario_title': 'Saying No - Relational (Unreasonable Request)',
+                'transcript': [
+                    'Relational: "I know you said no personal time off next month, but my best friend is getting married and I need to be there. Relationships matter, right?"',
+                    'Manager: "The project deadline conflicts with that week."',
+                    'Relational: "But I\'ve been a loyal team member. Friendships are important. Can\'t we work something out that respects relationships?"',
+                    'Manager: "This is a critical time for the team."',
+                    'Relational: "I don\'t want to let down my friend, and I don\'t want to let down the team either. There must be a way."'
+                ],
+                'correct_type': 'relational',
+                'tell_category': 'belonging',
+                'tell_explanation': 'The relational person prioritizes relationships and connection, wanting to honor both personal relationships and team commitments.',
+                'response_choices': {
+                    'A': 'I\'m sorry, but the project deadline is non-negotiable. You\'ll need to miss the wedding.',
+                    'B': 'I understand your friend\'s wedding is important to you, and I value our team relationships too. Here\'s what we can do: If you can get your deliverables done by Thursday and someone can cover Friday, you can take Friday off. This respects both your friendship and our team commitment.',
+                    'C': 'I hear that relationships matter deeply to you. How are you feeling about this conflict?',
+                    'D': 'We need to analyze project timelines and coverage needs before making exceptions.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Even when constraints exist, Relational types need their relationships acknowledged. Finding a solution that respects both personal and team relationships addresses their belonging need.',
+                'is_feels_unheard': False
+            },
+            {
+                'difficulty': 'hard',
+                'scenario_title': 'Saying No - Analyzer (Insufficient Data Request)',
+                'transcript': [
+                    'Analyzer: "I need access to all customer data, transaction histories, and internal communications before I can recommend a strategy. Without comprehensive data, any recommendation is invalid."',
+                    'Manager: "Some of that data is confidential and can\'t be shared broadly."',
+                    'Analyzer: "But how can I make accurate recommendations without complete information? This violates methodological integrity."',
+                    'Manager: "We have privacy and security constraints."',
+                    'Analyzer: "Without proper data, I cannot provide a logically sound analysis. This doesn\'t make sense."'
+                ],
+                'correct_type': 'analyzer',
+                'tell_category': 'accuracy',
+                'tell_explanation': 'The analyzer needs comprehensive data for accurate analysis, showing a need for logical rigor and complete information.',
+                'response_choices': {
+                    'A': 'I\'m sorry, but we can\'t share that data. You\'ll have to work with what you have.',
+                    'B': 'I understand your need for complete data for accurate analysis. While I can\'t provide everything you requested, here\'s what I can give you: anonymized aggregate data sets, statistical summaries of transactions, and a data dictionary explaining all available fields. Plus, I can arrange a session with the data team to answer specific analytical questions.',
+                    'C': 'I hear you need more information. How does it feel not having all the data?',
+                    'D': 'We need to systematically evaluate which data points are actually required versus desired for the analysis.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Even when saying no to full data access, Analyzers need logical explanation and alternative structured data. Providing systematic alternatives and data dictionaries respects their accuracy need.',
+                'is_feels_unheard': False
+            },
+            {
+                'difficulty': 'medium',
+                'scenario_title': 'Saying No - Free Spirit (Rigid Policy)',
+                'transcript': [
+                    'Free Spirit: "I want to work completely remote, choose my own hours, and skip the standard process. I deliver results, so why do I need rules?"',
+                    'Manager: "We have company policies that everyone needs to follow."',
+                    'Free Spirit: "But I\'m more creative when I have freedom. These rules feel suffocating. Can\'t we make an exception?"',
+                    'Manager: "Standards exist for a reason."',
+                    'Free Spirit: "I need autonomy to do my best work. These constraints are limiting my potential."'
+                ],
+                'correct_type': 'free_spirit',
+                'tell_category': 'freedom',
+                'tell_explanation': 'The free spirit needs autonomy and flexibility, feeling constrained by rigid policies and rules.',
+                'response_choices': {
+                    'A': 'I\'m sorry, but the policies apply to everyone. You need to follow them like everyone else.',
+                    'B': 'I understand you need flexibility to do your best work. While I can\'t give you complete autonomy on all policies, here\'s what I can offer: flexible hours within core business hours (10am-3pm required), 3 remote days per week, and you can propose alternative processes for your projects that we can evaluate. You\'ll have freedom within these guardrails.',
+                    'C': 'I hear that these rules feel restrictive. How can we make you more comfortable?',
+                    'D': 'We need to analyze policy effectiveness data before making exceptions.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Even when saying no to complete freedom, Free Spirits need flexibility and autonomy. Offering structured flexibility with clear boundaries respects their freedom need.',
+                'is_feels_unheard': False
+            },
+            {
+                'difficulty': 'hard',
+                'scenario_title': 'Saying No - Guardian (Unsafe Practice)',
+                'transcript': [
+                    'Guardian: "I need to see all safety protocols before we proceed. What\'s the backup plan? What happens if this fails? We need proper safeguards."',
+                    'Manager: "We don\'t have time for all that documentation. We\'ll handle issues as they come."',
+                    'Guardian: "But that\'s unsafe! We need protocols, risk assessments, and contingency plans. What about compliance? Liability?"',
+                    'Manager: "We\'ve done this before. It\'ll be fine."',
+                    'Guardian: "Without proper safety measures, I can\'t support this. We need coverage and protocols."'
+                ],
+                'correct_type': 'guardian',
+                'tell_category': 'safety',
+                'tell_explanation': 'The guardian insists on safety protocols and risk mitigation, showing a need for proper safeguards and procedures.',
+                'response_choices': {
+                    'A': 'I\'m sorry, but we need to move fast. The safety documentation will have to wait.',
+                    'B': 'I understand your need for proper safety protocols. While we can\'t delay for full documentation now, here\'s what we\'ll do: I\'ll provide the critical safety protocols (emergency procedures, rollback plan, contact list) by end of day. Full documentation can follow, but you\'ll have the essential safeguards to proceed safely.',
+                    'C': 'I hear that safety is very important to you. How does this situation make you feel?',
+                    'D': 'We need to systematically document all safety requirements before proceeding.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Even when saying no to full documentation delays, Guardians need safety protocols acknowledged. Providing essential safeguards while balancing speed respects their safety need.',
+                'is_feels_unheard': False
+            },
+            
+            # MORE SCENARIOS - Variety and difficulty mix
+            {
+                'difficulty': 'easy',
+                'scenario_title': 'Budget Request - Driver',
+                'transcript': [
+                    'Driver: "I need approval for this budget immediately. Time is money."',
+                    'Finance: "We need to review the proposal first."',
+                    'Driver: "Review takes time. What\'s the decision process? Who approves? How fast can we move?"',
+                    'Finance: "Typically it takes two weeks."',
+                    'Driver: "Two weeks? That\'s too slow. What are my options to speed this up?"'
+                ],
+                'correct_type': 'driver',
+                'tell_category': 'control',
+                'tell_explanation': 'The driver wants to control the approval timeline and needs options to accelerate the process.',
+                'response_choices': {
+                    'A': 'Two weeks is our standard process. There\'s no way around it.',
+                    'B': 'Here are your options: Option 1 is fast-track review (3 days) if you provide detailed justification. Option 2 is partial approval now for urgent items, rest later. Option 3 is escalate to VP for immediate decision if it\'s critical.',
+                    'C': 'I understand waiting feels frustrating. How urgent is this really?',
+                    'D': 'We need to analyze the budget proposal against historical spending patterns before approval.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Drivers need options and control over timelines. Presenting fast-track alternatives addresses their control need.',
+                'is_feels_unheard': False
+            },
+            {
+                'difficulty': 'medium',
+                'scenario_title': 'Team Presentation - Expressive',
+                'transcript': [
+                    'Expressive: "I want to present our project at the next all-hands meeting. This is a great opportunity to showcase our work and get recognition!"',
+                    'Manager: "The all-hands agenda is already full."',
+                    'Expressive: "But this is important! People need to see what we\'ve accomplished. Can\'t we make room?"',
+                    'Manager: "There are other priorities."',
+                    'Expressive: "But visibility matters! This project deserves to be highlighted!"'
+                ],
+                'correct_type': 'expressive',
+                'tell_category': 'visibility',
+                'tell_explanation': 'The expressive person wants their work recognized and made visible to the organization.',
+                'response_choices': {
+                    'A': 'The agenda is set. Maybe next quarter.',
+                    'B': 'I love that you want to showcase this! While all-hands is full, let\'s get you visibility another way: We can feature this in the company newsletter this week, and I\'ll propose you for next month\'s all-hands. Your contribution will definitely be recognized.',
+                    'C': 'I understand recognition is important to you. How does it feel not being on the agenda?',
+                    'D': 'We need to evaluate presentation priority based on project impact metrics.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Even when saying no to the all-hands slot, Expressives need their work acknowledged and given visibility through alternative channels.',
+                'is_feels_unheard': False
+            },
+            {
+                'difficulty': 'hard',
+                'scenario_title': 'Saying No - Expressive (Over Budget)',
+                'transcript': [
+                    'Expressive: "I have an amazing idea for the product launch! We should rent a venue, get a live band, stream it live - make it an event people will remember forever!"',
+                    'Manager: "That sounds exciting, but it\'s way over our budget."',
+                    'Expressive: "But the impact! The visibility! This could be the launch everyone talks about. Can\'t we find creative ways to fund it?"',
+                    'Manager: "We have financial constraints we need to respect."',
+                    'Expressive: "I just know this would be incredible. Everyone would see us!"'
+                ],
+                'correct_type': 'expressive',
+                'tell_category': 'visibility',
+                'tell_explanation': 'The expressive person is excited about maximum visibility and recognition, prioritizing impact over budget constraints.',
+                'response_choices': {
+                    'A': 'No, we simply can\'t afford it. We\'ll do a standard launch instead.',
+                    'B': 'Your vision for visibility is fantastic! While we can\'t do the full event now, here\'s what we can create: A live-streamed virtual launch (reaches more people!) with recorded segments from team members. We\'ll promote it heavily and give you full credit. Then we can plan the bigger event for next launch when budget allows.',
+                    'C': 'I understand you\'re really excited about this. How important is the live event aspect?',
+                    'D': 'We need to analyze the ROI of each launch element against our budget constraints.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Even when saying no to the expensive event, Expressives need their vision validated and their contribution recognized. Offering alternative visibility with credit addresses their need.',
+                'is_feels_unheard': False
+            },
+            {
+                'difficulty': 'easy',
+                'scenario_title': 'Saying No - Relational (Team Conflict)',
+                'transcript': [
+                    'Relational: "I think we should all take time off together to build team bonds. We need stronger relationships and better connection."',
+                    'Manager: "We can\'t afford to have the whole team out at once."',
+                    'Relational: "But relationships matter more than productivity! People need to feel connected. Can\'t we make an exception for team building?"',
+                    'Manager: "Business needs come first."',
+                    'Relational: "I\'m worried this will hurt team morale. People need to feel valued and connected."'
+                ],
+                'correct_type': 'relational',
+                'tell_category': 'belonging',
+                'tell_explanation': 'The relational person prioritizes team connection and relationships over business operations.',
+                'response_choices': {
+                    'A': 'I\'m sorry, but we need to maintain operations. Team building will have to wait.',
+                    'B': 'I absolutely agree that team connection matters. While we can\'t all take time off together, let\'s find ways to build relationships: We can do half-day team activities on Fridays, schedule regular team lunches, and plan quarterly off-sites. This maintains operations while strengthening connections.',
+                    'C': 'I hear that team relationships are really important to you. How does this situation make you feel?',
+                    'D': 'We need to analyze the productivity impact of team activities before scheduling.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Even when saying no to full team time off, Relational types need their concern for relationships acknowledged. Offering alternative connection-building approaches respects their belonging need.',
+                'is_feels_unheard': False
+            },
+            {
+                'difficulty': 'medium',
+                'scenario_title': 'Saying No - Analyzer (Quick Decision)',
+                'transcript': [
+                    'Manager: "We need to decide on this vendor today. No time for deep analysis."',
+                    'Analyzer: "Today? That\'s insufficient time for proper evaluation. I need to review their financials, security protocols, service history, and compare against alternatives."',
+                    'Manager: "We trust our gut on this one."',
+                    'Analyzer: "Gut feelings aren\'t data. Without proper analysis, any decision is illogical and risky. I need time for accurate assessment."',
+                    'Manager: "The deadline is non-negotiable."',
+                    'Analyzer: "Then the decision quality will be compromised. This doesn\'t make sense."'
+                ],
+                'correct_type': 'analyzer',
+                'tell_category': 'accuracy',
+                'tell_explanation': 'The analyzer needs comprehensive data and analysis before making decisions, showing a need for logical rigor over intuition.',
+                'response_choices': {
+                    'A': 'I understand, but we need to decide today. Sometimes you have to go with your gut.',
+                    'B': 'I respect your need for accurate analysis. While we can\'t wait for full analysis, here\'s what I can provide: Vendor financials summary, security audit results, and a comparison matrix with three alternatives. You\'ll have structured data to make a logical decision by end of day.',
+                    'C': 'I hear that you need more time. How does the pressure feel?',
+                    'D': 'We need to systematically evaluate all vendor criteria before deciding.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Even when saying no to extended analysis time, Analyzers need structured data and logical frameworks. Providing compressed but systematic analysis respects their accuracy need.',
+                'is_feels_unheard': False
+            },
+            {
+                'difficulty': 'hard',
+                'scenario_title': 'Saying No - Free Spirit (Core Process)',
+                'transcript': [
+                    'Free Spirit: "I want to completely redesign our workflow. The current process is too rigid. I have creative ideas for how we could do this better."',
+                    'Manager: "We need to maintain our core processes for consistency and compliance."',
+                    'Free Spirit: "But creativity and innovation require freedom! These processes are stifling. Can\'t we try something new?"',
+                    'Manager: "Some processes are non-negotiable for legal reasons."',
+                    'Free Spirit: "I feel trapped by all these rules. I need space to innovate."'
+                ],
+                'correct_type': 'free_spirit',
+                'tell_category': 'freedom',
+                'tell_explanation': 'The free spirit feels constrained by rigid processes and needs autonomy to innovate creatively.',
+                'response_choices': {
+                    'A': 'I\'m sorry, but the core processes are mandatory. Everyone needs to follow them.',
+                    'B': 'I love your innovative thinking! While we need to keep core compliance processes, here\'s where you have creative freedom: You can redesign the supporting workflows, experiment with collaboration tools, and propose creative approaches for the non-mandatory parts. I\'ll support your innovations within the necessary guardrails.',
+                    'C': 'I understand the processes feel restrictive. How can we make this more comfortable?',
+                    'D': 'We need to analyze which process elements are legally required versus flexible before making changes.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Even when saying no to changing core processes, Free Spirits need their creativity acknowledged and given innovation space within necessary constraints.',
+                'is_feels_unheard': False
+            },
+            {
+                'difficulty': 'medium',
+                'scenario_title': 'Saying No - Guardian (Innovation Risk)',
+                'transcript': [
+                    'Manager: "We want to try this new innovative approach. It\'s exciting and could give us an edge!"',
+                    'Guardian: "What are the risks? What\'s the rollback plan? Have we tested this? What about compliance and safety protocols?"',
+                    'Manager: "We\'ll figure it out as we go. Innovation requires some risk."',
+                    'Guardian: "That\'s dangerous! We need proper safeguards, risk assessment, and protocols before trying anything new. What if it fails catastrophically?"',
+                    'Manager: "Sometimes you have to take risks to innovate."',
+                    'Guardian: "Not without proper safety measures! We need protocols and coverage."'
+                ],
+                'correct_type': 'guardian',
+                'tell_category': 'safety',
+                'tell_explanation': 'The guardian prioritizes safety, protocols, and risk mitigation over innovation speed.',
+                'response_choices': {
+                    'A': 'Innovation requires risk. We\'ll just have to try it and see what happens.',
+                    'B': 'I understand your need for proper safeguards. While we want to innovate, let\'s do it safely: We\'ll run a small pilot with full risk assessment, have a rollback plan, maintain all compliance protocols, and monitor closely. Innovation can happen within proper safety frameworks.',
+                    'C': 'I hear that safety is really important to you. How does innovation feel risky?',
+                    'D': 'We need to systematically evaluate risks and mitigation strategies before proceeding.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Even when saying no to risk-free innovation, Guardians need safety acknowledged and protocols maintained. Framing innovation within safety frameworks respects their need.',
+                'is_feels_unheard': False
+            },
+            {
+                'difficulty': 'easy',
+                'scenario_title': 'Resource Request - Driver',
+                'transcript': [
+                    'Driver: "I need three additional team members by next week to meet this deadline."',
+                    'Manager: "We don\'t have budget for new hires right now."',
+                    'Driver: "Then what are my options? I need resources to deliver. What can I control here?"',
+                    'Manager: "We\'ll have to work with what we have."',
+                    'Driver: "That doesn\'t help me. I need clear alternatives and decision points."'
+                ],
+                'correct_type': 'driver',
+                'tell_category': 'control',
+                'tell_explanation': 'The driver needs options and control over resources to meet deliverables.',
+                'response_choices': {
+                    'A': 'I\'m sorry, but there\'s no budget. You\'ll have to make do.',
+                    'B': 'I understand you need resources to deliver. While we can\'t hire new staff, here are your options: Option 1 is I can reassign two people from other projects temporarily. Option 2 is we can outsource specific tasks within budget. Option 3 is we can adjust the deadline scope - deliver core features by deadline, rest later.',
+                    'C': 'I understand this is stressful. How are you feeling about the resource constraints?',
+                    'D': 'We need to analyze resource utilization data before making allocation decisions.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Even when saying no to new hires, Drivers need options and control. Presenting alternative resource solutions addresses their control need.',
+                'is_feels_unheard': False
+            },
+            {
+                'difficulty': 'hard',
+                'scenario_title': 'Saying No - Relational/Analyzer Mix (Data Request)',
+                'transcript': [
+                    'Team Member: "I need access to everyone\'s performance data to help the team improve. Also, I\'m worried about how sharing data might affect team relationships."',
+                    'Manager: "Performance data is confidential. We can\'t share individual data."',
+                    'Team Member: "But I need accurate information to help people grow, and I want to make sure sharing this won\'t damage team trust. Can we find a way that provides data while protecting relationships?"',
+                    'Manager: "Privacy policies prevent sharing individual performance data."',
+                    'Team Member: "I understand privacy, but I need aggregate insights to help the team, and I want everyone to feel safe and supported."'
+                ],
+                'correct_type': 'relational',
+                'tell_category': 'belonging',
+                'tell_explanation': 'While mentioning data (Analyzer element), the person prioritizes team relationships and ensuring people feel safe and supported (Relational dominant).',
+                'response_choices': {
+                    'A': 'I\'m sorry, but privacy policies prevent us from sharing any performance data.',
+                    'B': 'I appreciate your concern for both accurate insights and team relationships. While we can\'t share individual data, here\'s what I can provide: anonymized aggregate trends, team-wide development themes, and one-on-one sessions where you can help individuals with their own data privately. This maintains privacy while supporting growth.',
+                    'C': 'I understand you care about the team. How does not having the data make you feel?',
+                    'D': 'We need to systematically evaluate what data can be shared while maintaining privacy compliance.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Even when saying no to individual data sharing, Relational types need their concern for team relationships acknowledged. Providing alternative approaches that protect both data privacy and team connection respects their belonging need.',
+                'is_feels_unheard': False
+            },
+            {
+                'difficulty': 'medium',
+                'scenario_title': 'Feature Request - Expressive',
+                'transcript': [
+                    'Expressive: "I want to add this flashy new feature that will really impress users! It\'ll make us stand out and get attention!"',
+                    'Product Manager: "We need to focus on core functionality first."',
+                    'Expressive: "But this feature is exciting! It shows our creativity! People will notice us!"',
+                    'Product Manager: "We have a roadmap to follow."',
+                    'Expressive: "Can\'t we make room for something that gets us visibility and recognition?"'
+                ],
+                'correct_type': 'expressive',
+                'tell_category': 'visibility',
+                'tell_explanation': 'The expressive person wants to add features that increase visibility and recognition, prioritizing excitement over roadmap structure.',
+                'response_choices': {
+                    'A': 'No, we need to stick to the roadmap. Exciting features can come later.',
+                    'B': 'I love your creative ideas for visibility! While we need to focus on core features now, let\'s plan this for the next release where we\'ll highlight it prominently. Meanwhile, we can incorporate some visual flair into the current features to make them more noticeable.',
+                    'C': 'I understand you want exciting features. How does it feel to have ideas not prioritized?',
+                    'D': 'We need to analyze feature priority based on user value metrics.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Even when saying no to immediate implementation, Expressives need their creative ideas acknowledged and given visibility in future planning.',
+                'is_feels_unheard': False
+            },
+            {
+                'difficulty': 'easy',
+                'scenario_title': 'Saying No - Analyzer (Intuition-Based Decision)',
+                'transcript': [
+                    'Manager: "Let\'s go with this vendor. Our team feels good about them."',
+                    'Analyzer: "Feel good? What does that mean? What\'s the data? What are the metrics? How do they compare to alternatives?"',
+                    'Manager: "Sometimes you trust your instincts."',
+                    'Analyzer: "Instincts aren\'t valid decision criteria. I need logical analysis with data points before we commit. What\'s the methodology?"',
+                    'Manager: "We don\'t have time for all that analysis."',
+                    'Analyzer: "Without proper evaluation, this decision lacks logical foundation."'
+                ],
+                'correct_type': 'analyzer',
+                'tell_category': 'accuracy',
+                'tell_explanation': 'The analyzer needs data-driven logic and methodology, rejecting intuition-based decisions.',
+                'response_choices': {
+                    'A': 'Sometimes you just have to trust your gut. The team feels good about this.',
+                    'B': 'You\'re right that we need data. While we can\'t do a full analysis now, here\'s what I can provide: Vendor comparison matrix with key metrics, references from other clients, and their service level agreements. You\'ll have structured data to evaluate the logical basis for this decision.',
+                    'C': 'I understand you need data. How does it feel making decisions without analysis?',
+                    'D': 'We need to systematically evaluate all vendors against objective criteria before deciding.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Even when saying no to extended analysis time, Analyzers need structured data and logical frameworks for decisions. Providing systematic evaluation materials respects their accuracy need.',
+                'is_feels_unheard': False
+            },
+            {
+                'difficulty': 'hard',
+                'scenario_title': 'Saying No - Guardian/Driver Mix (Fast Approval)',
+                'transcript': [
+                    'Team Member: "We need approval for this initiative immediately. Time is critical. But I also want to make sure we have proper protocols and risk coverage."',
+                    'Manager: "Full protocol review takes two weeks. We need to move faster than that."',
+                    'Team Member: "I understand urgency, but rushing without safeguards is dangerous. Can we fast-track the essential protocols while maintaining safety standards? I need both speed and proper coverage."',
+                    'Manager: "We have to choose: speed or thoroughness."',
+                    'Team Member: "There must be a way to have both - rapid approval with core safety protocols."'
+                ],
+                'correct_type': 'guardian',
+                'tell_category': 'safety',
+                'tell_explanation': 'While acknowledging urgency (Driver element), the person prioritizes safety protocols and risk coverage (Guardian dominant).',
+                'response_choices': {
+                    'A': 'We need to choose: either fast approval without protocols, or slow approval with full documentation.',
+                    'B': 'I understand you need both speed and safety. Here\'s the solution: We\'ll provide immediate conditional approval with essential safety protocols (emergency procedures, rollback plan, liability coverage) by end of day. Full documentation can follow, but you have the critical safeguards to proceed safely now.',
+                    'C': 'I hear you need both speed and safety. How does having to choose feel?',
+                    'D': 'We need to systematically prioritize which protocols are critical versus nice-to-have.'
+                },
+                'correct_response': 'B',
+                'response_explanation': 'Even when saying no to full protocol delays, Guardians need safety protocols maintained. Providing essential safeguards quickly addresses both speed (Driver element) and safety (Guardian need).',
+                'is_feels_unheard': False
             }
         ]
 
