@@ -2,7 +2,7 @@
 Template tags for currency conversion.
 """
 from django import template
-from ..utils import tzs_to_usd
+from mango_market.utils import tzs_to_usd
 
 register = template.Library()
 
@@ -22,7 +22,13 @@ def currency_display(tzs_amount, show_both=True):
         return "N/A"
     
     try:
-        tzs_value = float(tzs_amount)
+        # Handle Decimal objects from database
+        from decimal import Decimal
+        if isinstance(tzs_amount, Decimal):
+            tzs_value = float(tzs_amount)
+        else:
+            tzs_value = float(tzs_amount)
+        
         if tzs_value == 0:
             return "0 TZS ($0.00 USD)"
         usd_value = tzs_to_usd(tzs_value)
@@ -31,5 +37,5 @@ def currency_display(tzs_amount, show_both=True):
             return f"{tzs_value:,.0f} TZS (${usd_value:,.2f} USD)"
         else:
             return f"{tzs_value:,.0f} TZS"
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, AttributeError):
         return "N/A"

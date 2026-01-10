@@ -251,19 +251,19 @@
             </div>
             <div class="stat-card">
                 <h3>Avg Fresh Revenue</h3>
-                <div class="stat-value">{{ stats.avg_fresh_revenue|currency_display|default:"N/A" }}</div>
+                <div class="stat-value">{% if stats.avg_fresh_revenue %}{{ stats.avg_fresh_revenue|currency_display }}{% else %}N/A{% endif %}</div>
             </div>
             <div class="stat-card">
                 <h3>Avg Dried Revenue</h3>
-                <div class="stat-value">{{ stats.avg_dried_revenue|currency_display|default:"N/A" }}</div>
+                <div class="stat-value">{% if stats.avg_dried_revenue %}{{ stats.avg_dried_revenue|currency_display }}{% else %}N/A{% endif %}</div>
             </div>
             <div class="stat-card">
                 <h3>Max Fresh Revenue</h3>
-                <div class="stat-value">{{ stats.max_fresh_revenue|currency_display|default:"N/A" }}</div>
+                <div class="stat-value">{% if stats.max_fresh_revenue %}{{ stats.max_fresh_revenue|currency_display }}{% else %}N/A{% endif %}</div>
             </div>
             <div class="stat-card">
                 <h3>Max Dried Revenue</h3>
-                <div class="stat-value">{{ stats.max_dried_revenue|currency_display|default:"N/A" }}</div>
+                <div class="stat-value">{% if stats.max_dried_revenue %}{{ stats.max_dried_revenue|currency_display }}{% else %}N/A{% endif %}</div>
             </div>
         </div>
 
