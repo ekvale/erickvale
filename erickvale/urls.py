@@ -27,6 +27,7 @@ urlpatterns = [
     path('apps/cards/', include('card_maker.urls')),
     path('apps/literary/', include('literary_analysis.urls')),
     path('apps/personality-game/', include('personality_type_game.urls')),
+    path('apps/mango-market/', include('mango_market.urls')),
     path('ckeditor/', include('ckeditor_uploader.urls')),
     path('about/', about, name='about'),
     path('', homepage, name='homepage'),

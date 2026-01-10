@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'card_maker',
     'literary_analysis',
     'personality_type_game',
+    'mango_market',
 ]
 
 MIDDLEWARE = [
