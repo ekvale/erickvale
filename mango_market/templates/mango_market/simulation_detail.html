@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulation Details - {{ simulation.id }}</title>
+    {% load static %}
+    {% load currency_tags %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-card: rgba(233, 69, 96, 0.05);
+            --text: #ffffff;
+            --text-secondary: #b0b0b0;
+            --text-light: #808080;
+            --border: rgba(233, 69, 96, 0.2);
+            --accent: #e94560;
+            --accent-hover: #ff5c7a;
+            --hover: rgba(233, 69, 96, 0.1);
+            --success: #4ade80;
+            --warning: #fbbf24;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 24px 80px 24px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 32px;
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s ease;
+        }
+
+        .back-link:hover {
+            color: var(--accent-hover);
+        }
+
+        header {
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text);
+        }
+
+        .metadata {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .chart-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 32px;
+            margin-bottom: 32px;
+            border-radius: 4px;
+        }
+
+        .chart-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: var(--text);
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .info-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 24px;
+            border-radius: 4px;
+        }
+
+        .info-card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text);
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: var(--text-secondary);
+        }
+
+        .info-value {
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'mango_market:results' %}" class="back-link">← Back to Results</a>
+        
+        <header>
+            <h1>Simulation Details</h1>
+            <div class="metadata">
+                Run on {{ simulation.created_at|date:"F d, Y at H:i" }} | 
+                {{ simulation.quantity_kg }}kg over {{ simulation.simulation_days }} days | 
+                {{ simulation.region }} - {{ simulation.season }}
+            </div>
+        </header>
+
+        <div class="info-grid">
+            <div class="info-card">
+                <h3>Summary Metrics</h3>
+                <div class="info-item">
+                    <span class="info-label">Best Strategy:</span>
+                    <span class="info-value">{{ simulation.best_strategy|default:"N/A" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Fresh Net Revenue:</span>
+                    <span class="info-value">{{ simulation.fresh_net_revenue|currency_display|default:"N/A" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Dried Net Revenue:</span>
+                    <span class="info-value">{{ simulation.dried_net_revenue|currency_display|default:"N/A" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Hybrid Net Revenue:</span>
+                    <span class="info-value">{{ simulation.hybrid_net_revenue|currency_display|default:"N/A" }}</span>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h3>Price Averages</h3>
+                <div class="info-item">
+                    <span class="info-label">Avg Fresh Price:</span>
+                    <span class="info-value">{{ simulation.avg_fresh_price|currency_display|default:"N/A" }}/kg</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Avg Dried Price:</span>
+                    <span class="info-value">{{ simulation.avg_dried_price|currency_display|default:"N/A" }}/kg</span>
+                </div>
+            </div>
+        </div>
+
+        {% if data.fresh_prices %}
+        <div class="chart-container">
+            <h2 class="chart-title">Price Trends</h2>
+            <div class="chart-wrapper">
+                <canvas id="priceChart"></canvas>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if data.fresh_prices %}
+    <script>
+        const freshPrices = {{ fresh_prices_json|safe }};
+        const driedPrices = {{ dried_prices_json|safe }};
+
+        const priceCtx = document.getElementById('priceChart').getContext('2d');
+        new Chart(priceCtx, {
+            type: 'line',
+            data: {
+                labels: freshPrices.map(p => `Day ${p.day}`),
+                datasets: [{
+                    label: 'Fresh Mango Price (TZS/kg)',
+                    data: freshPrices.map(p => p.price),
+                    borderColor: '#4ade80',
+                    backgroundColor: 'rgba(74, 222, 128, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }, {
+                    label: 'Dried Mango Price (TZS/kg)',
+                    data: driedPrices.map(p => p.price),
+                    borderColor: '#fbbf24',
+                    backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { color: '#b0b0b0' }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const tzs = context.parsed.y.toLocaleString();
+                                const usd = (context.parsed.y * 0.0004).toFixed(2);
+                                return context.dataset.label + ': ' + tzs + ' TZS ($' + usd + ')';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: '#808080' },
+                        grid: { color: 'rgba(233, 69, 96, 0.1)' }
+                    },
+                    y: {
+                        ticks: { 
+                            color: '#808080',
+                            callback: function(value) {
+                                return value.toLocaleString() + ' TZS ($' + (value * 0.0004).toFixed(2) + ')';
+                            }
+                        },
+                        grid: { color: 'rgba(233, 69, 96, 0.1)' }
+                    }
+                }
+            }
+        });
+    </script>
+    {% endif %}
+</body>
+</html>

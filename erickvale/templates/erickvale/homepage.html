@@ -459,7 +459,12 @@
                             {% endif %}
                             
                             {% if app.status == 'active' %}
-                            <a href="{{ app.url }}" class="app-link">Explore →</a>
+                            <div style="display: flex; gap: 24px; flex-wrap: wrap; margin-top: 8px;">
+                                <a href="{{ app.url }}" class="app-link">Explore →</a>
+                                {% if 'mango-market' in app.url or 'mango' in app.name|lower %}
+                                <a href="{{ app.url }}results/" class="app-link" style="margin-left: 0;">View Results & Charts →</a>
+                                {% endif %}
+                            </div>
                             {% endif %}
                         </div>
                     </div>

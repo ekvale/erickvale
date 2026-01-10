@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tanzania Mango Market Simulation</title>
     {% load static %}
+    {% load currency_tags %}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -302,11 +303,17 @@
 </head>
 <body>
     <div class="container">
-        <a href="/" class="back-link">← Back to Home</a>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+            <a href="/" class="back-link">← Back to Home</a>
+            <a href="{% url 'mango_market:results' %}" class="back-link" style="margin-left: auto;">View All Results & Charts →</a>
+        </div>
         
         <header>
             <h1>🥭 Tanzania Mango Market Simulation</h1>
             <p class="subtitle">Analyzing market forces: Fresh vs. Dried Mango Sales</p>
+            <p style="margin-top: 8px; font-size: 13px; color: var(--text-light);">
+                Exchange Rate: 1 USD = 2,500 TZS (approximate)
+            </p>
         </header>
 
         <div class="controls">
@@ -329,18 +336,18 @@
             </div>
             <div class="stat-card">
                 <h3>Fresh Net Revenue</h3>
-                <div class="stat-value">{{ data.fresh_strategy.net_revenue|floatformat:0 }} TZS</div>
+                <div class="stat-value">{{ data.fresh_strategy.net_revenue|currency_display }}</div>
                 <div class="stat-label">After all costs</div>
             </div>
             <div class="stat-card">
                 <h3>Dried Net Revenue</h3>
-                <div class="stat-value">{{ data.dried_strategy.net_revenue|floatformat:0 }} TZS</div>
+                <div class="stat-value">{{ data.dried_strategy.net_revenue|currency_display }}</div>
                 <div class="stat-label">After all costs</div>
             </div>
             <div class="stat-card">
                 <h3>Profit Difference</h3>
                 <div class="stat-value {% if data.profitability_comparison.profit_difference > 0 %}success{% else %}warning{% endif %}">
-                    {{ data.profitability_comparison.profit_difference|floatformat:0 }} TZS
+                    {{ data.profitability_comparison.profit_difference|currency_display }}
                 </div>
                 <div class="stat-label">Between strategies</div>
             </div>
@@ -374,23 +381,23 @@
                     </div>
                     <div class="cost-item">
                         <span class="cost-label">Price per kg:</span>
-                        <span class="cost-value">{{ data.fresh_strategy.price_per_kg|floatformat:0 }} TZS</span>
+                        <span class="cost-value">{{ data.fresh_strategy.price_per_kg|currency_display }}</span>
                     </div>
                     <div class="cost-item">
                         <span class="cost-label">Gross Revenue:</span>
-                        <span class="cost-value">{{ data.fresh_strategy.gross_revenue|floatformat:0 }} TZS</span>
+                        <span class="cost-value">{{ data.fresh_strategy.gross_revenue|currency_display }}</span>
                     </div>
                     <div class="cost-item">
                         <span class="cost-label">Transport Cost:</span>
-                        <span class="cost-value">-{{ data.fresh_strategy.transport_cost|floatformat:0 }} TZS</span>
+                        <span class="cost-value">-{{ data.fresh_strategy.transport_cost|currency_display }}</span>
                     </div>
                     <div class="cost-item">
                         <span class="cost-label">Market Fees:</span>
-                        <span class="cost-value">-{{ data.fresh_strategy.market_fees|floatformat:0 }} TZS</span>
+                        <span class="cost-value">-{{ data.fresh_strategy.market_fees|currency_display }}</span>
                     </div>
                     <div class="cost-item">
                         <span class="cost-label">Net Revenue:</span>
-                        <span class="cost-value">{{ data.fresh_strategy.net_revenue|floatformat:0 }} TZS</span>
+                        <span class="cost-value">{{ data.fresh_strategy.net_revenue|currency_display }}</span>
                     </div>
                 </div>
             </div>
@@ -412,35 +419,35 @@
                     </div>
                     <div class="cost-item">
                         <span class="cost-label">Price per kg (dried):</span>
-                        <span class="cost-value">{{ data.dried_strategy.price_per_kg_dried|floatformat:0 }} TZS</span>
+                        <span class="cost-value">{{ data.dried_strategy.price_per_kg_dried|currency_display }}</span>
                     </div>
                     <div class="cost-item">
                         <span class="cost-label">Gross Revenue:</span>
-                        <span class="cost-value">{{ data.dried_strategy.gross_revenue|floatformat:0 }} TZS</span>
+                        <span class="cost-value">{{ data.dried_strategy.gross_revenue|currency_display }}</span>
                     </div>
                     <div class="cost-item">
                         <span class="cost-label">Opportunity Cost:</span>
-                        <span class="cost-value">-{{ data.dried_strategy.opportunity_cost|floatformat:0 }} TZS</span>
+                        <span class="cost-value">-{{ data.dried_strategy.opportunity_cost|currency_display }}</span>
                     </div>
                     <div class="cost-item">
                         <span class="cost-label">Drying Cost:</span>
-                        <span class="cost-value">-{{ data.dried_strategy.drying_cost|floatformat:0 }} TZS</span>
+                        <span class="cost-value">-{{ data.dried_strategy.drying_cost|currency_display }}</span>
                     </div>
                     <div class="cost-item">
                         <span class="cost-label">Storage Cost:</span>
-                        <span class="cost-value">-{{ data.dried_strategy.storage_cost|floatformat:0 }} TZS</span>
+                        <span class="cost-value">-{{ data.dried_strategy.storage_cost|currency_display }}</span>
                     </div>
                     <div class="cost-item">
                         <span class="cost-label">Equipment Cost:</span>
-                        <span class="cost-value">-{{ data.dried_strategy.equipment_cost|floatformat:0 }} TZS</span>
+                        <span class="cost-value">-{{ data.dried_strategy.equipment_cost|currency_display }}</span>
                     </div>
                     <div class="cost-item">
                         <span class="cost-label">Market Fees:</span>
-                        <span class="cost-value">-{{ data.dried_strategy.market_fees|floatformat:0 }} TZS</span>
+                        <span class="cost-value">-{{ data.dried_strategy.market_fees|currency_display }}</span>
                     </div>
                     <div class="cost-item">
                         <span class="cost-label">Net Revenue:</span>
-                        <span class="cost-value">{{ data.dried_strategy.net_revenue|floatformat:0 }} TZS</span>
+                        <span class="cost-value">{{ data.dried_strategy.net_revenue|currency_display }}</span>
                     </div>
                 </div>
             </div>
@@ -450,15 +457,15 @@
                 <div class="cost-breakdown">
                     <div class="cost-item">
                         <span class="cost-label">Fresh Revenue (50%):</span>
-                        <span class="cost-value">{{ data.hybrid_strategy.fresh.net_revenue|floatformat:0 }} TZS</span>
+                        <span class="cost-value">{{ data.hybrid_strategy.fresh.net_revenue|currency_display }}</span>
                     </div>
                     <div class="cost-item">
                         <span class="cost-label">Dried Revenue (50%):</span>
-                        <span class="cost-value">{{ data.hybrid_strategy.dried.net_revenue|floatformat:0 }} TZS</span>
+                        <span class="cost-value">{{ data.hybrid_strategy.dried.net_revenue|currency_display }}</span>
                     </div>
                     <div class="cost-item">
                         <span class="cost-label">Total Net Revenue:</span>
-                        <span class="cost-value">{{ data.hybrid_strategy.total_net_revenue|floatformat:0 }} TZS</span>
+                        <span class="cost-value">{{ data.hybrid_strategy.total_net_revenue|currency_display }}</span>
                     </div>
                 </div>
             </div>
@@ -471,8 +478,8 @@
             <p style="margin-top: 12px; font-size: 14px;">
                 <strong>Price Volatility:</strong> Fresh {{ data.price_trends.fresh_volatility }}% | 
                 Dried {{ data.price_trends.dried_volatility }}% | 
-                <strong>Break-even Fresh Price:</strong> {{ data.market_analysis.breakeven_fresh_price|floatformat:0 }} TZS/kg | 
-                <strong>Break-even Dried Price:</strong> {{ data.market_analysis.breakeven_dried_price|floatformat:0 }} TZS/kg
+                <strong>Break-even Fresh Price:</strong> {{ data.market_analysis.breakeven_fresh_price|currency_display }}/kg | 
+                <strong>Break-even Dried Price:</strong> {{ data.market_analysis.breakeven_dried_price|currency_display }}/kg
             </p>
         </div>
         {% endif %}
@@ -518,7 +525,9 @@
                         intersect: false,
                         callbacks: {
                             label: function(context) {
-                                return context.dataset.label + ': ' + context.parsed.y.toLocaleString() + ' TZS';
+                                const tzs = context.parsed.y.toLocaleString();
+                                const usd = (context.parsed.y * 0.0004).toFixed(2);
+                                return context.dataset.label + ': ' + tzs + ' TZS ($' + usd + ')';
                             }
                         }
                     }
@@ -532,7 +541,7 @@
                         ticks: { 
                             color: '#808080',
                             callback: function(value) {
-                                return value.toLocaleString() + ' TZS';
+                                return value.toLocaleString() + ' TZS ($' + (value * 0.0004).toFixed(2) + ')';
                             }
                         },
                         grid: { color: 'rgba(233, 69, 96, 0.1)' }
@@ -592,7 +601,7 @@
                         ticks: { 
                             color: '#808080',
                             callback: function(value) {
-                                return value.toLocaleString() + ' TZS';
+                                return value.toLocaleString() + ' TZS ($' + (value * 0.0004).toFixed(2) + ')';
                             }
                         },
                         grid: { color: 'rgba(233, 69, 96, 0.1)' }

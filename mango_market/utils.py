@@ -6,6 +6,24 @@ import random
 import math
 from datetime import datetime, timedelta
 
+# Exchange rate: 1 USD = 2,500 TZS (approximate rate as of 2025)
+TZS_TO_USD_RATE = 0.0004  # 1 TZS = 0.0004 USD
+USD_TO_TZS_RATE = 2500    # 1 USD = 2,500 TZS
+
+
+def tzs_to_usd(tzs_amount):
+    """Convert Tanzanian Shillings to US Dollars."""
+    if tzs_amount is None:
+        return None
+    return round(float(tzs_amount) * TZS_TO_USD_RATE, 2)
+
+
+def usd_to_tzs(usd_amount):
+    """Convert US Dollars to Tanzanian Shillings."""
+    if usd_amount is None:
+        return None
+    return round(float(usd_amount) * USD_TO_TZS_RATE, 0)
+
 
 def generate_fresh_mango_prices(days=30, base_price=1500):
     """
