@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import homepage, about
+from .views import homepage, about, login_view, logout_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -30,6 +30,8 @@ urlpatterns = [
     path('apps/mango-market/', include('mango_market.urls')),
     path('apps/activity-media/', include('activity_media.urls')),
     path('ckeditor/', include('ckeditor_uploader.urls')),
+    path('login/', login_view, name='login'),
+    path('logout/', logout_view, name='logout'),
     path('about/', about, name='about'),
     path('', homepage, name='homepage'),
 ]
