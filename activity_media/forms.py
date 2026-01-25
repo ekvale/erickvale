@@ -46,6 +46,28 @@ class MediaItemForm(forms.ModelForm):
         self.fields['latitude'].required = False
         self.fields['longitude'].required = False
     
+    def save(self, commit=True):
+        """Override save to handle creating new tags from activity_tags_input."""
+        media_item = super().save(commit=False)
+        
+        if commit:
+            media_item.save()
+            # Save many-to-many relationships (activity_tags) first
+            self.save_m2m()
+            
+            # Handle creating new tags from activity_tags_input if provided
+            if hasattr(self, 'cleaned_data') and 'activity_tags_input' in self.cleaned_data:
+                tags_input = self.cleaned_data.get('activity_tags_input', '').strip()
+                if tags_input:
+                    # Split by comma and create tags that don't exist
+                    tag_names = [tag.strip() for tag in tags_input.split(',') if tag.strip()]
+                    for tag_name in tag_names:
+                        tag, created = ActivityTag.objects.get_or_create(name=tag_name)
+                        if tag not in media_item.activity_tags.all():
+                            media_item.activity_tags.add(tag)
+        
+        return media_item
+    
     def clean_file(self):
         file = self.cleaned_data.get('file')
         if file:

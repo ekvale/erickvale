@@ -98,20 +98,38 @@
             <div class="card mb-3">
                 <div class="card-body">
                     <h5 class="card-title">Activity Tags</h5>
+                    
+                    <!-- Create new tags -->
                     <div class="mb-3">
-                        <label class="form-label">Select Activity Tags</label>
-                        <div class="row">
-                            {% for tag in form.activity_tags %}
-                                <div class="col-md-4 mb-2">
-                                    <div class="form-check">
-                                        {{ tag }}
-                                        <label class="form-check-label" for="{{ tag.id_for_label }}">
-                                            {{ tag.choice_label }}
-                                        </label>
+                        <label for="{{ form.activity_tags_input.id_for_label }}" class="form-label">Create New Tags</label>
+                        {{ form.activity_tags_input }}
+                        <small class="form-text text-muted">{{ form.activity_tags_input.help_text }}</small>
+                        {% if form.activity_tags_input.errors %}
+                            <div class="text-danger">{{ form.activity_tags_input.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Select existing tags -->
+                    <div class="mb-3">
+                        <label class="form-label">Or Select Existing Tags</label>
+                        {% if form.activity_tags.field.queryset.exists %}
+                            <div class="row">
+                                {% for tag in form.activity_tags %}
+                                    <div class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            {{ tag }}
+                                            <label class="form-check-label" for="{{ tag.id_for_label }}">
+                                                {{ tag.choice_label }}
+                                            </label>
+                                        </div>
                                     </div>
-                                </div>
-                            {% endfor %}
-                        </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                <small>No activity tags exist yet. Create new tags using the field above.</small>
+                            </div>
+                        {% endif %}
                         {% if form.activity_tags.errors %}
                             <div class="text-danger">{{ form.activity_tags.errors }}</div>
                         {% endif %}

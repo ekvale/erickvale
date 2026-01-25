@@ -24,9 +24,11 @@ def upload_media(request):
         if form.is_valid():
             media_item = form.save(commit=False)
             media_item.user = request.user
-            media_item.save()
-            form.save_m2m()  # Save many-to-many relationships (activity_tags)
+            # Save will handle creating new tags from activity_tags_input
+            media_item = form.save(commit=True)
             messages.success(request, f'Your {media_item.media_type} has been uploaded successfully!')
+            if media_item.has_location():
+                messages.info(request, 'Your media has been added to the map!')
             return redirect('activity_media:detail', pk=media_item.pk)
     else:
         form = MediaItemForm()
