@@ -24,11 +24,16 @@ def upload_media(request):
         if form.is_valid():
             media_item = form.save(commit=False)
             media_item.user = request.user
-            # Save will handle creating new tags from activity_tags_input
+            # Save will handle creating new tags and extracting location from EXIF
             media_item = form.save(commit=True)
             messages.success(request, f'Your {media_item.media_type} has been uploaded successfully!')
             if media_item.has_location():
-                messages.info(request, 'Your media has been added to the map!')
+                if media_item.latitude and media_item.longitude:
+                    # Check if location was auto-extracted (no manual input)
+                    if not form.cleaned_data.get('latitude') and not form.cleaned_data.get('longitude'):
+                        messages.info(request, 'Location automatically extracted from photo metadata and added to map!')
+                    else:
+                        messages.info(request, 'Your media has been added to the map!')
             return redirect('activity_media:detail', pk=media_item.pk)
     else:
         form = MediaItemForm()

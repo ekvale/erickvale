@@ -1,5 +1,7 @@
 from django import forms
 from .models import MediaItem, ActivityTag
+from .utils import extract_location_from_file
+import os
 
 
 class MediaItemForm(forms.ModelForm):
@@ -47,8 +49,25 @@ class MediaItemForm(forms.ModelForm):
         self.fields['longitude'].required = False
     
     def save(self, commit=True):
-        """Override save to handle creating new tags from activity_tags_input."""
+        """Override save to handle creating new tags and extracting location from EXIF."""
         media_item = super().save(commit=False)
+        
+        # Extract location from file metadata if not already provided
+        if commit and media_item.file and not media_item.latitude and not media_item.longitude:
+            try:
+                file_path = media_item.file.path if hasattr(media_item.file, 'path') else None
+                if not file_path and hasattr(media_item.file, 'temporary_file_path'):
+                    file_path = media_item.file.temporary_file_path()
+                elif not file_path:
+                    # File hasn't been saved yet, save it first
+                    media_item.save()
+                    file_path = media_item.file.path
+                
+                if file_path and os.path.exists(file_path):
+                    lat, lon = extract_location_from_file(file_path, media_item.media_type)
+                    if lat and lon:
+                        media_item.latitude = lat
+                        media_item.longitude = lon
         
         if commit:
             media_item.save()
