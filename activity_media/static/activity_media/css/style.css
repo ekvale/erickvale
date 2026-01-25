@@ -1,0 +1,47 @@
+/* Activity Media App Styles */
+
+.custom-marker {
+    background: transparent;
+    border: none;
+}
+
+.card-img-top {
+    transition: transform 0.3s ease;
+}
+
+.card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+.badge {
+    font-size: 0.85em;
+}
+
+#location-map {
+    margin-top: 15px;
+}
+
+.form-check-input {
+    margin-top: 0.25rem;
+}
+
+/* Map popup styles */
+.leaflet-popup-content {
+    margin: 13px 19px;
+}
+
+.leaflet-popup-content img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card-img-top {
+        height: 200px !important;
+    }
+    
+    #map {
+        height: 400px;
+    }
+}

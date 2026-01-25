@@ -1,0 +1,75 @@
+{% extends 'activity_media/base.html' %}
+{% load static %}
+
+{% block title %}{{ media_item.title|default:media_item.file.name }} - Activity Media{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-3">
+            {% if media_item.media_type == 'photo' %}
+                <img src="{{ media_item.file.url }}" class="card-img-top" alt="{{ media_item.title }}" 
+                     style="max-height: 600px; object-fit: contain;">
+            {% else %}
+                <div class="card-body p-0">
+                    <video controls class="w-100" style="max-height: 600px;">
+                        <source src="{{ media_item.file.url }}" type="video/{{ media_item.file.name|slice:'-3:' }}">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title">{{ media_item.title|default:media_item.file.name }}</h2>
+                
+                {% if media_item.description %}
+                    <p class="card-text">{{ media_item.description }}</p>
+                {% endif %}
+                
+                <hr>
+                
+                <div class="mb-3">
+                    <strong>Activity Tags:</strong>
+                    <div class="mt-2">
+                        {% for tag in media_item.activity_tags.all %}
+                            <span class="badge bg-primary me-1">{{ tag.name }}</span>
+                        {% empty %}
+                            <span class="text-muted">No tags</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Uploaded by:</strong> {{ media_item.user.username }}<br>
+                    <strong>Date:</strong> {{ media_item.created_at|date:"F d, Y H:i" }}<br>
+                    <strong>Type:</strong> {{ media_item.get_media_type_display }}
+                </div>
+                
+                {% if media_item.has_location %}
+                    <div class="mb-3">
+                        <strong>Location:</strong><br>
+                        {% if media_item.location_name %}
+                            {{ media_item.location_name }}<br>
+                        {% endif %}
+                        <small class="text-muted">
+                            {{ media_item.latitude }}, {{ media_item.longitude }}
+                        </small>
+                        <div class="mt-2">
+                            <a href="{% url 'activity_media:map' %}?lat={{ media_item.latitude }}&lon={{ media_item.longitude }}" 
+                               class="btn btn-sm btn-outline-primary">View on Map</a>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                <div class="mt-4">
+                    <a href="{% url 'activity_media:list' %}" class="btn btn-secondary">Back to List</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

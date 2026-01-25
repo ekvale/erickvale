@@ -1,0 +1,143 @@
+{% extends 'activity_media/base.html' %}
+{% load static %}
+
+{% block title %}Browse Media - Activity Media{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="mb-4">Browse Media</h1>
+        
+        <!-- Search and Filter Form -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="search" class="form-label">Search</label>
+                        <input type="text" class="form-control" id="search" name="search" 
+                               value="{{ search_query }}" placeholder="Search by title, description, or location...">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="tag" class="form-label">Activity Tag</label>
+                        <select class="form-select" id="tag" name="tag">
+                            <option value="">All Tags</option>
+                            {% for tag in all_tags %}
+                                <option value="{{ tag.name }}" {% if tag_filter == tag.name %}selected{% endif %}>
+                                    {{ tag.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="type" class="form-label">Media Type</label>
+                        <select class="form-select" id="type" name="type">
+                            <option value="">All Types</option>
+                            <option value="photo" {% if media_type_filter == 'photo' %}selected{% endif %}>Photos</option>
+                            <option value="video" {% if media_type_filter == 'video' %}selected{% endif %}>Videos</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn btn-primary w-100">Filter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Media Grid -->
+        <div class="row">
+            {% for media in page_obj %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        {% if media.media_type == 'photo' %}
+                            <img src="{{ media.file.url }}" class="card-img-top" alt="{{ media.title }}" 
+                                 style="height: 250px; object-fit: cover;">
+                        {% else %}
+                            {% if media.thumbnail %}
+                                <img src="{{ media.thumbnail.url }}" class="card-img-top" alt="{{ media.title }}" 
+                                     style="height: 250px; object-fit: cover;">
+                            {% else %}
+                                <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" 
+                                     style="height: 250px;">
+                                    <span class="text-white">🎥 Video</span>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <a href="{% url 'activity_media:detail' media.pk %}">
+                                    {{ media.title|default:media.file.name|truncatewords:10 }}
+                                </a>
+                            </h5>
+                            <p class="card-text text-muted small">
+                                {% if media.description %}
+                                    {{ media.description|truncatewords:15 }}
+                                {% else %}
+                                    No description
+                                {% endif %}
+                            </p>
+                            <div class="mb-2">
+                                {% for tag in media.activity_tags.all %}
+                                    <span class="badge bg-secondary me-1">{{ tag.name }}</span>
+                                {% endfor %}
+                            </div>
+                            <div class="text-muted small">
+                                <div>By: {{ media.user.username }}</div>
+                                <div>{{ media.created_at|date:"M d, Y" }}</div>
+                                {% if media.has_location %}
+                                    <div>📍 {{ media.location_name|default:"Location set" }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{% url 'activity_media:detail' media.pk %}" class="btn btn-sm btn-primary">View Details</a>
+                            {% if media.has_location %}
+                                <a href="{% url 'activity_media:map' %}?lat={{ media.latitude }}&lon={{ media.longitude }}" 
+                                   class="btn btn-sm btn-outline-secondary">View on Map</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <h4>No media found</h4>
+                        <p>Try adjusting your search or filter criteria.</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if tag_filter %}&tag={{ tag_filter }}{% endif %}{% if media_type_filter %}&type={{ media_type_filter }}{% endif %}">Previous</a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if tag_filter %}&tag={{ tag_filter }}{% endif %}{% if media_type_filter %}&type={{ media_type_filter }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if tag_filter %}&tag={{ tag_filter }}{% endif %}{% if media_type_filter %}&type={{ media_type_filter }}{% endif %}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

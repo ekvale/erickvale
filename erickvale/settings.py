@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'literary_analysis',
     'personality_type_game',
     'mango_market',
+    'activity_media',
 ]
 
 MIDDLEWARE = [
