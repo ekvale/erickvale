@@ -393,10 +393,11 @@
             <nav>
                 <a href="{% url 'homepage' %}">Home</a>
                 {% for app in apps %}
-                    {% if app.is_current_month %}
+                    {% if app.is_current_month and app.name != 'Tanzania Mango Market Simulation' %}
                     <a href="{{ app.url }}">{{ app.name }}</a>
                     {% endif %}
                 {% endfor %}
+                <a href="{% url 'activity_media:list' %}">Activity Media</a>
                 <a href="{% url 'about' %}">About</a>
             </nav>
         </div>
