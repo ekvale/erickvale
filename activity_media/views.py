@@ -115,9 +115,11 @@ def media_list(request):
         page_obj = paginator.get_page(page_number)
     except Exception as e:
         logger.error(f"Pagination error: {str(e)}", exc_info=True)
-        # If pagination fails, return empty page
-        from django.core.paginator import EmptyPage, PageNotAnInteger
-        page_obj = None
+        # If pagination fails, create empty paginator
+        from django.core.paginator import Paginator, EmptyPage
+        empty_queryset = MediaItem.objects.none()
+        paginator = Paginator(empty_queryset, 20)
+        page_obj = paginator.get_page(1)
     
     # Get all tags for filter dropdown
     try:
