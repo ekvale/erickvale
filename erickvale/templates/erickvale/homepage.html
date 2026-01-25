@@ -392,11 +392,6 @@
         <div class="container">
             <nav>
                 <a href="{% url 'homepage' %}">Home</a>
-                {% for app in apps %}
-                    {% if app.is_current_month and app.name != 'Tanzania Mango Market Simulation' %}
-                    <a href="{{ app.url }}">{{ app.name }}</a>
-                    {% endif %}
-                {% endfor %}
                 <a href="{% url 'activity_media:list' %}">Media Gallery</a>
                 <a href="{% url 'about' %}">About</a>
             </nav>
@@ -419,6 +414,40 @@
 
         <div class="homepage-layout">
             <main class="main-content">
+                {% if featured_app %}
+                    <div class="app-card">
+                        <div class="app-header">
+                            <div class="app-header-content">
+                                <div class="app-title-section">
+                                    <h2>{{ featured_app.name }}</h2>
+                                    <div class="app-meta">
+                                        <span class="app-month">{{ featured_app.month }}</span>
+                                        <span class="status-badge">Current</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="app-content">
+                            <p class="app-description">{{ featured_app.description }}</p>
+                            
+                            {% if featured_app.features %}
+                            <div class="app-features">
+                                <h3>Features</h3>
+                                <ul>
+                                    {% for feature in featured_app.features %}
+                                    <li>{{ feature }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                            
+                            <div style="display: flex; gap: 24px; flex-wrap: wrap; margin-top: 8px;">
+                                <a href="{{ featured_app.url }}" class="app-link">Explore →</a>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
                 {% for app in apps %}
                     {% if app.is_current_month %}
                     <div class="app-card">
