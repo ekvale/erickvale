@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
+from django.db import OperationalError, ProgrammingError
 from .models import MediaItem, ActivityTag
 from .forms import MediaItemForm
 import json
@@ -34,16 +35,16 @@ def media_list(request):
     # Check if table exists, if not return empty queryset
     try:
         media_items = MediaItem.objects.filter(is_public=True).select_related('user').prefetch_related('activity_tags')
-    except Exception:
+    except (OperationalError, ProgrammingError) as e:
         # Table doesn't exist yet (migrations not run)
-        media_items = MediaItem.objects.none()
-        all_tags = ActivityTag.objects.none()
+        # Return empty context with helpful message
         context = {
             'page_obj': None,
             'search_query': '',
             'tag_filter': '',
             'media_type_filter': '',
-            'all_tags': all_tags,
+            'all_tags': [],
+            'migration_error': True,
         }
         return render(request, 'activity_media/list.html', context)
     
@@ -96,8 +97,8 @@ def media_list(request):
     # Get all tags for filter dropdown
     try:
         all_tags = ActivityTag.objects.all().order_by('name')
-    except Exception:
-        all_tags = ActivityTag.objects.none()
+    except (OperationalError, ProgrammingError):
+        all_tags = []
     
     context = {
         'page_obj': page_obj,

@@ -45,6 +45,15 @@
         </div>
         
         <!-- Media Grid -->
+        {% if migration_error %}
+            <div class="alert alert-warning">
+                <h4>Database Not Ready</h4>
+                <p>The Media Gallery database tables haven't been created yet. Please run migrations:</p>
+                <pre style="background: #f5f5f5; padding: 15px; border-radius: 4px; margin-top: 10px;">
+python manage.py migrate activity_media
+                </pre>
+            </div>
+        {% elif page_obj %}
         <div class="row">
             {% for media in page_obj %}
                 <div class="col-md-4 mb-4">
@@ -107,9 +116,15 @@
                 </div>
             {% endfor %}
         </div>
+        {% else %}
+            <div class="alert alert-info">
+                <h4>No Media Yet</h4>
+                <p>The gallery is empty. Upload some media to get started!</p>
+            </div>
+        {% endif %}
         
         <!-- Pagination -->
-        {% if page_obj.has_other_pages %}
+        {% if page_obj and page_obj.has_other_pages %}
             <nav aria-label="Page navigation">
                 <ul class="pagination justify-content-center">
                     {% if page_obj.has_previous %}
