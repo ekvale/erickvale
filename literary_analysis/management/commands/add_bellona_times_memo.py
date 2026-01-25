@@ -128,3 +128,5 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f'  Memo ID: {memo.pk}'))
         self.stdout.write(self.style.SUCCESS(f'\nView at: /apps/literary/analyses/{analysis.pk}/'))
 
+
+

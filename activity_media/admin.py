@@ -7,6 +7,10 @@ class ActivityTagAdmin(admin.ModelAdmin):
     list_display = ['name', 'description', 'created_at']
     search_fields = ['name', 'description']
     list_filter = ['created_at']
+    
+    class Meta:
+        verbose_name = 'Activity Tag'
+        verbose_name_plural = 'Activity Tags'
 
 
 @admin.register(MediaItem)

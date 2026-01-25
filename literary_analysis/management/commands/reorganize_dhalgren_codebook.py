@@ -308,3 +308,5 @@ class Command(BaseCommand):
         
         self.stdout.write(f'\n  Processed {len(character_codes)} character codes ({created_count} new)')
 
+
+

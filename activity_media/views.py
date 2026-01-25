@@ -31,7 +31,21 @@ def upload_media(request):
 
 def media_list(request):
     """List all media items with search and filter capabilities."""
-    media_items = MediaItem.objects.filter(is_public=True).select_related('user').prefetch_related('activity_tags')
+    # Check if table exists, if not return empty queryset
+    try:
+        media_items = MediaItem.objects.filter(is_public=True).select_related('user').prefetch_related('activity_tags')
+    except Exception:
+        # Table doesn't exist yet (migrations not run)
+        media_items = MediaItem.objects.none()
+        all_tags = ActivityTag.objects.none()
+        context = {
+            'page_obj': None,
+            'search_query': '',
+            'tag_filter': '',
+            'media_type_filter': '',
+            'all_tags': all_tags,
+        }
+        return render(request, 'activity_media/list.html', context)
     
     # Search by title/description
     search_query = request.GET.get('search', '')
@@ -80,7 +94,10 @@ def media_list(request):
     page_obj = paginator.get_page(page_number)
     
     # Get all tags for filter dropdown
-    all_tags = ActivityTag.objects.all().order_by('name')
+    try:
+        all_tags = ActivityTag.objects.all().order_by('name')
+    except Exception:
+        all_tags = ActivityTag.objects.none()
     
     context = {
         'page_obj': page_obj,
