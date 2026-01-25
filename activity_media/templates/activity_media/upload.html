@@ -66,6 +66,7 @@
                             {% if form.latitude.errors %}
                                 <div class="text-danger">{{ form.latitude.errors }}</div>
                             {% endif %}
+                            <small class="form-text text-muted">Leave blank to auto-extract from photo metadata (if available)</small>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="{{ form.longitude.id_for_label }}" class="form-label">Longitude</label>
@@ -73,6 +74,7 @@
                             {% if form.longitude.errors %}
                                 <div class="text-danger">{{ form.longitude.errors }}</div>
                             {% endif %}
+                            <small class="form-text text-muted">Leave blank to auto-extract from photo metadata (if available)</small>
                         </div>
                     </div>
                     
