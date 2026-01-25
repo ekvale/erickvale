@@ -6,9 +6,13 @@ from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.db import OperationalError, ProgrammingError
+from django.db.utils import DatabaseError
 from .models import MediaItem, ActivityTag
 from .forms import MediaItemForm
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -35,9 +39,24 @@ def media_list(request):
     # Check if table exists, if not return empty queryset
     try:
         media_items = MediaItem.objects.filter(is_public=True).select_related('user').prefetch_related('activity_tags')
-    except (OperationalError, ProgrammingError) as e:
+    except (OperationalError, ProgrammingError, DatabaseError) as e:
         # Table doesn't exist yet (migrations not run)
+        # Log the error for debugging
+        logger.error(f"Database error in media_list: {str(e)}", exc_info=True)
         # Return empty context with helpful message
+        context = {
+            'page_obj': None,
+            'search_query': '',
+            'tag_filter': '',
+            'media_type_filter': '',
+            'all_tags': [],
+            'migration_error': True,
+        }
+        return render(request, 'activity_media/list.html', context)
+    except Exception as e:
+        # Catch any other unexpected errors
+        logger.error(f"Unexpected error in media_list: {str(e)}", exc_info=True)
+        # Still try to render with empty context
         context = {
             'page_obj': None,
             'search_query': '',
