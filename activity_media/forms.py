@@ -47,6 +47,43 @@ class MediaItemForm(forms.ModelForm):
         # Make location optional
         self.fields['latitude'].required = False
         self.fields['longitude'].required = False
+        
+        # Hide media_type field - we'll auto-detect it
+        self.fields['media_type'].widget = forms.HiddenInput()
+        self.fields['media_type'].required = False
+    
+    def clean_file(self):
+        file = self.cleaned_data.get('file')
+        if file:
+            # Auto-detect media type from file extension
+            file_name = file.name.lower()
+            image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
+            video_extensions = ['.mp4', '.mov', '.avi', '.mkv', '.webm']
+            
+            is_image = any(file_name.endswith(ext) for ext in image_extensions)
+            is_video = any(file_name.endswith(ext) for ext in video_extensions)
+            
+            if is_image:
+                self.cleaned_data['media_type'] = 'photo'
+            elif is_video:
+                self.cleaned_data['media_type'] = 'video'
+            else:
+                # Try to detect from MIME type as fallback
+                if hasattr(file, 'content_type'):
+                    if file.content_type.startswith('image/'):
+                        self.cleaned_data['media_type'] = 'photo'
+                    elif file.content_type.startswith('video/'):
+                        self.cleaned_data['media_type'] = 'video'
+                    else:
+                        raise forms.ValidationError('Unsupported file type. Please upload an image or video.')
+                else:
+                    raise forms.ValidationError('Could not determine file type. Please ensure the file has a valid extension.')
+            
+            # Check file size (max 100MB for videos, 10MB for images)
+            max_size = 100 * 1024 * 1024  # 100MB
+            if file.size > max_size:
+                raise forms.ValidationError(f'File size cannot exceed {max_size / (1024*1024):.0f}MB.')
+        return file
     
     def save(self, commit=True):
         """Override save to handle creating new tags and extracting location from EXIF."""
@@ -88,11 +125,3 @@ class MediaItemForm(forms.ModelForm):
         
         return media_item
     
-    def clean_file(self):
-        file = self.cleaned_data.get('file')
-        if file:
-            # Check file size (max 100MB for videos, 10MB for images)
-            max_size = 100 * 1024 * 1024  # 100MB
-            if file.size > max_size:
-                raise forms.ValidationError(f'File size cannot exceed {max_size / (1024*1024):.0f}MB.')
-        return file

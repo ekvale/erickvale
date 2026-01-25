@@ -6,7 +6,12 @@
 {% block content %}
 <div class="row">
     <div class="col-md-12">
-        <h1 class="mb-4">Browse Media</h1>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Discover Activities</h1>
+            <a href="{% url 'activity_media:map' %}" class="btn btn-primary">
+                🗺️ View on Map
+            </a>
+        </div>
         
         <!-- Search and Filter Form -->
         <div class="card mb-4">

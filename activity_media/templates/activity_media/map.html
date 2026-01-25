@@ -25,12 +25,14 @@
     <div class="col-md-12">
         <h1 class="mb-4">Media Map</h1>
         
-        <!-- Filters -->
+        <!-- Filters and Search -->
         <div class="map-filters">
-            <form method="get" class="row g-3">
-                <div class="col-md-4">
-                    <label for="tag" class="form-label">Filter by Activity Tag</label>
-                    <select class="form-select" id="tag" name="tag" onchange="this.form.submit()">
+            <form method="get" class="row g-3" id="map-filter-form">
+                <input type="hidden" id="search-lat" name="lat" value="{{ request.GET.lat }}">
+                <input type="hidden" id="search-lon" name="lon" value="{{ request.GET.lon }}">
+                <div class="col-md-3">
+                    <label for="tag" class="form-label">Activity Tag</label>
+                    <select class="form-select" id="tag" name="tag">
                         <option value="">All Tags</option>
                         {% for tag in all_tags %}
                             <option value="{{ tag.name }}" {% if tag_filter == tag.name %}selected{% endif %}>
@@ -39,19 +41,32 @@
                         {% endfor %}
                     </select>
                 </div>
-                <div class="col-md-4">
-                    <label for="type" class="form-label">Filter by Media Type</label>
-                    <select class="form-select" id="type" name="type" onchange="this.form.submit()">
+                <div class="col-md-3">
+                    <label for="type" class="form-label">Media Type</label>
+                    <select class="form-select" id="type" name="type">
                         <option value="">All Types</option>
                         <option value="photo" {% if media_type_filter == 'photo' %}selected{% endif %}>Photos</option>
                         <option value="video" {% if media_type_filter == 'video' %}selected{% endif %}>Videos</option>
                     </select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
+                    <label for="radius" class="form-label">Search Radius (km)</label>
+                    <input type="number" class="form-control" id="radius" name="radius" 
+                           value="{{ request.GET.radius|default:'10' }}" min="1" max="100" step="1">
+                </div>
+                <div class="col-md-3">
                     <label class="form-label">&nbsp;</label>
-                    <a href="{% url 'activity_media:map' %}" class="btn btn-secondary w-100">Clear Filters</a>
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-primary" id="search-nearby-btn">🔍 Search Nearby</button>
+                        <a href="{% url 'activity_media:map' %}" class="btn btn-secondary btn-sm">Clear All</a>
+                    </div>
                 </div>
             </form>
+            <div class="mt-2">
+                <small class="text-muted">
+                    💡 <strong>Tip:</strong> Click on the map to place a marker, then click "Search Nearby" to find activities within the selected radius.
+                </small>
+            </div>
         </div>
         
         <!-- Map -->
@@ -89,8 +104,12 @@
         maxZoom: 19
     }).addTo(map);
     
-    // Create marker cluster group
+    // Create marker cluster group for media items
     const markers = L.markerClusterGroup();
+    
+    // Search marker and circle (for radius search)
+    let searchMarker = null;
+    let searchCircle = null;
     
     // Add markers for each media item
     mapData.forEach(function(item) {
@@ -140,12 +159,106 @@
     
     map.addLayer(markers);
     
-    // If URL has lat/lon params, center map there
+    // Map click handler - place search marker
+    map.on('click', function(e) {
+        const lat = e.latlng.lat;
+        const lon = e.latlng.lng;
+        
+        // Remove existing search marker and circle
+        if (searchMarker) {
+            map.removeLayer(searchMarker);
+        }
+        if (searchCircle) {
+            map.removeLayer(searchCircle);
+        }
+        
+        // Add new search marker
+        searchMarker = L.marker([lat, lon], {
+            icon: L.divIcon({
+                className: 'search-marker',
+                html: '<div style="background: #007bff; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.4); font-weight: bold;">📍</div>',
+                iconSize: [20, 20],
+                iconAnchor: [10, 10]
+            }),
+            draggable: true
+        }).addTo(map);
+        
+        // Update circle when marker is dragged
+        searchMarker.on('dragend', function() {
+            updateSearchCircle();
+        });
+        
+        // Update radius circle
+        updateSearchCircle();
+        
+        // Update form fields
+        document.getElementById('search-lat').value = lat.toFixed(6);
+        document.getElementById('search-lon').value = lon.toFixed(6);
+    });
+    
+    function updateSearchCircle() {
+        if (!searchMarker) return;
+        
+        const radius = parseFloat(document.getElementById('radius').value) || 10;
+        const radiusMeters = radius * 1000; // Convert km to meters
+        
+        // Remove existing circle
+        if (searchCircle) {
+            map.removeLayer(searchCircle);
+        }
+        
+        // Add new circle
+        searchCircle = L.circle(searchMarker.getLatLng(), {
+            radius: radiusMeters,
+            color: '#007bff',
+            fillColor: '#007bff',
+            fillOpacity: 0.2,
+            weight: 2
+        }).addTo(map);
+    }
+    
+    // Update circle when radius changes
+    document.getElementById('radius').addEventListener('input', function() {
+        if (searchMarker) {
+            updateSearchCircle();
+        }
+    });
+    
+    // Search nearby button
+    document.getElementById('search-nearby-btn').addEventListener('click', function() {
+        const lat = document.getElementById('search-lat').value;
+        const lon = document.getElementById('search-lon').value;
+        const radius = document.getElementById('radius').value;
+        
+        if (!lat || !lon) {
+            alert('Please click on the map to select a location first!');
+            return;
+        }
+        
+        // Build URL with search parameters
+        const form = document.getElementById('map-filter-form');
+        const formData = new FormData(form);
+        const params = new URLSearchParams();
+        
+        params.set('lat', lat);
+        params.set('lon', lon);
+        params.set('radius', radius);
+        
+        // Add other filter values
+        if (formData.get('tag')) params.set('tag', formData.get('tag'));
+        if (formData.get('type')) params.set('type', formData.get('type'));
+        
+        window.location.href = '{% url "activity_media:list" %}?' + params.toString();
+    });
+    
+    // If URL has lat/lon params, center map there and show marker
     const urlParams = new URLSearchParams(window.location.search);
     const lat = urlParams.get('lat');
     const lon = urlParams.get('lon');
     if (lat && lon) {
         map.setView([parseFloat(lat), parseFloat(lon)], 15);
+        // Trigger click to place marker
+        map.fire('click', {latlng: L.latLng(parseFloat(lat), parseFloat(lon))});
     }
 </script>
 {% endblock %}

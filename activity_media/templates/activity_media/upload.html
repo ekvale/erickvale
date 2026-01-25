@@ -13,22 +13,18 @@
             
             <div class="card mb-3">
                 <div class="card-body">
-                    <h5 class="card-title">Media File</h5>
+                    <h5 class="card-title">Upload Photo or Video</h5>
+                    {{ form.media_type }}
                     <div class="mb-3">
-                        <label for="{{ form.media_type.id_for_label }}" class="form-label">Media Type *</label>
-                        {{ form.media_type }}
-                        {% if form.media_type.errors %}
-                            <div class="text-danger">{{ form.media_type.errors }}</div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.file.id_for_label }}" class="form-label">File *</label>
+                        <label for="{{ form.file.id_for_label }}" class="form-label">Select File *</label>
                         {{ form.file }}
                         {% if form.file.errors %}
                             <div class="text-danger">{{ form.file.errors }}</div>
                         {% endif %}
-                        <small class="form-text text-muted">Supported: JPG, PNG, GIF, WEBP, MP4, MOV, AVI, MKV (Max 100MB)</small>
+                        <small class="form-text text-muted">
+                            📷 Photos: JPG, PNG, GIF, WEBP | 🎥 Videos: MP4, MOV, AVI, MKV (Max 100MB)<br>
+                            <em>File type will be automatically detected</em>
+                        </small>
                     </div>
                 </div>
             </div>
