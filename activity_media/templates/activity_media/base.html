@@ -34,7 +34,7 @@
                         <a class="nav-link" href="{% url 'activity_media:map' %}">Map</a>
                     </li>
                     {% if user.is_authenticated %}
-                        {% if user.has_perm:'activity_media.can_upload_media' %}
+                        {% if perms.activity_media.can_upload_media %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'activity_media:upload' %}">Upload</a>
                         </li>
