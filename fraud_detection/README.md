@@ -41,6 +41,31 @@ A Django application for analyzing government budget data and detecting potentia
 
 Navigate to `/apps/fraud-detection/` in your browser.
 
+### Generating Sample Data
+
+To generate synthetic data for demo purposes:
+
+```bash
+python manage.py generate_sample_data --transactions 500
+```
+
+Options:
+- `--transactions N`: Number of transactions to generate (default: 500)
+- `--clear`: Clear existing data before generating new data
+
+The command will create:
+- 10 departments
+- 8 budget categories
+- 10 vendors (including 5 with suspicious patterns)
+- ~17 contracts (including some with price discrepancies)
+- Budget records for departments/categories
+- Transactions with various fraud patterns:
+  - Round number payments
+  - Payments just under reporting thresholds
+  - Duplicate payments
+  - End of year spending spikes
+  - Statistical anomalies
+
 ### Importing Data
 
 1. Go to the Import Data page
@@ -50,7 +75,7 @@ Navigate to `/apps/fraud-detection/` in your browser.
 
 ### Running Analysis
 
-1. Import your transaction data
+1. Import your transaction data (or use sample data)
 2. Go to the Dashboard
 3. Click "Run Full Analysis" to execute all fraud detection algorithms
 4. Review the generated fraud flags
@@ -81,6 +106,30 @@ Optional columns:
 - Import data: Authenticated users
 - Run analysis: Authenticated users
 - Admin access: Staff users (via Django admin)
+- Navbar link: Staff users only
+
+## Demo Workflow
+
+1. **Generate sample data:**
+   ```bash
+   python manage.py generate_sample_data --transactions 500
+   ```
+
+2. **Visit the dashboard:**
+   Navigate to `/apps/fraud-detection/`
+
+3. **Run analysis:**
+   Click "Run Full Analysis" button on the dashboard
+
+4. **Review results:**
+   - Check the "Fraud Flags" section
+   - View individual flags for details
+   - Explore transactions and vendors
+
+5. **Explore patterns:**
+   - View vendors with suspicious patterns
+   - Check duplicate payments
+   - Review end of year spending
 
 ## Future Enhancements
 
