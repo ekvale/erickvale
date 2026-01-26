@@ -1,0 +1,56 @@
+/* Fraud Detection App Styles */
+
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+}
+
+.badge {
+    font-size: 0.875rem;
+}
+
+.table-responsive {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+/* Risk level colors */
+.risk-critical {
+    background-color: #dc3545;
+    color: white;
+}
+
+.risk-high {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.risk-medium {
+    background-color: #0dcaf0;
+    color: #000;
+}
+
+.risk-low {
+    background-color: #6c757d;
+    color: white;
+}
+
+/* Dashboard cards */
+.card.text-white {
+    border: none;
+}
+
+/* Chart containers */
+.chart-container {
+    position: relative;
+    height: 300px;
+    margin-bottom: 2rem;
+}
+
+/* Filter forms */
+.filter-form {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 0.25rem;
+    margin-bottom: 1rem;
+}

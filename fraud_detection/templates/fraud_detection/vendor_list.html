@@ -1,0 +1,89 @@
+{% extends 'fraud_detection/base.html' %}
+{% load humanize %}
+
+{% block title %}Vendors{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1>Vendors</h1>
+    </div>
+</div>
+
+<!-- Search -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-10">
+                <input type="text" name="search" class="form-control" placeholder="Search vendors..." value="{{ search }}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Search</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Vendors Table -->
+<div class="card">
+    <div class="card-body">
+        {% if page_obj %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Vendor Name</th>
+                        <th>Registration Number</th>
+                        <th>Transactions</th>
+                        <th>Total Amount</th>
+                        <th>Fraud Flags</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vendor in page_obj %}
+                    <tr>
+                        <td><a href="{% url 'fraud_detection:vendor_detail' vendor.pk %}">{{ vendor.name }}</a></td>
+                        <td>{{ vendor.registration_number|default:"N/A" }}</td>
+                        <td>{{ vendor.transaction_count|intcomma }}</td>
+                        <td>${{ vendor.total_amount|default:0|floatformat:2|intcomma }}</td>
+                        <td>
+                            {% if vendor.fraud_flag_count > 0 %}
+                            <span class="badge bg-warning">{{ vendor.fraud_flag_count }}</span>
+                            {% else %}
+                            <span class="text-muted">0</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Vendor pagination">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}">Previous</a>
+                </li>
+                {% endif %}
+                
+                <li class="page-item active">
+                    <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                </li>
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        {% else %}
+        <p class="text-muted">No vendors found. <a href="{% url 'fraud_detection:import' %}">Import data</a> to get started.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

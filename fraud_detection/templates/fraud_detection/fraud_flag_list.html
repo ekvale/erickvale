@@ -1,0 +1,106 @@
+{% extends 'fraud_detection/base.html' %}
+{% load humanize %}
+
+{% block title %}Fraud Flags{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1>Fraud Flags</h1>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5>Filters</h5>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Risk Level</label>
+                {{ form.risk_level }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Flag Type</label>
+                {{ form.flag_type }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Status</label>
+                {{ form.status }}
+            </div>
+            <div class="col-md-12">
+                <button type="submit" class="btn btn-primary">Filter</button>
+                <a href="{% url 'fraud_detection:fraud_flag_list' %}" class="btn btn-secondary">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Flags Table -->
+<div class="card">
+    <div class="card-body">
+        {% if page_obj %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Type</th>
+                        <th>Risk Level</th>
+                        <th>Status</th>
+                        <th>Detected</th>
+                        <th>Transactions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for flag in page_obj %}
+                    <tr>
+                        <td><a href="{% url 'fraud_detection:flag_detail' flag.pk %}">{{ flag.title|truncatewords:8 }}</a></td>
+                        <td>{{ flag.get_flag_type_display }}</td>
+                        <td>
+                            <span class="badge bg-{% if flag.risk_level == 'critical' %}danger{% elif flag.risk_level == 'high' %}warning{% elif flag.risk_level == 'medium' %}info{% else %}secondary{% endif %}">
+                                {{ flag.get_risk_level_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-{% if flag.status == 'new' %}primary{% elif flag.status == 'investigating' %}warning{% elif flag.status == 'resolved' %}success{% else %}secondary{% endif %}">
+                                {{ flag.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ flag.detected_at|date:"M d, Y" }}</td>
+                        <td>{{ flag.transactions.count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Flag pagination">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                </li>
+                {% endif %}
+                
+                <li class="page-item active">
+                    <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                </li>
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        {% else %}
+        <p class="text-muted">No fraud flags found. <a href="{% url 'fraud_detection:dashboard' %}">Run an analysis</a> to detect potential fraud.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -394,6 +394,9 @@
                 <a href="{% url 'homepage' %}">Home</a>
                 <a href="{% url 'activity_media:list' %}">Media Gallery</a>
                 <a href="{% url 'about' %}">About</a>
+                {% if user.is_authenticated and user.is_staff %}
+                    <a href="{% url 'fraud_detection:dashboard' %}">Fraud Detection</a>
+                {% endif %}
                 {% if user.is_authenticated %}
                     <a href="{% url 'logout' %}">Logout</a>
                 {% else %}

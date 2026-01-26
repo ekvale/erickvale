@@ -1,0 +1,212 @@
+{% extends 'fraud_detection/base.html' %}
+{% load humanize %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1>Fraud Detection & Budget Analysis Dashboard</h1>
+        {% if user.is_authenticated %}
+        <form method="post" action="{% url 'fraud_detection:run_analysis' %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Run Full Analysis</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">Total Transactions</h5>
+                <h2 class="card-text">{{ total_transactions|default:0|intcomma }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title">Total Amount</h5>
+                <h2 class="card-text">${{ total_amount|default:0|floatformat:2|intcomma }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title">Total Vendors</h5>
+                <h2 class="card-text">{{ total_vendors|default:0|intcomma }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-danger">
+            <div class="card-body">
+                <h5 class="card-title">Fraud Flags</h5>
+                <h2 class="card-text">{{ total_flags|default:0|intcomma }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Fraud Flags -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Recent Fraud Flags</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_flags %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Risk</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for flag in recent_flags %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'fraud_detection:flag_detail' flag.pk %}">
+                                        {{ flag.get_flag_type_display|truncatewords:3 }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if flag.risk_level == 'critical' %}danger{% elif flag.risk_level == 'high' %}warning{% elif flag.risk_level == 'medium' %}info{% else %}secondary{% endif %}">
+                                        {{ flag.get_risk_level_display }}
+                                    </span>
+                                </td>
+                                <td>{{ flag.detected_at|date:"M d, Y" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <a href="{% url 'fraud_detection:fraud_flag_list' %}" class="btn btn-sm btn-outline-primary">View All Flags</a>
+                {% else %}
+                <p class="text-muted">No fraud flags detected yet. Run an analysis to detect potential issues.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Vendors -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Top Vendors by Transaction Count</h5>
+            </div>
+            <div class="card-body">
+                {% if top_vendors %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Vendor</th>
+                                <th>Transactions</th>
+                                <th>Total Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for vendor in top_vendors %}
+                            <tr>
+                                <td><a href="{% url 'fraud_detection:vendor_detail' vendor.pk %}">{{ vendor.name }}</a></td>
+                                <td>{{ vendor.transaction_count }}</td>
+                                <td>${{ vendor.total_amount|default:0|floatformat:2|intcomma }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <a href="{% url 'fraud_detection:vendor_list' %}" class="btn btn-sm btn-outline-primary">View All Vendors</a>
+                {% else %}
+                <p class="text-muted">No vendor data available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Spending by Department -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Spending by Department</h5>
+            </div>
+            <div class="card-body">
+                {% if dept_spending %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Department</th>
+                                <th>Spending</th>
+                                <th>Transactions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for dept in dept_spending %}
+                            <tr>
+                                <td>{{ dept.name }}</td>
+                                <td>${{ dept.total_spending|default:0|floatformat:2|intcomma }}</td>
+                                <td>{{ dept.transaction_count }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No department spending data available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Recent Transactions</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_transactions %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Vendor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for trans in recent_transactions %}
+                            <tr>
+                                <td><a href="{% url 'fraud_detection:transaction_detail' trans.pk %}">{{ trans.transaction_id|truncatechars:15 }}</a></td>
+                                <td>{{ trans.date|date:"M d, Y" }}</td>
+                                <td>${{ trans.amount|floatformat:2|intcomma }}</td>
+                                <td>{{ trans.vendor.name|default:"N/A"|truncatechars:20 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <a href="{% url 'fraud_detection:transaction_list' %}" class="btn btn-sm btn-outline-primary">View All Transactions</a>
+                {% else %}
+                <p class="text-muted">No transactions available. Import data to get started.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

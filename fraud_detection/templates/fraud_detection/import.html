@@ -1,0 +1,78 @@
+{% extends 'fraud_detection/base.html' %}
+
+{% block title %}Import Data{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h1>Import Data</h1>
+        <p class="text-muted">Upload CSV, Excel, or JSON files to import transactions, budgets, contracts, or vendor data.</p>
+        
+        <div class="card">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.data_type.id_for_label }}" class="form-label">Data Type</label>
+                        {{ form.data_type }}
+                        {% if form.data_type.help_text %}
+                        <div class="form-text">{{ form.data_type.help_text }}</div>
+                        {% endif %}
+                        {% if form.data_type.errors %}
+                        <div class="text-danger">{{ form.data_type.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.file.id_for_label }}" class="form-label">File</label>
+                        {{ form.file }}
+                        {% if form.file.help_text %}
+                        <div class="form-text">{{ form.file.help_text }}</div>
+                        {% endif %}
+                        {% if form.file.errors %}
+                        <div class="text-danger">{{ form.file.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        {{ form.skip_first_row }}
+                        <label class="form-check-label" for="{{ form.skip_first_row.id_for_label }}">
+                            {{ form.skip_first_row.label }}
+                        </label>
+                        {% if form.skip_first_row.help_text %}
+                        <div class="form-text">{{ form.skip_first_row.help_text }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Import Data</button>
+                    <a href="{% url 'fraud_detection:dashboard' %}" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5>CSV Format for Transactions</h5>
+            </div>
+            <div class="card-body">
+                <p>Your CSV file should include the following columns:</p>
+                <ul>
+                    <li><strong>transaction_id</strong> (required) - Unique transaction identifier</li>
+                    <li><strong>date</strong> (required) - Date in YYYY-MM-DD or MM/DD/YYYY format</li>
+                    <li><strong>amount</strong> (required) - Transaction amount</li>
+                    <li><strong>description</strong> - Transaction description</li>
+                    <li><strong>vendor_name</strong> - Vendor name (will be created if doesn't exist)</li>
+                    <li><strong>department_name</strong> - Department name (will be created if doesn't exist)</li>
+                    <li><strong>category_name</strong> - Budget category name (will be created if doesn't exist)</li>
+                    <li><strong>fiscal_year</strong> - Fiscal year number</li>
+                    <li><strong>invoice_number</strong> - Invoice number</li>
+                    <li><strong>contract_number</strong> - Contract number</li>
+                    <li><strong>location</strong> - Location/address</li>
+                    <li><strong>status</strong> - Transaction status (pending, approved, paid, cancelled)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

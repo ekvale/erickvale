@@ -1,0 +1,200 @@
+{% extends 'fraud_detection/base.html' %}
+{% load humanize %}
+
+{% block title %}Vendor: {{ vendor.name }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1>{{ vendor.name }}</h1>
+        <a href="{% url 'fraud_detection:vendor_list' %}" class="btn btn-secondary">Back to List</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Vendor Information</h5>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr>
+                        <th>Name:</th>
+                        <td>{{ vendor.name }}</td>
+                    </tr>
+                    {% if vendor.registration_number %}
+                    <tr>
+                        <th>Registration Number:</th>
+                        <td>{{ vendor.registration_number }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if vendor.address %}
+                    <tr>
+                        <th>Address:</th>
+                        <td>{{ vendor.address|linebreaks }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if vendor.contact_email %}
+                    <tr>
+                        <th>Email:</th>
+                        <td>{{ vendor.contact_email }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if vendor.contact_phone %}
+                    <tr>
+                        <th>Phone:</th>
+                        <td>{{ vendor.contact_phone }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5>Statistics</h5>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr>
+                        <th>Total Transactions:</th>
+                        <td>{{ transaction_count|intcomma }}</td>
+                    </tr>
+                    <tr>
+                        <th>Total Spending:</th>
+                        <td><strong>${{ total_spending|floatformat:2|intcomma }}</strong></td>
+                    </tr>
+                    <tr>
+                        <th>Average Transaction:</th>
+                        <td>${{ avg_transaction|floatformat:2|intcomma }}</td>
+                    </tr>
+                    {% if fraud_flags %}
+                    <tr>
+                        <th>Fraud Flags:</th>
+                        <td>
+                            <span class="badge bg-warning">{{ fraud_flags.count }}</span>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+        
+        {% if fraud_flags %}
+        <div class="card mt-3">
+            <div class="card-header bg-warning">
+                <h5>Fraud Flags</h5>
+            </div>
+            <div class="card-body">
+                {% for flag in fraud_flags %}
+                <div class="mb-2">
+                    <a href="{% url 'fraud_detection:flag_detail' flag.pk %}">
+                        <span class="badge bg-{% if flag.risk_level == 'critical' %}danger{% elif flag.risk_level == 'high' %}warning{% elif flag.risk_level == 'medium' %}info{% else %}secondary{% endif %}">
+                            {{ flag.get_risk_level_display }}
+                        </span>
+                        {{ flag.get_flag_type_display }}
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Transactions ({{ transaction_count|intcomma }})</h5>
+            </div>
+            <div class="card-body">
+                {% if transaction_page %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Transaction ID</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Department</th>
+                                <th>Category</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in transaction_page %}
+                            <tr>
+                                <td><a href="{% url 'fraud_detection:transaction_detail' transaction.pk %}">{{ transaction.transaction_id }}</a></td>
+                                <td>{{ transaction.date|date:"M d, Y" }}</td>
+                                <td>${{ transaction.amount|floatformat:2|intcomma }}</td>
+                                <td>{{ transaction.department.name|default:"N/A" }}</td>
+                                <td>{{ transaction.category.name|default:"N/A" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                {% if transaction_page.has_other_pages %}
+                <nav aria-label="Transaction pagination">
+                    <ul class="pagination justify-content-center">
+                        {% if transaction_page.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ transaction_page.previous_page_number }}">Previous</a>
+                        </li>
+                        {% endif %}
+                        
+                        <li class="page-item active">
+                            <span class="page-link">Page {{ transaction_page.number }} of {{ transaction_page.paginator.num_pages }}</span>
+                        </li>
+                        
+                        {% if transaction_page.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ transaction_page.next_page_number }}">Next</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+                {% else %}
+                <p class="text-muted">No transactions found for this vendor.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if contracts %}
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5>Contracts ({{ contracts.count }})</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Contract Number</th>
+                                <th>Title</th>
+                                <th>Amount</th>
+                                <th>Start Date</th>
+                                <th>Department</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for contract in contracts %}
+                            <tr>
+                                <td>{{ contract.contract_number }}</td>
+                                <td>{{ contract.title|truncatewords:5 }}</td>
+                                <td>${{ contract.total_amount|floatformat:2|intcomma }}</td>
+                                <td>{{ contract.start_date|date:"M d, Y" }}</td>
+                                <td>{{ contract.department.name|default:"N/A" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

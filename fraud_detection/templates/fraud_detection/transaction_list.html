@@ -1,0 +1,131 @@
+{% extends 'fraud_detection/base.html' %}
+{% load humanize %}
+
+{% block title %}Transactions{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1>Transactions</h1>
+        <p class="text-muted">Total: {{ total_count|intcomma }} transactions, Total Amount: ${{ total_amount|floatformat:2|intcomma }}</p>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5>Filters</h5>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Search</label>
+                {{ form.search }}
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Vendor</label>
+                {{ form.vendor }}
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Department</label>
+                {{ form.department }}
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Category</label>
+                {{ form.category }}
+            </div>
+            <div class="col-md-1">
+                <label class="form-label">Fiscal Year</label>
+                {{ form.fiscal_year }}
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <div>
+                    <button type="submit" class="btn btn-primary w-100">Filter</button>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Date From</label>
+                {{ form.date_from }}
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Date To</label>
+                {{ form.date_to }}
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Amount Min</label>
+                {{ form.amount_min }}
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Amount Max</label>
+                {{ form.amount_max }}
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Transactions Table -->
+<div class="card">
+    <div class="card-body">
+        {% if page_obj %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Vendor</th>
+                        <th>Department</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in page_obj %}
+                    <tr>
+                        <td><a href="{% url 'fraud_detection:transaction_detail' transaction.pk %}">{{ transaction.transaction_id }}</a></td>
+                        <td>{{ transaction.date|date:"M d, Y" }}</td>
+                        <td>${{ transaction.amount|floatformat:2|intcomma }}</td>
+                        <td>{{ transaction.vendor.name|default:"N/A" }}</td>
+                        <td>{{ transaction.department.name|default:"N/A" }}</td>
+                        <td>{{ transaction.category.name|default:"N/A" }}</td>
+                        <td>
+                            <span class="badge bg-{% if transaction.status == 'paid' %}success{% elif transaction.status == 'approved' %}info{% elif transaction.status == 'pending' %}warning{% else %}secondary{% endif %}">
+                                {{ transaction.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Transaction pagination">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Previous</a>
+                </li>
+                {% endif %}
+                
+                <li class="page-item active">
+                    <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                </li>
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        {% else %}
+        <p class="text-muted">No transactions found. <a href="{% url 'fraud_detection:import' %}">Import data</a> to get started.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

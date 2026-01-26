@@ -29,6 +29,7 @@ urlpatterns = [
     path('apps/personality-game/', include('personality_type_game.urls')),
     path('apps/mango-market/', include('mango_market.urls')),
     path('apps/activity-media/', include('activity_media.urls')),
+    path('apps/fraud-detection/', include('fraud_detection.urls')),
     path('ckeditor/', include('ckeditor_uploader.urls')),
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),

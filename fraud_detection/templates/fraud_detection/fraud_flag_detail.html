@@ -1,0 +1,124 @@
+{% extends 'fraud_detection/base.html' %}
+{% load humanize %}
+
+{% block title %}Fraud Flag: {{ flag.title }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1>{{ flag.title }}</h1>
+        <a href="{% url 'fraud_detection:fraud_flag_list' %}" class="btn btn-secondary">Back to List</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Flag Details</h5>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr>
+                        <th>Flag Type:</th>
+                        <td>{{ flag.get_flag_type_display }}</td>
+                    </tr>
+                    <tr>
+                        <th>Risk Level:</th>
+                        <td>
+                            <span class="badge bg-{% if flag.risk_level == 'critical' %}danger{% elif flag.risk_level == 'high' %}warning{% elif flag.risk_level == 'medium' %}info{% else %}secondary{% endif %}">
+                                {{ flag.get_risk_level_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Status:</th>
+                        <td>
+                            <span class="badge bg-{% if flag.status == 'new' %}primary{% elif flag.status == 'investigating' %}warning{% elif flag.status == 'resolved' %}success{% else %}secondary{% endif %}">
+                                {{ flag.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Detected:</th>
+                        <td>{{ flag.detected_at|date:"F d, Y H:i" }}</td>
+                    </tr>
+                    {% if flag.resolved_at %}
+                    <tr>
+                        <th>Resolved:</th>
+                        <td>{{ flag.resolved_at|date:"F d, Y H:i" }} by {{ flag.resolved_by.username|default:"N/A" }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <th>Description:</th>
+                        <td>{{ flag.description|linebreaks }}</td>
+                    </tr>
+                    {% if flag.notes %}
+                    <tr>
+                        <th>Notes:</th>
+                        <td>{{ flag.notes|linebreaks }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if flag.transactions.exists %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Related Transactions ({{ flag.transactions.count }})</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Transaction ID</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Vendor</th>
+                                <th>Department</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in flag.transactions.all %}
+                            <tr>
+                                <td><a href="{% url 'fraud_detection:transaction_detail' transaction.pk %}">{{ transaction.transaction_id }}</a></td>
+                                <td>{{ transaction.date|date:"M d, Y" }}</td>
+                                <td>${{ transaction.amount|floatformat:2|intcomma }}</td>
+                                <td>{{ transaction.vendor.name|default:"N/A" }}</td>
+                                <td>{{ transaction.department.name|default:"N/A" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if flag.vendors.exists %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Related Vendors ({{ flag.vendors.count }})</h5>
+            </div>
+            <div class="card-body">
+                <ul>
+                    {% for vendor in flag.vendors.all %}
+                    <li><a href="{% url 'fraud_detection:vendor_detail' vendor.pk %}">{{ vendor.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

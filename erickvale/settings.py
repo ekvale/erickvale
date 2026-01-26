@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',  # For intcomma filter
     'rest_framework',
     'ckeditor',
     'ckeditor_uploader',
@@ -49,6 +50,7 @@ INSTALLED_APPS = [
     'personality_type_game',
     'mango_market',
     'activity_media',
+    'fraud_detection',
 ]
 
 MIDDLEWARE = [
