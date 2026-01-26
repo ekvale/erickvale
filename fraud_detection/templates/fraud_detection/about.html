@@ -1,0 +1,233 @@
+{% extends 'fraud_detection/base.html' %}
+
+{% block title %}About - Fraud Detection & Budget Analysis{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1>About Fraud Detection & Budget Analysis</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Overview</h3>
+            </div>
+            <div class="card-body">
+                <p>
+                    The Fraud Detection & Budget Analysis application is designed to proactively identify 
+                    potential fraud, waste, and abuse in government spending. By analyzing budget data, 
+                    spending records, and financial transactions, the system helps auditors and analysts 
+                    detect suspicious patterns and anomalies that may indicate fraudulent activity.
+                </p>
+                <p>
+                    The application combines rule-based detection algorithms with machine learning models 
+                    to provide comprehensive fraud detection capabilities, while maintaining transparency 
+                    and explainability for regulatory compliance.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>How It Works</h3>
+            </div>
+            <div class="card-body">
+                <h5>1. Data Import</h5>
+                <p>
+                    Financial data can be imported from CSV, Excel, or JSON files. The system supports 
+                    importing transactions, budgets, contracts, and vendor information. Related entities 
+                    (vendors, departments, categories) are automatically created if they don't exist.
+                </p>
+
+                <h5>2. Fraud Detection Algorithms</h5>
+                <p>The system uses multiple detection methods:</p>
+                <ul>
+                    <li><strong>Duplicate Payment Detection:</strong> Identifies transactions with the same vendor, 
+                        similar amount, and close dates that may indicate duplicate payments.</li>
+                    <li><strong>Round Number Detection:</strong> Flags vendors with many round-number payments 
+                        (e.g., $5,000.00), which can indicate fabricated invoices.</li>
+                    <li><strong>Anomaly Detection:</strong> Uses statistical analysis to find transactions 
+                        significantly above average for their department/category.</li>
+                    <li><strong>End of Year Spike Detection:</strong> Identifies unusual spending patterns 
+                        at the end of fiscal years, which may indicate "use it or lose it" behavior.</li>
+                    <li><strong>Vendor Pattern Analysis:</strong> Detects vendors with suspicious patterns, 
+                        such as payments just under reporting thresholds.</li>
+                    <li><strong>Contract Price Comparison:</strong> Compares similar contracts to identify 
+                        significant price discrepancies.</li>
+                </ul>
+
+                <h5>3. Machine Learning Risk Scoring</h5>
+                <p>
+                    The application uses advanced machine learning models to calculate risk scores for each transaction:
+                </p>
+                <ul>
+                    <li><strong>PyOD (Python Outlier Detection):</strong> Uses state-of-the-art anomaly detection 
+                        algorithms to identify statistical outliers in transaction data.</li>
+                    <li><strong>XGBoost:</strong> A gradient boosting framework that analyzes multiple features 
+                        to predict fraud probability based on historical patterns.</li>
+                    <li><strong>Ensemble Scoring:</strong> Combines multiple models to provide a comprehensive 
+                        risk assessment, reducing false positives and improving accuracy.</li>
+                </ul>
+
+                <h5>4. Automated Audits</h5>
+                <p>
+                    The system automatically generates randomized audits based on:
+                </p>
+                <ul>
+                    <li><strong>Risk-Based Selection:</strong> High-risk transactions (above threshold) are 
+                        automatically selected for audit.</li>
+                    <li><strong>Random Selection:</strong> A percentage of all transactions are randomly 
+                        selected to ensure comprehensive coverage and detect fraud that might not trigger 
+                        automated flags.</li>
+                </ul>
+                <p>
+                    This dual approach ensures that both known risk patterns and unknown fraud schemes 
+                    are subject to human review.
+                </p>
+
+                <h5>5. Human Intervention Workflows</h5>
+                <p>
+                    Recognizing that fraud often results from lack of human oversight, the system includes 
+                    comprehensive intervention workflows:
+                </p>
+                <ul>
+                    <li><strong>Review Required:</strong> High-risk transactions are flagged for human review.</li>
+                    <li><strong>Approval Workflows:</strong> Critical transactions require explicit approval 
+                        before processing.</li>
+                    <li><strong>Escalation:</strong> Urgent cases are automatically escalated to supervisors.</li>
+                    <li><strong>Investigation:</strong> Complex cases are assigned for detailed investigation.</li>
+                </ul>
+                <p>
+                    Each intervention includes clear action items, due dates, and tracking to ensure 
+                    proper oversight and accountability.
+                </p>
+
+                <h5>6. Analysis & Reporting</h5>
+                <p>
+                    The dashboard provides comprehensive statistics and visualizations:
+                </p>
+                <ul>
+                    <li>Total transactions and spending amounts</li>
+                    <li>Fraud flags by type and risk level</li>
+                    <li>Top vendors and departments by spending</li>
+                    <li>Recent fraud flags and transactions</li>
+                    <li>Risk score distributions</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Key Features</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Detection Capabilities</h5>
+                        <ul>
+                            <li>Multiple fraud detection algorithms</li>
+                            <li>Machine learning risk scoring</li>
+                            <li>Real-time anomaly detection</li>
+                            <li>Pattern recognition</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Human Oversight</h5>
+                        <ul>
+                            <li>Automated audit generation</li>
+                            <li>Intervention workflows</li>
+                            <li>Approval processes</li>
+                            <li>Escalation mechanisms</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <h5>Data Management</h5>
+                        <ul>
+                            <li>CSV/Excel/JSON import</li>
+                            <li>Data validation</li>
+                            <li>Historical tracking</li>
+                            <li>Search and filtering</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Reporting & Analysis</h5>
+                        <ul>
+                            <li>Interactive dashboards</li>
+                            <li>Risk score visualization</li>
+                            <li>Department comparisons</li>
+                            <li>Vendor analysis</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Why Human Oversight Matters</h3>
+            </div>
+            <div class="card-body">
+                <p>
+                    While automated systems are powerful, fraud often occurs due to lack of human oversight. 
+                    The application addresses this by:
+                </p>
+                <ul>
+                    <li><strong>Randomized Audits:</strong> Even low-risk transactions are randomly selected 
+                        for review, ensuring comprehensive coverage and detecting fraud that automated systems 
+                        might miss.</li>
+                    <li><strong>Mandatory Reviews:</strong> High-risk transactions cannot be processed without 
+                        human review and approval.</li>
+                    <li><strong>Workflow Management:</strong> Clear assignment, tracking, and escalation 
+                        ensures nothing falls through the cracks.</li>
+                    <li><strong>Accountability:</strong> All reviews, approvals, and interventions are logged 
+                        with timestamps and user information.</li>
+                </ul>
+                <p>
+                    This combination of automated detection and human oversight creates a robust defense 
+                    against fraud, waste, and abuse.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Quick Links</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li><a href="{% url 'fraud_detection:dashboard' %}">Dashboard</a></li>
+                    <li><a href="{% url 'fraud_detection:transaction_list' %}">Transactions</a></li>
+                    <li><a href="{% url 'fraud_detection:fraud_flag_list' %}">Fraud Flags</a></li>
+                    <li><a href="{% url 'fraud_detection:audit_list' %}">Audits</a></li>
+                    <li><a href="{% url 'fraud_detection:intervention_list' %}">Interventions</a></li>
+                    {% if user.is_authenticated %}
+                    <li><a href="{% url 'fraud_detection:import' %}">Import Data</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5>Getting Started</h5>
+            </div>
+            <div class="card-body">
+                <ol>
+                    <li>Import your transaction data</li>
+                    <li>Run the full analysis</li>
+                    <li>Review fraud flags</li>
+                    <li>Generate automated audits</li>
+                    <li>Review interventions</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

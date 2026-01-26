@@ -1,0 +1,113 @@
+{% extends 'fraud_detection/base.html' %}
+{% load humanize %}
+
+{% block title %}Audits{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1>Audits</h1>
+        {% if user.is_authenticated and user.is_staff %}
+        <form method="post" action="{% url 'fraud_detection:generate_audits' %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Generate Automated Audits</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-control">
+                    <option value="">All Statuses</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>In Progress</option>
+                    <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
+                </select>
+            </div>
+            {% if user.is_staff %}
+            <div class="col-md-4">
+                <label class="form-label">Assignment</label>
+                <select name="assigned" class="form-control">
+                    <option value="">All Audits</option>
+                    <option value="me" {% if request.GET.assigned == 'me' %}selected{% endif %}>Assigned to Me</option>
+                </select>
+            </div>
+            {% endif %}
+            <div class="col-md-4">
+                <label class="form-label">&nbsp;</label>
+                <div>
+                    <button type="submit" class="btn btn-primary w-100">Filter</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Audits Table -->
+<div class="card">
+    <div class="card-body">
+        {% if page_obj %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Assigned To</th>
+                        <th>Due Date</th>
+                        <th>Transactions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for audit in page_obj %}
+                    <tr>
+                        <td><a href="{% url 'fraud_detection:audit_detail' audit.pk %}">{{ audit.title }}</a></td>
+                        <td>{{ audit.get_audit_type_display }}</td>
+                        <td>
+                            <span class="badge bg-{% if audit.status == 'completed' %}success{% elif audit.status == 'in_progress' %}info{% elif audit.status == 'pending' %}warning{% else %}secondary{% endif %}">
+                                {{ audit.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ audit.assigned_to.username|default:"Unassigned" }}</td>
+                        <td>{{ audit.due_date|date:"M d, Y"|default:"N/A" }}</td>
+                        <td>{{ audit.transactions.count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Audit pagination">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                </li>
+                {% endif %}
+                
+                <li class="page-item active">
+                    <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                </li>
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        {% else %}
+        <p class="text-muted">No audits found. <a href="{% url 'fraud_detection:generate_audits' %}">Generate automated audits</a> to get started.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

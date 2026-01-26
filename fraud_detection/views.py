@@ -12,13 +12,14 @@ import logging
 
 from .models import (
     Transaction, Vendor, Contract, FraudFlag, BudgetRecord,
-    Department, BudgetCategory, AnalysisResult
+    Department, BudgetCategory, AnalysisResult, RiskScore,
+    Audit, HumanIntervention
 )
 from .forms import (
     DataImportForm, TransactionFilterForm, FraudFlagFilterForm,
     TransactionForm, VendorForm, parse_csv_transactions
 )
-from .utils import run_full_analysis
+from .utils import run_full_analysis, generate_automated_audits, calculate_risk_scores
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +58,21 @@ def dashboard(request):
     # Recent transactions
     recent_transactions = Transaction.objects.select_related('vendor', 'department', 'category').order_by('-date')[:10]
     
+    # Audit statistics
+    total_audits = Audit.objects.count()
+    pending_audits = Audit.objects.filter(status='pending').count()
+    recent_audits = Audit.objects.order_by('-created_at')[:5]
+    
+    # Intervention statistics
+    total_interventions = HumanIntervention.objects.count()
+    pending_interventions = HumanIntervention.objects.filter(status='pending').count()
+    urgent_interventions = HumanIntervention.objects.filter(priority='urgent', status__in=['pending', 'in_progress']).count()
+    
+    # High-risk transactions
+    high_risk_transactions = Transaction.objects.filter(
+        risk_score__ensemble_score__gte=Decimal('0.6')
+    ).select_related('vendor', 'department', 'risk_score').order_by('-risk_score__ensemble_score')[:10]
+    
     context = {
         'total_transactions': total_transactions,
         'total_amount': total_amount,
@@ -68,6 +84,13 @@ def dashboard(request):
         'top_vendors': top_vendors,
         'dept_spending': dept_spending,
         'recent_transactions': recent_transactions,
+        'total_audits': total_audits,
+        'pending_audits': pending_audits,
+        'recent_audits': recent_audits,
+        'total_interventions': total_interventions,
+        'pending_interventions': pending_interventions,
+        'urgent_interventions': urgent_interventions,
+        'high_risk_transactions': high_risk_transactions,
     }
     
     return render(request, 'fraud_detection/dashboard.html', context)
@@ -365,3 +388,150 @@ def dashboard_api(request):
     }
     
     return JsonResponse(data)
+
+
+def about(request):
+    """About page explaining the fraud detection app."""
+    return render(request, 'fraud_detection/about.html')
+
+
+@login_required
+def audit_list(request):
+    """List all audits."""
+    audits = Audit.objects.prefetch_related('transactions', 'vendors', 'departments').all()
+    
+    # Filter by status
+    status_filter = request.GET.get('status', '')
+    if status_filter:
+        audits = audits.filter(status=status_filter)
+    
+    # Filter by assigned user
+    if request.user.is_staff:
+        assigned_filter = request.GET.get('assigned', '')
+        if assigned_filter == 'me':
+            audits = audits.filter(assigned_to=request.user)
+    else:
+        # Non-staff only see their assigned audits
+        audits = audits.filter(assigned_to=request.user)
+    
+    paginator = Paginator(audits, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'status_filter': status_filter,
+    }
+    
+    return render(request, 'fraud_detection/audit_list.html', context)
+
+
+@login_required
+def audit_detail(request, pk):
+    """View audit details."""
+    audit = get_object_or_404(
+        Audit.objects.prefetch_related('transactions', 'vendors', 'departments', 'contracts'),
+        pk=pk
+    )
+    
+    # Check permissions
+    if not request.user.is_staff and audit.assigned_to != request.user:
+        messages.error(request, 'You do not have permission to view this audit.')
+        return redirect('fraud_detection:audit_list')
+    
+    context = {
+        'audit': audit,
+    }
+    
+    return render(request, 'fraud_detection/audit_detail.html', context)
+
+
+@login_required
+def generate_audits(request):
+    """Generate automated audits."""
+    if request.method == 'POST':
+        try:
+            risk_threshold = float(request.POST.get('risk_threshold', 0.6))
+            random_percentage = int(request.POST.get('random_percentage', 5))
+            
+            # Calculate risk scores first if needed
+            transactions_without_scores = Transaction.objects.filter(risk_score__isnull=True)
+            if transactions_without_scores.exists():
+                calculate_risk_scores(transactions_without_scores)
+            
+            audits = generate_automated_audits(
+                risk_threshold=risk_threshold,
+                random_percentage=random_percentage,
+                user=request.user
+            )
+            
+            messages.success(request, f'Successfully generated {len(audits)} automated audits.')
+            return redirect('fraud_detection:audit_list')
+        except Exception as e:
+            logger.error(f"Error generating audits: {str(e)}", exc_info=True)
+            messages.error(request, f'Error generating audits: {str(e)}')
+            return redirect('fraud_detection:audit_list')
+    
+    return redirect('fraud_detection:audit_list')
+
+
+@login_required
+def intervention_list(request):
+    """List human interventions."""
+    interventions = HumanIntervention.objects.select_related(
+        'fraud_flag', 'transaction', 'audit', 'assigned_to', 'created_by'
+    ).all()
+    
+    # Filter by status
+    status_filter = request.GET.get('status', '')
+    if status_filter:
+        interventions = interventions.filter(status=status_filter)
+    
+    # Filter by priority
+    priority_filter = request.GET.get('priority', '')
+    if priority_filter:
+        interventions = interventions.filter(priority=priority_filter)
+    
+    # Filter by assigned user
+    if request.user.is_staff:
+        assigned_filter = request.GET.get('assigned', '')
+        if assigned_filter == 'me':
+            interventions = interventions.filter(assigned_to=request.user)
+    else:
+        # Non-staff only see their assigned interventions
+        interventions = interventions.filter(assigned_to=request.user)
+    
+    paginator = Paginator(interventions, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'status_filter': status_filter,
+        'priority_filter': priority_filter,
+    }
+    
+    return render(request, 'fraud_detection/intervention_list.html', context)
+
+
+@login_required
+def intervention_detail(request, pk):
+    """View intervention details."""
+    intervention = get_object_or_404(
+        HumanIntervention.objects.select_related(
+            'fraud_flag', 'transaction', 'audit', 'assigned_to', 'created_by',
+            'approver', 'resolved_by', 'escalated_to'
+        ),
+        pk=pk
+    )
+    
+    # Check permissions
+    if not request.user.is_staff and intervention.assigned_to != request.user:
+        messages.error(request, 'You do not have permission to view this intervention.')
+        return redirect('fraud_detection:intervention_list')
+    
+    context = {
+        'intervention': intervention,
+    }
+    
+    return render(request, 'fraud_detection/intervention_detail.html', context)

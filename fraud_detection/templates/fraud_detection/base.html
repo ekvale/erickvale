@@ -35,7 +35,16 @@
                         <a class="nav-link" href="{% url 'fraud_detection:fraud_flag_list' %}">Fraud Flags</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="{% url 'fraud_detection:audit_list' %}">Audits</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'fraud_detection:intervention_list' %}">Interventions</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{% url 'fraud_detection:vendor_list' %}">Vendors</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'fraud_detection:about' %}">About</a>
                     </li>
                     {% if user.is_authenticated %}
                     <li class="nav-item">

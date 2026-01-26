@@ -3,17 +3,36 @@ Utility functions for fraud detection and analysis.
 """
 from django.db.models import Q, Count, Sum, Avg, Max, Min
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, datetime
 from decimal import Decimal
 import logging
+import random
+import numpy as np
+import pandas as pd
 from collections import defaultdict
 
 from .models import (
     Transaction, Vendor, Contract, FraudFlag, 
-    Department, BudgetCategory
+    Department, BudgetCategory, RiskScore, Audit, HumanIntervention
 )
 
 logger = logging.getLogger(__name__)
+
+# Try to import ML libraries (optional)
+try:
+    from pyod.models.ecod import ECOD
+    from pyod.models.isolation_forest import IForest
+    PYOD_AVAILABLE = True
+except ImportError:
+    PYOD_AVAILABLE = False
+    logger.warning("PyOD not available. Install with: pip install pyod")
+
+try:
+    import xgboost as xgb
+    XGBOOST_AVAILABLE = True
+except ImportError:
+    XGBOOST_AVAILABLE = False
+    logger.warning("XGBoost not available. Install with: pip install xgboost")
 
 
 def detect_duplicate_payments(threshold_days=30, amount_tolerance=Decimal('0.01')):
@@ -330,10 +349,16 @@ def run_full_analysis():
         flags = compare_contract_prices()
         all_flags.extend(flags)
         
+        # Calculate ML risk scores
+        logger.info("Calculating ML risk scores...")
+        all_transactions = Transaction.objects.all()
+        if all_transactions.exists():
+            calculate_risk_scores(all_transactions)
+        
         analysis.status = 'completed'
         analysis.flags_created = len(all_flags)
         analysis.transactions_analyzed = Transaction.objects.count()
-        analysis.summary = f"Analysis completed. Created {len(all_flags)} fraud flags across {len(set(f.flag_type for f in all_flags))} different detection types."
+        analysis.summary = f"Analysis completed. Created {len(all_flags)} fraud flags across {len(set(f.flag_type for f in all_flags))} different detection types. Calculated risk scores for all transactions."
         analysis.completed_at = timezone.now()
         analysis.save()
         
@@ -346,3 +371,354 @@ def run_full_analysis():
         analysis.completed_at = timezone.now()
         analysis.save()
         return analysis
+
+
+def extract_features_for_ml(transactions):
+    """
+    Extract features from transactions for ML models.
+    Returns a pandas DataFrame with features.
+    """
+    features = []
+    
+    for trans in transactions.select_related('vendor', 'department', 'category'):
+        # Basic features
+        feature_dict = {
+            'amount': float(trans.amount),
+            'fiscal_year': trans.fiscal_year or 0,
+            'has_vendor': 1 if trans.vendor else 0,
+            'has_department': 1 if trans.department else 0,
+            'has_category': 1 if trans.category else 0,
+        }
+        
+        # Temporal features
+        if trans.date:
+            feature_dict.update({
+                'day_of_week': trans.date.weekday(),
+                'day_of_month': trans.date.day,
+                'month': trans.date.month,
+                'is_weekend': 1 if trans.date.weekday() >= 5 else 0,
+                'is_month_end': 1 if trans.date.day >= 25 else 0,
+                'is_fiscal_year_end': 1 if trans.date.month in [4, 5, 6] else 0,
+            })
+        
+        # Vendor features
+        if trans.vendor:
+            vendor_trans = Transaction.objects.filter(vendor=trans.vendor)
+            vendor_stats = vendor_trans.aggregate(
+                avg_amount=Avg('amount'),
+                count=Count('id')
+            )
+            feature_dict.update({
+                'vendor_avg_amount': float(vendor_stats['avg_amount'] or 0),
+                'vendor_transaction_count': vendor_stats['count'] or 0,
+            })
+            
+            # Check for round numbers
+            if trans.amount == trans.amount.quantize(Decimal('1')):
+                feature_dict['is_round_number'] = 1
+            else:
+                feature_dict['is_round_number'] = 0
+        
+        # Department features
+        if trans.department:
+            dept_trans = Transaction.objects.filter(department=trans.department)
+            dept_stats = dept_trans.aggregate(
+                avg_amount=Avg('amount'),
+                count=Count('id')
+            )
+            feature_dict.update({
+                'dept_avg_amount': float(dept_stats['avg_amount'] or 0),
+                'dept_transaction_count': dept_stats['count'] or 0,
+            })
+        
+        features.append(feature_dict)
+    
+    if not features:
+        return pd.DataFrame()
+    
+    return pd.DataFrame(features)
+
+
+def calculate_risk_scores_pyod(transactions):
+    """
+    Calculate anomaly scores using PyOD.
+    Returns dictionary mapping transaction IDs to scores.
+    """
+    if not PYOD_AVAILABLE:
+        logger.warning("PyOD not available, skipping anomaly detection")
+        return {}
+    
+    try:
+        # Extract features
+        features_df = extract_features_for_ml(transactions)
+        if features_df.empty:
+            return {}
+        
+        # Fill NaN values
+        features_df = features_df.fillna(0)
+        
+        # Use ECOD (Empirical-CDF-based Outlier Detection)
+        detector = ECOD(contamination=0.1)
+        detector.fit(features_df.values)
+        scores = detector.decision_scores_
+        
+        # Map scores to transactions
+        score_dict = {}
+        for idx, trans in enumerate(transactions):
+            score_dict[trans.id] = float(scores[idx]) if idx < len(scores) else 0.0
+        
+        return score_dict
+    except Exception as e:
+        logger.error(f"PyOD anomaly detection failed: {str(e)}", exc_info=True)
+        return {}
+
+
+def calculate_risk_scores_xgboost(transactions):
+    """
+    Calculate fraud probability scores using XGBoost.
+    This is a simplified version - in production, you'd train on historical fraud flags.
+    """
+    if not XGBOOST_AVAILABLE:
+        logger.warning("XGBoost not available, skipping ML scoring")
+        return {}
+    
+    try:
+        # Extract features
+        features_df = extract_features_for_ml(transactions)
+        if features_df.empty:
+            return {}
+        
+        # Fill NaN values
+        features_df = features_df.fillna(0)
+        
+        # For now, use a simple heuristic-based model
+        # In production, load a trained XGBoost model
+        # model = xgb.Booster()
+        # model.load_model('fraud_model.json')
+        # predictions = model.predict(xgb.DMatrix(features_df))
+        
+        # Simple heuristic: combine multiple risk factors
+        scores = {}
+        for idx, trans in enumerate(transactions):
+            score = 0.0
+            
+            # Round numbers increase risk
+            if trans.amount == trans.amount.quantize(Decimal('1')):
+                score += 0.2
+            
+            # Large amounts increase risk
+            if trans.amount > Decimal('10000'):
+                score += 0.3
+            
+            # End of fiscal year increases risk
+            if trans.date and trans.date.month in [4, 5, 6]:
+                score += 0.2
+            
+            # Vendor with many transactions might be suspicious
+            if trans.vendor:
+                vendor_count = Transaction.objects.filter(vendor=trans.vendor).count()
+                if vendor_count > 50:
+                    score += 0.1
+            
+            # Check if transaction has fraud flags
+            if trans.fraud_flags.exists():
+                score += 0.3
+            
+            scores[trans.id] = min(score, 1.0)  # Cap at 1.0
+        
+        return scores
+    except Exception as e:
+        logger.error(f"XGBoost scoring failed: {str(e)}", exc_info=True)
+        return {}
+
+
+def calculate_risk_scores(transactions):
+    """
+    Calculate risk scores for transactions using ML models.
+    Creates or updates RiskScore objects.
+    """
+    if not transactions.exists():
+        return
+    
+    logger.info(f"Calculating risk scores for {transactions.count()} transactions")
+    
+    # Calculate PyOD scores
+    pyod_scores = calculate_risk_scores_pyod(transactions)
+    
+    # Calculate XGBoost scores
+    xgb_scores = calculate_risk_scores_xgboost(transactions)
+    
+    # Create/update RiskScore objects
+    for trans in transactions:
+        pyod_score = pyod_scores.get(trans.id, None)
+        xgb_score = xgb_scores.get(trans.id, None)
+        
+        # Calculate ensemble score (weighted average)
+        ensemble_score = None
+        if pyod_score is not None and xgb_score is not None:
+            # Normalize PyOD score (typically 0-100, convert to 0-1)
+            normalized_pyod = min(pyod_score / 100.0, 1.0) if pyod_score > 0 else 0.0
+            ensemble_score = Decimal(str(0.4 * normalized_pyod + 0.6 * xgb_score))
+        elif xgb_score is not None:
+            ensemble_score = Decimal(str(xgb_score))
+        elif pyod_score is not None:
+            normalized_pyod = min(pyod_score / 100.0, 1.0) if pyod_score > 0 else 0.0
+            ensemble_score = Decimal(str(normalized_pyod))
+        
+        # Determine risk level
+        if ensemble_score:
+            if ensemble_score >= Decimal('0.8'):
+                risk_level = 'critical'
+            elif ensemble_score >= Decimal('0.6'):
+                risk_level = 'high'
+            elif ensemble_score >= Decimal('0.4'):
+                risk_level = 'medium'
+            else:
+                risk_level = 'low'
+        else:
+            risk_level = 'low'
+        
+        # Create or update RiskScore
+        risk_score, created = RiskScore.objects.get_or_create(
+            transaction=trans,
+            defaults={
+                'pyod_anomaly_score': Decimal(str(pyod_score)) if pyod_score is not None else None,
+                'xgboost_score': Decimal(str(xgb_score)) if xgb_score is not None else None,
+                'ensemble_score': ensemble_score,
+                'risk_level': risk_level,
+                'model_version': 'v1.0',
+            }
+        )
+        
+        if not created:
+            risk_score.pyod_anomaly_score = Decimal(str(pyod_score)) if pyod_score is not None else None
+            risk_score.xgboost_score = Decimal(str(xgb_score)) if xgb_score is not None else None
+            risk_score.ensemble_score = ensemble_score
+            risk_score.risk_level = risk_level
+            risk_score.save()
+
+
+def generate_automated_audits(risk_threshold=0.6, random_percentage=5, user=None):
+    """
+    Generate automated randomized audits based on risk scores.
+    
+    Args:
+        risk_threshold: Minimum risk score for risk-based audits
+        random_percentage: Percentage of transactions to randomly audit
+        user: User creating the audits
+    
+    Returns:
+        List of Audit objects created
+    """
+    audits_created = []
+    
+    # Risk-based audits
+    high_risk_transactions = Transaction.objects.filter(
+        risk_score__ensemble_score__gte=risk_threshold
+    ).select_related('vendor', 'department')
+    
+    if high_risk_transactions.exists():
+        # Group by vendor for vendor audits
+        vendors_with_high_risk = Vendor.objects.filter(
+            transactions__risk_score__ensemble_score__gte=risk_threshold
+        ).distinct()
+        
+        for vendor in vendors_with_high_risk[:5]:  # Top 5 vendors
+            vendor_trans = high_risk_transactions.filter(vendor=vendor)
+            
+            audit = Audit.objects.create(
+                audit_type='risk_based',
+                title=f'Risk-Based Audit: {vendor.name}',
+                description=f'Automated audit triggered for {vendor.name} due to high-risk transactions. '
+                           f'Found {vendor_trans.count()} high-risk transactions.',
+                risk_threshold=risk_threshold,
+                assigned_to=user,
+                created_by=user,
+                scheduled_date=timezone.now().date(),
+                due_date=(timezone.now() + timedelta(days=30)).date(),
+            )
+            audit.vendors.add(vendor)
+            audit.transactions.set(vendor_trans[:20])  # Limit to 20 transactions
+            audits_created.append(audit)
+    
+    # Random audits
+    all_transactions = Transaction.objects.all()
+    if all_transactions.exists():
+        num_random = max(1, int(all_transactions.count() * random_percentage / 100))
+        random_transactions = random.sample(list(all_transactions), min(num_random, all_transactions.count()))
+        
+        if random_transactions:
+            # Group by department
+            departments = Department.objects.filter(
+                transactions__in=random_transactions
+            ).distinct()
+            
+            for dept in departments[:3]:  # Top 3 departments
+                dept_trans = [t for t in random_transactions if t.department == dept]
+                
+                if dept_trans:
+                    audit = Audit.objects.create(
+                        audit_type='random',
+                        title=f'Random Audit: {dept.name}',
+                        description=f'Randomly selected audit for {dept.name}. '
+                                   f'Selected {len(dept_trans)} transactions for review.',
+                        random_percentage=random_percentage,
+                        assigned_to=user,
+                        created_by=user,
+                        scheduled_date=timezone.now().date(),
+                        due_date=(timezone.now() + timedelta(days=30)).date(),
+                    )
+                    audit.departments.add(dept)
+                    audit.transactions.set(dept_trans[:15])  # Limit to 15 transactions
+                    audits_created.append(audit)
+    
+    # Create interventions for high-risk transactions
+    high_risk = Transaction.objects.filter(
+        risk_score__ensemble_score__gte=risk_threshold
+    ).exclude(interventions__status__in=['resolved', 'approved'])
+    
+    interventions_created = 0
+    for trans in high_risk[:20]:  # Limit to 20 to avoid overwhelming
+        intervention = create_intervention_for_high_risk(trans, user)
+        if intervention:
+            interventions_created += 1
+    
+    logger.info(f"Created {len(audits_created)} automated audits and {interventions_created} interventions")
+    return audits_created
+
+
+def create_intervention_for_high_risk(transaction, user=None):
+    """
+    Create human intervention workflow for high-risk transactions.
+    """
+    if not transaction.risk_score or not transaction.risk_score.ensemble_score:
+        return None
+    
+    risk_score = transaction.risk_score.ensemble_score
+    
+    # Determine intervention type based on risk
+    if risk_score >= Decimal('0.8'):
+        intervention_type = 'escalation'
+        priority = 'urgent'
+        action_required = 'Immediate review required. Transaction flagged as critical risk.'
+    elif risk_score >= Decimal('0.6'):
+        intervention_type = 'review'
+        priority = 'high'
+        action_required = 'Review transaction details and verify legitimacy.'
+    else:
+        return None  # Only create interventions for high-risk
+    
+    intervention = HumanIntervention.objects.create(
+        intervention_type=intervention_type,
+        priority=priority,
+        transaction=transaction,
+        title=f'High-Risk Transaction Review: {transaction.transaction_id}',
+        description=f'Transaction {transaction.transaction_id} has a risk score of {risk_score:.2%}. '
+                   f'Amount: ${transaction.amount}, Vendor: {transaction.vendor.name if transaction.vendor else "N/A"}',
+        action_required=action_required,
+        assigned_to=user,
+        created_by=user,
+        due_date=timezone.now() + timedelta(days=7 if priority == 'urgent' else 14),
+    )
+    
+    return intervention

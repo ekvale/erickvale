@@ -1,7 +1,8 @@
 from django.contrib import admin
 from .models import (
     Transaction, Vendor, Contract, FraudFlag, BudgetRecord,
-    Department, BudgetCategory, AnalysisResult
+    Department, BudgetCategory, AnalysisResult, RiskScore,
+    Audit, HumanIntervention
 )
 
 
@@ -112,6 +113,92 @@ class AnalysisResultAdmin(admin.ModelAdmin):
         }),
         ('Timestamps', {
             'fields': ('started_at', 'completed_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+
+@admin.register(RiskScore)
+class RiskScoreAdmin(admin.ModelAdmin):
+    list_display = ['transaction', 'ensemble_score', 'risk_level', 'calculated_at']
+    list_filter = ['risk_level', 'calculated_at']
+    search_fields = ['transaction__transaction_id']
+    readonly_fields = ['calculated_at']
+    fieldsets = (
+        ('Transaction', {
+            'fields': ('transaction',)
+        }),
+        ('ML Scores', {
+            'fields': ('xgboost_score', 'pyod_anomaly_score', 'ensemble_score', 'risk_level')
+        }),
+        ('Metadata', {
+            'fields': ('model_version', 'features_used', 'calculated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+
+@admin.register(Audit)
+class AuditAdmin(admin.ModelAdmin):
+    list_display = ['title', 'audit_type', 'status', 'assigned_to', 'due_date', 'created_at']
+    list_filter = ['audit_type', 'status', 'created_at', 'scheduled_date']
+    search_fields = ['title', 'description']
+    filter_horizontal = ['transactions', 'vendors', 'contracts', 'departments']
+    readonly_fields = ['created_at', 'updated_at']
+    fieldsets = (
+        ('Audit Information', {
+            'fields': ('audit_type', 'status', 'title', 'description')
+        }),
+        ('Selection Criteria', {
+            'fields': ('risk_threshold', 'random_percentage')
+        }),
+        ('Related Objects', {
+            'fields': ('transactions', 'vendors', 'contracts', 'departments')
+        }),
+        ('Scheduling', {
+            'fields': ('scheduled_date', 'due_date', 'assigned_to', 'created_by')
+        }),
+        ('Results', {
+            'fields': ('findings', 'recommendations', 'completed_at', 'completed_by'),
+            'classes': ('collapse',)
+        }),
+        ('Metadata', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+
+@admin.register(HumanIntervention)
+class HumanInterventionAdmin(admin.ModelAdmin):
+    list_display = ['title', 'intervention_type', 'priority', 'status', 'assigned_to', 'due_date']
+    list_filter = ['intervention_type', 'status', 'priority', 'created_at']
+    search_fields = ['title', 'description', 'action_required']
+    readonly_fields = ['created_at', 'updated_at']
+    fieldsets = (
+        ('Intervention Information', {
+            'fields': ('intervention_type', 'status', 'priority', 'title', 'description', 'action_required')
+        }),
+        ('Related Objects', {
+            'fields': ('fraud_flag', 'transaction', 'audit')
+        }),
+        ('Assignment', {
+            'fields': ('assigned_to', 'created_by', 'due_date')
+        }),
+        ('Approval', {
+            'fields': ('requires_approval', 'approver', 'approved_at', 'approval_notes'),
+            'classes': ('collapse',)
+        }),
+        ('Resolution', {
+            'fields': ('resolution_notes', 'resolved_at', 'resolved_by'),
+            'classes': ('collapse',)
+        }),
+        ('Escalation', {
+            'fields': ('escalated_to', 'escalated_at', 'escalation_reason'),
+            'classes': ('collapse',)
+        }),
+        ('Metadata', {
+            'fields': ('created_at', 'updated_at'),
             'classes': ('collapse',)
         }),
     )

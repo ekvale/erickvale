@@ -52,6 +52,42 @@
     </div>
 </div>
 
+<!-- Additional Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5 class="card-title">Pending Audits</h5>
+                <h2 class="card-text">{{ pending_audits|default:0|intcomma }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title">Total Audits</h5>
+                <h2 class="card-text">{{ total_audits|default:0|intcomma }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-secondary">
+            <div class="card-body">
+                <h5 class="card-title">Pending Interventions</h5>
+                <h2 class="card-text">{{ pending_interventions|default:0|intcomma }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-danger">
+            <div class="card-body">
+                <h5 class="card-title">Urgent Interventions</h5>
+                <h2 class="card-text">{{ urgent_interventions|default:0|intcomma }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     <!-- Recent Fraud Flags -->
     <div class="col-md-6 mb-4">
@@ -208,5 +244,76 @@
         </div>
     </div>
 </div>
+
+{% if high_risk_transactions %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-warning">
+                <h5>High-Risk Transactions</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Transaction ID</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Vendor</th>
+                                <th>Risk Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for trans in high_risk_transactions %}
+                            <tr>
+                                <td><a href="{% url 'fraud_detection:transaction_detail' trans.pk %}">{{ trans.transaction_id }}</a></td>
+                                <td>{{ trans.date|date:"M d, Y" }}</td>
+                                <td>${{ trans.amount|floatformat:2|intcomma }}</td>
+                                <td>{{ trans.vendor.name|default:"N/A" }}</td>
+                                <td>
+                                    {% if trans.risk_score %}
+                                    <span class="badge bg-{% if trans.risk_score.risk_level == 'critical' %}danger{% elif trans.risk_score.risk_level == 'high' %}warning{% elif trans.risk_score.risk_level == 'medium' %}info{% else %}secondary{% endif %}">
+                                        {{ trans.risk_score.get_risk_level_display }} ({{ trans.risk_score.ensemble_score|floatformat:2 }})
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted">Not calculated</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if recent_audits %}
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Recent Audits</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    {% for audit in recent_audits %}
+                    <li class="mb-2">
+                        <a href="{% url 'fraud_detection:audit_detail' audit.pk %}">{{ audit.title }}</a>
+                        <span class="badge bg-{% if audit.status == 'completed' %}success{% elif audit.status == 'in_progress' %}info{% else %}warning{% endif %}">
+                            {{ audit.get_status_display }}
+                        </span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <a href="{% url 'fraud_detection:audit_list' %}" class="btn btn-sm btn-outline-primary">View All Audits</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 {% endblock %}

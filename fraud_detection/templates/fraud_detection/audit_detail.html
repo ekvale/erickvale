@@ -1,0 +1,127 @@
+{% extends 'fraud_detection/base.html' %}
+{% load humanize %}
+
+{% block title %}Audit: {{ audit.title }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1>{{ audit.title }}</h1>
+        <a href="{% url 'fraud_detection:audit_list' %}" class="btn btn-secondary">Back to List</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Audit Details</h5>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr>
+                        <th>Type:</th>
+                        <td>{{ audit.get_audit_type_display }}</td>
+                    </tr>
+                    <tr>
+                        <th>Status:</th>
+                        <td>
+                            <span class="badge bg-{% if audit.status == 'completed' %}success{% elif audit.status == 'in_progress' %}info{% elif audit.status == 'pending' %}warning{% else %}secondary{% endif %}">
+                                {{ audit.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Description:</th>
+                        <td>{{ audit.description|linebreaks }}</td>
+                    </tr>
+                    {% if audit.risk_threshold %}
+                    <tr>
+                        <th>Risk Threshold:</th>
+                        <td>{{ audit.risk_threshold|floatformat:2 }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if audit.random_percentage %}
+                    <tr>
+                        <th>Random Percentage:</th>
+                        <td>{{ audit.random_percentage }}%</td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <th>Scheduled Date:</th>
+                        <td>{{ audit.scheduled_date|date:"F d, Y"|default:"N/A" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Due Date:</th>
+                        <td>{{ audit.due_date|date:"F d, Y"|default:"N/A" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Assigned To:</th>
+                        <td>{{ audit.assigned_to.username|default:"Unassigned" }}</td>
+                    </tr>
+                    {% if audit.findings %}
+                    <tr>
+                        <th>Findings:</th>
+                        <td>{{ audit.findings|linebreaks }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if audit.recommendations %}
+                    <tr>
+                        <th>Recommendations:</th>
+                        <td>{{ audit.recommendations|linebreaks }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if audit.transactions.exists %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Transactions to Audit ({{ audit.transactions.count }})</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Transaction ID</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Vendor</th>
+                                <th>Department</th>
+                                <th>Risk Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in audit.transactions.all %}
+                            <tr>
+                                <td><a href="{% url 'fraud_detection:transaction_detail' transaction.pk %}">{{ transaction.transaction_id }}</a></td>
+                                <td>{{ transaction.date|date:"M d, Y" }}</td>
+                                <td>${{ transaction.amount|floatformat:2|intcomma }}</td>
+                                <td>{{ transaction.vendor.name|default:"N/A" }}</td>
+                                <td>{{ transaction.department.name|default:"N/A" }}</td>
+                                <td>
+                                    {% if transaction.risk_score %}
+                                    <span class="badge bg-{% if transaction.risk_score.risk_level == 'critical' %}danger{% elif transaction.risk_score.risk_level == 'high' %}warning{% elif transaction.risk_score.risk_level == 'medium' %}info{% else %}secondary{% endif %}">
+                                        {{ transaction.risk_score.get_risk_level_display }} ({{ transaction.risk_score.ensemble_score|floatformat:2 }})
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted">Not calculated</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

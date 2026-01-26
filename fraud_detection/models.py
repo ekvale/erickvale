@@ -261,3 +261,179 @@ class AnalysisResult(models.Model):
     
     def __str__(self):
         return f"{self.get_analysis_type_display()} - {self.started_at}"
+
+
+class RiskScore(models.Model):
+    """ML-based risk scores for transactions."""
+    transaction = models.OneToOneField(Transaction, on_delete=models.CASCADE, related_name='risk_score')
+    
+    # ML model scores
+    xgboost_score = models.DecimalField(max_digits=5, decimal_places=4, null=True, blank=True, help_text='XGBoost fraud probability (0-1)')
+    pyod_anomaly_score = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True, help_text='PyOD anomaly score')
+    ensemble_score = models.DecimalField(max_digits=5, decimal_places=4, null=True, blank=True, help_text='Combined ensemble score (0-1)')
+    
+    # Risk level based on scores
+    risk_level = models.CharField(max_length=20, choices=[
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+        ('critical', 'Critical'),
+    ], default='low')
+    
+    # Metadata
+    calculated_at = models.DateTimeField(auto_now_add=True)
+    model_version = models.CharField(max_length=50, blank=True, help_text='Version of ML model used')
+    features_used = models.JSONField(default=dict, blank=True, help_text='Features used in calculation')
+    
+    class Meta:
+        ordering = ['-ensemble_score']
+        indexes = [
+            models.Index(fields=['-ensemble_score']),
+            models.Index(fields=['risk_level']),
+        ]
+    
+    def __str__(self):
+        return f"Risk Score: {self.ensemble_score or 'N/A'} - {self.transaction.transaction_id}"
+
+
+class Audit(models.Model):
+    """Automated randomized audits based on risk scores."""
+    AUDIT_TYPE_CHOICES = [
+        ('random', 'Random Selection'),
+        ('risk_based', 'Risk-Based Selection'),
+        ('scheduled', 'Scheduled Audit'),
+        ('manual', 'Manual Audit'),
+    ]
+    
+    AUDIT_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
+    
+    audit_type = models.CharField(max_length=20, choices=AUDIT_TYPE_CHOICES)
+    status = models.CharField(max_length=20, choices=AUDIT_STATUS_CHOICES, default='pending')
+    
+    # What's being audited
+    transactions = models.ManyToManyField(Transaction, related_name='audits', blank=True)
+    vendors = models.ManyToManyField(Vendor, related_name='audits', blank=True)
+    contracts = models.ManyToManyField(Contract, related_name='audits', blank=True)
+    departments = models.ManyToManyField(Department, related_name='audits', blank=True)
+    
+    # Audit details
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    risk_threshold = models.DecimalField(max_digits=5, decimal_places=4, null=True, blank=True, help_text='Minimum risk score for selection')
+    random_percentage = models.IntegerField(default=5, help_text='Percentage of transactions to randomly audit')
+    
+    # Scheduling
+    scheduled_date = models.DateField(null=True, blank=True)
+    due_date = models.DateField(null=True, blank=True)
+    
+    # Assignment
+    assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_audits')
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_audits')
+    
+    # Results
+    findings = models.TextField(blank=True)
+    recommendations = models.TextField(blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    completed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='completed_audits')
+    
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status', 'scheduled_date']),
+            models.Index(fields=['assigned_to', 'status']),
+        ]
+    
+    def __str__(self):
+        return f"{self.title} - {self.get_status_display()}"
+    
+    def get_absolute_url(self):
+        return reverse('fraud_detection:audit_detail', kwargs={'pk': self.pk})
+
+
+class HumanIntervention(models.Model):
+    """Human intervention workflows for fraud flags and high-risk transactions."""
+    INTERVENTION_TYPE_CHOICES = [
+        ('review', 'Review Required'),
+        ('approval', 'Approval Required'),
+        ('escalation', 'Escalation'),
+        ('investigation', 'Investigation'),
+        ('resolution', 'Resolution'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('in_progress', 'In Progress'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('escalated', 'Escalated'),
+        ('resolved', 'Resolved'),
+    ]
+    
+    PRIORITY_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+        ('urgent', 'Urgent'),
+    ]
+    
+    intervention_type = models.CharField(max_length=20, choices=INTERVENTION_TYPE_CHOICES)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
+    
+    # Related objects
+    fraud_flag = models.ForeignKey(FraudFlag, on_delete=models.CASCADE, null=True, blank=True, related_name='interventions')
+    transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE, null=True, blank=True, related_name='interventions')
+    audit = models.ForeignKey(Audit, on_delete=models.CASCADE, null=True, blank=True, related_name='interventions')
+    
+    # Assignment
+    assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_interventions')
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_interventions')
+    
+    # Details
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    action_required = models.TextField(help_text='What action needs to be taken')
+    
+    # Workflow
+    requires_approval = models.BooleanField(default=False)
+    approver = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approval_interventions', help_text='User who must approve')
+    approved_at = models.DateTimeField(null=True, blank=True)
+    approval_notes = models.TextField(blank=True)
+    
+    # Resolution
+    resolution_notes = models.TextField(blank=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    resolved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='resolved_interventions')
+    
+    # Escalation
+    escalated_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='escalated_interventions')
+    escalated_at = models.DateTimeField(null=True, blank=True)
+    escalation_reason = models.TextField(blank=True)
+    
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    due_date = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-priority', '-created_at']
+        indexes = [
+            models.Index(fields=['status', 'priority']),
+            models.Index(fields=['assigned_to', 'status']),
+            models.Index(fields=['due_date']),
+        ]
+    
+    def __str__(self):
+        return f"{self.get_intervention_type_display()} - {self.title} ({self.get_status_display()})"
+    
+    def get_absolute_url(self):
+        return reverse('fraud_detection:intervention_detail', kwargs={'pk': self.pk})

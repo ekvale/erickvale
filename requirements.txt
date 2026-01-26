@@ -9,4 +9,9 @@ Pillow>=10.0.0
 networkx>=2.8
 scipy>=1.10
 numpy>=1.24
+# ML/AI Libraries
+pyod>=1.1.0
+xgboost>=2.0.0
+scikit-learn>=1.3.0
+pandas>=2.0.0
 

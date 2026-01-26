@@ -1,0 +1,121 @@
+{% extends 'fraud_detection/base.html' %}
+{% load humanize %}
+
+{% block title %}Human Interventions{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1>Human Interventions</h1>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-control">
+                    <option value="">All Statuses</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>In Progress</option>
+                    <option value="resolved" {% if status_filter == 'resolved' %}selected{% endif %}>Resolved</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Priority</label>
+                <select name="priority" class="form-control">
+                    <option value="">All Priorities</option>
+                    <option value="urgent" {% if priority_filter == 'urgent' %}selected{% endif %}>Urgent</option>
+                    <option value="high" {% if priority_filter == 'high' %}selected{% endif %}>High</option>
+                    <option value="medium" {% if priority_filter == 'medium' %}selected{% endif %}>Medium</option>
+                    <option value="low" {% if priority_filter == 'low' %}selected{% endif %}>Low</option>
+                </select>
+            </div>
+            {% if user.is_staff %}
+            <div class="col-md-3">
+                <label class="form-label">Assignment</label>
+                <select name="assigned" class="form-control">
+                    <option value="">All Interventions</option>
+                    <option value="me" {% if request.GET.assigned == 'me' %}selected{% endif %}>Assigned to Me</option>
+                </select>
+            </div>
+            {% endif %}
+            <div class="col-md-3">
+                <label class="form-label">&nbsp;</label>
+                <div>
+                    <button type="submit" class="btn btn-primary w-100">Filter</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Interventions Table -->
+<div class="card">
+    <div class="card-body">
+        {% if page_obj %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Type</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Assigned To</th>
+                        <th>Due Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for intervention in page_obj %}
+                    <tr>
+                        <td><a href="{% url 'fraud_detection:intervention_detail' intervention.pk %}">{{ intervention.title|truncatewords:8 }}</a></td>
+                        <td>{{ intervention.get_intervention_type_display }}</td>
+                        <td>
+                            <span class="badge bg-{% if intervention.priority == 'urgent' %}danger{% elif intervention.priority == 'high' %}warning{% elif intervention.priority == 'medium' %}info{% else %}secondary{% endif %}">
+                                {{ intervention.get_priority_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-{% if intervention.status == 'resolved' %}success{% elif intervention.status == 'in_progress' %}info{% elif intervention.status == 'pending' %}warning{% else %}secondary{% endif %}">
+                                {{ intervention.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ intervention.assigned_to.username|default:"Unassigned" }}</td>
+                        <td>{{ intervention.due_date|date:"M d, Y"|default:"N/A" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Intervention pagination">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                </li>
+                {% endif %}
+                
+                <li class="page-item active">
+                    <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                </li>
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        {% else %}
+        <p class="text-muted">No interventions found.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
