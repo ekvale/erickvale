@@ -17,6 +17,15 @@ class TagAdmin(admin.ModelAdmin):
     list_filter = ['category']
     search_fields = ['name', 'slug', 'description', 'keywords']
     prepopulated_fields = {'slug': ('name',)}
+    fieldsets = (
+        (None, {
+            'fields': ('name', 'slug', 'category', 'description'),
+        }),
+        ('Auto-tagging keywords', {
+            'fields': ('keywords',),
+            'description': 'Comma-separated keywords. When an article’s title, summary, or content contains any of these (case-insensitive), this tag is applied during fetch or “Add by URL”. Leave blank to disable auto-tagging for this tag.',
+        }),
+    )
 
     def has_keywords(self, obj):
         return bool(obj.keywords)
