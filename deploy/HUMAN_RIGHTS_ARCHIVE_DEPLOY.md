@@ -103,18 +103,38 @@ Or in Django Admin: **Human Rights Archive → Sources** → add RSS/Atom feed U
   python manage.py fetch_rights_feeds
   ```
 - Use `--verbose` to see feed status and per-entry skips; use `--force` to ignore fetch_interval.
+- Use `--tagged-only` to **save only articles that match at least one tag** (by keyword). Recommended for cron so the archive grows only with tag-relevant content (ICE, immigration, human rights, etc.).
 
-- To run this on a schedule (e.g. every 6 hours), add a cron job as the app user:
+### Run every 6 hours and save only tagged articles
 
-  ```bash
-  crontab -u erickvale -e
-  ```
+Run the fetch every 6 hours and store only articles that match your tags so staff can use the archive for tag-relevant content.
 
-  Example line (run every 6 hours):
+**Option A – cron line (run as the app user)**
 
-  ```cron
-  0 */6 * * * cd /home/erickvale/erickvale && /home/erickvale/erickvale/venv/bin/python manage.py fetch_rights_feeds
-  ```
+```bash
+crontab -u erickvale -e
+```
+
+Add this line (adjust path if your project lives elsewhere):
+
+```cron
+0 */6 * * * cd /home/erickvale/erickvale && ./venv/bin/python manage.py fetch_rights_feeds --force --tagged-only
+```
+
+**Option B – use the included script**
+
+```bash
+chmod +x /home/erickvale/erickvale/deploy/fetch_rights_feeds_cron.sh
+crontab -u erickvale -e
+```
+
+Add:
+
+```cron
+0 */6 * * * /home/erickvale/erickvale/deploy/fetch_rights_feeds_cron.sh
+```
+
+Both run at 00:00, 06:00, 12:00, and 18:00 UTC. Articles are saved only when they match at least one tag’s keywords (ICE, CBP, asylum, etc.), so the archive stays focused and users see tag-relevant articles.
 
 - Optional: fetch only one source by PK:  
   `python manage.py fetch_rights_feeds --source 1`  

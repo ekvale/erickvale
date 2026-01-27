@@ -33,6 +33,11 @@ class Command(BaseCommand):
             action='store_true',
             help='Show per-entry details and feed bozo/status',
         )
+        parser.add_argument(
+            '--tagged-only',
+            action='store_true',
+            help='Save only articles that match at least one tag (by keywords). Use for cron so the archive contains only tag-relevant content.',
+        )
 
     def handle(self, *args, **options):
         try:
@@ -70,10 +75,11 @@ class Command(BaseCommand):
             return
 
         verbose = options.get('verbose', False)
+        tagged_only = options.get('tagged_only', False)
         for source in qs:
-            self._fetch_source(source, verbose=verbose)
+            self._fetch_source(source, verbose=verbose, tagged_only=tagged_only)
 
-    def _fetch_source(self, source, verbose=False):
+    def _fetch_source(self, source, verbose=False, tagged_only=False):
         import feedparser
 
         log = FeedFetchLog.objects.create(source=source, status='running', message='')
@@ -91,6 +97,7 @@ class Command(BaseCommand):
             added = 0
             skipped_no_link = 0
             skipped_duplicate = 0
+            skipped_untagged = 0
             for entry in entries:
                 data = normalize_feed_entry(entry, source=source)
                 if not data:
@@ -102,6 +109,10 @@ class Command(BaseCommand):
                 if Article.objects.filter(url=url).exists():
                     skipped_duplicate += 1
                     continue
+                tags = suggest_article_tags(data['title'], data['summary'], data['content'])
+                if tagged_only and not tags:
+                    skipped_untagged += 1
+                    continue
                 article = Article.objects.create(
                     title=data['title'],
                     url=url,
@@ -110,7 +121,6 @@ class Command(BaseCommand):
                     published_at=data['published_at'],
                     source=source,
                 )
-                tags = suggest_article_tags(article.title, article.summary, article.content)
                 if tags:
                     article.tags.add(*tags)
                 added += 1
@@ -118,7 +128,10 @@ class Command(BaseCommand):
                     self.stdout.write(f'  + {data["title"][:60]}')
             source.last_fetched = timezone.now()
             source.last_fetch_status = 'success'
-            source.last_fetch_message = f'Added {added} (feed had {len(entries)} entries)'
+            msg = f'Added {added} (feed had {len(entries)} entries'
+            if tagged_only and skipped_untagged:
+                msg += f', skipped {skipped_untagged} untagged'
+            source.last_fetch_message = msg + ')'
             source.save(update_fields=['last_fetched', 'last_fetch_status', 'last_fetch_message'])
             log.completed_at = timezone.now()
             log.status = 'success'
@@ -131,8 +144,8 @@ class Command(BaseCommand):
             elif added == 0:
                 msg += f' — feed had 0 entries. Check URL or try --verbose'
             self.stdout.write(self.style.SUCCESS(msg))
-            if verbose and (skipped_no_link or skipped_duplicate):
-                self.stdout.write(f'  Skipped: {skipped_no_link} no URL, {skipped_duplicate} duplicates')
+            if verbose and (skipped_no_link or skipped_duplicate or skipped_untagged):
+                self.stdout.write(f'  Skipped: {skipped_no_link} no URL, {skipped_duplicate} duplicates{f", {skipped_untagged} untagged" if tagged_only and skipped_untagged else ""}')
         except Exception as e:
             source.last_fetched = timezone.now()
             source.last_fetch_status = 'error'
