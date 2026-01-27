@@ -39,7 +39,13 @@ python manage.py migrate human_rights_archive
 
 ## 4. Load default tags (required for auto-tagging)
 
-Tags include ICE/immigration-specific ones and keywords used to auto-tag articles:
+**You must run step 3 (migrate) first.** If you see `column human_rights_archive_tag.keywords does not exist`, run:
+
+```bash
+python manage.py migrate human_rights_archive
+```
+
+Then load tags:
 
 ```bash
 python manage.py load_rights_tags
