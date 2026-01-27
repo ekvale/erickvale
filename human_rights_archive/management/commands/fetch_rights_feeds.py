@@ -28,6 +28,11 @@ class Command(BaseCommand):
             action='store_true',
             help='Ignore fetch_interval and fetch all active sources',
         )
+        parser.add_argument(
+            '--verbose',
+            action='store_true',
+            help='Show per-entry details and feed bozo/status',
+        )
 
     def handle(self, *args, **options):
         try:
@@ -47,32 +52,55 @@ class Command(BaseCommand):
                 return s.last_fetched > (timezone.now() - timedelta(hours=s.fetch_interval_hours))
             qs = [s for s in qs if not should_skip(s)]
             if not qs:
-                self.stdout.write('No sources due for fetch (use --force to fetch all).')
+                n_active = Source.objects.filter(is_active=True).count()
+                if n_active == 0:
+                    self.stdout.write(
+                        self.style.WARNING(
+                            'No RSS sources configured. Add feeds in Django admin '
+                            '(Human Rights Archive → Sources) or run: python manage.py add_sample_rights_feed'
+                        )
+                    )
+                else:
+                    self.stdout.write('No sources due for fetch (use --force to fetch all).')
                 return
         else:
             qs = list(qs)
+        if not qs:
+            self.stdout.write(self.style.WARNING('No active sources to fetch.'))
+            return
 
+        verbose = options.get('verbose', False)
         for source in qs:
-            self._fetch_source(source)
+            self._fetch_source(source, verbose=verbose)
 
-    def _fetch_source(self, source):
+    def _fetch_source(self, source, verbose=False):
         import feedparser
 
         log = FeedFetchLog.objects.create(source=source, status='running', message='')
         self.stdout.write(f'Fetching {source.name} ({source.url})...')
         try:
-            # Respect rate limits: simple 1s pause would go here if needed
             parsed = feedparser.parse(
                 source.url,
-                agent='RightsArchive/1.0 (research; +https://example.com)',
+                agent='Mozilla/5.0 (compatible; RightsArchive/1.0; +https://example.com)',
             )
+            entries = getattr(parsed, 'entries', []) or []
+            if verbose:
+                self.stdout.write(f'  Feed status: bozo={getattr(parsed, "bozo", False)} entries={len(entries)}')
+                if getattr(parsed, 'bozo_exception', None):
+                    self.stdout.write(self.style.WARNING(f'  Feed parse warning: {parsed.bozo_exception}'))
             added = 0
-            for entry in getattr(parsed, 'entries', []) or []:
+            skipped_no_link = 0
+            skipped_duplicate = 0
+            for entry in entries:
                 data = normalize_feed_entry(entry, source=source)
                 if not data:
+                    skipped_no_link += 1
+                    if verbose and entry.get('title'):
+                        self.stdout.write(self.style.WARNING(f'  Skipped (no URL): {entry.get("title", "")[:50]}'))
                     continue
                 url = data['url']
                 if Article.objects.filter(url=url).exists():
+                    skipped_duplicate += 1
                     continue
                 Article.objects.create(
                     title=data['title'],
@@ -83,16 +111,25 @@ class Command(BaseCommand):
                     source=source,
                 )
                 added += 1
+                if verbose:
+                    self.stdout.write(f'  + {data["title"][:60]}')
             source.last_fetched = timezone.now()
             source.last_fetch_status = 'success'
-            source.last_fetch_message = f'Added {added} articles'
+            source.last_fetch_message = f'Added {added} (feed had {len(entries)} entries)'
             source.save(update_fields=['last_fetched', 'last_fetch_status', 'last_fetch_message'])
             log.completed_at = timezone.now()
             log.status = 'success'
             log.articles_added = added
             log.message = source.last_fetch_message
             log.save()
-            self.stdout.write(self.style.SUCCESS(f'  {source.name}: added {added}'))
+            msg = f'  {source.name}: added {added}'
+            if added == 0 and entries:
+                msg += f' (all {len(entries)} already in DB or skipped)'
+            elif added == 0:
+                msg += f' — feed had 0 entries. Check URL or try --verbose'
+            self.stdout.write(self.style.SUCCESS(msg))
+            if verbose and (skipped_no_link or skipped_duplicate):
+                self.stdout.write(f'  Skipped: {skipped_no_link} no URL, {skipped_duplicate} duplicates')
         except Exception as e:
             source.last_fetched = timezone.now()
             source.last_fetch_status = 'error'

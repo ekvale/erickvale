@@ -65,12 +65,21 @@ sudo systemctl restart erickvale
 
 ## 7. Add feeds and schedule fetches
 
-- In Django Admin: **Human Rights Archive → Sources** → add RSS/Atom feed URLs (name, URL, type, optional default tags).
-- To fetch articles from those feeds, run:
+**If you have no articles yet:** add at least one working RSS source, then fetch:
+
+```bash
+python manage.py add_sample_rights_feed    # adds BBC World News
+python manage.py fetch_rights_feeds --force
+```
+
+Or in Django Admin: **Human Rights Archive → Sources** → add RSS/Atom feed URLs (name, URL, type). Some sites (e.g. Human Rights Watch) may return HTML instead of XML to scripts; use feeds that serve RSS/XML to generic clients (e.g. `https://feeds.bbci.co.uk/news/world/rss.xml`).
+
+- To fetch articles from all active sources:
 
   ```bash
   python manage.py fetch_rights_feeds
   ```
+- Use `--verbose` to see feed status and per-entry skips; use `--force` to ignore fetch_interval.
 
 - To run this on a schedule (e.g. every 6 hours), add a cron job as the app user:
 

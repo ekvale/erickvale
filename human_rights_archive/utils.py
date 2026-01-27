@@ -55,6 +55,22 @@ def normalize_feed_entry(entry, source=None):
     """Normalize a feedparser entry into (title, url, summary, content, published_at)."""
     title = (entry.get('title') or '').strip() or 'Untitled'
     link = entry.get('link') or ''
+    if not link and entry.get('links'):
+        for lnk in entry.get('links', []):
+            href = lnk.get('href') if isinstance(lnk, dict) else getattr(lnk, 'href', None)
+            rel = lnk.get('rel') if isinstance(lnk, dict) else getattr(lnk, 'rel', None)
+            if href and str(href).startswith(('http://', 'https://')):
+                if rel == 'alternate' or not link:
+                    link = href
+                if rel == 'alternate':
+                    break
+        if not link and entry.get('links'):
+            first = entry['links'][0]
+            link = first.get('href') if isinstance(first, dict) else getattr(first, 'href', '') or ''
+    if not link:
+        raw_id = (entry.get('id') or '').strip()
+        if raw_id.startswith(('http://', 'https://')):
+            link = raw_id
     if not link:
         return None
     summary = (entry.get('summary') or '').strip()[:5000]
