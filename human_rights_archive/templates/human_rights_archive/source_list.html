@@ -1,0 +1,38 @@
+{% extends 'human_rights_archive/base.html' %}
+
+{% block title %}Sources{% endblock %}
+
+{% block content %}
+<h1>Sources / Feeds</h1>
+<p class="text-muted">RSS/Atom feeds are managed in Django admin. Run <code>python manage.py fetch_rights_feeds</code> (or via cron) to update.</p>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>URL</th>
+                <th>Articles</th>
+                <th>Last fetched</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in sources %}
+            <tr>
+                <td>{{ s.name }}</td>
+                <td>{{ s.get_source_type_display }}</td>
+                <td><a href="{{ s.url }}" target="_blank" rel="noopener">{{ s.url|truncatechars:50 }}</a></td>
+                <td>{{ s.article_count }}</td>
+                <td>{% if s.last_fetched %}{{ s.last_fetched|timesince }} ago{% else %}—{% endif %}</td>
+                <td><span class="badge {% if s.is_active %}bg-success{% else %}bg-secondary{% endif %}">{{ s.last_fetch_status|default:"—" }}</span></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="text-muted">No sources. Add feeds in <a href="/admin/human_rights_archive/source/">Django admin</a>.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<a href="/admin/human_rights_archive/source/add/" class="btn btn-primary">Add source (Admin)</a>
+{% endblock %}

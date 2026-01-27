@@ -1,0 +1,68 @@
+{% extends 'human_rights_archive/base.html' %}
+
+{% block title %}Articles{% endblock %}
+
+{% block content %}
+<h1>Articles</h1>
+
+<form method="get" class="filter-form row g-2 align-items-end">
+    <div class="col-md-3">
+        <label class="form-label">{{ form.q.label }}</label>
+        <input type="text" name="q" class="form-control" value="{{ request.GET.q|default:'' }}" placeholder="Search…">
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Source</label>
+        {{ form.source }}
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">From</label>
+        <input type="date" name="date_from" class="form-control" value="{{ request.GET.date_from|default:'' }}">
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">To</label>
+        <input type="date" name="date_to" class="form-control" value="{{ request.GET.date_to|default:'' }}">
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary">Filter</button>
+        <a href="{% url 'human_rights_archive:article_list' %}" class="btn btn-outline-secondary">Clear</a>
+        <a href="{% url 'human_rights_archive:export_csv' %}?{{ request.GET.urlencode }}" class="btn btn-outline-success ms-1">Export CSV</a>
+    </div>
+</form>
+{% if form.tags %}
+<div class="mb-2">
+    <small class="text-muted">Tags:</small>
+    {% for tag in form.tags.field.queryset %}
+        <a href="?tags={{ tag.pk }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="badge bg-secondary tag-badge">{{ tag.name }}</a>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="row">
+    {% for a in articles %}
+        <div class="col-12 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title"><a href="{% url 'human_rights_archive:article_detail' a.pk %}">{{ a.title }}</a></h5>
+                    <p class="card-text article-summary text-muted small">{{ a.summary|default:''|truncatewords:30 }}</p>
+                    <div>
+                        {% if a.source %}<span class="badge bg-light text-dark">{{ a.source.name }}</span>{% endif %}
+                        {% if a.published_at %}<small class="text-muted">{{ a.published_at|date:"M d, Y" }}</small>{% endif %}
+                        {% for t in a.tags.all %}<span class="badge bg-secondary tag-badge">{{ t.name }}</span>{% endfor %}
+                    </div>
+                    <a href="{{ a.url }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary mt-2">Open source →</a>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12 text-muted">No articles match. <a href="{% url 'human_rights_archive:dashboard' %}">Dashboard</a> · <a href="{% url 'human_rights_archive:add_by_url' %}">Add by URL</a></div>
+    {% endfor %}
+</div>
+
+{% if articles.has_other_pages %}
+<nav><ul class="pagination justify-content-center">
+    {% if articles.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ articles.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Previous</a></li>{% endif %}
+    <li class="page-item disabled"><span class="page-link">Page {{ articles.number }} of {{ articles.paginator.num_pages }}</span></li>
+    {% if articles.has_next %}<li class="page-item"><a class="page-link" href="?page={{ articles.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Next</a></li>{% endif %}
+</ul></nav>
+{% endif %}
+{% endblock %}

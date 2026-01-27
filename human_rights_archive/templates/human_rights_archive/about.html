@@ -1,0 +1,21 @@
+{% extends 'human_rights_archive/base.html' %}
+
+{% block title %}About{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <h1>About the Rights Archive</h1>
+        <p>This archive collects and indexes articles related to human rights violations, constitutional violations, police misconduct, government overreach, civil liberties, and similar topics.</p>
+        <ul>
+            <li><strong>Sources:</strong> RSS/Atom feeds (e.g. ACLU, Human Rights Watch, investigative outlets). Add feeds in Django admin and run <code>fetch_rights_feeds</code> on a schedule.</li>
+            <li><strong>Add by URL:</strong> Manually add a single article by URL; title/summary are fetched when possible.</li>
+            <li><strong>Tags:</strong> Classify articles (human rights, constitutional, civil liberties, etc.). Manage tags in admin.</li>
+            <li><strong>Search:</strong> Full-text search over title, summary, and content. Filter by tag, source, and date.</li>
+            <li><strong>Export:</strong> Export filtered results to CSV for reports and briefs.</li>
+        </ul>
+        <p class="text-muted small">Access is staff-only. Respect copyright and terms of use when storing content.</p>
+        <a href="{% url 'human_rights_archive:dashboard' %}" class="btn btn-primary">Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}

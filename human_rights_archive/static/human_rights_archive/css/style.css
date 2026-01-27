@@ -1,0 +1,23 @@
+/* Human Rights Archive styles */
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+}
+.card a {
+    text-decoration: none;
+    color: inherit;
+}
+.filter-form {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 0.25rem;
+    margin-bottom: 1rem;
+}
+.tag-badge {
+    font-size: 0.8rem;
+}
+.article-summary {
+    max-height: 4.5em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

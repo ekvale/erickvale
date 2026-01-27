@@ -1,0 +1,36 @@
+{% extends 'human_rights_archive/base.html' %}
+
+{% block title %}{{ article.title|truncatewords:8 }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'human_rights_archive:dashboard' %}">Archive</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'human_rights_archive:article_list' %}">Articles</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ article.title|truncatewords:6 }}</li>
+    </ol>
+</nav>
+
+<div class="card">
+    <div class="card-body">
+        <h1 class="card-title">{{ article.title }}</h1>
+        <p class="text-muted small">
+            {% if article.source %}{{ article.source.name }}{% endif %}
+            {% if article.published_at %} · {{ article.published_at|date:"F d, Y H:i" }}{% endif %}
+            · Fetched {{ article.fetched_at|date:"M d, Y" }}
+        </p>
+        {% for t in article.tags.all %}
+            <span class="badge bg-secondary tag-badge">{{ t.name }}</span>
+        {% endfor %}
+        <hr>
+        {% if article.summary %}
+            <div class="mb-3">{{ article.summary|linebreaks }}</div>
+        {% endif %}
+        {% if article.content %}
+            <div class="mb-3">{{ article.content|linebreaks }}</div>
+        {% endif %}
+        <a href="{{ article.url }}" target="_blank" rel="noopener" class="btn btn-primary">Open original →</a>
+        <a href="{% url 'human_rights_archive:article_list' %}" class="btn btn-outline-secondary">Back to list</a>
+    </div>
+</div>
+{% endblock %}

@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'mango_market',
     'activity_media',
     'fraud_detection',
+    'human_rights_archive',
 ]
 
 MIDDLEWARE = [

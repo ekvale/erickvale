@@ -1,0 +1,95 @@
+{% extends 'human_rights_archive/base.html' %}
+{% load humanize %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1>Human Rights & Constitutional Violations Archive</h1>
+        <p class="text-muted">Search and track articles from RSS feeds and manual URLs.</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">Total Articles</h5>
+                <h2 class="card-text">{{ total_articles|default:0|intcomma }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title">Active Sources</h5>
+                <h2 class="card-text">{{ total_sources|default:0|intcomma }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title">Tags</h5>
+                <h2 class="card-text">{{ total_tags|default:0|intcomma }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Recent Articles</span>
+                <a href="{% url 'human_rights_archive:article_list' %}" class="btn btn-sm btn-outline-primary">View all</a>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for a in recent_articles %}
+                    <a href="{% url 'human_rights_archive:article_detail' a.pk %}" class="list-group-item list-group-item-action">
+                        <strong>{{ a.title|truncatewords:12 }}</strong>
+                        <br>
+                        <small class="text-muted">
+                            {% if a.source %}{{ a.source.name }}{% endif %}
+                            {% if a.published_at %} · {{ a.published_at|date:"M d, Y" }}{% endif %}
+                            {% for t in a.tags.all %}<span class="badge bg-secondary tag-badge">{{ t.name }}</span>{% endfor %}
+                        </small>
+                    </a>
+                {% empty %}
+                    <div class="list-group-item text-muted">No articles yet. Add sources in admin or run <code>fetch_rights_feeds</code>, or use <a href="{% url 'human_rights_archive:add_by_url' %}">Add by URL</a>.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">Sources</div>
+            <ul class="list-group list-group-flush">
+                {% for s in recent_feeds %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>{{ s.name }}</span>
+                        <small class="text-muted">{% if s.last_fetched %}{{ s.last_fetched|timesince }} ago{% else %}Never{% endif %}</small>
+                    </li>
+                {% empty %}
+                    <li class="list-group-item text-muted">No sources. Add feeds in Django admin.</li>
+                {% endfor %}
+            </ul>
+            <div class="card-footer">
+                <a href="{% url 'human_rights_archive:source_list' %}">Manage sources</a> ·
+                <a href="/admin/human_rights_archive/source/">Admin</a>
+            </div>
+        </div>
+        <div class="card mt-3">
+            <div class="card-header">Tags (top)</div>
+            <div class="card-body">
+                {% for t in articles_by_tag %}
+                    <a href="{% url 'human_rights_archive:article_list' %}?tags={{ t.pk }}" class="badge bg-secondary tag-badge me-1 mb-1">{{ t.name }} ({{ t.num }})</a>
+                {% empty %}
+                    <span class="text-muted">No tags yet.</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
