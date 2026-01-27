@@ -8,7 +8,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from human_rights_archive.models import Source, Article, FeedFetchLog
-from human_rights_archive.utils import normalize_feed_entry
+from human_rights_archive.utils import normalize_feed_entry, suggest_article_tags
 
 logger = logging.getLogger(__name__)
 
@@ -102,7 +102,7 @@ class Command(BaseCommand):
                 if Article.objects.filter(url=url).exists():
                     skipped_duplicate += 1
                     continue
-                Article.objects.create(
+                article = Article.objects.create(
                     title=data['title'],
                     url=url,
                     summary=data['summary'],
@@ -110,6 +110,9 @@ class Command(BaseCommand):
                     published_at=data['published_at'],
                     source=source,
                 )
+                tags = suggest_article_tags(article.title, article.summary, article.content)
+                if tags:
+                    article.tags.add(*tags)
                 added += 1
                 if verbose:
                     self.stdout.write(f'  + {data["title"][:60]}')

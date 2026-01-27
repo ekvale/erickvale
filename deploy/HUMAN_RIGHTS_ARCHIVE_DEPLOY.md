@@ -37,16 +37,26 @@ source venv/bin/activate
 python manage.py migrate human_rights_archive
 ```
 
-## 4. Load default tags (optional)
+## 4. Load default tags (required for auto-tagging)
 
-To create the suggested tags (human rights, constitutional, civil liberties, etc.):
+Tags include ICE/immigration-specific ones and keywords used to auto-tag articles:
 
 ```bash
 python manage.py load_rights_tags
 ```
 
-You can re-run with `--clear` to wipe and reload:  
-`python manage.py load_rights_tags --clear`
+This creates/updates tags such as: ICE, CBP, DHS, immigration-detention, family-separation, deportation, asylum, border, plus human rights/constitutional tags. Each tag’s `keywords` field (comma-separated) is used to match article title/summary/content when ingesting.
+
+- `--clear` — remove all tags first, then reload
+- `--ice-only` — add only ICE/immigration-related tags
+
+**Tag existing articles** (after loading tags and fetching articles):
+
+```bash
+python manage.py tag_existing_articles
+```
+
+Use `--dry-run` to see what would be tagged without saving.
 
 ## 5. Collect static files
 

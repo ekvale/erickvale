@@ -13,10 +13,14 @@ class SourceAdmin(admin.ModelAdmin):
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
-    list_display = ['name', 'slug', 'category']
+    list_display = ['name', 'slug', 'category', 'has_keywords']
     list_filter = ['category']
-    search_fields = ['name', 'slug', 'description']
+    search_fields = ['name', 'slug', 'description', 'keywords']
     prepopulated_fields = {'slug': ('name',)}
+
+    def has_keywords(self, obj):
+        return bool(obj.keywords)
+    has_keywords.boolean = True
 
 
 @admin.register(Article)

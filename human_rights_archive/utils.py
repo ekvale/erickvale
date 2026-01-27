@@ -48,6 +48,9 @@ def add_article_by_url(url, user=None, title=None, summary=None, source=None):
         source=source,
         created_by=user,
     )
+    tags = suggest_article_tags(article.title, article.summary, article.content)
+    if tags:
+        article.tags.add(*tags)
     return article, True
 
 
@@ -101,3 +104,20 @@ def dedupe_key(url, published_at, title):
     """Stable key for deduplication."""
     raw = f"{url}|{published_at}|{hashlib.md5((title or '').encode()).hexdigest()}"
     return hashlib.sha256(raw.encode()).hexdigest()
+
+
+def suggest_article_tags(title='', summary='', content=''):
+    """
+    Return Tag instances that match article text by keyword (Tag.keywords).
+    Pass title, summary, content (or any combination). Case-insensitive.
+    """
+    from .models import Tag
+    text = ' '.join(str(s) for s in (title, summary, content) if s).lower()
+    if not text:
+        return []
+    matched = []
+    for tag in Tag.objects.exclude(keywords='').only('pk', 'slug', 'keywords'):
+        kw = [k.strip().lower() for k in tag.keywords.split(',') if k.strip()]
+        if any(k in text for k in kw):
+            matched.append(tag)
+    return matched

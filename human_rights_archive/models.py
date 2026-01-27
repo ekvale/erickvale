@@ -44,6 +44,10 @@ class Tag(models.Model):
         max_length=50, blank=True,
         help_text='e.g. human rights, constitutional, civil liberties'
     )
+    keywords = models.TextField(
+        blank=True,
+        help_text='Comma-separated keywords for auto-tagging; if any appear in article title/summary/content, this tag is applied.'
+    )
 
     class Meta:
         ordering = ['category', 'name']
