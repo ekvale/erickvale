@@ -72,6 +72,13 @@ python manage.py add_sample_rights_feed    # adds BBC World News
 python manage.py fetch_rights_feeds --force
 ```
 
+**To add many major news feeds at once** (BBC, NYT, Guardian, NPR, CNN, WaPo, Al Jazeera, CBS, NBC, PBS, Politico, ProPublica, LA Times, Vox, Axios, etc.):
+
+```bash
+python manage.py add_sample_rights_feed --major-news
+python manage.py fetch_rights_feeds --force
+```
+
 Or in Django Admin: **Human Rights Archive → Sources** → add RSS/Atom feed URLs (name, URL, type). Some sites (e.g. Human Rights Watch) may return HTML instead of XML to scripts; use feeds that serve RSS/XML to generic clients (e.g. `https://feeds.bbci.co.uk/news/world/rss.xml`).
 
 - To fetch articles from all active sources:
