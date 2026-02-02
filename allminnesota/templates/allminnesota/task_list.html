@@ -1,0 +1,70 @@
+{% extends "allminnesota/base.html" %}
+{% block title %}Tasks{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <h1 class="h2 mb-0" style="color: var(--am-green-dark);"><i class="fas fa-tasks me-2"></i>Tasks</h1>
+    <div>
+        <a href="{% url 'allminnesota:task_board' %}" class="btn btn-gold me-2"><i class="fas fa-columns me-1"></i>Board view</a>
+        <a href="{% url 'allminnesota:task_create' %}" class="btn btn-allminnesota"><i class="fas fa-plus me-1"></i>New Task</a>
+    </div>
+</div>
+
+<form method="get" class="card allminnesota-card mb-4">
+    <div class="card-body">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-2"><label class="form-label small text-muted">Search</label><input type="text" name="search" class="form-control" placeholder="Search..." value="{{ request.GET.search|default:'' }}"></div>
+            <div class="col-md-2"><label class="form-label small text-muted">Assignee</label>{{ form.assigned_to }}</div>
+            <div class="col-md-2"><label class="form-label small text-muted">Priority</label>{{ form.priority }}</div>
+            <div class="col-md-2"><label class="form-label small text-muted">Status</label>{{ form.status }}</div>
+            <div class="col-md-2"><label class="form-label small text-muted">Category</label>{{ form.category }}</div>
+            <div class="col-md-2"><button type="submit" class="btn btn-allminnesota w-100"><i class="fas fa-filter"></i> Filter</button></div>
+        </div>
+    </div>
+</form>
+
+<div class="card allminnesota-card">
+    <div class="table-responsive">
+        <table class="table table-allminnesota table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Task</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>Assignee</th>
+                    <th>Category</th>
+                    <th>Due date</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in tasks %}
+                <tr class="{% if t.is_overdue %}task-overdue{% endif %}">
+                    <td><a href="{% url 'allminnesota:task_detail' t.pk %}">{{ t.title }}</a>{% if t.is_overdue %} <span class="badge bg-danger">Overdue</span>{% endif %}</td>
+                    <td><span class="badge bg-secondary">{{ t.get_status_display }}</span></td>
+                    <td><span class="badge {% if t.priority == 'URGENT' %}bg-danger{% elif t.priority == 'HIGH' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">{{ t.get_priority_display }}</span></td>
+                    <td>{{ t.assigned_to.get_full_name|default:t.assigned_to.username|default:"—" }}</td>
+                    <td>{{ t.get_category_display }}</td>
+                    <td>{{ t.due_date|date:"M j, Y"|default:"—" }}</td>
+                    <td>
+                        <a href="{% url 'allminnesota:task_edit' t.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                        <a href="{% url 'allminnesota:task_delete' t.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center text-muted py-4">No tasks found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if tasks.has_other_pages %}
+    <div class="card-footer d-flex justify-content-between align-items-center">
+        <span class="small text-muted">Page {{ tasks.number }} of {{ tasks.paginator.num_pages }}</span>
+        <ul class="pagination pagination-sm mb-0">
+            {% if tasks.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ tasks.previous_page_number }}&{{ request.GET.urlencode }}">Previous</a></li>{% endif %}
+            {% if tasks.has_next %}<li class="page-item"><a class="page-link" href="?page={{ tasks.next_page_number }}&{{ request.GET.urlencode }}">Next</a></li>{% endif %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

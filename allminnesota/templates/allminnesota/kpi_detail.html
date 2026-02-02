@@ -1,0 +1,56 @@
+{% extends "allminnesota/base.html" %}
+{% block title %}{{ kpi.kpi_name }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'allminnesota:kpi_list' %}">KPIs</a></li>
+        <li class="breadcrumb-item active">{{ kpi.kpi_name }}</li>
+    </ol>
+</nav>
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <h1 class="h2 mb-0" style="color: var(--am-green-dark);">{{ kpi.kpi_name }} <span class="badge bg-secondary">{{ kpi.get_category_display }}</span></h1>
+    <a href="{% url 'allminnesota:kpi_update_value' kpi.pk %}" class="btn btn-allminnesota"><i class="fas fa-edit me-1"></i>Update value</a>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card allminnesota-card mb-4">
+            <div class="card-header">Current vs target</div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Current value</dt><dd class="col-sm-8">{{ kpi.current_value }} {{ kpi.unit }}</dd>
+                    <dt class="col-sm-4">Target value</dt><dd class="col-sm-8">{{ kpi.target_value }} {{ kpi.unit }}</dd>
+                    <dt class="col-sm-4">Progress</dt><dd class="col-sm-8">{{ kpi.progress_percent|floatformat:1 }}%</dd>
+                    {% if kpi.start_date %}<dt class="col-sm-4">Start date</dt><dd class="col-sm-8">{{ kpi.start_date|date:"M j, Y" }}</dd>{% endif %}
+                    {% if kpi.target_date %}<dt class="col-sm-4">Target date</dt><dd class="col-sm-8">{{ kpi.target_date|date:"M j, Y" }}</dd>{% endif %}
+                    <dt class="col-sm-4">Last updated</dt><dd class="col-sm-8">{{ kpi.last_updated|date:"M j, Y g:i A" }}{% if kpi.updated_by %} by {{ kpi.updated_by.get_full_name|default:kpi.updated_by.username }}{% endif %}</dd>
+                </dl>
+                <div class="progress kpi-progress mt-2">
+                    <div class="progress-bar {% if kpi.progress_percent >= 100 %}bg-success{% elif kpi.progress_percent >= 75 %}bg-warning{% endif %}" style="width: {{ kpi.progress_percent }}%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card allminnesota-card">
+            <div class="card-header">Update history</div>
+            <div class="card-body">
+                {% if history %}
+                <ul class="list-unstyled mb-0">
+                    {% for h in history %}
+                    <li class="activity-item">
+                        <strong>{{ h.previous_value }} → {{ h.new_value }}</strong> {{ h.updated_at|date:"M j, g:i A" }}
+                        {% if h.updated_by %} by {{ h.updated_by.get_full_name|default:h.updated_by.username }}{% endif %}
+                        {% if h.notes %}<br><small>{{ h.notes }}</small>{% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted mb-0">No update history yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

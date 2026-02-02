@@ -1,0 +1,63 @@
+{% extends "allminnesota/base.html" %}
+{% block title %}Distribution Sites{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <h1 class="h2 mb-0" style="color: var(--am-green-dark);"><i class="fas fa-map-marker-alt me-2"></i>Distribution Sites</h1>
+    <a href="{% url 'allminnesota:site_create' %}" class="btn btn-allminnesota"><i class="fas fa-plus me-1"></i>Add Site</a>
+</div>
+
+<!-- Regional filter / map-style view -->
+<div class="card allminnesota-card mb-4">
+    <div class="card-body">
+        <p class="text-muted small mb-2">Region</p>
+        <a href="{% url 'allminnesota:site_list' %}" class="btn btn-sm {% if not current_region %}btn-allminnesota{% else %}btn-outline-secondary{% endif %} me-2">All</a>
+        <a href="?region=TWIN_CITIES" class="btn btn-sm {% if current_region == 'TWIN_CITIES' %}btn-allminnesota{% else %}btn-outline-secondary{% endif %} me-2"><span class="region-badge region-twin-cities">Twin Cities</span></a>
+        <a href="?region=GREATER_MINNESOTA" class="btn btn-sm {% if current_region == 'GREATER_MINNESOTA' %}btn-allminnesota{% else %}btn-outline-secondary{% endif %}"><span class="region-badge region-greater">Greater Minnesota</span></a>
+    </div>
+</div>
+
+<div class="card allminnesota-card">
+    <div class="table-responsive">
+        <table class="table table-allminnesota table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Site</th>
+                    <th>Region</th>
+                    <th>City</th>
+                    <th>Capacity</th>
+                    <th>Contact</th>
+                    <th>Active</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in sites %}
+                <tr>
+                    <td><a href="{% url 'allminnesota:site_detail' s.pk %}">{{ s.site_name }}</a></td>
+                    <td><span class="region-badge {% if s.region == 'TWIN_CITIES' %}region-twin-cities{% else %}region-greater{% endif %}">{{ s.get_region_display }}</span></td>
+                    <td>{{ s.city|default:"—" }}</td>
+                    <td>{{ s.capacity }}</td>
+                    <td>{% if s.contact_person %}<a href="{% url 'allminnesota:contact_detail' s.contact_person.pk %}">{{ s.contact_person }}</a>{% else %}—{% endif %}</td>
+                    <td>{% if s.is_active %}<i class="fas fa-check text-success"></i>{% else %}<i class="fas fa-times text-muted"></i>{% endif %}</td>
+                    <td><a href="{% url 'allminnesota:site_edit' s.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center text-muted py-4">No sites found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if sites.has_other_pages %}
+    <div class="card-footer d-flex justify-content-between align-items-center">
+        <span class="small text-muted">Page {{ sites.number }} of {{ sites.paginator.num_pages }}</span>
+        <nav>
+            <ul class="pagination pagination-sm mb-0">
+                {% if sites.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ sites.previous_page_number }}{% if current_region %}&region={{ current_region }}{% endif %}">Previous</a></li>{% endif %}
+                {% if sites.has_next %}<li class="page-item"><a class="page-link" href="?page={{ sites.next_page_number }}{% if current_region %}&region={{ current_region }}{% endif %}">Next</a></li>{% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

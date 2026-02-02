@@ -1,0 +1,37 @@
+{% extends "allminnesota/base.html" %}
+{% block title %}{% if contact %}Edit{% else %}Add{% endif %} Contact{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'allminnesota:contact_list' %}">Contacts</a></li>
+        <li class="breadcrumb-item active">{% if contact %}Edit {{ contact }}{% else %}Add Contact{% endif %}</li>
+    </ol>
+</nav>
+<h1 class="h2 mb-4" style="color: var(--am-green-dark);">{% if contact %}Edit Contact{% else %}Add Contact{% endif %}</h1>
+
+<div class="card allminnesota-card" style="max-width: 700px;">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-6">{{ form.first_name.label_tag }}{{ form.first_name }}{% if form.first_name.errors %}<div class="text-danger small">{{ form.first_name.errors }}</div>{% endif %}</div>
+                <div class="col-md-6">{{ form.last_name.label_tag }}{{ form.last_name }}{% if form.last_name.errors %}<div class="text-danger small">{{ form.last_name.errors }}</div>{% endif %}</div>
+                <div class="col-12">{{ form.email.label_tag }}{{ form.email }}{% if form.email.errors %}<div class="text-danger small">{{ form.email.errors }}</div>{% endif %}</div>
+                <div class="col-md-6">{{ form.phone.label_tag }}{{ form.phone }}</div>
+                <div class="col-md-6">{{ form.contact_type.label_tag }}{{ form.contact_type }}</div>
+                <div class="col-12">{{ form.address.label_tag }}{{ form.address }}</div>
+                <div class="col-md-4">{{ form.city.label_tag }}{{ form.city }}</div>
+                <div class="col-md-4">{{ form.state.label_tag }}{{ form.state }}</div>
+                <div class="col-md-4">{{ form.zip_code.label_tag }}{{ form.zip_code }}</div>
+                <div class="col-12">{{ form.notes.label_tag }}{{ form.notes }}</div>
+                <div class="col-12"><div class="form-check">{{ form.is_active }} {{ form.is_active.label_tag }}</div></div>
+            </div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-allminnesota">Save</button>
+                <a href="{% if contact %}{% url 'allminnesota:contact_detail' contact.pk %}{% else %}{% url 'allminnesota:contact_list' %}{% endif %}" class="btn btn-outline-secondary ms-2">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

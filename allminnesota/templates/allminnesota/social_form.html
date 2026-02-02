@@ -1,0 +1,34 @@
+{% extends "allminnesota/base.html" %}
+{% block title %}{% if post %}Edit{% else %}New{% endif %} Post{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'allminnesota:social_list' %}">Social Media</a></li>
+        <li class="breadcrumb-item active">{% if post %}Edit {{ post.title }}{% else %}New Post{% endif %}</li>
+    </ol>
+</nav>
+<h1 class="h2 mb-4" style="color: var(--am-green-dark);">{% if post %}Edit Post{% else %}New Social Media Post{% endif %}</h1>
+
+<div class="card allminnesota-card" style="max-width: 700px;">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-6">{{ form.platform.label_tag }}{{ form.platform }}</div>
+                <div class="col-md-6">{{ form.status.label_tag }}{{ form.status }}</div>
+                <div class="col-12">{{ form.title.label_tag }}{{ form.title }}{% if form.title.errors %}<div class="text-danger small">{{ form.title.errors }}</div>{% endif %}</div>
+                <div class="col-12">{{ form.content.label_tag }}{{ form.content }}</div>
+                <div class="col-12">{{ form.scheduled_date.label_tag }}{{ form.scheduled_date }} <small class="text-muted">Leave blank for draft</small></div>
+                <div class="col-12">{{ form.hashtags.label_tag }}{{ form.hashtags }}</div>
+                <div class="col-12">{{ form.related_event.label_tag }}{{ form.related_event }}</div>
+                <div class="col-12">{{ form.notes.label_tag }}{{ form.notes }}</div>
+            </div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-allminnesota">Save</button>
+                <a href="{% if post %}{% url 'allminnesota:social_detail' post.pk %}{% else %}{% url 'allminnesota:social_list' %}{% endif %}" class="btn btn-outline-secondary ms-2">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

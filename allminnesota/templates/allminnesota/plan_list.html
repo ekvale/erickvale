@@ -1,0 +1,38 @@
+{% extends "allminnesota/base.html" %}
+{% block title %}Business Plans{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <h1 class="h2 mb-0" style="color: var(--am-green-dark);"><i class="fas fa-file-alt me-2"></i>Business Plans</h1>
+    <a href="{% url 'allminnesota:plan_create' %}" class="btn btn-allminnesota"><i class="fas fa-plus me-1"></i>New Plan</a>
+</div>
+
+<div class="card allminnesota-card">
+    <div class="table-responsive">
+        <table class="table table-allminnesota table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Owner</th>
+                    <th>Updated</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in plans %}
+                <tr>
+                    <td><a href="{% url 'allminnesota:plan_detail' p.pk %}">{{ p.title }}</a></td>
+                    <td><span class="badge bg-secondary">{{ p.get_status_display }}</span></td>
+                    <td>{{ p.owner.get_full_name|default:p.owner.username|default:"—" }}</td>
+                    <td>{{ p.updated_date|date:"M j, Y" }}</td>
+                    <td><a href="{% url 'allminnesota:plan_edit' p.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center text-muted py-4">No business plans yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "allminnesota/base.html" %}
+{% block title %}{% if section %}Edit{% else %}Add{% endif %} Section – {{ plan.title }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'allminnesota:plan_list' %}">Business Plans</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'allminnesota:plan_detail' plan.pk %}">{{ plan.title }}</a></li>
+        <li class="breadcrumb-item active">{% if section %}Edit section{% else %}Add section{% endif %}</li>
+    </ol>
+</nav>
+<h1 class="h2 mb-4" style="color: var(--am-green-dark);">{% if section %}Edit Section{% else %}Add Section{% endif %} – {{ plan.title }}</h1>
+
+<div class="card allminnesota-card" style="max-width: 700px;">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">{{ form.title.label_tag }}{{ form.title }}{% if form.title.errors %}<div class="text-danger small">{{ form.title.errors }}</div>{% endif %}</div>
+            <div class="mb-3">{{ form.content.label_tag }}{{ form.content }}</div>
+            <div class="mb-3">{{ form.order.label_tag }}{{ form.order }}</div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-allminnesota">Save</button>
+                <a href="{% url 'allminnesota:plan_detail' plan.pk %}" class="btn btn-outline-secondary ms-2">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

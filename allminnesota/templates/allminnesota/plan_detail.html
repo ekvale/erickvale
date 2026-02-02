@@ -1,0 +1,55 @@
+{% extends "allminnesota/base.html" %}
+{% block title %}{{ plan.title }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'allminnesota:plan_list' %}">Business Plans</a></li>
+        <li class="breadcrumb-item active">{{ plan.title }}</li>
+    </ol>
+</nav>
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <h1 class="h2 mb-0" style="color: var(--am-green-dark);">{{ plan.title }} <span class="badge bg-secondary">{{ plan.get_status_display }}</span></h1>
+    <div>
+        <a href="{% url 'allminnesota:plan_edit' plan.pk %}" class="btn btn-allminnesota"><i class="fas fa-edit me-1"></i>Edit Plan</a>
+        <a href="{% url 'allminnesota:section_create' plan.pk %}" class="btn btn-gold"><i class="fas fa-plus me-1"></i>Add Section</a>
+    </div>
+</div>
+
+{% if plan.description %}
+<div class="card allminnesota-card mb-4">
+    <div class="card-body">{{ plan.description|linebreaks }}</div>
+</div>
+{% endif %}
+
+<div class="card allminnesota-card">
+    <div class="card-header">Sections</div>
+    <div class="card-body">
+        {% for sec in sections %}
+        <div class="border-bottom pb-3 mb-3">
+            <div class="d-flex justify-content-between align-items-start">
+                <h5 class="text-am-green-dark">{{ sec.title }}</h5>
+                <a href="{% url 'allminnesota:section_edit' plan.pk sec.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+            </div>
+            <div class="mt-2">{{ sec.content|linebreaks }}</div>
+        </div>
+        {% empty %}
+        <p class="text-muted mb-0">No sections yet. <a href="{% url 'allminnesota:section_create' plan.pk %}">Add a section</a>.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Reorder sections (simple form) -->
+{% if sections %}
+<div class="card allminnesota-card mt-4">
+    <div class="card-body">
+        <form method="post" action="{% url 'allminnesota:section_reorder' plan.pk %}" class="d-inline">
+            {% csrf_token %}
+            <label class="form-label">Reorder sections (comma-separated section IDs):</label>
+            <input type="text" name="section_ids" class="form-control d-inline-block" style="width: 200px;" placeholder="e.g. 3,1,2" value="{% for s in sections %}{{ s.pk }}{% if not forloop.last %},{% endif %}{% endfor %}">
+            <button type="submit" class="btn btn-sm btn-outline-secondary ms-2">Apply order</button>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

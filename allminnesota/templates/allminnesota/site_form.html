@@ -1,0 +1,36 @@
+{% extends "allminnesota/base.html" %}
+{% block title %}{% if site %}Edit{% else %}Add{% endif %} Site{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'allminnesota:site_list' %}">Sites</a></li>
+        <li class="breadcrumb-item active">{% if site %}Edit {{ site.site_name }}{% else %}Add Site{% endif %}</li>
+    </ol>
+</nav>
+<h1 class="h2 mb-4" style="color: var(--am-green-dark);">{% if site %}Edit Site{% else %}Add Distribution Site{% endif %}</h1>
+
+<div class="card allminnesota-card" style="max-width: 700px;">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-12">{{ form.site_name.label_tag }}{{ form.site_name }}{% if form.site_name.errors %}<div class="text-danger small">{{ form.site_name.errors }}</div>{% endif %}</div>
+                <div class="col-12">{{ form.address.label_tag }}{{ form.address }}</div>
+                <div class="col-md-4">{{ form.city.label_tag }}{{ form.city }}</div>
+                <div class="col-md-4">{{ form.state.label_tag }}{{ form.state }}</div>
+                <div class="col-md-4">{{ form.zip_code.label_tag }}{{ form.zip_code }}</div>
+                <div class="col-md-6">{{ form.region.label_tag }}{{ form.region }}</div>
+                <div class="col-md-6">{{ form.capacity.label_tag }}{{ form.capacity }}</div>
+                <div class="col-12">{{ form.contact_person.label_tag }}{{ form.contact_person }}</div>
+                <div class="col-12">{{ form.notes.label_tag }}{{ form.notes }}</div>
+                <div class="col-12"><div class="form-check">{{ form.is_active }} {{ form.is_active.label_tag }}</div></div>
+            </div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-allminnesota">Save</button>
+                <a href="{% if site %}{% url 'allminnesota:site_detail' site.pk %}{% else %}{% url 'allminnesota:site_list' %}{% endif %}" class="btn btn-outline-secondary ms-2">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends "allminnesota/base.html" %}
+{% block title %}Contacts{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <h1 class="h2 mb-0" style="color: var(--am-green-dark);"><i class="fas fa-address-book me-2"></i>Contacts</h1>
+    <div>
+        <a href="{% url 'allminnesota:contact_create' %}" class="btn btn-allminnesota"><i class="fas fa-plus me-1"></i>Add Contact</a>
+        <a href="{% url 'allminnesota:contact_export' %}" class="btn btn-outline-secondary"><i class="fas fa-download me-1"></i>Export CSV</a>
+    </div>
+</div>
+
+<form method="get" class="card allminnesota-card mb-4">
+    <div class="card-body">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small text-muted">Search</label>
+                <input type="text" name="search" class="form-control" placeholder="Name, email..." value="{{ request.GET.search|default:'' }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small text-muted">Type</label>
+                {{ form.contact_type }}
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-allminnesota w-100"><i class="fas fa-search"></i> Filter</button>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="card allminnesota-card">
+    <div class="table-responsive">
+        <table class="table table-allminnesota table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Type</th>
+                    <th>Phone</th>
+                    <th>Active</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in contacts %}
+                <tr>
+                    <td><a href="{% url 'allminnesota:contact_detail' c.pk %}">{{ c.last_name }}, {{ c.first_name }}</a></td>
+                    <td>{{ c.email }}</td>
+                    <td>{{ c.get_contact_type_display }}</td>
+                    <td>{{ c.phone|default:"—" }}</td>
+                    <td>{% if c.is_active %}<i class="fas fa-check text-success"></i>{% else %}<i class="fas fa-times text-muted"></i>{% endif %}</td>
+                    <td><a href="{% url 'allminnesota:contact_edit' c.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center text-muted py-4">No contacts found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if contacts.has_other_pages %}
+    <div class="card-footer d-flex justify-content-between align-items-center">
+        <span class="small text-muted">Page {{ contacts.number }} of {{ contacts.paginator.num_pages }}</span>
+        <nav>
+            <ul class="pagination pagination-sm mb-0">
+                {% if contacts.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ contacts.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.contact_type %}&contact_type={{ request.GET.contact_type }}{% endif %}">Previous</a></li>{% endif %}
+                {% if contacts.has_next %}<li class="page-item"><a class="page-link" href="?page={{ contacts.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.contact_type %}&contact_type={{ request.GET.contact_type }}{% endif %}">Next</a></li>{% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

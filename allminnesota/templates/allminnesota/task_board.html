@@ -1,0 +1,29 @@
+{% extends "allminnesota/base.html" %}
+{% block title %}Task Board{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <h1 class="h2 mb-0" style="color: var(--am-green-dark);"><i class="fas fa-columns me-2"></i>Task Board</h1>
+    <a href="{% url 'allminnesota:task_list' %}" class="btn btn-outline-secondary">List view</a>
+    <a href="{% url 'allminnesota:task_create' %}" class="btn btn-allminnesota"><i class="fas fa-plus me-1"></i>New Task</a>
+</div>
+
+<div class="row g-3">
+    {% for col in board %}
+    <div class="col-md-6 col-xl-3">
+        <div class="kanban-column p-3">
+            <h6 class="mb-3">{{ col.label }} ({{ col.tasks|length }})</h6>
+            {% for task in col.tasks %}
+            <div class="kanban-card p-3 {% if task.priority == 'URGENT' %}urgent{% elif task.priority == 'HIGH' %}high{% endif %}">
+                <a href="{% url 'allminnesota:task_detail' task.pk %}" class="text-decoration-none text-dark fw-medium d-block">{{ task.title }}</a>
+                <small class="text-muted d-block mt-1">{{ task.get_priority_display }}{% if task.due_date %} · Due {{ task.due_date|date:"M j" }}{% endif %}</small>
+                {% if task.assigned_to %}<small class="d-block mt-1"><i class="fas fa-user me-1"></i>{{ task.assigned_to.get_full_name|default:task.assigned_to.username }}</small>{% endif %}
+            </div>
+            {% empty %}
+            <p class="text-muted small mb-0">No tasks</p>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

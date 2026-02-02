@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'activity_media',
     'fraud_detection',
     'human_rights_archive',
+    'allminnesota',
 ]
 
 MIDDLEWARE = [

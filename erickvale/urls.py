@@ -31,6 +31,7 @@ urlpatterns = [
     path('apps/activity-media/', include('activity_media.urls')),
     path('apps/fraud-detection/', include('fraud_detection.urls')),
     path('apps/human-rights-archive/', include('human_rights_archive.urls')),
+    path('apps/allminnesota/', include('allminnesota.urls')),
     path('ckeditor/', include('ckeditor_uploader.urls')),
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),

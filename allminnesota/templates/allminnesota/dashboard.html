@@ -1,0 +1,139 @@
+{% extends "allminnesota/base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2 mb-0" style="color: var(--am-green-dark);"><i class="fas fa-tachometer-alt me-2"></i>All Minnesota Dashboard</h1>
+</div>
+
+<!-- Summary cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-6 col-lg-3">
+        <a href="{% url 'allminnesota:contact_list' %}" class="text-decoration-none">
+            <div class="card dashboard-card contacts h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="card-icon me-3"><i class="fas fa-address-book"></i></div>
+                    <div>
+                        <div class="text-muted small">Contacts</div>
+                        <div class="h4 mb-0">{{ total_contacts }}</div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <a href="{% url 'allminnesota:site_list' %}" class="text-decoration-none">
+            <div class="card dashboard-card sites h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="card-icon me-3"><i class="fas fa-map-marker-alt"></i></div>
+                    <div>
+                        <div class="text-muted small">Active Sites</div>
+                        <div class="h4 mb-0">{{ active_sites }}</div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <a href="{% url 'allminnesota:task_list' %}" class="text-decoration-none">
+            <div class="card dashboard-card tasks h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="card-icon me-3"><i class="fas fa-tasks"></i></div>
+                    <div>
+                        <div class="text-muted small">Open Tasks</div>
+                        <div class="h4 mb-0">{{ open_tasks }}</div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <a href="{% url 'allminnesota:task_list' %}?category=EVENT" class="text-decoration-none">
+            <div class="card dashboard-card events h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="card-icon me-3"><i class="fas fa-calendar-alt"></i></div>
+                    <div>
+                        <div class="text-muted small">Upcoming Events</div>
+                        <div class="h4 mb-0">{{ upcoming_events|length }}</div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- KPI progress -->
+    <div class="col-lg-6 mb-4">
+        <div class="card allminnesota-card">
+            <div class="card-header"><i class="fas fa-chart-line me-2"></i>KPI Progress</div>
+            <div class="card-body">
+                {% for kpi in kpis %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span>{{ kpi.kpi_name }}</span>
+                        <span>{{ kpi.current_value }} / {{ kpi.target_value }} {{ kpi.unit }}</span>
+                    </div>
+                    <div class="progress kpi-progress">
+                        <div class="progress-bar" role="progressbar" style="width: {{ kpi.progress_percent }}%;" aria-valuenow="{{ kpi.current_value }}" aria-valuemin="0" aria-valuemax="{{ kpi.target_value }}"></div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted mb-0">No KPIs yet. Add them from the <a href="{% url 'allminnesota:kpi_list' %}">KPIs</a> page (via admin).</p>
+                {% endfor %}
+                <a href="{% url 'allminnesota:kpi_list' %}" class="btn btn-sm btn-allminnesota mt-2">View all KPIs</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent activity -->
+    <div class="col-lg-6 mb-4">
+        <div class="card allminnesota-card">
+            <div class="card-header"><i class="fas fa-stream me-2"></i>Recent Activity</div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    {% for task in recent_tasks %}
+                    <li class="activity-item">
+                        <a href="{% url 'allminnesota:task_detail' task.pk %}">{{ task.title }}</a>
+                        <small class="d-block">Task updated {{ task.updated_date|timesince }} ago</small>
+                    </li>
+                    {% endfor %}
+                    {% for contact in recent_contacts %}
+                    <li class="activity-item">
+                        <a href="{% url 'allminnesota:contact_detail' contact.pk %}">{{ contact.first_name }} {{ contact.last_name }}</a>
+                        <small class="d-block">New contact {{ contact.date_added|timesince }} ago</small>
+                    </li>
+                    {% endfor %}
+                    {% for post in recent_posts %}
+                    <li class="activity-item">
+                        {{ post.title }} ({{ post.get_platform_display }})
+                        <small class="d-block">Scheduled {{ post.scheduled_date|date:"M j, g:i A" }}</small>
+                    </li>
+                    {% endfor %}
+                    {% if not recent_tasks and not recent_contacts and not recent_posts %}
+                    <li class="text-muted">No recent activity.</li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick links -->
+<div class="card allminnesota-card">
+    <div class="card-header"><i class="fas fa-link me-2"></i>Quick Links</div>
+    <div class="card-body quick-links">
+        <div class="row">
+            <div class="col-md-4"><a href="{% url 'allminnesota:contact_list' %}"><i class="fas fa-address-book me-1"></i>Contacts</a></div>
+            <div class="col-md-4"><a href="{% url 'allminnesota:contact_create' %}"><i class="fas fa-plus me-1"></i>Add Contact</a></div>
+            <div class="col-md-4"><a href="{% url 'allminnesota:contact_export' %}"><i class="fas fa-download me-1"></i>Export Contacts CSV</a></div>
+            <div class="col-md-4 mt-2"><a href="{% url 'allminnesota:site_list' %}"><i class="fas fa-map-marker-alt me-1"></i>Distribution Sites</a></div>
+            <div class="col-md-4 mt-2"><a href="{% url 'allminnesota:site_create' %}"><i class="fas fa-plus me-1"></i>Add Site</a></div>
+            <div class="col-md-4 mt-2"><a href="{% url 'allminnesota:task_board' %}"><i class="fas fa-columns me-1"></i>Task Board</a></div>
+            <div class="col-md-4 mt-2"><a href="{% url 'allminnesota:task_create' %}"><i class="fas fa-plus me-1"></i>New Task</a></div>
+            <div class="col-md-4 mt-2"><a href="{% url 'allminnesota:social_list' %}"><i class="fas fa-share-alt me-1"></i>Social Posts</a></div>
+            <div class="col-md-4 mt-2"><a href="{% url 'allminnesota:social_calendar' %}"><i class="fas fa-calendar-alt me-1"></i>Post Calendar</a></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "allminnesota/base.html" %}
+{% block title %}{% if plan %}Edit{% else %}New{% endif %} Plan{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'allminnesota:plan_list' %}">Business Plans</a></li>
+        <li class="breadcrumb-item active">{% if plan %}Edit {{ plan.title }}{% else %}New Plan{% endif %}</li>
+    </ol>
+</nav>
+<h1 class="h2 mb-4" style="color: var(--am-green-dark);">{% if plan %}Edit Business Plan{% else %}New Business Plan{% endif %}</h1>
+
+<div class="card allminnesota-card" style="max-width: 700px;">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">{{ form.title.label_tag }}{{ form.title }}{% if form.title.errors %}<div class="text-danger small">{{ form.title.errors }}</div>{% endif %}</div>
+            <div class="mb-3">{{ form.description.label_tag }}{{ form.description }}</div>
+            <div class="mb-3">{{ form.status.label_tag }}{{ form.status }}</div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-allminnesota">Save</button>
+                <a href="{% if plan %}{% url 'allminnesota:plan_detail' plan.pk %}{% else %}{% url 'allminnesota:plan_list' %}{% endif %}" class="btn btn-outline-secondary ms-2">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

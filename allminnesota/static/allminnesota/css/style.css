@@ -1,0 +1,195 @@
+/**
+ * All Minnesota - Operations Dashboard
+ * Color palette: deep greens, warm earth tones, gold accents (honoring indigenous aesthetics)
+ */
+:root {
+    --am-green-dark: #1a3c34;
+    --am-green: #2d5a4a;
+    --am-green-light: #3d7a64;
+    --am-earth: #8b7355;
+    --am-earth-light: #c4a77d;
+    --am-gold: #c9a227;
+    --am-gold-light: #e8c547;
+    --am-cream: #f5f0e8;
+    --am-bg: #f8f6f2;
+    --am-text: #2c2419;
+    --am-text-muted: #5c5348;
+}
+
+.allminnesota-body {
+    background: var(--am-bg);
+    color: var(--am-text);
+    min-height: 100vh;
+}
+
+/* Nav: deep green with gold accents */
+.allminnesota-nav {
+    background: linear-gradient(135deg, var(--am-green-dark) 0%, var(--am-green) 100%) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.allminnesota-nav .navbar-brand {
+    color: var(--am-gold-light) !important;
+    font-weight: 600;
+}
+.allminnesota-nav .nav-link {
+    color: rgba(255,255,255,0.9) !important;
+}
+.allminnesota-nav .nav-link:hover,
+.allminnesota-nav .nav-link.active {
+    color: var(--am-gold-light) !important;
+}
+.text-gold { color: var(--am-gold-light) !important; }
+
+.allminnesota-container {
+    padding: 1.5rem;
+    max-width: 1400px;
+}
+
+/* Cards: earth tones, subtle borders */
+.allminnesota-card {
+    background: #fff;
+    border: 1px solid var(--am-earth-light);
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.allminnesota-card .card-header {
+    background: linear-gradient(to bottom, var(--am-cream), #fff);
+    border-bottom: 1px solid var(--am-earth-light);
+    font-weight: 600;
+    color: var(--am-green-dark);
+}
+
+/* Summary/dashboard cards */
+.dashboard-card {
+    background: #fff;
+    border-radius: 8px;
+    border-left: 4px solid var(--am-green);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.dashboard-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+.dashboard-card .card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #fff;
+}
+.dashboard-card.contacts .card-icon { background: var(--am-green); }
+.dashboard-card.sites .card-icon { background: var(--am-green-light); }
+.dashboard-card.tasks .card-icon { background: var(--am-earth); }
+.dashboard-card.events .card-icon { background: var(--am-gold); }
+
+/* KPI progress bars */
+.kpi-progress {
+    height: 1.5rem;
+    border-radius: 6px;
+    background: var(--am-cream);
+}
+.kpi-progress .progress-bar {
+    background: linear-gradient(90deg, var(--am-green-light), var(--am-green));
+    border-radius: 6px;
+}
+.kpi-progress .progress-bar.bg-warning { background: var(--am-gold); }
+.kpi-progress .progress-bar.bg-success { background: var(--am-green-light); }
+
+/* Buttons */
+.btn-allminnesota {
+    background: var(--am-green);
+    color: #fff;
+    border: none;
+}
+.btn-allminnesota:hover {
+    background: var(--am-green-light);
+    color: #fff;
+}
+.btn-gold {
+    background: var(--am-gold);
+    color: #1a3c34;
+    border: none;
+}
+.btn-gold:hover {
+    background: var(--am-gold-light);
+    color: #1a3c34;
+}
+
+/* Regional map-style view (Twin Cities vs Greater MN) */
+.region-badge {
+    display: inline-block;
+    padding: 0.25rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+.region-twin-cities { background: var(--am-green); color: #fff; }
+.region-greater { background: var(--am-earth); color: #fff; }
+
+/* Kanban columns */
+.kanban-column {
+    min-height: 400px;
+    background: var(--am-cream);
+    border-radius: 8px;
+    border: 1px solid var(--am-earth-light);
+}
+.kanban-column h6 {
+    color: var(--am-green-dark);
+    border-bottom: 2px solid var(--am-gold);
+    padding-bottom: 0.5rem;
+}
+.kanban-card {
+    background: #fff;
+    border-radius: 6px;
+    border-left: 4px solid var(--am-green);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    margin-bottom: 0.75rem;
+}
+.kanban-card.urgent { border-left-color: #c0392b; }
+.kanban-card.high { border-left-color: var(--am-gold); }
+
+/* Overdue task */
+.task-overdue {
+    background: #fff5f5;
+    border-left-color: #c0392b !important;
+}
+
+/* Social post status badges */
+.badge-draft { background: #6c757d; }
+.badge-scheduled { background: var(--am-gold); color: #1a3c34; }
+.badge-published { background: var(--am-green); }
+.badge-archived { background: var(--am-earth); }
+
+/* Tables */
+.table-allminnesota thead th {
+    background: var(--am-green-dark);
+    color: #fff;
+    border: none;
+    font-weight: 600;
+}
+.table-allminnesota tbody tr:hover {
+    background: var(--am-cream);
+}
+
+/* Sidebar / quick links */
+.quick-links a {
+    color: var(--am-green);
+    text-decoration: none;
+}
+.quick-links a:hover {
+    color: var(--am-gold);
+}
+
+/* Activity feed */
+.activity-item {
+    border-left: 3px solid var(--am-earth-light);
+    padding-left: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+.activity-item small {
+    color: var(--am-text-muted);
+}

@@ -1,0 +1,43 @@
+{% extends "allminnesota/base.html" %}
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'allminnesota:social_list' %}">Social Media</a></li>
+        <li class="breadcrumb-item active">{{ post.title }}</li>
+    </ol>
+</nav>
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <h1 class="h2 mb-0" style="color: var(--am-green-dark);">{{ post.title }} <span class="badge badge-{{ post.status|lower }}">{{ post.get_status_display }}</span> <span class="badge bg-secondary">{{ post.get_platform_display }}</span></h1>
+    <a href="{% url 'allminnesota:social_edit' post.pk %}" class="btn btn-allminnesota"><i class="fas fa-edit me-1"></i>Edit</a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card allminnesota-card mb-4">
+            <div class="card-header">Content</div>
+            <div class="card-body">
+                {{ post.content|linebreaks }}
+                {% if post.hashtags %}<p class="text-muted mt-2">{{ post.hashtags }}</p>{% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card allminnesota-card">
+            <div class="card-header">Details</div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-5">Platform</dt><dd class="col-sm-7">{{ post.get_platform_display }}</dd>
+                    <dt class="col-sm-5">Status</dt><dd class="col-sm-7"><span class="badge badge-{{ post.status|lower }}">{{ post.get_status_display }}</span></dd>
+                    <dt class="col-sm-5">Scheduled</dt><dd class="col-sm-7">{{ post.scheduled_date|date:"M j, Y g:i A"|default:"—" }}</dd>
+                    <dt class="col-sm-5">Published</dt><dd class="col-sm-7">{{ post.published_date|date:"M j, Y g:i A"|default:"—" }}</dd>
+                    <dt class="col-sm-5">Created</dt><dd class="col-sm-7">{{ post.created_date|date:"M j, Y" }}{% if post.created_by %} by {{ post.created_by.get_full_name|default:post.created_by.username }}{% endif %}</dd>
+                    {% if post.related_event %}<dt class="col-sm-5">Related event</dt><dd class="col-sm-7">{{ post.related_event }}</dd>{% endif %}
+                </dl>
+                {% if post.notes %}<p class="mb-0 mt-2"><strong>Notes:</strong> {{ post.notes|linebreaks }}</p>{% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

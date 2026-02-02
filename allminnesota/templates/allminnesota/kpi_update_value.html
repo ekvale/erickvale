@@ -1,0 +1,28 @@
+{% extends "allminnesota/base.html" %}
+{% block title %}Update {{ kpi.kpi_name }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'allminnesota:kpi_list' %}">KPIs</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'allminnesota:kpi_detail' kpi.pk %}">{{ kpi.kpi_name }}</a></li>
+        <li class="breadcrumb-item active">Update value</li>
+    </ol>
+</nav>
+<h1 class="h2 mb-4" style="color: var(--am-green-dark);">Update value: {{ kpi.kpi_name }}</h1>
+<p class="text-muted">Current value: <strong>{{ kpi.current_value }} {{ kpi.unit }}</strong>. Target: {{ kpi.target_value }} {{ kpi.unit }}.</p>
+
+<div class="card allminnesota-card" style="max-width: 500px;">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">{{ form.new_value.label_tag }}{{ form.new_value }}{% if form.new_value.errors %}<div class="text-danger small">{{ form.new_value.errors }}</div>{% endif %}</div>
+            <div class="mb-3">{{ form.notes.label_tag }}{{ form.notes }}</div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-allminnesota">Save</button>
+                <a href="{% url 'allminnesota:kpi_detail' kpi.pk %}" class="btn btn-outline-secondary ms-2">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
