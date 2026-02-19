@@ -1,0 +1,118 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Arm Chair Detective{% endblock %} - eric kvale</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --noir-dark: #0d0d0d;
+            --noir-panel: #1a1a1a;
+            --noir-card: #242424;
+            --noir-accent: #8b4513;
+            --noir-text: #e8e4df;
+            --noir-muted: #8a8580;
+        }
+        body {
+            background: var(--noir-dark);
+            color: var(--noir-text);
+            font-family: 'Crimson Pro', Georgia, serif;
+            min-height: 100vh;
+        }
+        .navbar {
+            background: var(--noir-panel) !important;
+            border-bottom: 1px solid var(--noir-accent);
+        }
+        .navbar-brand, .nav-link { color: var(--noir-text) !important; }
+        .nav-link:hover { color: var(--noir-accent) !important; }
+        .card {
+            background: var(--noir-card);
+            border: 1px solid #333;
+            color: var(--noir-text);
+        }
+        .card-header {
+            background: var(--noir-panel);
+            border-bottom: 1px solid #444;
+            font-weight: 600;
+            color: var(--noir-accent);
+        }
+        .clue-type-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            background: var(--noir-accent);
+            color: #fff;
+        }
+        .suspect-table { font-size: 0.95rem; }
+        .suspect-table td { vertical-align: middle; }
+        .filter-select {
+            background: var(--noir-card);
+            color: var(--noir-text);
+            border: 1px solid #444;
+        }
+        .filter-select:focus {
+            background: var(--noir-card);
+            color: var(--noir-text);
+            border-color: var(--noir-accent);
+        }
+        .btn-primary {
+            background: var(--noir-accent);
+            border-color: var(--noir-accent);
+        }
+        .btn-primary:hover {
+            background: #a0522d;
+            border-color: #a0522d;
+        }
+        .alert-success { background: rgba(34, 139, 34, 0.2); border-color: #2e7d32; }
+        .alert-danger { background: rgba(139, 0, 0, 0.2); border-color: #8b0000; }
+        .clue-content {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            background: #0d0d0d;
+            padding: 1rem;
+            border-radius: 4px;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">eric kvale</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'arm_chair_detective:case_list' %}">Cases</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

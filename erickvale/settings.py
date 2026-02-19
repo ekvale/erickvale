@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'fraud_detection',
     'human_rights_archive',
     'allminnesota',
+    'arm_chair_detective',
 ]
 
 MIDDLEWARE = [

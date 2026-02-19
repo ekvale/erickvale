@@ -1,0 +1,52 @@
+{% extends 'arm_chair_detective/base.html' %}
+{% block title %}Open Cases{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4" style="color: var(--noir-accent);">Arm Chair Detective</h1>
+        <p class="lead text-muted">
+            Review evidence, analyze witness statements and 911 calls, examine surveillance footage.
+            Use filters to narrow down the suspect list until you identify the perpetrator.
+        </p>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-4">
+        <form method="get" class="d-flex gap-2">
+            <select name="difficulty" class="form-select filter-select" style="max-width: 180px;">
+                <option value="">All difficulties</option>
+                <option value="easy" {% if difficulty_filter == 'easy' %}selected{% endif %}>Easy</option>
+                <option value="medium" {% if difficulty_filter == 'medium' %}selected{% endif %}>Medium</option>
+                <option value="hard" {% if difficulty_filter == 'hard' %}selected{% endif %}>Hard</option>
+            </select>
+            <button type="submit" class="btn btn-outline-secondary">Filter</button>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    {% for case in cases %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <span class="badge bg-secondary mb-2">{{ case.get_difficulty_display }}</span>
+                <h5 class="card-title">{{ case.title }}</h5>
+                <p class="card-text text-muted small">{{ case.description|truncatewords:25 }}</p>
+                <a href="{% url 'arm_chair_detective:case_play' case.pk %}" class="btn btn-primary">Open Case</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center text-muted py-5">
+                <p class="mb-0">No cases on file. Create a sample case:</p>
+                <code class="d-block mt-2">python manage.py create_sample_case</code>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

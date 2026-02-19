@@ -1,0 +1,215 @@
+{% extends 'arm_chair_detective/base.html' %}
+{% load humanize %}
+
+{% block title %}{{ case.title }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <a href="{% url 'arm_chair_detective:case_list' %}" class="text-muted text-decoration-none">&larr; Back to Cases</a>
+        <h1 class="mt-2" style="color: var(--noir-accent);">{{ case.title }}</h1>
+        <p class="text-muted">{{ case.description }}</p>
+        <span class="badge bg-secondary">{{ case.get_difficulty_display }}</span>
+        <a href="{% url 'arm_chair_detective:reset_case' case.pk %}" class="btn btn-outline-secondary btn-sm ms-2">Reset Progress</a>
+    </div>
+</div>
+
+{% if game_over and last_correct %}
+<div class="alert alert-success mb-4">Case closed. You identified the perpetrator correctly.</div>
+{% elif game_over and last_correct == False %}
+<div class="alert alert-danger mb-4">Wrong suspect. The perpetrator is still at large. Reset to try again.</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-lg-5 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Evidence & Clues</span>
+                <span class="badge bg-dark">{{ clues_revealed }}/{{ clues_total }}</span>
+            </div>
+            <div class="card-body">
+                {% if not clues %}
+                    <p class="text-muted mb-3">No clues revealed yet. Reveal the first clue to begin your investigation.</p>
+                {% else %}
+                    {% for clue in clues %}
+                    <div class="mb-4">
+                        <span class="clue-type-badge badge rounded-pill mb-2">{{ clue.get_clue_type_display }}</span>
+                        <h6>{{ clue.title }}</h6>
+                        <div class="clue-content">{{ clue.content }}</div>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+                {% if can_reveal_more and not game_over %}
+                <a href="?reveal=next" class="btn btn-primary">Reveal Next Clue</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">Filters</div>
+            <div class="card-body">
+                <form method="post" action="{% url 'arm_chair_detective:apply_filter' case.pk %}">
+                    {% csrf_token %}
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label small text-muted">Gender</label>
+                            <select name="gender" class="form-select form-select-sm filter-select">
+                                <option value="">—</option>
+                                <option value="M" {% if current_filters.gender == 'M' %}selected{% endif %}>Male</option>
+                                <option value="F" {% if current_filters.gender == 'F' %}selected{% endif %}>Female</option>
+                                <option value="O" {% if current_filters.gender == 'O' %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small text-muted">Age</label>
+                            <select name="age_range" class="form-select form-select-sm filter-select">
+                                <option value="">—</option>
+                                <option value="teens" {% if current_filters.age_range == 'teens' %}selected{% endif %}>Teens</option>
+                                <option value="twenties" {% if current_filters.age_range == 'twenties' %}selected{% endif %}>20s</option>
+                                <option value="thirties" {% if current_filters.age_range == 'thirties' %}selected{% endif %}>30s</option>
+                                <option value="forties" {% if current_filters.age_range == 'forties' %}selected{% endif %}>40s</option>
+                                <option value="fifties" {% if current_filters.age_range == 'fifties' %}selected{% endif %}>50s</option>
+                                <option value="sixties_plus" {% if current_filters.age_range == 'sixties_plus' %}selected{% endif %}>60+</option>
+                                <option value="unknown" {% if current_filters.age_range == 'unknown' %}selected{% endif %}>Unknown</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small text-muted">Hair</label>
+                            <select name="hair_color" class="form-select form-select-sm filter-select">
+                                <option value="">—</option>
+                                <option value="black" {% if current_filters.hair_color == 'black' %}selected{% endif %}>Black</option>
+                                <option value="brown" {% if current_filters.hair_color == 'brown' %}selected{% endif %}>Brown</option>
+                                <option value="blonde" {% if current_filters.hair_color == 'blonde' %}selected{% endif %}>Blonde</option>
+                                <option value="red" {% if current_filters.hair_color == 'red' %}selected{% endif %}>Red</option>
+                                <option value="gray" {% if current_filters.hair_color == 'gray' %}selected{% endif %}>Gray</option>
+                                <option value="bald" {% if current_filters.hair_color == 'bald' %}selected{% endif %}>Bald</option>
+                                <option value="dyed" {% if current_filters.hair_color == 'dyed' %}selected{% endif %}>Dyed</option>
+                                <option value="unknown" {% if current_filters.hair_color == 'unknown' %}selected{% endif %}>Unknown</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small text-muted">Vehicle Type</label>
+                            <select name="vehicle_type" class="form-select form-select-sm filter-select">
+                                <option value="">—</option>
+                                <option value="sedan" {% if current_filters.vehicle_type == 'sedan' %}selected{% endif %}>Sedan</option>
+                                <option value="suv" {% if current_filters.vehicle_type == 'suv' %}selected{% endif %}>SUV</option>
+                                <option value="pickup" {% if current_filters.vehicle_type == 'pickup' %}selected{% endif %}>Pickup</option>
+                                <option value="van" {% if current_filters.vehicle_type == 'van' %}selected{% endif %}>Van</option>
+                                <option value="coupe" {% if current_filters.vehicle_type == 'coupe' %}selected{% endif %}>Coupe</option>
+                                <option value="hatchback" {% if current_filters.vehicle_type == 'hatchback' %}selected{% endif %}>Hatchback</option>
+                                <option value="motorcycle" {% if current_filters.vehicle_type == 'motorcycle' %}selected{% endif %}>Motorcycle</option>
+                                <option value="none" {% if current_filters.vehicle_type == 'none' %}selected{% endif %}>On foot</option>
+                                <option value="unknown" {% if current_filters.vehicle_type == 'unknown' %}selected{% endif %}>Unknown</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small text-muted">Vehicle Color</label>
+                            <select name="vehicle_color" class="form-select form-select-sm filter-select">
+                                <option value="">—</option>
+                                <option value="white" {% if current_filters.vehicle_color == 'white' %}selected{% endif %}>White</option>
+                                <option value="black" {% if current_filters.vehicle_color == 'black' %}selected{% endif %}>Black</option>
+                                <option value="silver" {% if current_filters.vehicle_color == 'silver' %}selected{% endif %}>Silver</option>
+                                <option value="red" {% if current_filters.vehicle_color == 'red' %}selected{% endif %}>Red</option>
+                                <option value="blue" {% if current_filters.vehicle_color == 'blue' %}selected{% endif %}>Blue</option>
+                                <option value="green" {% if current_filters.vehicle_color == 'green' %}selected{% endif %}>Green</option>
+                                <option value="brown" {% if current_filters.vehicle_color == 'brown' %}selected{% endif %}>Brown</option>
+                                <option value="gold" {% if current_filters.vehicle_color == 'gold' %}selected{% endif %}>Gold</option>
+                                <option value="unknown" {% if current_filters.vehicle_color == 'unknown' %}selected{% endif %}>Unknown</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small text-muted">Build</label>
+                            <select name="build" class="form-select form-select-sm filter-select">
+                                <option value="">—</option>
+                                <option value="slim" {% if current_filters.build == 'slim' %}selected{% endif %}>Slim</option>
+                                <option value="average" {% if current_filters.build == 'average' %}selected{% endif %}>Average</option>
+                                <option value="athletic" {% if current_filters.build == 'athletic' %}selected{% endif %}>Athletic</option>
+                                <option value="heavy" {% if current_filters.build == 'heavy' %}selected{% endif %}>Heavy</option>
+                                <option value="obese" {% if current_filters.build == 'obese' %}selected{% endif %}>Obese</option>
+                                <option value="unknown" {% if current_filters.build == 'unknown' %}selected{% endif %}>Unknown</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small text-muted">Height</label>
+                            <select name="height_range" class="form-select form-select-sm filter-select">
+                                <option value="">—</option>
+                                <option value="short" {% if current_filters.height_range == 'short' %}selected{% endif %}>Under 5'6"</option>
+                                <option value="medium" {% if current_filters.height_range == 'medium' %}selected{% endif %}>5'6"-5'11"</option>
+                                <option value="tall" {% if current_filters.height_range == 'tall' %}selected{% endif %}>6'-6'4"</option>
+                                <option value="very_tall" {% if current_filters.height_range == 'very_tall' %}selected{% endif %}>Over 6'4"</option>
+                                <option value="unknown" {% if current_filters.height_range == 'unknown' %}selected{% endif %}>Unknown</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm mt-3">Apply Filters</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Suspect List</span>
+                <span class="badge bg-dark">{{ suspect_count|intcomma }} remaining</span>
+            </div>
+            <div class="card-body">
+                {% if suspect_count == 0 %}
+                    <p class="text-muted mb-0">No suspects match your filters. Broaden your criteria.</p>
+                {% else %}
+                    <p class="text-muted small mb-3">Use clues and filters to narrow the list. When you're confident, submit your guess.</p>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover suspect-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Gender</th>
+                                    <th>Age</th>
+                                    <th>Hair</th>
+                                    <th>Vehicle</th>
+                                    {% if not game_over %}
+                                    <th></th>
+                                    {% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for suspect in page_obj %}
+                                <tr>
+                                    <td>{{ suspect.full_name }}</td>
+                                    <td>{{ suspect.get_gender_display }}</td>
+                                    <td>{{ suspect.get_age_range_display|truncatewords:1 }}</td>
+                                    <td>{{ suspect.get_hair_color_display }}</td>
+                                    <td>{{ suspect.get_vehicle_color_display }} {{ suspect.get_vehicle_type_display }}</td>
+                                    {% if not game_over %}
+                                    <td>
+                                        <form method="post" action="{% url 'arm_chair_detective:submit_guess' case.pk %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="suspect_id" value="{{ suspect.pk }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">Accuse</button>
+                                        </form>
+                                    </td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if page_obj.has_other_pages %}
+                    <nav>
+                        <ul class="pagination pagination-sm justify-content-center">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Prev</a></li>
+                            {% endif %}
+                            <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                            {% if page_obj.has_next %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

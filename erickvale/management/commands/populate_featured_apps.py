@@ -107,6 +107,31 @@ class Command(BaseCommand):
             self.style.SUCCESS(f'{"Created" if created else "Updated"} Blog')
         )
 
+        # Create or update Arm Chair Detective
+        detective_app, created = FeaturedApp.objects.update_or_create(
+            slug='arm-chair-detective',
+            defaults={
+                'name': 'Arm Chair Detective',
+                'description': 'Realistic detective investigation game. Start with a huge suspect pool, receive clues from eyewitness accounts, 911 calls, and video analysis, then use filters to narrow down until you identify the perpetrator.',
+                'icon': '🔍',
+                'url': '/apps/arm-chair-detective/',
+                'features': [
+                    'Large suspect pools (100K–1M+)',
+                    'Eyewitness accounts and 911 call transcripts',
+                    'Video footage analysis',
+                    'Filter suspects by physical and vehicle attributes',
+                    'Mimics real detective workflows',
+                ],
+                'month': 'February 2025',
+                'is_current_month': False,
+                'is_published': True,
+                'order': 5,
+            }
+        )
+        self.stdout.write(
+            self.style.SUCCESS(f'{"Created" if created else "Updated"} Arm Chair Detective')
+        )
+
         self.stdout.write(
             self.style.SUCCESS('Successfully populated featured apps!')
         )
