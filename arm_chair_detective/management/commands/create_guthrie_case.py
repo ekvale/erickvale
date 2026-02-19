@@ -51,7 +51,7 @@ Footage recovered despite device tampering. Subject observed:
 
 FORENSIC ESTIMATES (gait, proportions, frame):
 • Estimated build: {perpetrator.get_build_display()}
-• Estimated height range: {perpetrator.get_height_range_display()}
+• Estimated height: 5'9" - 5'10" (average range)
 • Gender: {perpetrator.get_gender_display()}"""
 
     clues_data.append({
@@ -61,7 +61,7 @@ FORENSIC ESTIMATES (gait, proportions, frame):
         'order': 2,
         'filter_hints': {
             'build': perpetrator.build,
-            'height_range': perpetrator.height_range,
+            'height_range': 'medium',  # 5'9"-5'10" falls in medium (5'6"-5'11")
             'gender': perpetrator.gender,
         },
     })
@@ -155,7 +155,10 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.ERROR(f'Suspect PK {options["perpetrator_id"]} not found.'))
                 return
         else:
-            perpetrator = Suspect.objects.order_by('?').first()
+            # Perpetrator must be 5'9"-5'10" (height_range medium = 5'6"-5'11")
+            perpetrator = Suspect.objects.filter(height_range='medium').order_by('?').first()
+            if not perpetrator:
+                perpetrator = Suspect.objects.order_by('?').first()
             if not perpetrator:
                 self.stdout.write(self.style.ERROR(
                     'No suspects in database. Run: python manage.py generate_suspects --count 10000'

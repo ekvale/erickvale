@@ -48,6 +48,7 @@
         <div class="card mt-3">
             <div class="card-header">Filters</div>
             <div class="card-body">
+                <p class="text-muted small mb-3">Apply filters based on the clues above. Click &ldquo;Apply Filters&rdquo; to narrow the suspect list.</p>
                 <form method="post" action="{% url 'arm_chair_detective:apply_filter' case.pk %}">
                     {% csrf_token %}
                     <div class="row g-2">

@@ -35,17 +35,10 @@ def case_play(request, pk):
     current_filters = session_data.get('filters', {})
     game_over = session_data.get('game_over', False)
     
-    # Reveal one more clue on demand
+    # Reveal one more clue on demand (filters are NOT auto-applied; user applies them manually)
     if request.GET.get('reveal') == 'next' and clues_revealed < clues.count():
         clues_revealed += 1
-        # Merge new clue's filter_hints into current_filters
-        if clues_revealed > 0:
-            clue = clues[clues_revealed - 1]
-            for k, v in (clue.filter_hints or {}).items():
-                if v and (k not in current_filters or current_filters[k] != v):
-                    current_filters[k] = v
         session_data['clues_revealed'] = clues_revealed
-        session_data['filters'] = current_filters
         request.session[session_key] = session_data
         request.session.modified = True
         return redirect('arm_chair_detective:case_play', pk=pk)
