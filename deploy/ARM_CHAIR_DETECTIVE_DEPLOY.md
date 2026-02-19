@@ -44,6 +44,12 @@ source /home/erickvale/venv/bin/activate
 python manage.py migrate arm_chair_detective
 ```
 
+### 5b. Backfill occupation (if you have existing suspects from before occupation was added)
+
+```bash
+python manage.py backfill_occupations
+```
+
 Or run all migrations:
 
 ```bash

@@ -28,19 +28,36 @@ def case_play(request, pk):
     case = get_object_or_404(Case.objects.select_related('perpetrator').prefetch_related('clues'), pk=pk)
     clues = case.clues.all().order_by('order')
     
-    # Session or GET params for revealed clues count and active filters
+    # Session: revealed clues count, filters, case time (for timeline pressure)
     session_key = f'detective_case_{pk}'
     session_data = request.session.get(session_key, {})
     clues_revealed = session_data.get('clues_revealed', 0)
     current_filters = session_data.get('filters', {})
     game_over = session_data.get('game_over', False)
+    case_hours_elapsed = session_data.get('case_hours_elapsed', 0)
+    
+    # Advance time (timeline pressure)
+    if request.GET.get('advance') == 'time':
+        case_hours_elapsed = min(case_hours_elapsed + 12, 72)  # cap at 72h
+        session_data['case_hours_elapsed'] = case_hours_elapsed
+        request.session[session_key] = session_data
+        request.session.modified = True
+        messages.info(request, f'Time advanced. Case timeline: {case_hours_elapsed} hours since incident.')
+        return redirect('arm_chair_detective:case_play', pk=pk)
     
     # Reveal one more clue on demand (filters are NOT auto-applied; user applies them manually)
     if request.GET.get('reveal') == 'next' and clues_revealed < clues.count():
-        clues_revealed += 1
-        session_data['clues_revealed'] = clues_revealed
-        request.session[session_key] = session_data
-        request.session.modified = True
+        ordered_clues = list(clues)
+        next_clue = ordered_clues[clues_revealed] if clues_revealed < len(ordered_clues) else None
+        if next_clue and next_clue.unlock_after_hours is not None and case_hours_elapsed < next_clue.unlock_after_hours:
+            hours_needed = next_clue.unlock_after_hours - case_hours_elapsed
+            messages.warning(request, f'This clue is not yet available. Advance time by {hours_needed}+ hours.')
+        else:
+            clues_revealed += 1
+            session_data['clues_revealed'] = clues_revealed
+            request.session[session_key] = session_data
+            request.session.modified = True
+            messages.success(request, 'New clue revealed.')
         return redirect('arm_chair_detective:case_play', pk=pk)
     
     # Build suspect queryset with filters
@@ -56,7 +73,19 @@ def case_play(request, pk):
     page = request.GET.get('page', 1)
     page_obj = paginator.get_page(page)
     
-    visible_clues = list(clues[:clues_revealed])
+    ordered_clues = list(clues)
+    visible_clues = ordered_clues[:clues_revealed]
+    next_clue = ordered_clues[clues_revealed] if clues_revealed < len(ordered_clues) else None
+    next_clue_blocked = (
+        next_clue is not None
+        and next_clue.unlock_after_hours is not None
+        and case_hours_elapsed < next_clue.unlock_after_hours
+    )
+    next_clue_hours_needed = (
+        (next_clue.unlock_after_hours - case_hours_elapsed)
+        if next_clue_blocked and next_clue
+        else 0
+    )
     
     last_correct = session_data.get('correct')
     
@@ -66,6 +95,9 @@ def case_play(request, pk):
         'clues_total': clues.count(),
         'clues_revealed': clues_revealed,
         'can_reveal_more': clues_revealed < clues.count(),
+        'next_clue_blocked': next_clue_blocked,
+        'next_clue_hours_needed': next_clue_hours_needed,
+        'case_hours_elapsed': case_hours_elapsed,
         'page_obj': page_obj,
         'suspect_count': suspect_count,
         'current_filters': current_filters,
@@ -85,7 +117,7 @@ def apply_filter(request, pk):
     
     filter_fields = [
         'gender', 'hair_color', 'eye_color', 'skin_tone',
-        'build', 'accent_region', 'vehicle_type', 'vehicle_color',
+        'build', 'accent_region', 'vehicle_type', 'vehicle_color', 'occupation',
     ]
     for field in filter_fields:
         val = request.POST.get(field, '').strip()
@@ -154,6 +186,20 @@ def submit_guess(request, pk):
     return redirect('arm_chair_detective:case_play', pk=pk)
 
 
+def advance_time(request, pk):
+    """Advance case timeline by 12 hours (for unlocking time-gated clues)."""
+    case = get_object_or_404(Case, pk=pk)
+    session_key = f'detective_case_{pk}'
+    session_data = request.session.get(session_key, {})
+    case_hours_elapsed = session_data.get('case_hours_elapsed', 0)
+    case_hours_elapsed = min(case_hours_elapsed + 12, 72)
+    session_data['case_hours_elapsed'] = case_hours_elapsed
+    request.session[session_key] = session_data
+    request.session.modified = True
+    messages.info(request, f'Time advanced. Case timeline: {case_hours_elapsed} hours since incident.')
+    return redirect('arm_chair_detective:case_play', pk=pk)
+
+
 def reset_case(request, pk):
     """Reset progress for a case (start over)."""
     session_key = f'detective_case_{pk}'
@@ -175,7 +221,7 @@ def suspect_count_api(request, pk):
     # Merge any GET params as additional filters
     filter_fields = [
         'gender', 'age_range', 'hair_color', 'eye_color', 'skin_tone',
-        'build', 'height_range', 'accent_region', 'vehicle_type', 'vehicle_color',
+        'build', 'height_range', 'accent_region', 'vehicle_type', 'vehicle_color', 'occupation',
     ]
     for field in filter_fields:
         val = request.GET.get(field, '').strip()

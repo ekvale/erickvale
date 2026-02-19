@@ -103,6 +103,15 @@ class SuspectAttributeChoices:
         ('sixties_plus', '60+'),
         ('unknown', 'Unknown'),
     ]
+    OCCUPATIONS = [
+        ('delivery_driver', 'Delivery/Courier Driver'),
+        ('retail', 'Retail/Service'),
+        ('construction', 'Construction/Trades'),
+        ('office', 'Office/Professional'),
+        ('healthcare', 'Healthcare'),
+        ('unemployed', 'Unemployed'),
+        ('unknown', 'Unknown'),
+    ]
 
 
 class Suspect(models.Model):
@@ -131,6 +140,12 @@ class Suspect(models.Model):
     
     # Optional distinguishing features (free text - used in search, not strict filter)
     distinguishing_features = models.TextField(blank=True)
+    occupation = models.CharField(
+        max_length=20,
+        choices=SuspectAttributeChoices.OCCUPATIONS,
+        default='unknown',
+        db_index=True,
+    )
     
     created_at = models.DateTimeField(auto_now_add=True)
     
@@ -194,6 +209,13 @@ class Clue(models.Model):
         ('physical_evidence', 'Physical Evidence Report'),
         ('witness_statement', 'Additional Witness Statement'),
         ('surveillance', 'Surveillance Summary'),
+        ('license_plate', 'License Plate Fragment'),
+        ('cell_tower', 'Cell Tower / Location Data'),
+        ('financial', 'Financial Records'),
+        ('social_media', 'Social Media / Digital Footprint'),
+        ('employer_records', 'Employer / Employment Records'),
+        ('statement_analysis', 'Statement / Linguistic Analysis'),
+        ('audio_transcript', 'Audio Transcript'),
     ]
     
     case = models.ForeignKey(Case, on_delete=models.CASCADE, related_name='clues')
@@ -210,6 +232,11 @@ class Clue(models.Model):
         default=dict,
         blank=True,
         help_text="Attributes this clue implies for filtering suspects"
+    )
+    unlock_after_hours = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Clue only becomes available after this many hours into the case (timeline pressure)"
     )
     created_at = models.DateTimeField(auto_now_add=True)
     

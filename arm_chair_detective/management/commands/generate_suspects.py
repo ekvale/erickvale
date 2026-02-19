@@ -66,6 +66,7 @@ def create_suspect(seed=None):
         accent_region=_pick(SuspectAttributeChoices.ACCENT_REGIONS),
         vehicle_type=_pick(SuspectAttributeChoices.VEHICLE_TYPES),
         vehicle_color=_pick(SuspectAttributeChoices.VEHICLE_COLORS),
+        occupation=_pick(SuspectAttributeChoices.OCCUPATIONS),
     )
 
 

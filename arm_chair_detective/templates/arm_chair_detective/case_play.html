@@ -23,9 +23,12 @@
 <div class="row">
     <div class="col-lg-5 mb-4">
         <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-1">
                 <span>Evidence & Clues</span>
-                <span class="badge bg-dark">{{ clues_revealed }}/{{ clues_total }}</span>
+                <span>
+                    <span class="badge bg-dark me-1">{{ clues_revealed }}/{{ clues_total }}</span>
+                    <span class="badge bg-secondary" title="Case timeline">{{ case_hours_elapsed|default:0 }}h</span>
+                </span>
             </div>
             <div class="card-body">
                 {% if not clues %}
@@ -40,7 +43,12 @@
                     {% endfor %}
                 {% endif %}
                 {% if can_reveal_more and not game_over %}
-                <a href="?reveal=next" class="btn btn-primary">Reveal Next Clue</a>
+                    {% if next_clue_blocked %}
+                    <p class="text-muted small mb-2">Next clue available in {{ next_clue_hours_needed }}+ hours.</p>
+                    <a href="{% url 'arm_chair_detective:advance_time' case.pk %}" class="btn btn-outline-secondary">Advance Time (+12 hours)</a>
+                    {% else %}
+                    <a href="?reveal=next" class="btn btn-primary">Reveal Next Clue</a>
+                    {% endif %}
                 {% endif %}
             </div>
         </div>
@@ -142,6 +150,19 @@
                                 <option value="unknown" {% if current_filters.build == 'unknown' %}selected{% endif %}>Unknown</option>
                             </select>
                         </div>
+                        <div class="col-6">
+                            <label class="form-label filter-label">Occupation</label>
+                            <select name="occupation" class="form-select form-select-sm filter-select">
+                                <option value="">—</option>
+                                <option value="delivery_driver" {% if current_filters.occupation == 'delivery_driver' %}selected{% endif %}>Delivery/Courier</option>
+                                <option value="retail" {% if current_filters.occupation == 'retail' %}selected{% endif %}>Retail/Service</option>
+                                <option value="construction" {% if current_filters.occupation == 'construction' %}selected{% endif %}>Construction</option>
+                                <option value="office" {% if current_filters.occupation == 'office' %}selected{% endif %}>Office</option>
+                                <option value="healthcare" {% if current_filters.occupation == 'healthcare' %}selected{% endif %}>Healthcare</option>
+                                <option value="unemployed" {% if current_filters.occupation == 'unemployed' %}selected{% endif %}>Unemployed</option>
+                                <option value="unknown" {% if current_filters.occupation == 'unknown' %}selected{% endif %}>Unknown</option>
+                            </select>
+                        </div>
                         <div class="col-12">
                             <label class="form-label filter-label">Height</label>
                             <input type="range" name="height_slider" class="form-range" min="0" max="4" value="{% if current_filters.height_range == 'short' %}1{% elif current_filters.height_range == 'medium' %}2{% elif current_filters.height_range == 'tall' %}3{% elif current_filters.height_range == 'very_tall' %}4{% else %}0{% endif %}">
@@ -180,6 +201,7 @@
                                     <th>Age</th>
                                     <th>Hair</th>
                                     <th>Eyes</th>
+                                    <th>Occupation</th>
                                     <th>Vehicle</th>
                                     {% if not game_over %}
                                     <th></th>
@@ -194,6 +216,7 @@
                                     <td>{{ suspect.get_age_range_display|truncatewords:1 }}</td>
                                     <td>{{ suspect.get_hair_color_display }}</td>
                                     <td>{{ suspect.get_eye_color_display }}</td>
+                                    <td>{{ suspect.get_occupation_display }}</td>
                                     <td>{{ suspect.get_vehicle_color_display }} {{ suspect.get_vehicle_type_display }}</td>
                                     {% if not game_over %}
                                     <td>

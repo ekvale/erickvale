@@ -32,5 +32,14 @@ A realistic detective investigation game for the erickvale Django project. Playe
 - **Eyewitness Account** – physical description (hair, eyes, build, height)
 - **911 Call Transcript** – gender, vehicle, accent
 - **Video Footage Analysis** – comprehensive physical + vehicle details
+- **License Plate Fragment** – partial plate + vehicle
+- **Cell Tower / Location Data** – movement patterns, occupation hints
+- **Financial Records** – transactions, vehicle cross-ref
+- **Social Media / Digital Footprint** – accent, regional markers
+- **Employer / Employment Records** – occupation
+- **Statement / Linguistic Analysis** – accent, hedging, reliability
+- **Audio Transcript** – 911/voicemail with accent, tone, hesitations
 
-Clues are auto-generated from the perpetrator's attributes. Add custom clue types in `models.Clue.CLUE_TYPES` and extend `create_sample_case.build_clues_for_perpetrator()`.
+## Timeline Pressure
+
+Clues can have `unlock_after_hours` – they only become available after advancing the case timeline. Use "Advance Time (+12 hours)" to unlock time-gated clues.
