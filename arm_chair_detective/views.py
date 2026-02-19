@@ -91,8 +91,8 @@ def apply_filter(request, pk):
     current_filters = dict(session_data.get('filters', {}))
     
     filter_fields = [
-        'gender', 'age_range', 'hair_color', 'eye_color', 'skin_tone',
-        'build', 'height_range', 'accent_region', 'vehicle_type', 'vehicle_color',
+        'gender', 'hair_color', 'eye_color', 'skin_tone',
+        'build', 'accent_region', 'vehicle_type', 'vehicle_color',
     ]
     for field in filter_fields:
         val = request.POST.get(field, '').strip()
@@ -100,6 +100,26 @@ def apply_filter(request, pk):
             current_filters[field] = val
         elif field in current_filters:
             del current_filters[field]
+    
+    # Map age slider (0=any, 1=teens..6=sixties_plus)
+    age_map = ['', 'teens', 'twenties', 'thirties', 'forties', 'fifties', 'sixties_plus']
+    age_slider = request.POST.get('age_slider', '')
+    if age_slider.isdigit():
+        idx = int(age_slider)
+        if 0 < idx < len(age_map):
+            current_filters['age_range'] = age_map[idx]
+        elif idx == 0 and 'age_range' in current_filters:
+            del current_filters['age_range']
+    
+    # Map height slider (0=any, 1=short..4=very_tall)
+    height_map = ['', 'short', 'medium', 'tall', 'very_tall']
+    height_slider = request.POST.get('height_slider', '')
+    if height_slider.isdigit():
+        idx = int(height_slider)
+        if 0 < idx < len(height_map):
+            current_filters['height_range'] = height_map[idx]
+        elif idx == 0 and 'height_range' in current_filters:
+            del current_filters['height_range']
     
     session_data['filters'] = current_filters
     request.session[session_key] = session_data

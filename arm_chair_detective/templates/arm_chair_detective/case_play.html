@@ -52,7 +52,7 @@
                     {% csrf_token %}
                     <div class="row g-2">
                         <div class="col-6">
-                            <label class="form-label small text-muted">Gender</label>
+                            <label class="form-label filter-label">Gender</label>
                             <select name="gender" class="form-select form-select-sm filter-select">
                                 <option value="">—</option>
                                 <option value="M" {% if current_filters.gender == 'M' %}selected{% endif %}>Male</option>
@@ -60,21 +60,21 @@
                                 <option value="O" {% if current_filters.gender == 'O' %}selected{% endif %}>Other</option>
                             </select>
                         </div>
-                        <div class="col-6">
-                            <label class="form-label small text-muted">Age</label>
-                            <select name="age_range" class="form-select form-select-sm filter-select">
-                                <option value="">—</option>
-                                <option value="teens" {% if current_filters.age_range == 'teens' %}selected{% endif %}>Teens</option>
-                                <option value="twenties" {% if current_filters.age_range == 'twenties' %}selected{% endif %}>20s</option>
-                                <option value="thirties" {% if current_filters.age_range == 'thirties' %}selected{% endif %}>30s</option>
-                                <option value="forties" {% if current_filters.age_range == 'forties' %}selected{% endif %}>40s</option>
-                                <option value="fifties" {% if current_filters.age_range == 'fifties' %}selected{% endif %}>50s</option>
-                                <option value="sixties_plus" {% if current_filters.age_range == 'sixties_plus' %}selected{% endif %}>60+</option>
-                                <option value="unknown" {% if current_filters.age_range == 'unknown' %}selected{% endif %}>Unknown</option>
-                            </select>
+                        <div class="col-12">
+                            <label class="form-label filter-label">Age</label>
+                            <input type="range" name="age_slider" class="form-range" min="0" max="6" value="{% if current_filters.age_range == 'teens' %}1{% elif current_filters.age_range == 'twenties' %}2{% elif current_filters.age_range == 'thirties' %}3{% elif current_filters.age_range == 'forties' %}4{% elif current_filters.age_range == 'fifties' %}5{% elif current_filters.age_range == 'sixties_plus' %}6{% else %}0{% endif %}">
+                            <div class="slider-labels">
+                                <span>Any</span>
+                                <span>Teens</span>
+                                <span>20s</span>
+                                <span>30s</span>
+                                <span>40s</span>
+                                <span>50s</span>
+                                <span>60+</span>
+                            </div>
                         </div>
                         <div class="col-6">
-                            <label class="form-label small text-muted">Hair</label>
+                            <label class="form-label filter-label">Hair</label>
                             <select name="hair_color" class="form-select form-select-sm filter-select">
                                 <option value="">—</option>
                                 <option value="black" {% if current_filters.hair_color == 'black' %}selected{% endif %}>Black</option>
@@ -88,7 +88,19 @@
                             </select>
                         </div>
                         <div class="col-6">
-                            <label class="form-label small text-muted">Vehicle Type</label>
+                            <label class="form-label filter-label">Eye Color</label>
+                            <select name="eye_color" class="form-select form-select-sm filter-select">
+                                <option value="">—</option>
+                                <option value="brown" {% if current_filters.eye_color == 'brown' %}selected{% endif %}>Brown</option>
+                                <option value="blue" {% if current_filters.eye_color == 'blue' %}selected{% endif %}>Blue</option>
+                                <option value="green" {% if current_filters.eye_color == 'green' %}selected{% endif %}>Green</option>
+                                <option value="hazel" {% if current_filters.eye_color == 'hazel' %}selected{% endif %}>Hazel</option>
+                                <option value="gray" {% if current_filters.eye_color == 'gray' %}selected{% endif %}>Gray</option>
+                                <option value="unknown" {% if current_filters.eye_color == 'unknown' %}selected{% endif %}>Unknown</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label filter-label">Vehicle Type</label>
                             <select name="vehicle_type" class="form-select form-select-sm filter-select">
                                 <option value="">—</option>
                                 <option value="sedan" {% if current_filters.vehicle_type == 'sedan' %}selected{% endif %}>Sedan</option>
@@ -103,7 +115,7 @@
                             </select>
                         </div>
                         <div class="col-6">
-                            <label class="form-label small text-muted">Vehicle Color</label>
+                            <label class="form-label filter-label">Vehicle Color</label>
                             <select name="vehicle_color" class="form-select form-select-sm filter-select">
                                 <option value="">—</option>
                                 <option value="white" {% if current_filters.vehicle_color == 'white' %}selected{% endif %}>White</option>
@@ -118,7 +130,7 @@
                             </select>
                         </div>
                         <div class="col-6">
-                            <label class="form-label small text-muted">Build</label>
+                            <label class="form-label filter-label">Build</label>
                             <select name="build" class="form-select form-select-sm filter-select">
                                 <option value="">—</option>
                                 <option value="slim" {% if current_filters.build == 'slim' %}selected{% endif %}>Slim</option>
@@ -129,16 +141,16 @@
                                 <option value="unknown" {% if current_filters.build == 'unknown' %}selected{% endif %}>Unknown</option>
                             </select>
                         </div>
-                        <div class="col-6">
-                            <label class="form-label small text-muted">Height</label>
-                            <select name="height_range" class="form-select form-select-sm filter-select">
-                                <option value="">—</option>
-                                <option value="short" {% if current_filters.height_range == 'short' %}selected{% endif %}>Under 5'6"</option>
-                                <option value="medium" {% if current_filters.height_range == 'medium' %}selected{% endif %}>5'6"-5'11"</option>
-                                <option value="tall" {% if current_filters.height_range == 'tall' %}selected{% endif %}>6'-6'4"</option>
-                                <option value="very_tall" {% if current_filters.height_range == 'very_tall' %}selected{% endif %}>Over 6'4"</option>
-                                <option value="unknown" {% if current_filters.height_range == 'unknown' %}selected{% endif %}>Unknown</option>
-                            </select>
+                        <div class="col-12">
+                            <label class="form-label filter-label">Height</label>
+                            <input type="range" name="height_slider" class="form-range" min="0" max="4" value="{% if current_filters.height_range == 'short' %}1{% elif current_filters.height_range == 'medium' %}2{% elif current_filters.height_range == 'tall' %}3{% elif current_filters.height_range == 'very_tall' %}4{% else %}0{% endif %}">
+                            <div class="slider-labels">
+                                <span>Any</span>
+                                <span>&lt;5'6"</span>
+                                <span>5'6"-5'11"</span>
+                                <span>6'-6'4"</span>
+                                <span>&gt;6'4"</span>
+                            </div>
                         </div>
                     </div>
                     <button type="submit" class="btn btn-primary btn-sm mt-3">Apply Filters</button>
@@ -166,6 +178,7 @@
                                     <th>Gender</th>
                                     <th>Age</th>
                                     <th>Hair</th>
+                                    <th>Eyes</th>
                                     <th>Vehicle</th>
                                     {% if not game_over %}
                                     <th></th>
@@ -179,6 +192,7 @@
                                     <td>{{ suspect.get_gender_display }}</td>
                                     <td>{{ suspect.get_age_range_display|truncatewords:1 }}</td>
                                     <td>{{ suspect.get_hair_color_display }}</td>
+                                    <td>{{ suspect.get_eye_color_display }}</td>
                                     <td>{{ suspect.get_vehicle_color_display }} {{ suspect.get_vehicle_type_display }}</td>
                                     {% if not game_over %}
                                     <td>

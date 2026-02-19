@@ -10,13 +10,15 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
+        /* Force dark color-scheme so browser renders form controls correctly */
+        html { color-scheme: dark; }
         :root {
             --noir-dark: #0d0d0d;
             --noir-panel: #1a1a1a;
             --noir-card: #242424;
             --noir-accent: #8b4513;
             --noir-text: #e8e4df;
-            --noir-muted: #8a8580;
+            --noir-muted: #b8b4ae;
         }
         body {
             background: var(--noir-dark);
@@ -24,6 +26,7 @@
             font-family: 'Crimson Pro', Georgia, serif;
             min-height: 100vh;
         }
+        .text-muted { color: var(--noir-muted) !important; }
         .navbar {
             background: var(--noir-panel) !important;
             border-bottom: 1px solid var(--noir-accent);
@@ -49,15 +52,19 @@
         }
         .suspect-table { font-size: 0.95rem; }
         .suspect-table td { vertical-align: middle; }
-        .filter-select {
-            background: var(--noir-card);
-            color: var(--noir-text);
-            border: 1px solid #444;
+        .filter-select, .form-select, select.form-select {
+            background: var(--noir-card) !important;
+            color: var(--noir-text) !important;
+            border: 1px solid #555;
         }
-        .filter-select:focus {
-            background: var(--noir-card);
-            color: var(--noir-text);
+        .filter-select:focus, .form-select:focus {
+            background: var(--noir-card) !important;
+            color: var(--noir-text) !important;
             border-color: var(--noir-accent);
+        }
+        .form-select option, select option {
+            background: var(--noir-panel);
+            color: var(--noir-text);
         }
         .btn-primary {
             background: var(--noir-accent);
@@ -67,16 +74,36 @@
             background: #a0522d;
             border-color: #a0522d;
         }
-        .alert-success { background: rgba(34, 139, 34, 0.2); border-color: #2e7d32; }
-        .alert-danger { background: rgba(139, 0, 0, 0.2); border-color: #8b0000; }
+        .alert-success { background: rgba(34, 139, 34, 0.3); border-color: #2e7d32; color: #c8e6c9; }
+        .alert-danger { background: rgba(139, 0, 0, 0.3); border-color: #8b0000; color: #ffcdd2; }
+        .alert-info { background: rgba(33, 150, 243, 0.2); border-color: #1976d2; color: #bbdefb; }
         .clue-content {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.9rem;
             white-space: pre-wrap;
             background: #0d0d0d;
+            color: var(--noir-text);
             padding: 1rem;
             border-radius: 4px;
         }
+        .btn-outline-secondary { color: var(--noir-muted); border-color: #555; }
+        .btn-outline-secondary:hover { color: var(--noir-text); border-color: var(--noir-accent); background: rgba(139, 69, 19, 0.2); }
+        .table-dark, .table-dark td, .table-dark th { color: var(--noir-text); background: var(--noir-card); }
+        .page-link { background: var(--noir-card); color: var(--noir-text); border-color: #444; }
+        .page-link:hover { background: var(--noir-panel); color: var(--noir-accent); border-color: #555; }
+        .page-item.disabled .page-link { color: var(--noir-muted); background: var(--noir-panel); }
+        .badge.bg-secondary { background: #555 !important; color: var(--noir-text); }
+        .badge.bg-dark { background: var(--noir-panel) !important; color: var(--noir-text); }
+        .card-title, .card-body, .card-body p { color: var(--noir-text); }
+        .form-label, .filter-label { color: var(--noir-text) !important; font-weight: 500; }
+        .lead { color: var(--noir-muted); }
+        code { color: var(--noir-text); background: var(--noir-panel); padding: 2px 6px; border-radius: 4px; }
+        input[type="range"] {
+            accent-color: var(--noir-accent);
+            width: 100%;
+        }
+        .slider-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--noir-muted); margin-top: 4px; }
+        .slider-value { font-weight: 600; color: var(--noir-accent); }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
