@@ -67,8 +67,9 @@ var userAuthenticated = {{ user_authenticated|yesno:"true,false" }};
             if (move) {
                 board.position(chess.fen());
                 var san = move.san;
-                if ((source + target === 'e1g1') || (source + target === 'e8g8')) san = 'O-O';
-                else if ((source + target === 'e1c1') || (source + target === 'e8c8')) san = 'O-O-O';
+                var sq = (source + target).toLowerCase();
+                if (sq === 'e1g1' || sq === 'e8g8') san = 'O-O';
+                else if (sq === 'e1c1' || sq === 'e8c8') san = 'O-O-O';
                 trySubmitMove(san);
                 return true;
             }
@@ -84,10 +85,23 @@ var userAuthenticated = {{ user_authenticated|yesno:"true,false" }};
         if (/^[o0]-[o0](-[o0])?$/.test(lower)) return lower.replace(/o/g, '0');
         return lower;
     }
+    function isCastling(s) {
+        var n = norm(String(s).trim());
+        return n === '0-0' || n === '0-0-0' || n === 'o-o' || n === 'o-o-o';
+    }
+    function movesEqual(got, exp) {
+        var g = norm(got), e = norm(exp);
+        if (g === e) return true;
+        if (isCastling(got) && isCastling(exp)) {
+            var kingside = function(x) { return x === '0-0' || x === 'o-o'; };
+            return kingside(g) === kingside(e);
+        }
+        return false;
+    }
     function trySubmitMove(san) {
-        var exp = expected[moveIndex] ? norm(expected[moveIndex]) : null;
-        var got = norm(san);
-        if (exp && got === exp) {
+        var exp = expected[moveIndex] ? expected[moveIndex] : null;
+        var got = String(san).trim();
+        if (exp && movesEqual(got, exp)) {
             moveIndex++;
             movesPlayed.push(san);
             updateDisplay();
@@ -96,7 +110,7 @@ var userAuthenticated = {{ user_authenticated|yesno:"true,false" }};
                 completeDrill(true);
             }
         } else {
-            showFeedback('error', '✗ Incorrect. Expected: ' + (exp || '?'));
+            showFeedback('error', '✗ Incorrect. You played: "' + got + '". Expected: "' + (exp || '?') + '"');
             completeDrill(false);
         }
     }
