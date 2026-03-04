@@ -230,7 +230,7 @@
       "lesson_type": "quiz",
       "content": {
         "question": "You play f5 and Black captures ...gxf5. What is White's best recapture?",
-        "fen": "r2qkb1r/ppp2ppp/2np1nb1/4b3/4PP2/2NP1N2/PPP1B1PP/R1BQK2R w KQkq - 0 8",
+        "fen": "r2q1rk1/ppp2pbp/2np1n2/5p2/4PP2/2NP1N2/PPP1B1PP/R1BQK2R w KQ - 0 9",
         "correct_move": "exf5",
         "options": [
           {"move": "exf5", "explanation": "Opens the e-file and clears the way for Ng5 or Bxf5"},
