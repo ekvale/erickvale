@@ -151,6 +151,98 @@
   },
   {
     "model": "chess_trainer.lesson",
+    "pk": 13,
+    "fields": {
+      "opening": 2,
+      "order": 4,
+      "title": "Why Nc3 before f4? Flexible development",
+      "lesson_type": "concept",
+      "content": {
+        "key_ideas": ["Nc3 keeps options open against ...e6, ...g6, and ...Nc6", "2.Nc3 prevents ...d5 for one move", "f4 can follow once the knight controls d5"],
+        "explanation": "<p>Playing 2.Nc3 before 3.f4 gives White flexibility. Against ...e6 (French-style), White can still play f4. Against ...g6, the GPA setup with f4 is ideal. The knight also eyes d5 and e4.</p>",
+        "critical_moves": ["2.Nc3 — The flexible choice", "3.f4 — The Grand Prix signature"],
+        "common_mistakes": ["Playing 2.f4 immediately (weaker against 2...d5)", "Blocking the c-pawn with Nc3 then playing c3"],
+        "start_fen": "rnbqkbnr/pp1ppppp/8/2p5/4P3/2N5/PPPP1PPP/R1BQKBNR b KQkq - 1 2",
+        "last_move": "b1c3"
+      }
+    }
+  },
+  {
+    "model": "chess_trainer.lesson",
+    "pk": 14,
+    "fields": {
+      "opening": 2,
+      "order": 5,
+      "title": "Black plays ...Bg4 pinning Nf3. How do you respond?",
+      "lesson_type": "quiz",
+      "content": {
+        "question": "Black develops with ...Bg4, pinning your knight. What is White's best response?",
+        "fen": "r2qkb1r/pp2pppp/2n2n2/2bp4/4PPb1/2N2N2/PPP2PPP/R1BQKB1R w KQkq - 2 5",
+        "correct_move": "Be2",
+        "options": [
+          {"move": "Be2", "explanation": "Unpins and completes development; Bxf3 weakens Black's structure"},
+          {"move": "h3", "explanation": "Provokes ...Bxf3, but Be2 is more flexible"},
+          {"move": "Bc4", "explanation": "Leaves the knight pinned; risky"},
+          {"move": "0-0", "explanation": "Castling into a pin is dangerous"}
+        ]
+      }
+    }
+  },
+  {
+    "model": "chess_trainer.lesson",
+    "pk": 15,
+    "fields": {
+      "opening": 2,
+      "order": 6,
+      "title": "The f5 break — executing the attack",
+      "lesson_type": "concept",
+      "content": {
+        "key_ideas": ["f5 is the thematic break once the GPA setup is complete", "After f5 exf5, Bxf5 or exf5 with Ng5 both work", "The attack targets f7 and the kingside"],
+        "explanation": "<p>Once you have Nc3, f4, Nf3, Be2, and 0-0, the f5 break is the main plan. It opens lines and often leads to sacrifices on f7 or g7.</p>",
+        "critical_moves": ["f5 — The key break", "Bxf5 or exf5 — Recapturing options"],
+        "common_mistakes": ["Playing f5 before castling", "Ignoring Black's ...e5 counter"],
+        "start_fen": "r2qkb1r/ppp1ppbp/2np1np1/8/4PP2/2NP1N2/PPP1B1PP/R1BQK2R w KQkq - 0 6",
+        "last_move": "e8g8"
+      }
+    }
+  },
+  {
+    "model": "chess_trainer.lesson",
+    "pk": 16,
+    "fields": {
+      "opening": 2,
+      "order": 7,
+      "title": "Drill: Reach the f5 break position",
+      "lesson_type": "drill",
+      "content": {
+        "expected_moves": ["e4", "c5", "Nc3", "Nc6", "f4", "g6", "Nf3", "Bg7", "Be2", "d6", "0-0", "Nf6", "d3", "0-0", "f5"],
+        "instructions": "Play the full sequence to the f5 break. Both sides complete development first."
+      }
+    }
+  },
+  {
+    "model": "chess_trainer.lesson",
+    "pk": 17,
+    "fields": {
+      "opening": 2,
+      "order": 8,
+      "title": "After f5, Black captures ...gxf5. Best recapture?",
+      "lesson_type": "quiz",
+      "content": {
+        "question": "You play f5 and Black captures ...gxf5. What is White's best recapture?",
+        "fen": "r2qkb1r/ppp2ppp/2np1nb1/4b3/4PP2/2NP1N2/PPP1B1PP/R1BQK2R w KQkq - 0 8",
+        "correct_move": "exf5",
+        "options": [
+          {"move": "exf5", "explanation": "Opens the e-file and clears the way for Ng5 or Bxf5"},
+          {"move": "Bxf5", "explanation": "Good but exf5 is more aggressive"},
+          {"move": "Nxf5", "explanation": "Loses time; the knight was well placed on f3"},
+          {"move": "Qe1", "explanation": "Too slow; recapture first"}
+        ]
+      }
+    }
+  },
+  {
+    "model": "chess_trainer.lesson",
     "pk": 7,
     "fields": {
       "opening": 3,
