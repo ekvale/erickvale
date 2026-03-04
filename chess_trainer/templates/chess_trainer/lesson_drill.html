@@ -1,0 +1,150 @@
+{% extends 'chess_trainer/base.html' %}
+
+{% block title %}{{ lesson.title }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'chess_trainer:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'chess_trainer:opening_detail' opening.pk %}">{{ opening.name }}</a></li>
+        <li class="breadcrumb-item active">{{ lesson.title }}</li>
+    </ol>
+</nav>
+
+<h1>{{ lesson.title }}</h1>
+<p class="text-muted">{{ opening.name }} · Drill — Enter the correct move order (no hints)</p>
+
+<div class="row mt-4">
+    <div class="col-lg-6">
+        <div class="chess-board-container">
+            <div id="board" style="width: 400px; margin: 0 auto;"></div>
+        </div>
+        <div class="mt-2">
+            <label class="form-label">Moves played:</label>
+            <div id="moves-display" class="bg-dark p-2 rounded font-monospace small" style="min-height: 24px;"></div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <p class="mb-3">{{ content.instructions|default:"Play the correct move sequence. Click the board to make moves, or type in the input below." }}</p>
+        <div class="mb-3">
+            <label class="form-label">Enter next move (e.g. e4, Nf3):</label>
+            <div class="input-group">
+                <input type="text" id="move-input" class="form-control" placeholder="Move in SAN (e.g. e4)" autocomplete="off">
+                <button class="btn btn-primary" id="submit-move">Submit</button>
+            </div>
+        </div>
+        <div id="feedback" class="alert d-none"></div>
+        <button class="btn btn-outline-secondary btn-sm" id="reset-drill">Reset</button>
+    </div>
+</div>
+
+<script>
+var expectedMoves = {{ expected_moves_json|default:"[]"|safe }};
+var openingSide = '{{ opening.side }}';
+var userAuthenticated = {{ user_authenticated|yesno:"true,false" }};
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    var expected = Array.isArray(expectedMoves) ? expectedMoves : [];
+    if (expected.length && expected[0] && Array.isArray(expected[0])) {
+        var flat = [];
+        expected.forEach(function(pair) {
+            if (openingSide === 'white' && pair[0]) flat.push(pair[0]);
+            if (openingSide === 'black' && pair[1]) flat.push(pair[1]);
+        });
+        expected = flat;
+    }
+    var chess = new Chess();
+    var board = Chessboard('board', {
+        draggable: true,
+        position: 'start',
+        pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
+        onDrop: function(source, target) {
+            var move = chess.move({ from: source, to: target });
+            if (move) {
+                board.position(chess.fen());
+                trySubmitMove(move.san);
+                return true;
+            }
+            return false;
+        }
+    });
+    var moveIndex = 0;
+    var movesPlayed = [];
+
+    function trySubmitMove(san) {
+        var norm = function(s) { return String(s).trim().toLowerCase().replace('.', ''); };
+        var exp = expected[moveIndex] ? norm(expected[moveIndex]) : null;
+        var got = norm(san);
+        if (exp && got === exp) {
+            moveIndex++;
+            movesPlayed.push(san);
+            updateDisplay();
+            showFeedback('correct', '✓ Correct!');
+            if (moveIndex >= expected.length) {
+                completeDrill(true);
+            }
+        } else {
+            showFeedback('error', '✗ Incorrect. Expected: ' + (exp || '?'));
+            completeDrill(false);
+        }
+    }
+
+    function updateDisplay() {
+        document.getElementById('moves-display').textContent = movesPlayed.join(' ');
+    }
+
+    function showFeedback(type, msg) {
+        var el = document.getElementById('feedback');
+        el.className = 'alert alert-' + (type === 'correct' ? 'success' : 'danger') + ' d-block';
+        el.textContent = msg;
+    }
+
+    function completeDrill(correct) {
+        document.getElementById('move-input').disabled = true;
+        document.getElementById('submit-move').disabled = true;
+        board.draggable = false;
+        if (!userAuthenticated) return;
+        var moves = movesPlayed.slice();
+        fetch('{% url "chess_trainer:lesson_submit" lesson.pk %}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+            body: JSON.stringify({ action: 'drill', moves: moves })
+        }).then(function(r) { return r.json(); }).then(function(data) {
+            if (data.correct) showFeedback('success', '✓ Drill complete! Mastery: ' + data.mastery_pct + '%');
+        });
+    }
+
+    document.getElementById('submit-move').addEventListener('click', function() {
+        var inp = document.getElementById('move-input');
+        var san = inp.value.trim();
+        if (!san) return;
+        var move = chess.move(san);
+        if (move) {
+            board.position(chess.fen());
+            inp.value = '';
+            trySubmitMove(move.san);
+        } else {
+            showFeedback('error', 'Invalid move');
+        }
+    });
+    document.getElementById('move-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') document.getElementById('submit-move').click();
+    });
+    document.getElementById('reset-drill').addEventListener('click', function() {
+        chess.reset();
+        board.start();
+        moveIndex = 0;
+        movesPlayed = [];
+        updateDisplay();
+        document.getElementById('feedback').classList.add('d-none');
+        document.getElementById('move-input').disabled = false;
+        document.getElementById('submit-move').disabled = false;
+        board.draggable = true;
+    });
+})();
+</script>
+{% endblock %}

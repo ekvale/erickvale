@@ -1,0 +1,98 @@
+{% extends 'chess_trainer/base.html' %}
+
+{% block title %}{{ lesson.title }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'chess_trainer:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'chess_trainer:opening_detail' opening.pk %}">{{ opening.name }}</a></li>
+        <li class="breadcrumb-item active">{{ lesson.title }}</li>
+    </ol>
+</nav>
+
+<h1>{{ lesson.title }}</h1>
+<p class="text-muted">{{ opening.name }} · Quiz</p>
+
+<div class="row mt-4">
+    <div class="col-lg-6">
+        <div class="chess-board-container">
+            <div id="board" style="width: 400px; margin: 0 auto;"></div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <p class="mb-3">{{ content.question|default:"What is the correct next move?" }}</p>
+        <div id="options" class="list-group">
+            {% for opt in content.options %}
+            <button type="button" class="list-group-item list-group-item-action option-btn" data-move="{{ opt.move }}">
+                {{ opt.move }}
+                {% if opt.explanation %}
+                <small class="text-muted d-block">{{ opt.explanation }}</small>
+                {% endif %}
+            </button>
+            {% endfor %}
+        </div>
+        <div id="feedback" class="alert d-none mt-3"></div>
+        {% if progress and progress.completed %}
+        <a href="{% url 'chess_trainer:opening_detail' opening.pk %}" class="btn btn-primary mt-3">Continue</a>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+var quizFen = '{{ content.fen|default:"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" }}';
+var correctMove = '{{ content.correct_move|default:"" }}';
+var userAuthenticated = {{ user_authenticated|yesno:"true,false" }};
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    var board = Chessboard('board', {
+        draggable: false,
+        position: quizFen,
+        pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
+    });
+    var answered = false;
+    document.querySelectorAll('.option-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            if (answered) return;
+            answered = true;
+            var selected = this.dataset.move;
+            var correct = selected.toLowerCase().replace(/[.+]/g, '') === correctMove.toLowerCase().replace(/[.+]/g, '');
+            var feedback = document.getElementById('feedback');
+            feedback.classList.remove('d-none');
+            if (correct) {
+                feedback.className = 'alert alert-success d-block mt-3';
+                feedback.innerHTML = '✓ Correct!';
+                this.classList.add('list-group-item-success');
+                if (userAuthenticated) {
+                    fetch('{% url "chess_trainer:lesson_submit" lesson.pk %}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                        body: JSON.stringify({ action: 'quiz', selected_move: selected })
+                    }).then(function(r) { return r.json(); });
+                }
+            } else {
+                feedback.className = 'alert alert-danger d-block mt-3';
+                feedback.innerHTML = '✗ Incorrect. The best move is ' + correctMove + '.';
+                this.classList.add('list-group-item-danger');
+                document.querySelectorAll('.option-btn').forEach(function(b) {
+                    if (b.dataset.move.toLowerCase() === correctMove.toLowerCase()) {
+                        b.classList.add('list-group-item-success');
+                    }
+                });
+                if (userAuthenticated) {
+                    fetch('{% url "chess_trainer:lesson_submit" lesson.pk %}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                        body: JSON.stringify({ action: 'quiz', selected_move: selected })
+                    }).then(function(r) { return r.json(); });
+                }
+            }
+        });
+    });
+})();
+</script>
+{% endblock %}

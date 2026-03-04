@@ -1,0 +1,107 @@
+{% extends 'chess_trainer/base.html' %}
+
+{% block title %}{{ lesson.title }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'chess_trainer:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'chess_trainer:opening_detail' opening.pk %}">{{ opening.name }}</a></li>
+        <li class="breadcrumb-item active">{{ lesson.title }}</li>
+    </ol>
+</nav>
+
+<h1>{{ lesson.title }}</h1>
+<p class="text-muted">{{ opening.name }} · Concept</p>
+
+<div class="row mt-4">
+    <div class="col-lg-6">
+        <div class="chess-board-container">
+            <div id="board" style="width: 400px; margin: 0 auto;"></div>
+            {% if content.fen %}
+            <p class="text-muted small mt-2 text-center" id="position-label"></p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-6">
+        {% if content.key_ideas %}
+        <h5>Key Ideas</h5>
+        <ul>
+            {% for idea in content.key_ideas %}
+            <li>{{ idea }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% if content.explanation %}
+        <div class="mb-3">{{ content.explanation|safe }}</div>
+        {% endif %}
+        {% if content.critical_moves %}
+        <h5>Critical Moves</h5>
+        <ul>
+            {% for move in content.critical_moves %}
+            <li>{{ move }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% if content.common_mistakes %}
+        <h5>Common Mistakes</h5>
+        <ul>
+            {% for m in content.common_mistakes %}
+            <li>{{ m }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        {% if user.is_authenticated %}
+        <div class="mt-4">
+            {% if progress and progress.completed %}
+            <span class="badge bg-success">✓ Completed</span>
+            {% else %}
+            <button type="button" class="btn btn-primary" id="mark-read">Mark as read</button>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    var cfg = {
+        draggable: false,
+        position: '{{ content.start_fen|default:"start" }}',
+        pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
+    };
+    var board = Chessboard('board', cfg);
+    {% if content.last_move %}
+    // Highlight last move
+    var lm = '{{ content.last_move }}';
+    if (lm && lm.length >= 4) {
+        var from = lm.substr(0, 2), to = lm.substr(2, 2);
+        document.querySelectorAll('.square-' + from + ', .square-' + to).forEach(function(el) {
+            el.style.backgroundColor = 'rgba(233, 69, 96, 0.4)';
+        });
+    }
+    {% endif %}
+    var markReadBtn = document.getElementById('mark-read');
+    if (!markReadBtn) return;
+    markReadBtn.addEventListener('click', function() {
+        var btn = this;
+        btn.disabled = true;
+        fetch('{% url "chess_trainer:lesson_submit" lesson.pk %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ action: 'mark_read' })
+        }).then(function(r) { return r.json(); }).then(function(data) {
+            if (data.success) {
+                btn.outerHTML = '<span class="badge bg-success">✓ Completed</span>';
+            }
+        });
+    });
+})();
+</script>
+{% endblock %}

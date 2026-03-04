@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'human_rights_archive',
     'allminnesota',
     'arm_chair_detective',
+    'chess_trainer',
 ]
 
 MIDDLEWARE = [

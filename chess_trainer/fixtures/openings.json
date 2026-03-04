@@ -1,0 +1,258 @@
+[
+  {
+    "model": "chess_trainer.opening",
+    "pk": 1,
+    "fields": {
+      "name": "Scotch Game",
+      "side": "white",
+      "eco_code": "C44",
+      "description": "1.e4 e5 2.Nf3 Nc6 3.d4 exd4 4.Nxd4 — A direct approach to seize the center. White immediately challenges Black's e5 pawn.",
+      "move_sequence": [["e4", "e5"], ["Nf3", "Nc6"], ["d4", "exd4"], ["Nxd4", null]]
+    }
+  },
+  {
+    "model": "chess_trainer.opening",
+    "pk": 2,
+    "fields": {
+      "name": "Grand Prix Attack",
+      "side": "white",
+      "eco_code": "B23",
+      "description": "1.e4 c5 2.Nc3 3.f4 — An aggressive setup against the Sicilian. White builds a kingside attack with f4-f5.",
+      "move_sequence": [["e4", "c5"], ["Nc3", "Nc6"], ["f4", "g6"], ["Nf3", "Bg7"], ["Be2", "d6"], ["0-0", null]]
+    }
+  },
+  {
+    "model": "chess_trainer.opening",
+    "pk": 3,
+    "fields": {
+      "name": "Sicilian Najdorf",
+      "side": "black",
+      "eco_code": "B90",
+      "description": "1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6 — The most popular Sicilian. 5...a6 prepares ...b5 and stops Nb5.",
+      "move_sequence": [["e4", "c5"], ["Nf3", "d6"], ["d4", "cxd4"], ["Nxd4", "Nf6"], ["Nc3", "a6"]]
+    }
+  },
+  {
+    "model": "chess_trainer.opening",
+    "pk": 4,
+    "fields": {
+      "name": "King's Indian Defense",
+      "side": "black",
+      "eco_code": "E60",
+      "description": "1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.Nf3 0-0 — Black gives up the center to fianchetto the Dragon Bishop and strike back with ...e5 or ...f5.",
+      "move_sequence": [["d4", "Nf6"], ["c4", "g6"], ["Nc3", "Bg7"], ["e4", "d6"], ["Nf3", "0-0"]]
+    }
+  },
+  {
+    "model": "chess_trainer.lesson",
+    "pk": 1,
+    "fields": {
+      "opening": 1,
+      "order": 1,
+      "title": "Why 3.d4? Seizing the center immediately",
+      "lesson_type": "concept",
+      "content": {
+        "key_ideas": ["3.d4 immediately seizes the center", "Capturing on d4 with ...exd4 gives White a central knight", "4.Nxd4 regains the pawn with an active piece"],
+        "explanation": "<p>The Scotch Game is one of the oldest openings. By playing 3.d4, White immediately challenges Black's central pawn and opens lines for development.</p>",
+        "critical_moves": ["3.d4 — The key move that defines the Scotch", "4.Nxd4 — Recapturing maintains piece activity"],
+        "common_mistakes": ["Playing 3.Bc4 instead of 3.d4 (Italian Game)", "Delaying d4 allows Black to consolidate"],
+        "start_fen": "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
+        "last_move": "e2e4"
+      }
+    }
+  },
+  {
+    "model": "chess_trainer.lesson",
+    "pk": 2,
+    "fields": {
+      "opening": 1,
+      "order": 2,
+      "title": "Play moves 1-4 correctly from memory",
+      "lesson_type": "drill",
+      "content": {
+        "expected_moves": ["e4", "e5", "Nf3", "Nc6", "d4", "exd4", "Nxd4"],
+        "instructions": "Play the full Scotch Game sequence through move 4. Enter moves in order (both White and Black)."
+      }
+    }
+  },
+  {
+    "model": "chess_trainer.lesson",
+    "pk": 3,
+    "fields": {
+      "opening": 1,
+      "order": 3,
+      "title": "After 4.Nxd4, Black plays 4...Bc5. What is White's best response?",
+      "lesson_type": "quiz",
+      "content": {
+        "question": "After 4.Nxd4, Black plays 4...Bc5 attacking the knight. What is White's best response?",
+        "fen": "r1bqk1nr/pppp1ppp/2n5/2b1p3/3NP3/8/PPP2PPP/RNBQKB1R w KQkq - 2 5",
+        "correct_move": "Be3",
+        "options": [
+          {"move": "Be3", "explanation": "Develops and defends the knight, preparing Nb3"},
+          {"move": "Nb3", "explanation": "Avoids the bishop but blocks the b-pawn"},
+          {"move": "Nf5", "explanation": "Aggressive but allows ...Qh4+"},
+          {"move": "Nxc6", "explanation": "Gives up the center for little compensation"}
+        ]
+      }
+    }
+  },
+  {
+    "model": "chess_trainer.lesson",
+    "pk": 4,
+    "fields": {
+      "opening": 2,
+      "order": 1,
+      "title": "The f4-f5 attacking blueprint",
+      "lesson_type": "concept",
+      "content": {
+        "key_ideas": ["f4 stakes a claim on e5 and supports f5", "f5 breaks Black's pawn structure", "The kingside pawn storm is the main plan"],
+        "explanation": "<p>The Grand Prix Attack aims for rapid development and a kingside attack. The f4-f5 thrust is the thematic break.</p>",
+        "critical_moves": ["2.Nc3 — Flexible, allows f4", "3.f4 — The Grand Prix move", "f5 — The key break"],
+        "common_mistakes": ["Playing f4 too early before Nf3/Be2", "Allowing ...d5 without preparation"],
+        "start_fen": "rnbqkbnr/pp1ppppp/8/2p5/4P3/2N5/PPPP1PPP/R1BQKBNR b KQkq - 1 2",
+        "last_move": "b1c3"
+      }
+    }
+  },
+  {
+    "model": "chess_trainer.lesson",
+    "pk": 5,
+    "fields": {
+      "opening": 2,
+      "order": 2,
+      "title": "Build the ideal GPA setup (Nc3, f4, Nf3, Be2, 0-0)",
+      "lesson_type": "drill",
+      "content": {
+        "expected_moves": ["e4", "c5", "Nc3", "Nc6", "f4", "g6", "Nf3", "Bg7", "Be2", "d6", "0-0"],
+        "instructions": "Build the ideal Grand Prix Attack setup. Play the full sequence including Black's responses."
+      }
+    }
+  },
+  {
+    "model": "chess_trainer.lesson",
+    "pk": 6,
+    "fields": {
+      "opening": 2,
+      "order": 3,
+      "title": "Black plays ...d5. How do you respond?",
+      "lesson_type": "quiz",
+      "content": {
+        "question": "In the Grand Prix, Black plays ...d5 to challenge the center. How do you respond?",
+        "fen": "r1bqkbnr/pp2pppp/2n5/2pp4/4PP2/2N5/PPP2PPP/R1BQKBNR w KQkq d6 0 4",
+        "correct_move": "exd5",
+        "options": [
+          {"move": "exd5", "explanation": "Captures and opens the e-file"},
+          {"move": "e5", "explanation": "Blocking allows ...d4"},
+          {"move": "Nxd5", "explanation": "Loses a piece to ...Nxd5"},
+          {"move": "f5", "explanation": "Premature; d5 must be addressed first"}
+        ]
+      }
+    }
+  },
+  {
+    "model": "chess_trainer.lesson",
+    "pk": 7,
+    "fields": {
+      "opening": 3,
+      "order": 1,
+      "title": "The purpose of 5...a6 — stopping Nb5, preparing b5",
+      "lesson_type": "concept",
+      "content": {
+        "key_ideas": ["5...a6 stops Nb5-d6 fork", "Prepares ...b5 expansion on the queenside", "Flexible: can play ...e5, ...e6, or ...g6 systems"],
+        "explanation": "<p>The Najdorf is named after Miguel Najdorf. The move 5...a6 is multi-purpose: it prevents Nb5, prepares ...b5, and keeps options open.</p>",
+        "critical_moves": ["5...a6 — The defining move", "6...e5 — Classical Najdorf", "6...e6 — Scheveningen"],
+        "common_mistakes": ["Playing ...e5 too early before development", "Ignoring White's Bg5 pin"],
+        "start_fen": "rnbqkb1r/1p1ppppp/p1n2n2/8/2BNP3/2N5/PPP2PPP/R1BQK2R b KQkq - 0 5",
+        "last_move": "b8c6"
+      }
+    }
+  },
+  {
+    "model": "chess_trainer.lesson",
+    "pk": 8,
+    "fields": {
+      "opening": 3,
+      "order": 2,
+      "title": "Play the first 5 moves of the Najdorf correctly",
+      "lesson_type": "drill",
+      "content": {
+        "expected_moves": ["e4", "c5", "Nf3", "d6", "d4", "cxd4", "Nxd4", "Nf6", "Nc3", "a6"],
+        "instructions": "Play the full Najdorf sequence through move 5. You are Black."
+      }
+    }
+  },
+  {
+    "model": "chess_trainer.lesson",
+    "pk": 9,
+    "fields": {
+      "opening": 3,
+      "order": 3,
+      "title": "White plays 6.Bg5. What is Black's most combative response?",
+      "lesson_type": "quiz",
+      "content": {
+        "question": "White plays 6.Bg5 pinning the knight. What is Black's most combative response?",
+        "fen": "rnbqkb1r/1p1ppppp/p1n2n2/6B1/2BNP3/2N5/PPP2PPP/R2QK2R b KQkq - 2 5",
+        "correct_move": "e6",
+        "options": [
+          {"move": "e6", "explanation": "Classical: prepares Be7, avoids doubled pawns, supports d5"},
+          {"move": "h6", "explanation": "Provokes Bxf6, conceding the bishop pair"},
+          {"move": "Nbd7", "explanation": "Passive; knight belongs on c6 or d7 after ...e6"},
+          {"move": "Qb6", "explanation": "Possible but less common than e6"}
+        ]
+      }
+    }
+  },
+  {
+    "model": "chess_trainer.lesson",
+    "pk": 10,
+    "fields": {
+      "opening": 4,
+      "order": 1,
+      "title": "Why give up the center? The Dragon Bishop explained",
+      "lesson_type": "concept",
+      "content": {
+        "key_ideas": ["The Bg7 bishop attacks the long diagonal", "Black will strike with ...e5 or ...f5", "0-0 connects rooks and prepares counterplay"],
+        "explanation": "<p>The King's Indian gives White a big center. Black's plan is to let White overextend, then strike with ...e5 or ...f5. The g7 bishop is the 'Dragon Bishop' on the long diagonal.</p>",
+        "critical_moves": ["...Bg7 — The Dragon Bishop", "...0-0 — Castle and connect", "...e5 or ...f5 — The counterstrike"],
+        "common_mistakes": ["Playing ...d5 too early (blocking the bishop)", "Forgetting to castle"],
+        "start_fen": "rnbqk2r/ppp1ppbp/3p1np1/8/2PP4/2N2N2/PP2PPPP/R1BQKB1R b KQkq - 2 4",
+        "last_move": "g8f6"
+      }
+    }
+  },
+  {
+    "model": "chess_trainer.lesson",
+    "pk": 11,
+    "fields": {
+      "opening": 4,
+      "order": 2,
+      "title": "Build the full KID setup through move 5 (...0-0)",
+      "lesson_type": "drill",
+      "content": {
+        "expected_moves": ["d4", "Nf6", "c4", "g6", "Nc3", "Bg7", "e4", "d6", "Nf3", "0-0"],
+        "instructions": "Build the King's Indian Defense setup. Play the full sequence through Black's castling."
+      }
+    }
+  },
+  {
+    "model": "chess_trainer.lesson",
+    "pk": 12,
+    "fields": {
+      "opening": 4,
+      "order": 3,
+      "title": "White plays d5 closing the center. What is Black's plan?",
+      "lesson_type": "quiz",
+      "content": {
+        "question": "White plays d5 closing the center. What is Black's typical plan?",
+        "fen": "rnbq1rk1/ppp2pbp/3p1np1/3Pp3/2P1P3/2N2N2/PP2BPPP/R1BQK2R b KQ - 0 6",
+        "correct_move": "Ne8",
+        "options": [
+          {"move": "Ne8", "explanation": "Retreats to support ...f5; the main plan in the KID"},
+          {"move": "exd4", "explanation": "Opens the center when Black wants to attack on the flank"},
+          {"move": "c6", "explanation": "Solid but passive"},
+          {"move": "Re8", "explanation": "Good idea but Ne8 typically comes first for ...f5"}
+        ]
+      }
+    }
+  }
+]
