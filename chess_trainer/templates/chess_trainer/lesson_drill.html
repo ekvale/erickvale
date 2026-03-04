@@ -67,8 +67,8 @@ var userAuthenticated = {{ user_authenticated|yesno:"true,false" }};
             if (move) {
                 board.position(chess.fen());
                 var san = move.san;
-                if (move.flags && move.flags.indexOf('k') >= 0) san = 'O-O';
-                else if (move.flags && move.flags.indexOf('q') >= 0) san = 'O-O-O';
+                if ((source + target === 'e1g1') || (source + target === 'e8g8')) san = 'O-O';
+                else if ((source + target === 'e1c1') || (source + target === 'e8c8')) san = 'O-O-O';
                 trySubmitMove(san);
                 return true;
             }
