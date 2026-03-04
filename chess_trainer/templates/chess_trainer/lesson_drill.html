@@ -66,7 +66,10 @@ var userAuthenticated = {{ user_authenticated|yesno:"true,false" }};
             var move = chess.move({ from: source, to: target });
             if (move) {
                 board.position(chess.fen());
-                trySubmitMove(move.san);
+                var san = move.san;
+                if (move.flags && move.flags.indexOf('k') >= 0) san = 'O-O';
+                else if (move.flags && move.flags.indexOf('q') >= 0) san = 'O-O-O';
+                trySubmitMove(san);
                 return true;
             }
             return false;
@@ -75,8 +78,13 @@ var userAuthenticated = {{ user_authenticated|yesno:"true,false" }};
     var moveIndex = 0;
     var movesPlayed = [];
 
+    function norm(s) {
+        s = String(s).trim().replace(/\./g, '');
+        var lower = s.toLowerCase();
+        if (/^[o0]-[o0](-[o0])?$/.test(lower)) return lower.replace(/o/g, '0');
+        return lower;
+    }
     function trySubmitMove(san) {
-        var norm = function(s) { return String(s).trim().toLowerCase().replace('.', ''); };
         var exp = expected[moveIndex] ? norm(expected[moveIndex]) : null;
         var got = norm(san);
         if (exp && got === exp) {

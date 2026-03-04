@@ -315,10 +315,13 @@ def _validate_move_sequence(actual, expected, side):
     """Validate that actual move list matches expected. Handles SAN normalization."""
     if not expected:
         return False
-    # Normalize: lowercase, no dots, strip
+    # Normalize: lowercase, no dots, strip; treat O-O and 0-0 as equivalent
     def norm(s):
-        s = str(s).strip().replace('.', '').lower()
-        return s
+        s = str(s).strip().replace('.', '')
+        s_lower = s.lower()
+        if re.match(r'^[o0]-[o0](-[o0])?$', s_lower):
+            s_lower = s_lower.replace('o', '0')
+        return s_lower
     exp_norm = [norm(m) for m in expected]
     act_norm = [norm(m) for m in actual]
     if len(act_norm) != len(exp_norm):
