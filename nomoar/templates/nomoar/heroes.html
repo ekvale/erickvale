@@ -1,0 +1,123 @@
+{% extends 'nomoar/base.html' %}
+
+{% block title %}Heroes &amp; change makers{% endblock %}
+
+{% block extra_css %}
+<style>
+    .nomoar-heroes-intro {
+        max-width: 44rem;
+        margin-bottom: 2rem;
+    }
+    .nomoar-heroes-intro p { color: var(--nomoar-muted); font-size: 1.05rem; line-height: 1.65; }
+    .nomoar-heroes-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1.25rem;
+    }
+    .nomoar-hero-card {
+        display: flex;
+        flex-direction: column;
+        background: var(--nomoar-elevated);
+        border: 1px solid var(--nomoar-border);
+        border-radius: 12px;
+        overflow: hidden;
+        text-decoration: none;
+        color: inherit;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .nomoar-hero-card:hover {
+        border-color: var(--nomoar-accent);
+        box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+    }
+    .nomoar-hero-card-visual {
+        aspect-ratio: 4 / 3;
+        background: linear-gradient(160deg, #2a2418, #1a1a22);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+    .nomoar-hero-card-visual img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .nomoar-hero-card-initials {
+        font-family: 'Crimson Pro', Georgia, serif;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--nomoar-accent);
+        opacity: 0.9;
+    }
+    .nomoar-hero-card-body { padding: 1.1rem 1.2rem 1.25rem; flex: 1; display: flex; flex-direction: column; }
+    .nomoar-hero-card-body .life {
+        font-size: 0.8rem;
+        color: var(--nomoar-muted);
+        margin-bottom: 0.35rem;
+    }
+    .nomoar-hero-card-body h2 {
+        font-size: 1.2rem;
+        margin: 0 0 0.35rem;
+        border: none;
+        padding: 0;
+        font-family: 'Source Sans 3', system-ui, sans-serif;
+        font-weight: 700;
+    }
+    .nomoar-hero-card-body .tagline {
+        font-size: 0.85rem;
+        color: var(--nomoar-link);
+        margin-bottom: 0.65rem;
+        font-weight: 500;
+    }
+    .nomoar-hero-card-body .summary {
+        font-size: 0.9rem;
+        color: var(--nomoar-muted);
+        line-height: 1.5;
+        flex: 1;
+        margin: 0;
+    }
+    .nomoar-hero-card-body .more {
+        margin-top: 0.85rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--nomoar-accent);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<p class="nomoar-eyebrow">Resistance &amp; repair</p>
+<h1>Heroes &amp; change makers</h1>
+<div class="nomoar-heroes-intro">
+    <p>
+        The archive documents harm and policy; this gallery honors people who organized, wrote, litigated, marched,
+        and built community in the struggle against racism and for dignity. They are a small sample—additions welcome
+        through the <a href="{% url 'nomoar:submit' %}">submission form</a> or admin.
+    </p>
+</div>
+
+{% if heroes %}
+<div class="nomoar-heroes-grid">
+    {% for h in heroes %}
+    <a href="{{ h.get_absolute_url }}" class="nomoar-hero-card">
+        <div class="nomoar-hero-card-visual">
+            {% if h.portrait %}
+            <img src="{{ h.portrait.url }}" alt="">
+            {% else %}
+            <span class="nomoar-hero-card-initials" aria-hidden="true">{{ h.initials }}</span>
+            {% endif %}
+        </div>
+        <div class="nomoar-hero-card-body">
+            {% if h.life_span_display %}<div class="life">{{ h.life_span_display }}</div>{% endif %}
+            <h2>{{ h.name }}</h2>
+            {% if h.tagline %}<div class="tagline">{{ h.tagline }}</div>{% endif %}
+            <p class="summary">{{ h.summary|truncatewords:36 }}</p>
+            <span class="more">Read more →</span>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<p class="muted">No profiles yet. Add <strong>Change makers &amp; heroes</strong> in Django admin or run <code>python manage.py nomoar_seed_from_fixture</code>.</p>
+{% endif %}
+{% endblock %}

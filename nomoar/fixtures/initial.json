@@ -380,5 +380,141 @@
       "created_at": "2025-06-01T12:00:00Z",
       "updated_at": "2025-06-01T12:00:00Z"
     }
+  },
+  {
+    "model": "nomoar.changemaker",
+    "pk": 1,
+    "fields": {
+      "name": "Harriet Tubman",
+      "slug": "harriet-tubman",
+      "tagline": "Abolitionist, Underground Railroad conductor",
+      "summary": "After freeing herself from slavery, Tubman returned South repeatedly to lead roughly seventy people to freedom and later served as a Union scout and nurse during the Civil War.",
+      "body": "Her courage and networks challenged the legal and violent architecture of slavery. Tubman remains an icon of collective liberation and self-determination.",
+      "birth_year": 1822,
+      "death_year": 1913,
+      "order": 1,
+      "is_published": true,
+      "created_at": "2025-01-01T12:00:00Z",
+      "updated_at": "2025-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "nomoar.changemaker",
+    "pk": 2,
+    "fields": {
+      "name": "Frederick Douglass",
+      "slug": "frederick-douglass",
+      "tagline": "Orator, editor, statesman",
+      "summary": "Born into slavery, Douglass became one of the most influential abolitionists of the nineteenth century through speeches, journalism, and diplomacy—including advising Lincoln.",
+      "body": "His autobiographies and newspaper The North Star helped define an abolitionist public sphere and modeled Black intellectual leadership under extreme risk.",
+      "birth_year": 1818,
+      "death_year": 1895,
+      "order": 2,
+      "is_published": true,
+      "created_at": "2025-01-01T12:00:00Z",
+      "updated_at": "2025-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "nomoar.changemaker",
+    "pk": 3,
+    "fields": {
+      "name": "Ida B. Wells",
+      "slug": "ida-b-wells",
+      "tagline": "Journalist, anti-lynching organizer",
+      "summary": "Wells documented lynching with data and narrative, co-founded the NAACP, and built Black institutions in Memphis and Chicago while facing mob violence and exile.",
+      "body": "Her investigative reporting reframed public understanding of racial terror and argued that economic jealousy and political control—not criminal justice—drove many lynchings.",
+      "birth_year": 1862,
+      "death_year": 1931,
+      "order": 3,
+      "is_published": true,
+      "created_at": "2025-01-01T12:00:00Z",
+      "updated_at": "2025-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "nomoar.changemaker",
+    "pk": 4,
+    "fields": {
+      "name": "John Lewis",
+      "slug": "john-lewis",
+      "tagline": "Freedom Rider, congressman, conscience of the movement",
+      "summary": "Lewis chaired SNCC, helped lead the Selma march where he was beaten on Bloody Sunday, and served decades in Congress championing voting rights and reconciliation.",
+      "body": "His philosophy of 'good trouble' linked moral witness to legislative persistence across generations of struggle.",
+      "birth_year": 1940,
+      "death_year": 2020,
+      "order": 4,
+      "is_published": true,
+      "created_at": "2025-01-01T12:00:00Z",
+      "updated_at": "2025-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "nomoar.changemaker",
+    "pk": 5,
+    "fields": {
+      "name": "Fannie Lou Hamer",
+      "slug": "fannie-lou-hamer",
+      "tagline": "SNCC organizer, Mississippi Freedom Democratic Party",
+      "summary": "A sharecropper who became a national voice for voting rights, Hamer survived brutal reprisals and delivered searing testimony at the 1964 Democratic convention.",
+      "body": "She tied land, labor, and the ballot together—insisting that democracy must include poor Black Southerners excluded by terror and procedural tricks.",
+      "birth_year": 1917,
+      "death_year": 1977,
+      "order": 5,
+      "is_published": true,
+      "created_at": "2025-01-01T12:00:00Z",
+      "updated_at": "2025-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "nomoar.changemaker",
+    "pk": 6,
+    "fields": {
+      "name": "Grace Lee Boggs",
+      "slug": "grace-lee-boggs",
+      "tagline": "Philosopher-activist, Detroit community builder",
+      "summary": "Boggs spent decades organizing around labor, Black Power, and urban renewal—later fostering youth-led urban agriculture and mutual aid in Detroit.",
+      "body": "Her work bridged Marxist analysis, Asian American identity, and place-based organizing, arguing that revolution is an ongoing cultural transformation.",
+      "birth_year": 1915,
+      "death_year": 2015,
+      "order": 6,
+      "is_published": true,
+      "created_at": "2025-01-01T12:00:00Z",
+      "updated_at": "2025-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "nomoar.changemaker",
+    "pk": 7,
+    "fields": {
+      "name": "Yuri Kochiyama",
+      "slug": "yuri-kochiyama",
+      "tagline": "Internment survivor, solidarity organizer",
+      "summary": "After Japanese American incarceration during World War II, Kochiyama worked with Black, Puerto Rican, and Asian American liberation movements in Harlem and beyond.",
+      "body": "She modeled cross-racial solidarity and reparative memory—linking anti-Asian state violence to broader struggles against white supremacy.",
+      "birth_year": 1921,
+      "death_year": 2014,
+      "order": 7,
+      "is_published": true,
+      "created_at": "2025-01-01T12:00:00Z",
+      "updated_at": "2025-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "nomoar.changemaker",
+    "pk": 8,
+    "fields": {
+      "name": "César Chávez",
+      "slug": "cesar-chavez",
+      "tagline": "Labor leader, United Farm Workers",
+      "summary": "Chávez co-founded the UFW, using strikes, boycotts, and fasts to improve conditions for predominantly Latino farmworkers and expose exploitative labor systems.",
+      "body": "His work connected civil rights, economic justice, and nonviolent strategy in fields often exempted from labor protections.",
+      "birth_year": 1927,
+      "death_year": 1993,
+      "order": 8,
+      "is_published": true,
+      "created_at": "2025-01-01T12:00:00Z",
+      "updated_at": "2025-01-01T12:00:00Z"
+    }
   }
 ]

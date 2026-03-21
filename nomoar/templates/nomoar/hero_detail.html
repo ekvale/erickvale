@@ -1,0 +1,67 @@
+{% extends 'nomoar/base.html' %}
+
+{% block title %}{{ hero.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .nomoar-hero-detail-head {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+    }
+    .nomoar-hero-detail-portrait {
+        width: 200px;
+        max-width: 100%;
+        aspect-ratio: 1;
+        border-radius: 12px;
+        object-fit: cover;
+        border: 1px solid var(--nomoar-border);
+    }
+    .nomoar-hero-detail-initials {
+        width: 200px;
+        max-width: 100%;
+        aspect-ratio: 1;
+        border-radius: 12px;
+        background: linear-gradient(160deg, #2a2418, #1a1a22);
+        border: 1px solid var(--nomoar-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Crimson Pro', Georgia, serif;
+        font-size: 3.5rem;
+        font-weight: 700;
+        color: var(--nomoar-accent);
+    }
+    .nomoar-hero-detail-meta h1 { margin-top: 0; }
+    .nomoar-hero-detail-meta .life { color: var(--nomoar-muted); margin-bottom: 0.5rem; }
+    .nomoar-hero-detail-meta .tagline { font-size: 1.1rem; color: var(--nomoar-link); margin-bottom: 1rem; }
+    .nomoar-hero-detail-body { max-width: 42rem; line-height: 1.75; }
+    .nomoar-hero-detail-body p { margin: 0 0 1rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<p><a href="{% url 'nomoar:heroes' %}" class="muted" style="text-decoration:none;">← Heroes &amp; change makers</a></p>
+
+<div class="nomoar-hero-detail-head">
+    {% if hero.portrait %}
+    <img class="nomoar-hero-detail-portrait" src="{{ hero.portrait.url }}" alt="">
+    {% else %}
+    <div class="nomoar-hero-detail-initials" aria-hidden="true">{{ hero.initials }}</div>
+    {% endif %}
+    <div class="nomoar-hero-detail-meta">
+        {% if hero.life_span_display %}<p class="life">{{ hero.life_span_display }}</p>{% endif %}
+        <h1>{{ hero.name }}</h1>
+        {% if hero.tagline %}<p class="tagline">{{ hero.tagline }}</p>{% endif %}
+    </div>
+</div>
+
+<div class="nomoar-hero-detail-body">
+    <p>{{ hero.summary|linebreaksbr }}</p>
+    {% if hero.body %}
+    {{ hero.body|linebreaks }}
+    {% endif %}
+</div>
+{% endblock %}

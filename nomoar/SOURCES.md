@@ -10,4 +10,6 @@ Archive entries are **summaries for education**; verify details in primary sourc
 - Chinese Exclusion Act: National Archives / standard U.S. history references.  
 - Tulsa Race Massacre: 1921 commission report, Oklahoma Historical Society, academic histories.
 
+**Branding:** Site header/map footer use `static/nomoar/NOMOARLogo.jpg` (project-provided asset).
+
 This Django app is **not affiliated** with [nomoar.org](https://nomoar.org/).

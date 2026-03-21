@@ -1,4 +1,5 @@
 {% extends 'nomoar/base.html' %}
+{% load static %}
 
 {% block title %}Map{% endblock %}
 
@@ -254,15 +255,12 @@
         align-items: center;
         gap: 0.65rem;
     }
-    .nomoar-rich-footer-logo-mark {
+    .nomoar-rich-footer-logo-img {
         width: 44px;
         height: 44px;
-        border-radius: 50%;
-        background: linear-gradient(145deg, #e65100, #ff9800);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.35rem;
+        object-fit: contain;
+        border-radius: 8px;
+        flex-shrink: 0;
     }
     .nomoar-rich-footer-logo-text {
         font-weight: 800;
@@ -422,7 +420,7 @@
     <div class="nomoar-rich-footer-inner">
         <div class="nomoar-rich-footer-brand">
             <div class="nomoar-rich-footer-logo">
-                <span class="nomoar-rich-footer-logo-mark" aria-hidden="true">◎</span>
+                <img class="nomoar-rich-footer-logo-img" src="{% static 'nomoar/NOMOARLogo.jpg' %}" width="44" height="44" alt="">
                 <span class="nomoar-rich-footer-logo-text">NOMOAR</span>
             </div>
             <p class="nomoar-rich-footer-tagline">Documenting American Racism &amp; Resistance Since 1776</p>
@@ -439,6 +437,7 @@
                 <li><a href="{% url 'nomoar:home' %}">Home</a></li>
                 <li><a href="{% url 'nomoar:home' %}#about">About</a></li>
                 <li><a href="{% url 'nomoar:timeline' %}">The platform</a></li>
+                <li><a href="{% url 'nomoar:heroes' %}">Heroes &amp; change makers</a></li>
                 <li><a href="{% url 'nomoar:submit' %}">Get involved</a></li>
                 <li><a href="{% url 'homepage' %}">Contact</a></li>
                 <li><a href="https://nomoar.org/" rel="noopener noreferrer" target="_blank">Privacy policy</a></li>

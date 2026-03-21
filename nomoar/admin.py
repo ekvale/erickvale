@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import HistoricalEvent, Collection, Tag, SiteStat
+from .models import ChangeMaker, Collection, HistoricalEvent, SiteStat, Tag
 
 
 @admin.register(Tag)
@@ -28,6 +28,15 @@ class HistoricalEventAdmin(admin.ModelAdmin):
     search_fields = ['title', 'summary', 'location']
     prepopulated_fields = {'slug': ('title',)}
     filter_horizontal = ['collections', 'tags']
+
+
+@admin.register(ChangeMaker)
+class ChangeMakerAdmin(admin.ModelAdmin):
+    list_display = ['name', 'tagline', 'order', 'is_published', 'updated_at']
+    list_filter = ['is_published']
+    search_fields = ['name', 'summary', 'tagline', 'body']
+    prepopulated_fields = {'slug': ('name',)}
+    ordering = ['order', 'name']
 
 
 @admin.register(SiteStat)

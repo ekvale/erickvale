@@ -101,6 +101,60 @@ class HistoricalEvent(models.Model):
         return ARCHIVE_EVENT_TYPE_COLORS.get(self.event_type, '#1e88e5')
 
 
+class ChangeMaker(models.Model):
+    """
+    People who resisted racism and advanced justice — companion to the events archive.
+    Editable in admin; seeded from fixtures for local/demo use.
+    """
+    name = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=120, unique=True, db_index=True)
+    tagline = models.CharField(
+        max_length=300,
+        blank=True,
+        help_text='Short role or descriptor under the name',
+    )
+    summary = models.TextField(help_text='Card text on the Heroes index')
+    body = models.TextField(blank=True, help_text='Longer biography on the detail page')
+    birth_year = models.PositiveIntegerField(null=True, blank=True)
+    death_year = models.PositiveIntegerField(null=True, blank=True)
+    portrait = models.ImageField(
+        upload_to='nomoar/heroes/',
+        blank=True,
+        null=True,
+        help_text='Optional photo (upload in admin)',
+    )
+    order = models.PositiveIntegerField(default=0)
+    is_published = models.BooleanField(default=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['order', 'name']
+        verbose_name = 'Change maker / hero'
+        verbose_name_plural = 'Change makers & heroes'
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse('nomoar:hero_detail', kwargs={'slug': self.slug})
+
+    @property
+    def life_span_display(self):
+        if self.birth_year and self.death_year:
+            return f'{self.birth_year}–{self.death_year}'
+        if self.birth_year:
+            return f'b. {self.birth_year}'
+        return ''
+
+    @property
+    def initials(self):
+        parts = self.name.split()
+        if len(parts) >= 2:
+            return (parts[0][0] + parts[-1][0]).upper()
+        return (self.name[:2] if self.name else '?').upper()
+
+
 class SiteStat(models.Model):
     """Editable headline stats for the homepage."""
     key = models.CharField(max_length=50, unique=True)

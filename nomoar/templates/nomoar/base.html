@@ -46,6 +46,28 @@
             justify-content: space-between;
             gap: 1rem;
         }
+        .nomoar-logo-link {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            text-decoration: none;
+            color: inherit;
+        }
+        .nomoar-logo-img {
+            width: 42px;
+            height: 42px;
+            object-fit: contain;
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+        .nomoar-logo-text {
+            font-family: 'Crimson Pro', Georgia, serif;
+            font-weight: 700;
+            font-size: 1.15rem;
+            letter-spacing: 0.04em;
+            color: var(--nomoar-text);
+        }
+        .nomoar-logo-text .accent { color: var(--nomoar-accent); }
         .nomoar-logo {
             font-family: 'Crimson Pro', Georgia, serif;
             font-weight: 700;
@@ -185,10 +207,14 @@
 <body>
     <header class="nomoar-header">
         <div class="nomoar-header-inner">
-            <a href="{% url 'nomoar:home' %}" class="nomoar-logo">NOMOAR<span>.</span></a>
+            <a href="{% url 'nomoar:home' %}" class="nomoar-logo-link" aria-label="NOMOAR home">
+                <img class="nomoar-logo-img" src="{% static 'nomoar/NOMOARLogo.jpg' %}" width="42" height="42" alt="">
+                <span class="nomoar-logo-text">NOMOAR<span class="accent">.</span></span>
+            </a>
             <nav class="nomoar-nav">
                 <a href="{% url 'nomoar:timeline' %}">Timeline</a>
                 <a href="{% url 'nomoar:map' %}">Map</a>
+                <a href="{% url 'nomoar:heroes' %}">Heroes</a>
                 <a href="{% url 'nomoar:submit' %}">Submit</a>
                 <a href="{% url 'nomoar:educators' %}">Educators</a>
                 <a href="{% url 'nomoar:pricing' %}">Support</a>

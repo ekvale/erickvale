@@ -12,6 +12,7 @@
 <div class="cta-row">
     <a href="{% url 'nomoar:timeline' %}" class="btn btn-primary">Explore Timeline</a>
     <a href="{% url 'nomoar:map' %}" class="btn btn-outline">View Map</a>
+    <a href="{% url 'nomoar:heroes' %}" class="btn btn-outline">Heroes &amp; change makers</a>
 </div>
 
 <div class="stats-grid">
@@ -32,6 +33,21 @@
         <div class="stat-label">{% if stats.collections %}{{ stats.collections.label }}{% else %}Curated Collections{% endif %}</div>
     </div>
 </div>
+
+{% if heroes_preview %}
+<h2>Heroes &amp; change makers</h2>
+<p class="muted">People who fought for justice and collective liberation—alongside the events we document.</p>
+<div class="nomoar-heroes-preview-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;margin-bottom:2rem;">
+    {% for h in heroes_preview %}
+    <a href="{{ h.get_absolute_url }}" class="event-card" style="margin-bottom:0;">
+        <span class="year" style="font-size:0.75rem;">{% if h.life_span_display %}{{ h.life_span_display }}{% else %}Profile{% endif %}</span>
+        <h3 style="font-size:1rem;">{{ h.name }}</h3>
+        <p style="font-size:0.85rem;">{% if h.tagline %}{{ h.tagline|truncatewords:18 }}{% else %}{{ h.summary|truncatewords:18 }}{% endif %}</p>
+    </a>
+    {% endfor %}
+</div>
+<p><a href="{% url 'nomoar:heroes' %}" class="btn btn-outline">View all heroes</a></p>
+{% endif %}
 
 <h2>Recent History</h2>
 {% for e in recent_events %}

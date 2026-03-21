@@ -11,4 +11,6 @@ urlpatterns = [
     path('Submit/', views.submit_event, name='submit'),
     path('Educators/', views.EducatorsView.as_view(), name='educators'),
     path('Pricing/', views.PricingView.as_view(), name='pricing'),
+    path('Heroes/', views.HeroesView.as_view(), name='heroes'),
+    path('HeroDetail/<slug:slug>/', views.HeroDetailView.as_view(), name='hero_detail'),
 ]

@@ -7,6 +7,7 @@ from django.urls import reverse
 from .models import (
     ARCHIVE_EVENT_TYPE_COLORS,
     ArchiveEventType,
+    ChangeMaker,
     Collection,
     HistoricalEvent,
     SiteStat,
@@ -32,6 +33,9 @@ class HomeView(TemplateView):
         if not fe:
             fe = list(HistoricalEvent.objects.all()[:6])
         ctx['featured_events'] = fe
+        ctx['heroes_preview'] = list(
+            ChangeMaker.objects.filter(is_published=True).order_by('order', 'name')[:4]
+        )
         return ctx
 
 
@@ -127,3 +131,22 @@ class EducatorsView(TemplateView):
 
 class PricingView(TemplateView):
     template_name = 'nomoar/pricing.html'
+
+
+class HeroesView(ListView):
+    model = ChangeMaker
+    template_name = 'nomoar/heroes.html'
+    context_object_name = 'heroes'
+
+    def get_queryset(self):
+        return ChangeMaker.objects.filter(is_published=True).order_by('order', 'name')
+
+
+class HeroDetailView(DetailView):
+    model = ChangeMaker
+    template_name = 'nomoar/hero_detail.html'
+    context_object_name = 'hero'
+    slug_url_kwarg = 'slug'
+
+    def get_queryset(self):
+        return ChangeMaker.objects.filter(is_published=True)

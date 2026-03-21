@@ -23,7 +23,9 @@ If the map legend shows fewer plotted events than expected (seed = **18**), the 
 python manage.py nomoar_seed_from_fixture
 ```
 
-That upserts every `HistoricalEvent` and `SiteStat` from `nomoar/fixtures/initial.json` by slug/key (no PK conflicts). You can still use `loaddata` for a clean install; use `nomoar_sync_coords` only to refresh lat/lng on existing rows without changing other fields.
+That upserts `HistoricalEvent`, `SiteStat`, and **`ChangeMaker`** (heroes) from `nomoar/fixtures/initial.json` by slug/key (no PK conflicts). You can still use `loaddata` for a clean install; use `nomoar_sync_coords` only to refresh lat/lng on existing rows without changing other fields.
+
+**Logo:** `nomoar/static/nomoar/NOMOARLogo.jpg` is collected to static; ensure it exists after pull.
 
 If Django reports `Unknown command: 'nomoar_seed_from_fixture'`, your server copy is missing `nomoar/management/commands/` — run `git pull` after the repo has been updated (those files must be committed and pushed).
 
@@ -34,8 +36,10 @@ Uses [Leaflet](https://leafletjs.com/) + [MarkerCluster](https://github.com/Leaf
 - **Home:** `/apps/nomoar/`
 - **Timeline:** `/apps/nomoar/Timeline/`
 - **Map:** `/apps/nomoar/Map/`
+- **Heroes & change makers:** `/apps/nomoar/Heroes/`
+- **Hero profile:** `/apps/nomoar/HeroDetail/<slug>/`
 - **Event:** `/apps/nomoar/EventDetail/<slug>/`
 - **Submit:** `/apps/nomoar/Submit/`
 - **Educators / Support:** `/apps/nomoar/Educators/`, `/apps/nomoar/Pricing/`
 
-Admin: add/edit `HistoricalEvent`, `SiteStat`, `Collection`, `Tag`.
+Admin: add/edit `HistoricalEvent`, `ChangeMaker`, `SiteStat`, `Collection`, `Tag`.

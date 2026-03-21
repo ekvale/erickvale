@@ -1,7 +1,7 @@
 """
-Upsert SiteStat and HistoricalEvent rows from nomoar/fixtures/initial.json
+Upsert SiteStat, HistoricalEvent, and ChangeMaker rows from nomoar/fixtures/initial.json
 (match by key / slug). Safe when loaddata fails on PK conflicts or the DB
-only has a partial seed — fixes maps that show only a few markers.
+only has a partial seed — fixes maps and heroes lists.
 
   python manage.py nomoar_seed_from_fixture
 """
@@ -11,7 +11,7 @@ from pathlib import Path
 from django.core.management.base import BaseCommand
 from django.utils import dateparse
 
-from nomoar.models import ArchiveEventType, HistoricalEvent, SiteStat
+from nomoar.models import ArchiveEventType, ChangeMaker, HistoricalEvent, SiteStat
 
 
 def _parse_dt(s):
@@ -21,7 +21,7 @@ def _parse_dt(s):
 
 
 class Command(BaseCommand):
-    help = 'Upsert nomoar SiteStat + HistoricalEvent from fixtures/initial.json'
+    help = 'Upsert nomoar SiteStat, HistoricalEvent, ChangeMaker from fixtures/initial.json'
 
     def handle(self, *args, **options):
         fixture_path = Path(__file__).resolve().parent.parent.parent / 'fixtures' / 'initial.json'
@@ -33,6 +33,8 @@ class Command(BaseCommand):
         stats_done = 0
         events_created = 0
         events_updated = 0
+        heroes_created = 0
+        heroes_updated = 0
 
         for row in data:
             model = row.get('model')
@@ -94,9 +96,42 @@ class Command(BaseCommand):
                     events_updated += 1
                     self.stdout.write(f'Updated event: {slug}')
 
+            elif model == 'nomoar.changemaker':
+                slug = fields.get('slug')
+                if not slug:
+                    continue
+                by, dy = fields.get('birth_year'), fields.get('death_year')
+                defaults = {
+                    'name': fields.get('name', ''),
+                    'tagline': fields.get('tagline', ''),
+                    'summary': fields.get('summary', ''),
+                    'body': fields.get('body', ''),
+                    'birth_year': int(by) if by is not None else None,
+                    'death_year': int(dy) if dy is not None else None,
+                    'order': int(fields.get('order') or 0),
+                    'is_published': bool(fields.get('is_published', True)),
+                }
+                obj, created = ChangeMaker.objects.update_or_create(slug=slug, defaults=defaults)
+                if created:
+                    heroes_created += 1
+                    self.stdout.write(self.style.SUCCESS(f'Created hero: {slug}'))
+                    ca, ua = _parse_dt(fields.get('created_at')), _parse_dt(fields.get('updated_at'))
+                    if ca or ua:
+                        ChangeMaker.objects.filter(pk=obj.pk).update(
+                            **{
+                                k: v
+                                for k, v in [('created_at', ca), ('updated_at', ua)]
+                                if v is not None
+                            }
+                        )
+                else:
+                    heroes_updated += 1
+                    self.stdout.write(f'Updated hero: {slug}')
+
         self.stdout.write(
             self.style.SUCCESS(
                 f'Done. SiteStat rows touched: {stats_done}. '
-                f'Events created: {events_created}, updated: {events_updated}.'
+                f'Events created: {events_created}, updated: {events_updated}. '
+                f'Heroes created: {heroes_created}, updated: {heroes_updated}.'
             )
         )
