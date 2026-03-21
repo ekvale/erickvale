@@ -40,6 +40,16 @@ class HistoricalEvent(models.Model):
     body = models.TextField(blank=True, help_text='Optional longer narrative')
     location = models.CharField(max_length=300, blank=True)
     state = models.CharField(max_length=2, blank=True, help_text='US state code if applicable')
+    latitude = models.FloatField(
+        null=True,
+        blank=True,
+        help_text='WGS84 latitude for map (e.g. 36.1)',
+    )
+    longitude = models.FloatField(
+        null=True,
+        blank=True,
+        help_text='WGS84 longitude for map (e.g. -112.1)',
+    )
     featured = models.BooleanField(default=False)
     raised_fists = models.PositiveIntegerField(default=0, help_text='Community acknowledgment count')
     collections = models.ManyToManyField(Collection, blank=True, related_name='events')

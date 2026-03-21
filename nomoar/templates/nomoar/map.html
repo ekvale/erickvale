@@ -2,11 +2,44 @@
 
 {% block title %}Map{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<style>
+    #nomoar-map {
+        height: min(70vh, 560px);
+        width: 100%;
+        border-radius: 8px;
+        border: 1px solid var(--nomoar-border);
+        z-index: 1;
+    }
+    .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+        background: var(--nomoar-elevated);
+        color: var(--nomoar-text);
+        border: 1px solid var(--nomoar-border);
+    }
+    .leaflet-popup-content a { color: var(--nomoar-link); }
+    .nomoar-map-legend {
+        margin-top: 1rem;
+        font-size: 0.85rem;
+        color: var(--nomoar-muted);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <h1>Map</h1>
-<p class="muted">Events by U.S. state (where location data includes a state code). A full interactive map can be added later (e.g. Leaflet + GeoJSON).</p>
+<p class="muted">Events with coordinates appear as markers. Hover for a quick summary; click the marker for details and a link to the full entry.</p>
+
+{% if map_events %}
+{{ map_events|json_script:"nomoar-map-events" }}
+<div id="nomoar-map" role="region" aria-label="Archive events map"></div>
+<p class="nomoar-map-legend">{{ map_events|length }} plotted event{{ map_events|length|pluralize }} · <a href="{% url 'nomoar:timeline' %}">Timeline</a></p>
+{% else %}
+<p class="muted">No geocoded events yet. In Django admin, set <strong>latitude</strong> and <strong>longitude</strong> (WGS84) on each historical event.</p>
+{% endif %}
 
 {% if events_with_state %}
+<h2 style="margin-top:2rem;">By state</h2>
 <ul style="list-style:none; padding:0; max-width:28rem;">
     {% for row in events_with_state %}
     <li style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid var(--nomoar-border);">
@@ -15,8 +48,74 @@
     </li>
     {% endfor %}
 </ul>
-<p><a href="{% url 'nomoar:timeline' %}" class="btn btn-outline">Browse full timeline</a></p>
-{% else %}
-<p class="muted">No state-tagged events yet. Add <code>state</code> codes in admin when editing events.</p>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if map_events %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+(function() {
+    var el = document.getElementById('nomoar-map-events');
+    if (!el) return;
+    var events = JSON.parse(el.textContent);
+    if (!events.length) return;
+
+    var map = L.map('nomoar-map', { scrollWheelZoom: true });
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 20
+    }).addTo(map);
+
+    var bounds = [];
+    var gold = '#c9a227';
+
+    events.forEach(function(ev) {
+        var lat = ev.lat, lng = ev.lng;
+        if (lat == null || lng == null) return;
+        bounds.push([lat, lng]);
+
+        var marker = L.circleMarker([lat, lng], {
+            radius: 10,
+            fillColor: gold,
+            color: '#1a1a1a',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.85
+        }).addTo(map);
+
+        var tip = '<strong>' + ev.year + '</strong> · ' + (ev.title || '').replace(/</g, '&lt;');
+        if (ev.location) tip += '<br><span style="opacity:0.85;font-size:11px;">' + String(ev.location).replace(/</g, '&lt;') + '</span>';
+        marker.bindTooltip(tip, { direction: 'top', offset: [0, -8], className: 'nomoar-leaflet-tooltip' });
+
+        var popupHtml = '<div style="min-width:220px;max-width:320px;">';
+        popupHtml += '<strong style="color:#c9a227;">' + ev.year + '</strong><br>';
+        popupHtml += '<strong>' + String(ev.title).replace(/</g, '&lt;') + '</strong>';
+        if (ev.location) popupHtml += '<br><span style="font-size:12px;opacity:0.9;">' + String(ev.location).replace(/</g, '&lt;') + '</span>';
+        if (ev.state) popupHtml += '<br><span style="font-size:11px;">' + String(ev.state).replace(/</g, '&lt;') + '</span>';
+        popupHtml += '<p style="margin:8px 0 0;font-size:13px;line-height:1.45;">' + String(ev.summary || '').replace(/</g, '&lt;') + '</p>';
+        popupHtml += '<a href="' + String(ev.url).replace(/"/g, '&quot;') + '" style="font-weight:600;">Full entry →</a>';
+        popupHtml += '</div>';
+        marker.bindPopup(popupHtml);
+    });
+
+    if (bounds.length === 1) {
+        map.setView(bounds[0], 6);
+    } else {
+        map.fitBounds(bounds, { padding: [40, 40], maxZoom: 8 });
+    }
+})();
+</script>
+<style>
+    .nomoar-leaflet-tooltip {
+        background: #1c1c22 !important;
+        color: #e8e6e3 !important;
+        border: 1px solid #2a2a32 !important;
+        border-radius: 6px !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
+    }
+    .nomoar-leaflet-tooltip::before { border-top-color: #1c1c22 !important; }
+</style>
 {% endif %}
 {% endblock %}

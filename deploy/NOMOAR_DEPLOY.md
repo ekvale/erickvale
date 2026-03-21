@@ -14,6 +14,8 @@ python manage.py collectstatic --noinput
 sudo systemctl restart erickvale
 ```
 
+**Map:** Set `latitude` and `longitude` (WGS84) on each `HistoricalEvent` in admin to plot it. Seed fixture includes coords. The map uses [Leaflet](https://leafletjs.com/) + CARTO dark basemap; hover = tooltip, click = popup with summary and link.
+
 ## URLs
 
 - **Home:** `/apps/nomoar/`

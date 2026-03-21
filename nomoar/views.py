@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from django.views.generic import ListView, DetailView, TemplateView
 from django.contrib import messages
-from django.db.models import Count
+from django.db.models import Count, Q
+from django.urls import reverse
 
 from .models import HistoricalEvent, Collection, SiteStat
 from .forms import EventSubmissionForm
@@ -63,6 +64,22 @@ class MapView(TemplateView):
             .annotate(n=Count('id'))
             .order_by('-n')
         )
+        mapped = []
+        for e in HistoricalEvent.objects.exclude(latitude=None).exclude(longitude=None):
+            mapped.append(
+                {
+                    'slug': e.slug,
+                    'title': e.title,
+                    'year': e.year,
+                    'summary': e.summary[:400] + ('…' if len(e.summary) > 400 else ''),
+                    'location': e.location or '',
+                    'state': e.state or '',
+                    'lat': float(e.latitude),
+                    'lng': float(e.longitude),
+                    'url': reverse('nomoar:event_detail', kwargs={'slug': e.slug}),
+                }
+            )
+        ctx['map_events'] = mapped
         return ctx
 
 
