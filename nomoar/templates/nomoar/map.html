@@ -86,6 +86,11 @@
     }
     .nomoar-map-filters select {
         cursor: pointer;
+        min-height: 2.25rem;
+    }
+    .nomoar-map-filters select option {
+        background: #1a1a1a;
+        color: #eee;
     }
     .nomoar-map-filters .nomoar-map-filter-row {
         display: grid;
@@ -469,6 +474,14 @@
             </p>
             <form class="nomoar-map-filters" method="get" action="{% url 'nomoar:map' %}" role="search">
                 {% if map_focus_slug %}<input type="hidden" name="focus" value="{{ map_focus_slug|escape }}">{% endif %}
+                <label>Event type
+                    <select name="type" id="nomoar-map-filter-type" aria-label="Filter by event type">
+                        <option value=""{% if not map_type %} selected{% endif %}>All types</option>
+                        {% for val, label in map_event_type_choices %}
+                        <option value="{{ val }}"{% if map_type == val %} selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
                 <div class="nomoar-map-filter-row">
                     <label>Year from
                         <input type="number" name="year_from" min="1400" max="2100" step="1"
