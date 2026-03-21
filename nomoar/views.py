@@ -116,7 +116,7 @@ class TimelineView(ListView):
 
     def get_queryset(self):
         qs = HistoricalEvent.objects.prefetch_related(
-            'tags', 'collections', 'sources', 'theme_labels',
+            'tags', 'collections', 'sources', 'theme_labels', 'photos',
         )
         qs = filter_events_by_timeline_get(qs, self.request.GET)
         q_raw = self.request.GET.get('q', '').strip()
@@ -332,6 +332,7 @@ class EventDetailView(DetailView):
             'theme_labels',
             'curated_related',
             'glossary_terms',
+            'photos',
         )
 
     def get_context_data(self, **kwargs):

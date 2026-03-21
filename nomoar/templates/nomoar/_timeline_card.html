@@ -1,5 +1,14 @@
 {% load nomoar_tags %}
 <article class="nomoar-tl-card">
+    {% with e.photos.all|first as ph %}
+    {% if ph %}
+    <div class="nomoar-tl-card-photo">
+        <a href="{{ e.get_absolute_url }}" aria-hidden="true" tabindex="-1">
+            <img src="{{ ph.image.url }}" alt="{% if ph.alt_text %}{{ ph.alt_text }}{% elif ph.caption %}{{ ph.caption }}{% else %}Photo: {{ e.title|truncatechars:100 }}{% endif %}" loading="lazy" width="400" height="225">
+        </a>
+    </div>
+    {% endif %}
+    {% endwith %}
     <div class="nomoar-tl-card-date">{{ e.year }}</div>
     <div class="nomoar-tl-tags">
         {% for tl in e.theme_labels.all %}

@@ -9,7 +9,7 @@ cd /home/erickvale/erickvale
 git pull origin main
 source venv/bin/activate
 python manage.py migrate nomoar
-# 0006–0008: theme labels, ✊ votes; 0009: curated_related, feeds/embed; 0010: learning paths, lesson kits, glossary, commentary posts, localized packs, partner/sponsor collection fields, primary-source extras, educator newsletter signups, engagement settings; ChangeMaker.body renamed to biography (data preserved). 0011: discovery — timeline/map filters (year range, tag, theme), Start here page (`/start/`), glossary cross-terms, search snippets, related blocks on glossary/hero/commentary.
+# 0006–0008: theme labels, ✊ votes; 0009: curated_related, feeds/embed; 0010: learning paths, lesson kits, glossary, commentary posts, localized packs, partner/sponsor collection fields, primary-source extras, educator newsletter signups, engagement settings; ChangeMaker.body renamed to biography (data preserved). 0011: discovery — timeline/map filters (year range, tag, theme), Start here page (`/start/`), glossary cross-terms, search snippets, related blocks on glossary/hero/commentary. 0012: optional **Event photos** (gallery per event; uploads under `media/nomoar/event_photos/`).
 # Map uses event_type (violence/policy/legislation/discrimination); seed sets colors.
 python manage.py loaddata nomoar/fixtures/initial.json
 python manage.py collectstatic --noinput

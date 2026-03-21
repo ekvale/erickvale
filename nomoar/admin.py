@@ -5,6 +5,7 @@ from .models import (
     ChangeMaker,
     Collection,
     EngagementConfig,
+    EventPhoto,
     EventSource,
     EventThemeLabel,
     GlossaryTerm,
@@ -17,6 +18,13 @@ from .models import (
     SiteStat,
     Tag,
 )
+
+
+class EventPhotoInline(admin.TabularInline):
+    model = EventPhoto
+    extra = 0
+    ordering = ['order', 'pk']
+    fields = ['order', 'image', 'caption', 'alt_text']
 
 
 class EventSourceInline(admin.TabularInline):
@@ -135,6 +143,15 @@ class HistoricalEventAdmin(admin.ModelAdmin):
             },
         ),
     )
+
+
+@admin.register(EventPhoto)
+class EventPhotoAdmin(admin.ModelAdmin):
+    list_display = ['id', 'event', 'order', 'caption', 'created_at']
+    list_filter = ['created_at']
+    search_fields = ['caption', 'alt_text', 'event__title', 'event__slug']
+    autocomplete_fields = ['event']
+    ordering = ['event', 'order', 'pk']
 
 
 @admin.register(EventSource)

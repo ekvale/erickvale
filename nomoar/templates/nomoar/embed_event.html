@@ -21,6 +21,9 @@
         .summary { color: #aaa; font-size: 13px; margin: 0 0 12px; }
         .loc { color: #888; font-size: 12px; margin: 0 0 12px; }
         .footer { margin-top: 14px; padding-top: 10px; border-top: 1px solid #333; font-size: 11px; color: #666; }
+        .embed-photo { margin: 0 0 12px; border-radius: 8px; overflow: hidden; border: 1px solid #333; }
+        .embed-photo img { display: block; width: 100%; height: auto; max-height: 200px; object-fit: cover; }
+        .embed-photo-cap { font-size: 11px; color: #888; margin: 6px 8px 8px; }
     </style>
 </head>
 <body>
@@ -29,6 +32,14 @@
     {% if event.location %}
     <p class="loc">{{ event.location }}{% if event.state %}, {{ event.state }}{% endif %}</p>
     {% endif %}
+    {% with event.photos.all|first as ph %}
+    {% if ph %}
+    <div class="embed-photo">
+        <img src="{{ ph.image.url }}" alt="{% if ph.alt_text %}{{ ph.alt_text }}{% elif ph.caption %}{{ ph.caption }}{% else %}Photo: {{ event.title|truncatechars:100 }}{% endif %}" loading="lazy">
+        {% if ph.caption %}<p class="embed-photo-cap">{{ ph.caption }}</p>{% endif %}
+    </div>
+    {% endif %}
+    {% endwith %}
     <p class="summary">{{ event.summary|truncatewords:48 }}</p>
     <p><a href="{{ full_site_url }}" target="_blank" rel="noopener noreferrer">Open full entry →</a></p>
     <div class="footer">NOMOAR — educational archive. Not legal advice.</div>

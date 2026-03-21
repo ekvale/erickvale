@@ -240,6 +240,47 @@ class EventSource(models.Model):
         return self.citation[:60]
 
 
+class EventPhoto(models.Model):
+    """Optional gallery images for a timeline entry (distinct from primary-source uploads)."""
+    event = models.ForeignKey(
+        HistoricalEvent,
+        on_delete=models.CASCADE,
+        related_name='photos',
+    )
+    image = models.ImageField(
+        upload_to='nomoar/event_photos/',
+        help_text='JPEG, PNG, or WebP recommended',
+    )
+    caption = models.CharField(
+        max_length=300,
+        blank=True,
+        help_text='Optional caption shown under the image',
+    )
+    alt_text = models.CharField(
+        max_length=300,
+        blank=True,
+        help_text='Short description for screen readers (falls back to caption or title if empty)',
+    )
+    order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order', 'pk']
+        verbose_name = 'Event photo'
+        verbose_name_plural = 'Event photos'
+
+    def __str__(self):
+        return f'{self.event_id}: {self.image.name}' if self.image else str(self.pk)
+
+    def alt_display(self) -> str:
+        """Best alt string for <img> (does not access event — safe with prefetch)."""
+        if (self.alt_text or '').strip():
+            return self.alt_text.strip()
+        if (self.caption or '').strip():
+            return self.caption.strip()
+        return 'Historical archive photograph'
+
+
 class ChangeMaker(models.Model):
     """
     People who resisted racism and advanced justice — companion to the events archive.
