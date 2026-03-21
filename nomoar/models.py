@@ -317,6 +317,15 @@ class LearningPath(models.Model):
     )
     order = models.PositiveIntegerField(default=0)
     is_published = models.BooleanField(default=True, db_index=True)
+    show_on_start_here = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text='Featured on the “Start here” page (up to ~3 paths shown by order)',
+    )
+    start_here_order = models.PositiveIntegerField(
+        default=0,
+        help_text='Lower numbers appear first on Start here',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -435,6 +444,13 @@ class GlossaryTerm(models.Model):
         blank=True,
         related_name='glossary_terms',
     )
+    related_terms = models.ManyToManyField(
+        'self',
+        symmetrical=False,
+        blank=True,
+        related_name='related_from_terms',
+        help_text='Cross-links to other glossary entries',
+    )
     order = models.PositiveIntegerField(default=0)
 
     class Meta:
@@ -534,6 +550,11 @@ class EngagementConfig(models.Model):
         help_text='e.g. no programmatic ads on sensitive entries',
     )
     merch_print_blurb = models.TextField(blank=True, help_text='Posters, maps, print-on-demand')
+    start_here_map_query = models.CharField(
+        max_length=500,
+        blank=True,
+        help_text='Query string for the “Start here” map link, e.g. year_from=2020&year_to=2026&type=policy',
+    )
 
     class Meta:
         verbose_name = 'Engagement & support settings'

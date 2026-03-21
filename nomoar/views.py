@@ -3,8 +3,8 @@ from collections import Counter
 from html import escape as html_escape
 from urllib.parse import quote, urlencode
 
-from django.db import connection, transaction
-from django.db.models import Count, F, Max, Min, Q
+from django.db import transaction
+from django.db.models import Count, F, Max, Min
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -19,7 +19,9 @@ from .models import (
     ArchiveEventType,
     ChangeMaker,
     Collection,
+    EngagementConfig,
     EventFistVote,
+    EventThemeLabel,
     GlossaryTerm,
     HistoricalEvent,
     LearningPath,
@@ -27,37 +29,25 @@ from .models import (
     LocalizedResourcePack,
     NewsletterSubscriber,
     SiteStat,
+    Tag,
+)
+from .discovery import (
+    event_ids_from_queryset_or_list,
+    events_related_to_glossary_term,
+    glossary_terms_for_events,
+    heroes_for_events,
+    learning_paths_for_events,
+    news_posts_for_events,
 )
 from .forms import EducatorNewsletterForm, EventSubmissionForm
 from .related_events import combined_related_events
+from .search_snippets import (
+    apply_events_text_search,
+    apply_events_text_search_with_headline,
+    attach_search_snippet_display,
+)
+from .timeline_filters import filter_events_by_timeline_get
 from .utils import map_timeline_focus_url, map_url_with_timeline_filters, timeline_params_from_map_get
-
-
-def _apply_events_text_search(qs, q_raw):
-    """Full-text on Postgres (plain query); icontains fallback elsewhere."""
-    q = (q_raw or '').strip()
-    if not q:
-        return qs
-    if connection.vendor == 'postgresql':
-        from django.contrib.postgres.search import SearchQuery, SearchVector
-
-        vector = (
-            SearchVector('title', weight='A')
-            + SearchVector('summary', weight='B')
-            + SearchVector('body', weight='C')
-        )
-        return qs.annotate(search=vector).filter(
-            search=SearchQuery(
-                q,
-                config='english',
-                search_type='plain',
-            ),
-        )
-    return qs.filter(
-        Q(title__icontains=q)
-        | Q(summary__icontains=q)
-        | Q(body__icontains=q),
-    )
 
 
 class HomeView(TemplateView):
@@ -99,6 +89,25 @@ class HomeView(TemplateView):
         return ctx
 
 
+class StartHereView(TemplateView):
+    """Curated entry points for new visitors (paths + map preset)."""
+
+    template_name = 'nomoar/start_here.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['start_here_paths'] = list(
+            LearningPath.objects.filter(is_published=True, show_on_start_here=True).order_by(
+                'start_here_order', 'order', 'title'
+            )[:3]
+        )
+        ec = EngagementConfig.get_solo()
+        mq = (ec.start_here_map_query or '').strip()
+        map_base = reverse('nomoar:map')
+        ctx['start_here_map_url'] = f'{map_base}?{mq}' if mq else map_base
+        return ctx
+
+
 class TimelineView(ListView):
     model = HistoricalEvent
     template_name = 'nomoar/timeline.html'
@@ -109,25 +118,19 @@ class TimelineView(ListView):
         qs = HistoricalEvent.objects.prefetch_related(
             'tags', 'collections', 'sources', 'theme_labels',
         )
-        y = self.request.GET.get('year')
-        if y and y.isdigit():
-            qs = qs.filter(year=int(y))
-        qs = _apply_events_text_search(qs, self.request.GET.get('q', ''))
-        decade = self.request.GET.get('decade', '').strip().lower()
-        if decade and decade != 'all':
-            if len(decade) >= 5 and decade.endswith('s') and decade[:4].isdigit():
-                start = int(decade[:4])
-                qs = qs.filter(year__gte=start, year__lte=start + 9)
-        et = self.request.GET.get('type', '').strip()
-        if et and et in ArchiveEventType.values:
-            qs = qs.filter(event_type=et)
-        st = self.request.GET.get('state', '').strip().upper()
-        if st and len(st) == 2:
-            qs = qs.filter(state=st)
+        qs = filter_events_by_timeline_get(qs, self.request.GET)
+        q_raw = self.request.GET.get('q', '').strip()
+        if q_raw:
+            qs = apply_events_text_search_with_headline(qs, q_raw)
         return qs
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
+        req = self.request
+        q_raw = req.GET.get('q', '').strip()
+        page_events = list(ctx.get('events') or [])
+        if q_raw:
+            attach_search_snippet_display(page_events, q_raw)
         ctx['decade_options'] = [
             ('all', 'All Time'),
             ('2020s', '2020s'),
@@ -144,10 +147,14 @@ class TimelineView(ListView):
             ('1910s', '1910s'),
             ('1900s', '1900s'),
         ]
-        ctx['active_decade'] = self.request.GET.get('decade', 'all').strip().lower() or 'all'
-        ctx['active_type'] = self.request.GET.get('type', '').strip()
-        ctx['active_state'] = self.request.GET.get('state', '').strip().upper()
-        ctx['focus_slug'] = self.request.GET.get('focus', '').strip()
+        ctx['active_decade'] = req.GET.get('decade', 'all').strip().lower() or 'all'
+        ctx['active_type'] = req.GET.get('type', '').strip()
+        ctx['active_state'] = req.GET.get('state', '').strip().upper()
+        ctx['active_year_from'] = req.GET.get('year_from', '').strip()
+        ctx['active_year_to'] = req.GET.get('year_to', '').strip()
+        ctx['active_tag'] = req.GET.get('tag', '').strip()
+        ctx['active_theme'] = req.GET.get('theme', '').strip()
+        ctx['focus_slug'] = req.GET.get('focus', '').strip()
         ctx['event_type_choices'] = ArchiveEventType.choices
         ctx['timeline_states'] = list(
             HistoricalEvent.objects.exclude(state='')
@@ -155,8 +162,16 @@ class TimelineView(ListView):
             .distinct()
             .order_by('state'),
         )
-        page_events = list(ctx.get('events') or [])
-        sk = self.request.session.session_key
+        ctx['timeline_tags'] = list(Tag.objects.order_by('name'))
+        ctx['timeline_themes'] = list(EventThemeLabel.objects.order_by('order', 'name'))
+        loc_rows = (
+            HistoricalEvent.objects.exclude(location='')
+            .values_list('location', flat=True)
+        )
+        loc_counts = Counter(loc_rows)
+        ctx['timeline_top_locations'] = loc_counts.most_common(80)
+        ctx['timeline_has_search'] = bool(q_raw)
+        sk = req.session.session_key
         fisted_ids = set()
         if sk and page_events:
             eids = [e.pk for e in page_events]
@@ -167,8 +182,8 @@ class TimelineView(ListView):
                 ).values_list('event_id', flat=True),
             )
         ctx['fisted_event_ids'] = fisted_ids
-        ctx['map_href_shared'] = map_url_with_timeline_filters(self.request)
-        ctx['active_location'] = self.request.GET.get('location', '').strip()
+        ctx['map_href_shared'] = map_url_with_timeline_filters(req)
+        ctx['active_location'] = req.GET.get('location', '').strip()
         return ctx
 
 
@@ -254,26 +269,8 @@ def embed_slice(request):
     except ValueError:
         limit = 12
     limit = max(1, min(limit, 50))
-    et = request.GET.get('type', '').strip()
-    if et in ArchiveEventType.values:
-        qs = qs.filter(event_type=et)
-    st = request.GET.get('state', '').strip().upper()
-    if len(st) == 2:
-        qs = qs.filter(state=st)
-    qs = _apply_events_text_search(qs, request.GET.get('q', ''))
-    decade = request.GET.get('decade', '').strip().lower()
-    if decade and decade != 'all' and len(decade) >= 5 and decade.endswith('s') and decade[:4].isdigit():
-        y = int(decade[:4])
-        qs = qs.filter(year__gte=y, year__lte=y + 9)
-    yf = request.GET.get('year_from', '').strip()
-    yt = request.GET.get('year_to', '').strip()
-    if yf.isdigit():
-        qs = qs.filter(year__gte=int(yf))
-    if yt.isdigit():
-        qs = qs.filter(year__lte=int(yt))
-    loc = request.GET.get('location', '').strip()
-    if loc:
-        qs = qs.filter(location=loc)
+    qs = filter_events_by_timeline_get(qs, request.GET)
+    qs = apply_events_text_search(qs, request.GET.get('q', ''))
     events = list(qs.order_by('-year', 'title')[:limit])
     events_with_urls = [(e, request.build_absolute_uri(e.get_absolute_url())) for e in events]
     return render(
@@ -393,40 +390,34 @@ class MapView(TemplateView):
         ctx['map_year_hint_max'] = bounds['y_max']
 
         req = self.request.GET
-        qs = base_qs.order_by('-year', 'title')
+        qs = filter_events_by_timeline_get(base_qs, req)
+        qs = apply_events_text_search(qs, req.get('q', ''))
+        qs = qs.order_by('-year', 'title')
         yf_raw = req.get('year_from', '').strip()
         yt_raw = req.get('year_to', '').strip()
-        if yf_raw.isdigit():
-            qs = qs.filter(year__gte=int(yf_raw))
-        if yt_raw.isdigit():
-            qs = qs.filter(year__lte=int(yt_raw))
         et = req.get('type', '').strip()
-        if et and et in ArchiveEventType.values:
-            qs = qs.filter(event_type=et)
-        else:
+        if et not in ArchiveEventType.values:
             et = ''
-        qs = _apply_events_text_search(qs, req.get('q', ''))
         st_map = req.get('state', '').strip().upper()
-        if st_map and len(st_map) == 2:
-            qs = qs.filter(state=st_map)
-        else:
+        if not (st_map and len(st_map) == 2):
             st_map = ''
         loc_map = req.get('location', '').strip()
-        if loc_map:
-            qs = qs.filter(location=loc_map)
-        else:
-            loc_map = ''
+        tag_map = req.get('tag', '').strip()
+        theme_map = req.get('theme', '').strip()
 
         mapped = []
         for e in qs:
             color = ARCHIVE_EVENT_TYPE_COLORS.get(e.event_type, '#1e88e5')
             tf_url = map_timeline_focus_url(e.slug, self.request)
+            sm = (e.summary or '')[:400]
+            if (e.summary or '') and len(e.summary) > 400:
+                sm += '…'
             mapped.append(
                 {
                     'slug': e.slug,
                     'title': e.title,
                     'year': e.year,
-                    'summary': e.summary[:400] + ('…' if len(e.summary) > 400 else ''),
+                    'summary': sm,
                     'location': e.location or '',
                     'state': e.state or '',
                     'lat': float(e.latitude),
@@ -446,6 +437,10 @@ class MapView(TemplateView):
         ctx['map_type'] = et
         ctx['map_state'] = st_map
         ctx['map_location'] = loc_map
+        ctx['map_tag'] = tag_map
+        ctx['map_theme'] = theme_map
+        ctx['map_tags'] = list(Tag.objects.order_by('name'))
+        ctx['map_themes'] = list(EventThemeLabel.objects.order_by('order', 'name'))
         ctx['map_states'] = list(
             HistoricalEvent.objects.exclude(state='')
             .values_list('state', flat=True)
@@ -462,7 +457,9 @@ class MapView(TemplateView):
             or ctx['map_year_to']
             or ctx['map_type']
             or ctx['map_state']
-            or ctx['map_location'],
+            or ctx['map_location']
+            or ctx['map_tag']
+            or ctx['map_theme'],
         )
         tparams = timeline_params_from_map_get(req)
         ctx['timeline_href_shared'] = reverse('nomoar:timeline') + (
@@ -698,6 +695,18 @@ class NewsPostDetailView(DetailView):
             'related_events',
         )
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        post = ctx['post']
+        eids = event_ids_from_queryset_or_list(post.related_events.all())
+        ctx['related_learning_paths'] = list(learning_paths_for_events(eids))
+        ctx['related_glossary_terms'] = list(glossary_terms_for_events(eids))
+        ctx['related_heroes'] = list(heroes_for_events(eids))
+        ctx['related_commentary'] = list(
+            news_posts_for_events(eids, exclude_post_pk=post.pk),
+        )
+        return ctx
+
 
 class ResourcePackListView(ListView):
     model = LocalizedResourcePack
@@ -749,3 +758,13 @@ class HeroDetailView(DetailView):
             ChangeMaker.objects.filter(is_published=True)
             .prefetch_related('related_events')
         )
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        hero = ctx['hero']
+        eids = event_ids_from_queryset_or_list(hero.related_events.all())
+        ctx['related_learning_paths'] = list(learning_paths_for_events(eids))
+        ctx['related_glossary_terms'] = list(glossary_terms_for_events(eids))
+        ctx['related_heroes'] = list(heroes_for_events(eids, exclude_hero_pk=hero.pk))
+        ctx['related_commentary'] = list(news_posts_for_events(eids))
+        return ctx

@@ -1,0 +1,48 @@
+{# Expects: related_learning_paths, related_glossary_terms, related_heroes, related_commentary; optional suggested_events (glossary) #}
+{% if related_learning_paths %}
+<h2>Related learning paths</h2>
+<ul style="list-style:none;padding:0;">
+    {% for p in related_learning_paths %}
+    <li style="margin-bottom:0.65rem;"><a href="{{ p.get_absolute_url }}">{{ p.title }}</a></li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% if related_glossary_terms %}
+<h2>Related glossary</h2>
+<ul style="list-style:none;padding:0;">
+    {% for g in related_glossary_terms %}
+    <li style="margin-bottom:0.65rem;"><a href="{{ g.get_absolute_url }}">{{ g.title }}</a></li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% if related_heroes %}
+<h2>Related heroes &amp; change makers</h2>
+<ul style="list-style:none;padding:0;">
+    {% for h in related_heroes %}
+    <li style="margin-bottom:0.65rem;"><a href="{{ h.get_absolute_url }}">{{ h.name }}</a></li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% if related_commentary %}
+<h2>Related commentary</h2>
+<ul style="list-style:none;padding:0;">
+    {% for post in related_commentary %}
+    <li style="margin-bottom:0.65rem;"><a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+        <span class="muted" style="font-size:0.85rem;"> · {{ post.published_at|date:"M j, Y" }}</span></li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% if suggested_events %}
+<h2>More entries (shared themes &amp; tags)</h2>
+<p class="muted" style="font-size:0.9rem;">Not in the direct glossary list but connected by tags or themes.</p>
+<ul style="list-style:none;padding:0;">
+    {% for e in suggested_events %}
+    <li style="margin-bottom:0.75rem;">
+        <a href="{{ e.get_absolute_url }}" class="event-card" style="display:block;margin:0;">
+            <span class="year">{{ e.year }}</span>
+            <strong style="display:block;margin-top:0.25rem;">{{ e.title }}</strong>
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+{% endif %}

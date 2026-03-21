@@ -160,11 +160,44 @@ class ChangeMakerAdmin(admin.ModelAdmin):
 
 @admin.register(LearningPath)
 class LearningPathAdmin(admin.ModelAdmin):
-    list_display = ['title', 'slug', 'is_published', 'order', 'updated_at']
-    list_filter = ['is_published']
+    list_display = [
+        'title',
+        'slug',
+        'is_published',
+        'show_on_start_here',
+        'start_here_order',
+        'order',
+        'updated_at',
+    ]
+    list_filter = ['is_published', 'show_on_start_here']
     prepopulated_fields = {'slug': ('title',)}
     search_fields = ['title', 'intro', 'theme_place_decade_note']
     inlines = [LearningPathStepInline]
+    readonly_fields = ['created_at', 'updated_at']
+    fieldsets = (
+        (
+            None,
+            {
+                'fields': (
+                    'title',
+                    'slug',
+                    'intro',
+                    'theme_place_decade_note',
+                    'order',
+                    'is_published',
+                    'created_at',
+                    'updated_at',
+                ),
+            },
+        ),
+        (
+            'Start here page',
+            {
+                'fields': ('show_on_start_here', 'start_here_order'),
+                'description': 'Up to ~3 published paths with “show” enabled appear on /start/, ordered by start_here_order.',
+            },
+        ),
+    )
 
 
 @admin.register(LessonKit)
@@ -216,6 +249,39 @@ class EngagementConfigAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+    fieldsets = (
+        (
+            'Links',
+            {
+                'fields': (
+                    'donation_url',
+                    'membership_url',
+                    'institutional_contact_email',
+                    'api_partnerships_url',
+                ),
+            },
+        ),
+        (
+            'Copy / blurbs',
+            {
+                'fields': (
+                    'grants_fiscal_sponsorship_blurb',
+                    'museum_services_blurb',
+                    'sponsorship_policy',
+                    'things_to_avoid_note',
+                    'merch_print_blurb',
+                ),
+            },
+        ),
+        (
+            'Discovery',
+            {
+                'fields': ('start_here_map_query',),
+                'description': 'Query string appended to /Map/ for the “Start here” preset link, e.g. year_from=2020&year_to=2026&type=policy&tag=…',
+            },
+        ),
+    )
 
 
 @admin.register(SiteStat)

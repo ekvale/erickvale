@@ -7,6 +7,15 @@
 <h1>{{ term.title }}</h1>
 <div style="max-width:42rem;line-height:1.75;">{{ term.definition|linebreaks }}</div>
 
+{% if term.related_terms.all %}
+<h2>See also</h2>
+<ul style="list-style:none;padding:0;">
+    {% for t in term.related_terms.all %}
+    <li style="margin-bottom:0.5rem;"><a href="{{ t.get_absolute_url }}">{{ t.title }}</a></li>
+    {% endfor %}
+</ul>
+{% endif %}
+
 {% if term.related_events.all %}
 <h2>Related archive entries</h2>
 <ul style="list-style:none;padding:0;">
@@ -20,4 +29,6 @@
     {% endfor %}
 </ul>
 {% endif %}
+
+{% include 'nomoar/_related_discovery.html' %}
 {% endblock %}

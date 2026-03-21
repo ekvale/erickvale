@@ -511,6 +511,22 @@
                         {% endfor %}
                     </datalist>
                 </label>
+                <label>Tag
+                    <select name="tag" aria-label="Filter by tag">
+                        <option value=""{% if not map_tag %} selected{% endif %}>Any</option>
+                        {% for t in map_tags %}
+                        <option value="{{ t.slug }}"{% if map_tag == t.slug %} selected{% endif %}>{{ t.name }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label>Theme
+                    <select name="theme" aria-label="Filter by theme label">
+                        <option value=""{% if not map_theme %} selected{% endif %}>Any</option>
+                        {% for th in map_themes %}
+                        <option value="{{ th.slug }}"{% if map_theme == th.slug %} selected{% endif %}>{{ th.name }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
                 <label>Search
                     <input type="search" name="q" value="{{ map_q|escape }}" placeholder="Title or description" autocomplete="off">
                 </label>

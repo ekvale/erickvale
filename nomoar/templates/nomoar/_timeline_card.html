@@ -8,7 +8,11 @@
         <span class="nomoar-tl-tag nomoar-tl-tag--{{ e.event_type }}">{{ e.get_event_type_display|lower }}</span>
     </div>
     <h2 class="nomoar-tl-card-title"><a href="{{ e.get_absolute_url }}">{{ e.title }}</a></h2>
+    {% if timeline_has_search and e.search_snippet_display %}
+    <p class="nomoar-tl-card-desc">{{ e.search_snippet_display }}</p>
+    {% else %}
     <p class="nomoar-tl-card-desc">{{ e.summary|truncatewords:42 }}</p>
+    {% endif %}
     {% if e.location %}
     <div class="nomoar-tl-loc">
         <span aria-hidden="true">📍</span>

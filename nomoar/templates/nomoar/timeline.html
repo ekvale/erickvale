@@ -6,17 +6,6 @@
 {% block main_extra_class %}nomoar-main--timeline{% endblock %}
 
 {% block header_actions %}
-<form class="nomoar-tl-header-search" method="get" action="{% url 'nomoar:timeline' %}" role="search">
-    {% if active_decade and active_decade != 'all' %}
-    <input type="hidden" name="decade" value="{{ active_decade }}">
-    {% endif %}
-    {% if active_type %}<input type="hidden" name="type" value="{{ active_type }}">{% endif %}
-    {% if active_state %}<input type="hidden" name="state" value="{{ active_state }}">{% endif %}
-    {% if active_location %}<input type="hidden" name="location" value="{{ active_location|escape }}">{% endif %}
-    <label class="visually-hidden" for="tl-q">Search timeline</label>
-    <input type="search" id="tl-q" name="q" value="{{ request.GET.q }}" placeholder="Search…" class="nomoar-tl-search-input">
-    <button type="submit" class="nomoar-tl-search-btn" aria-label="Search">⌕</button>
-</form>
 <a href="{% url 'homepage' %}" class="nomoar-tl-btn nomoar-tl-btn--ghost">Sign In</a>
 <a href="{% url 'nomoar:pricing' %}" class="nomoar-tl-btn nomoar-tl-btn--solid">Sign Up</a>
 {% endblock %}
@@ -467,6 +456,64 @@
         color: var(--tl-muted);
     }
     .nomoar-editorial-banner--compact a { color: var(--tl-orange); }
+    mark.nomoar-search-hit {
+        background: rgba(255, 193, 7, 0.35);
+        color: var(--tl-text);
+        padding: 0.05em 0.2em;
+        border-radius: 3px;
+    }
+    .nomoar-tl-filter-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: 0.65rem 0.85rem;
+        padding: 1rem 1rem 1.1rem;
+        margin-bottom: 1rem;
+        background: var(--tl-card);
+        border: 1px solid var(--tl-card-border);
+        border-radius: 10px;
+    }
+    .nomoar-tl-filter-bar label {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--tl-muted);
+    }
+    .nomoar-tl-filter-bar input,
+    .nomoar-tl-filter-bar select {
+        min-width: 0;
+        padding: 0.45rem 0.55rem;
+        border-radius: 6px;
+        border: 1px solid var(--tl-card-border);
+        background: #0d0d0d;
+        color: var(--tl-text);
+        font-size: 0.85rem;
+    }
+    .nomoar-tl-filter-bar input[type="search"] { width: 11rem; max-width: 100%; }
+    .nomoar-tl-filter-bar input[type="number"] { width: 5.5rem; }
+    .nomoar-tl-filter-bar select { min-width: 7rem; max-width: 12rem; }
+    .nomoar-tl-filter-submit {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        border: none;
+        background: var(--tl-orange);
+        color: #fff;
+        font-weight: 700;
+        font-size: 0.82rem;
+        cursor: pointer;
+        margin-top: 1.15rem;
+    }
+    .nomoar-tl-filter-submit:hover { filter: brightness(1.06); }
+    .nomoar-tl-filter-clear {
+        font-size: 0.78rem;
+        color: var(--tl-muted);
+        margin-top: 1.15rem;
+        align-self: center;
+    }
 </style>
 {% endblock %}
 
@@ -497,33 +544,17 @@
         <a href="{% url 'nomoar:place_index' %}" class="nomoar-filter-chip">All places</a>
     </div>
     {% endif %}
-    <div class="nomoar-decade-bar" aria-label="Filter by decade">
+    <div class="nomoar-decade-bar" aria-label="Filter by decade (clears custom year range)">
         {% for value, label in decade_options %}
         {% if value == 'all' %}
-        <a href="{% timeline_url decade='' %}"
+        <a href="{% timeline_url decade='' year_from='' year_to='' %}"
            class="nomoar-decade-pill{% if active_decade == 'all' %} is-active{% endif %}">{{ label }}</a>
         {% else %}
-        <a href="{% timeline_url decade=value %}"
+        <a href="{% timeline_url decade=value year_from='' year_to='' %}"
            class="nomoar-decade-pill{% if active_decade == value %} is-active{% endif %}">{{ label }}</a>
         {% endif %}
         {% endfor %}
     </div>
-    <div class="nomoar-filter-row" aria-label="Filter by type">
-        <span>Type</span>
-        <a href="{% timeline_url type='' %}" class="nomoar-filter-chip{% if not active_type %} is-active{% endif %}">All</a>
-        {% for val, lbl in event_type_choices %}
-        <a href="{% timeline_url type=val %}" class="nomoar-filter-chip{% if active_type == val %} is-active{% endif %}">{{ lbl }}</a>
-        {% endfor %}
-    </div>
-    {% if timeline_states %}
-    <div class="nomoar-filter-row" aria-label="Filter by state">
-        <span>State</span>
-        <a href="{% timeline_url state='' %}" class="nomoar-filter-chip{% if not active_state %} is-active{% endif %}">All</a>
-        {% for st in timeline_states %}
-        <a href="{% timeline_url state=st %}" class="nomoar-filter-chip{% if active_state == st %} is-active{% endif %}">{{ st }}</a>
-        {% endfor %}
-    </div>
-    {% endif %}
 
     <noscript>
         <style>

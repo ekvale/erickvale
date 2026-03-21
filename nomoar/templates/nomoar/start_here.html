@@ -1,0 +1,85 @@
+{% extends 'nomoar/base.html' %}
+
+{% block title %}Start here{% endblock %}
+
+{% block extra_css %}
+<style>
+    .nomoar-start-hero {
+        max-width: 40rem;
+        margin-bottom: 2rem;
+    }
+    .nomoar-start-hero p { color: var(--nomoar-muted); line-height: 1.65; }
+    .nomoar-start-paths {
+        display: grid;
+        gap: 1rem;
+        max-width: 42rem;
+        margin-bottom: 2.5rem;
+    }
+    .nomoar-start-path-card {
+        display: block;
+        padding: 1.15rem 1.25rem;
+        border-radius: 10px;
+        border: 1px solid var(--nomoar-border);
+        background: var(--nomoar-surface);
+        text-decoration: none;
+        color: inherit;
+        transition: border-color 0.15s, background 0.15s;
+    }
+    .nomoar-start-path-card:hover {
+        border-color: var(--nomoar-accent);
+        background: var(--nomoar-accent-soft);
+    }
+    .nomoar-start-path-card h2 {
+        margin: 0 0 0.35rem;
+        font-size: 1.15rem;
+        border: none;
+        padding: 0;
+    }
+    .nomoar-start-path-card p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--nomoar-muted);
+    }
+    .nomoar-start-map {
+        max-width: 42rem;
+        padding: 1.25rem;
+        border-radius: 10px;
+        border: 1px solid var(--nomoar-border);
+        background: var(--nomoar-elevated);
+    }
+    .nomoar-start-map h2 { margin-top: 0; font-size: 1.2rem; border: none; padding: 0; }
+    .nomoar-start-map p { color: var(--nomoar-muted); font-size: 0.9rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<p class="muted"><a href="{% url 'nomoar:home' %}">← Home</a></p>
+<div class="nomoar-start-hero">
+    <p class="nomoar-eyebrow">New here</p>
+    <h1>Start here</h1>
+    <p>Three short curated paths and a map view preset help you explore the archive without drowning in filters.</p>
+</div>
+
+{% if start_here_paths %}
+<h2 class="visually-hidden" style="position:absolute;width:1px;height:1px;overflow:hidden;">Curated paths</h2>
+<div class="nomoar-start-paths">
+    {% for p in start_here_paths %}
+    <a class="nomoar-start-path-card event-card" href="{{ p.get_absolute_url }}" style="margin:0;">
+        <h2>{{ p.title }}</h2>
+        {% if p.theme_place_decade_note %}<p>{{ p.theme_place_decade_note }}</p>
+        {% elif p.intro %}<p>{{ p.intro|truncatewords:36 }}</p>{% endif %}
+        <span style="font-size:0.8rem;color:var(--nomoar-link);">Open path →</span>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<p class="muted">No paths are flagged for this page yet. Admins can enable “Show on Start here” on up to three learning paths, or visit <a href="{% url 'nomoar:learning_path_list' %}">all paths</a>.</p>
+{% endif %}
+
+<div class="nomoar-start-map">
+    <h2>Map preset</h2>
+    <p>Open the archive map with a suggested year range and filters (editable in Engagement settings).</p>
+    <p><a href="{{ start_here_map_url }}" class="btn btn-primary">Open map</a>
+       <a href="{% url 'nomoar:timeline' %}" class="btn btn-outline" style="margin-left:0.5rem;">Full timeline</a></p>
+</div>
+{% endblock %}

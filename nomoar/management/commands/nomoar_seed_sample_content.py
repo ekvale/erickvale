@@ -77,6 +77,9 @@ class Command(BaseCommand):
         if not ec.api_partnerships_url.strip():
             ec.api_partnerships_url = 'https://github.com/ekvale/erickvale'
             updated.append('api_partnerships_url')
+        if not (ec.start_here_map_query or '').strip():
+            ec.start_here_map_query = 'year_from=2020&year_to=2026&type=policy'
+            updated.append('start_here_map_query')
         if updated:
             ec.save(update_fields=updated)
             self.stdout.write(self.style.SUCCESS(f'EngagementConfig updated: {", ".join(updated)}'))
@@ -146,6 +149,8 @@ class Command(BaseCommand):
                 'theme_place_decade_note': 'United States · 2025–2026 · Policy & memory',
                 'order': 1,
                 'is_published': True,
+                'show_on_start_here': True,
+                'start_here_order': 0,
             },
         )
         LearningPathStep.objects.filter(path=path).delete()

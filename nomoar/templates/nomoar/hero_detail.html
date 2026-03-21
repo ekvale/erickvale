@@ -66,6 +66,8 @@
     {% endif %}
 </div>
 
+{% include 'nomoar/_related_discovery.html' %}
+
 {% if hero.related_events.all %}
 <h2 style="margin-top:2.5rem;">Related archive entries</h2>
 <p class="muted" style="font-size:0.9rem;">Curated links to events in the timeline.</p>
@@ -81,4 +83,6 @@
     {% endfor %}
 </ul>
 {% endif %}
+
+{% include 'nomoar/_related_discovery.html' %}
 {% endblock %}
