@@ -26,6 +26,14 @@ python manage.py nomoar_seed_from_fixture
 
 That upserts `HistoricalEvent`, `SiteStat`, and **`ChangeMaker`** (heroes, including Native American change makers with **related timeline events**) from `nomoar/fixtures/initial.json` by slug/key (no PK conflicts). You can still use `loaddata` for a clean install; use `nomoar_sync_coords` only to refresh lat/lng on existing rows without changing other fields.
 
+**Sample engagement content** (learning path, lesson kit, glossary, commentary, localized pack, demo collections, poster PDFs, test newsletter rows, sample primary source):
+
+```bash
+python manage.py nomoar_seed_sample_content
+```
+
+Run after `migrate` and `nomoar_seed_from_fixture`. Copies `nomoar/static/nomoar/samples/sample-poster.pdf` into Media for the lesson kit and localized pack when those files are empty. Static poster template: `nomoar/static/nomoar/samples/sample-poster.svg` (served after `collectstatic`).
+
 **Logo:** `nomoar/static/nomoar/NOMOARLogo.jpg` is collected to static; ensure it exists after pull.
 
 If Django reports `Unknown command: 'nomoar_seed_from_fixture'`, your server copy is missing `nomoar/management/commands/` — run `git pull` after the repo has been updated (those files must be committed and pushed).
