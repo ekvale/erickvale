@@ -523,7 +523,7 @@
             <div class="nomoar-tl-year">{{ e.year }}</div>
             {% endifchanged %}
             {% if forloop.counter0|divisibleby:2 %}
-            <div class="nomoar-tl-row nomoar-tl-row--left" id="nomoar-tl-{{ e.slug }}">
+            <div class="nomoar-tl-row nomoar-tl-row--left nomoar-tl-animate" id="nomoar-tl-{{ e.slug }}">
                 <div class="nomoar-tl-card-wrap">
                     {% include 'nomoar/_timeline_card.html' with e=e fisted_event_ids=fisted_event_ids %}
                 </div>
