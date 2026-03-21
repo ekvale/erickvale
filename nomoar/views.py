@@ -4,7 +4,13 @@ from django.contrib import messages
 from django.db.models import Count, Q
 from django.urls import reverse
 
-from .models import HistoricalEvent, Collection, SiteStat
+from .models import (
+    ARCHIVE_EVENT_TYPE_COLORS,
+    ArchiveEventType,
+    Collection,
+    HistoricalEvent,
+    SiteStat,
+)
 from .forms import EventSubmissionForm
 
 
@@ -65,7 +71,13 @@ class MapView(TemplateView):
             .order_by('-n')
         )
         mapped = []
-        for e in HistoricalEvent.objects.exclude(latitude=None).exclude(longitude=None):
+        # Use __isnull=False — exclude(field=None) can miss rows on some DB/backends for FloatField
+        qs = HistoricalEvent.objects.filter(
+            latitude__isnull=False,
+            longitude__isnull=False,
+        ).order_by('-year', 'title')
+        for e in qs:
+            color = ARCHIVE_EVENT_TYPE_COLORS.get(e.event_type, '#1e88e5')
             mapped.append(
                 {
                     'slug': e.slug,
@@ -76,10 +88,21 @@ class MapView(TemplateView):
                     'state': e.state or '',
                     'lat': float(e.latitude),
                     'lng': float(e.longitude),
+                    'type': e.event_type,
+                    'type_label': e.get_event_type_display(),
+                    'color': color,
                     'url': reverse('nomoar:event_detail', kwargs={'slug': e.slug}),
                 }
             )
         ctx['map_events'] = mapped
+        ctx['legend_types'] = [
+            {
+                'slug': c.value,
+                'label': c.label,
+                'color': ARCHIVE_EVENT_TYPE_COLORS[c],
+            }
+            for c in ArchiveEventType
+        ]
         return ctx
 
 

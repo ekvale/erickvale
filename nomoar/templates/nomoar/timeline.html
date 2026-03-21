@@ -21,6 +21,7 @@
 {% for e in events %}
 <a href="{{ e.get_absolute_url }}" class="event-card">
     <span class="year">{{ e.year }}</span>
+    <span class="muted" style="font-size:0.7rem;font-weight:700;text-transform:lowercase;display:inline-block;margin-bottom:0.35rem;padding:0.15rem 0.45rem;border-radius:999px;border:1px solid {{ e.event_type_color }}55;background:{{ e.event_type_color }}18;color:{{ e.event_type_color }};">{{ e.get_event_type_display }}</span>
     <h3>{{ e.title }}</h3>
     <p>{{ e.summary|truncatewords:50 }}</p>
     {% if e.location %}<p class="muted" style="font-size:0.85rem;">{{ e.location }}</p>{% endif %}

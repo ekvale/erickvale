@@ -2,112 +2,226 @@
 
 {% block title %}Map{% endblock %}
 
+{% block main_extra_class %}nomoar-main--map{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin="">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" crossorigin="">
 <style>
-    #nomoar-map {
-        height: min(70vh, 560px);
+    .nomoar-main--map .alert { margin: 1rem 1.25rem 0; }
+    .nomoar-map-page {
+        background: #000;
+        color: #f0f0f0;
+    }
+    .nomoar-map-layout {
+        display: grid;
+        grid-template-columns: minmax(280px, 380px) 1fr;
+        min-height: calc(100vh - 56px);
+    }
+    @media (max-width: 900px) {
+        .nomoar-map-layout {
+            grid-template-columns: 1fr;
+            grid-template-rows: minmax(200px, 40vh) minmax(360px, 55vh);
+        }
+    }
+    .nomoar-map-sidebar {
+        background: #0a0a0a;
+        border-right: 1px solid #222;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        overflow: hidden;
+    }
+    .nomoar-map-sidebar-head {
+        padding: 1.25rem 1.25rem 0.75rem;
+        flex-shrink: 0;
+    }
+    .nomoar-map-sidebar-head h1 {
+        font-family: 'Source Sans 3', system-ui, sans-serif;
+        font-size: 1.35rem;
+        font-weight: 700;
+        margin: 0 0 0.35rem;
+        letter-spacing: 0.02em;
+    }
+    .nomoar-map-sidebar-head p {
+        margin: 0;
+        font-size: 0.8rem;
+        color: #888;
+        line-height: 1.45;
+    }
+    .nomoar-map-sidebar-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0 1rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+    }
+    .nomoar-map-sidebar-card {
+        display: block;
         width: 100%;
-        border-radius: 8px;
-        border: 1px solid var(--nomoar-border);
+        text-align: left;
+        cursor: pointer;
+        background: #141414;
+        border: 1px solid #2a2a2a;
+        border-radius: 10px;
+        padding: 0.85rem 1rem;
+        color: inherit;
+        font: inherit;
+        transition: border-color 0.15s, background 0.15s;
+    }
+    .nomoar-map-sidebar-card:hover,
+    .nomoar-map-sidebar-card:focus-visible {
+        border-color: #444;
+        background: #1a1a1a;
+        outline: none;
+    }
+    .nomoar-map-sidebar-card.is-active {
+        border-color: #c9a227;
+        box-shadow: 0 0 0 1px rgba(201, 162, 39, 0.35);
+    }
+    .nomoar-map-sidebar-card .year {
+        font-size: 0.72rem;
+        color: #888;
+        margin-bottom: 0.35rem;
+    }
+    .nomoar-type-badge {
+        display: inline-block;
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: lowercase;
+        letter-spacing: 0.04em;
+        padding: 0.2rem 0.5rem;
+        border-radius: 999px;
+        margin-bottom: 0.4rem;
+        border: 1px solid rgba(255,255,255,0.12);
+    }
+    .nomoar-map-sidebar-card .card-title {
+        font-weight: 700;
+        font-size: 0.95rem;
+        line-height: 1.3;
+        margin: 0 0 0.35rem;
+    }
+    .nomoar-map-sidebar-card .card-loc {
+        font-size: 0.8rem;
+        color: #9a9a9a;
+        margin: 0;
+    }
+    .nomoar-map-stage {
+        position: relative;
+        min-height: 360px;
+        background: #111;
+    }
+    #nomoar-map {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
         z-index: 1;
     }
-    .leaflet-popup-content-wrapper, .leaflet-popup-tip {
-        background: var(--nomoar-elevated);
-        color: var(--nomoar-text);
-        border: 1px solid var(--nomoar-border);
+    .nomoar-map-legend-box {
+        position: absolute;
+        right: 14px;
+        bottom: 28px;
+        z-index: 500;
+        background: rgba(12, 12, 12, 0.92);
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        min-width: 140px;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.5);
     }
-    .leaflet-popup-content a { color: var(--nomoar-link); }
-    .nomoar-map-legend {
-        margin-top: 1rem;
+    .nomoar-map-legend-box h3 {
+        font-family: 'Source Sans 3', system-ui, sans-serif;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: #888;
+        margin: 0 0 0.6rem;
+        border: none;
+        padding: 0;
+    }
+    .nomoar-map-legend-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        margin-bottom: 0.35rem;
+        color: #e0e0e0;
+    }
+    .nomoar-map-legend-row:last-child { margin-bottom: 0; }
+    .nomoar-map-legend-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        flex-shrink: 0;
+    }
+    .marker-cluster-small, .marker-cluster-medium, .marker-cluster-large {
+        background-color: rgba(80, 80, 90, 0.5) !important;
+    }
+    .marker-cluster-small div, .marker-cluster-medium div, .marker-cluster-large div {
+        background: #1e1e24 !important;
+        color: #ccc !important;
+        font-weight: 700;
+    }
+    .leaflet-popup-content-wrapper.nomoar-light-popup {
+        background: #fff;
+        color: #111;
+        border-radius: 12px;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+        border: none;
+        padding: 0;
+    }
+    .leaflet-popup-tip.nomoar-light-popup-tip {
+        background: #fff;
+        box-shadow: none;
+    }
+    .nomoar-map-popup {
+        padding: 1rem 1.1rem;
+        min-width: 220px;
+        max-width: 300px;
+    }
+    .nomoar-map-popup-badge {
+        display: inline-block;
+        background: #111;
+        color: #fff;
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: lowercase;
+        padding: 0.25rem 0.55rem;
+        border-radius: 999px;
+        margin-bottom: 0.5rem;
+    }
+    .nomoar-map-popup h3 {
+        font-family: 'Source Sans 3', system-ui, sans-serif;
+        font-size: 1rem;
+        font-weight: 700;
+        margin: 0 0 0.25rem;
+        line-height: 1.25;
+        color: #111;
+    }
+    .nomoar-map-popup-year {
         font-size: 0.85rem;
-        color: var(--nomoar-muted);
+        color: #555;
+        margin-bottom: 0.5rem;
     }
-</style>
-{% endblock %}
-
-{% block content %}
-<h1>Map</h1>
-<p class="muted">Events with coordinates appear as markers. Hover for a quick summary; click the marker for details and a link to the full entry.</p>
-
-{% if map_events %}
-{{ map_events|json_script:"nomoar-map-events" }}
-<div id="nomoar-map" role="region" aria-label="Archive events map"></div>
-<p class="nomoar-map-legend">{{ map_events|length }} plotted event{{ map_events|length|pluralize }} · <a href="{% url 'nomoar:timeline' %}">Timeline</a></p>
-{% else %}
-<p class="muted">No geocoded events yet. In Django admin, set <strong>latitude</strong> and <strong>longitude</strong> (WGS84) on each historical event.</p>
-{% endif %}
-
-{% if events_with_state %}
-<h2 style="margin-top:2rem;">By state</h2>
-<ul style="list-style:none; padding:0; max-width:28rem;">
-    {% for row in events_with_state %}
-    <li style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid var(--nomoar-border);">
-        <span>{{ row.state }}</span>
-        <span class="muted">{{ row.n }} event{{ row.n|pluralize }}</span>
-    </li>
-    {% endfor %}
-</ul>
-{% endif %}
-{% endblock %}
-
-{% block extra_js %}
-{% if map_events %}
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script>
-(function() {
-    var el = document.getElementById('nomoar-map-events');
-    if (!el) return;
-    var events = JSON.parse(el.textContent);
-    if (!events.length) return;
-
-    var map = L.map('nomoar-map', { scrollWheelZoom: true });
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
-        subdomains: 'abcd',
-        maxZoom: 20
-    }).addTo(map);
-
-    var bounds = [];
-    var gold = '#c9a227';
-
-    events.forEach(function(ev) {
-        var lat = ev.lat, lng = ev.lng;
-        if (lat == null || lng == null) return;
-        bounds.push([lat, lng]);
-
-        var marker = L.circleMarker([lat, lng], {
-            radius: 10,
-            fillColor: gold,
-            color: '#1a1a1a',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.85
-        }).addTo(map);
-
-        var tip = '<strong>' + ev.year + '</strong> · ' + (ev.title || '').replace(/</g, '&lt;');
-        if (ev.location) tip += '<br><span style="opacity:0.85;font-size:11px;">' + String(ev.location).replace(/</g, '&lt;') + '</span>';
-        marker.bindTooltip(tip, { direction: 'top', offset: [0, -8], className: 'nomoar-leaflet-tooltip' });
-
-        var popupHtml = '<div style="min-width:220px;max-width:320px;">';
-        popupHtml += '<strong style="color:#c9a227;">' + ev.year + '</strong><br>';
-        popupHtml += '<strong>' + String(ev.title).replace(/</g, '&lt;') + '</strong>';
-        if (ev.location) popupHtml += '<br><span style="font-size:12px;opacity:0.9;">' + String(ev.location).replace(/</g, '&lt;') + '</span>';
-        if (ev.state) popupHtml += '<br><span style="font-size:11px;">' + String(ev.state).replace(/</g, '&lt;') + '</span>';
-        popupHtml += '<p style="margin:8px 0 0;font-size:13px;line-height:1.45;">' + String(ev.summary || '').replace(/</g, '&lt;') + '</p>';
-        popupHtml += '<a href="' + String(ev.url).replace(/"/g, '&quot;') + '" style="font-weight:600;">Full entry →</a>';
-        popupHtml += '</div>';
-        marker.bindPopup(popupHtml);
-    });
-
-    if (bounds.length === 1) {
-        map.setView(bounds[0], 6);
-    } else {
-        map.fitBounds(bounds, { padding: [40, 40], maxZoom: 8 });
+    .nomoar-map-popup p {
+        margin: 0 0 0.75rem;
+        font-size: 0.82rem;
+        line-height: 1.45;
+        color: #333;
     }
-})();
-</script>
-<style>
+    .nomoar-map-popup a {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #1565c0;
+        text-decoration: none;
+    }
+    .nomoar-map-popup a:hover { text-decoration: underline; }
     .nomoar-leaflet-tooltip {
         background: #1c1c22 !important;
         color: #e8e6e3 !important;
@@ -116,6 +230,348 @@
         box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
     }
     .nomoar-leaflet-tooltip::before { border-top-color: #1c1c22 !important; }
+    /* Rich footer (screenshot-style) */
+    .nomoar-rich-footer {
+        background: #000;
+        color: #ccc;
+        padding: 2.5rem 1.5rem 2rem;
+        border-top: 1px solid #222;
+    }
+    .nomoar-rich-footer-inner {
+        max-width: 1100px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 2rem;
+    }
+    .nomoar-rich-footer-brand {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    .nomoar-rich-footer-logo {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+    }
+    .nomoar-rich-footer-logo-mark {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: linear-gradient(145deg, #e65100, #ff9800);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+    }
+    .nomoar-rich-footer-logo-text {
+        font-weight: 800;
+        font-size: 1.25rem;
+        letter-spacing: 0.06em;
+        color: #fff;
+    }
+    .nomoar-rich-footer-tagline {
+        font-size: 0.85rem;
+        color: #888;
+        line-height: 1.5;
+        max-width: 260px;
+    }
+    .nomoar-rich-footer-social {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.25rem;
+    }
+    .nomoar-rich-footer-social a {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #1a1a1a;
+        border: 1px solid #333;
+        border-radius: 6px;
+        color: #aaa;
+        text-decoration: none;
+    }
+    .nomoar-rich-footer-social a:hover { color: #fff; border-color: #555; }
+    .nomoar-rich-footer-col h4 {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: #666;
+        margin: 0 0 1rem;
+        font-weight: 700;
+    }
+    .nomoar-rich-footer-col ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .nomoar-rich-footer-col li { margin-bottom: 0.5rem; }
+    .nomoar-rich-footer-col a {
+        color: #bbb;
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+    .nomoar-rich-footer-col a:hover { color: #fff; }
+    .nomoar-rich-footer-donate {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: linear-gradient(145deg, #e65100, #ff9800);
+        color: #fff !important;
+        font-weight: 800;
+        font-size: 0.85rem;
+        letter-spacing: 0.08em;
+        padding: 0.75rem 1.25rem;
+        border-radius: 8px;
+        text-decoration: none;
+        margin-bottom: 1.25rem;
+        border: none;
+    }
+    .nomoar-rich-footer-donate:hover { filter: brightness(1.08); color: #fff !important; }
+    .nomoar-rich-footer-sub label {
+        display: block;
+        font-size: 0.8rem;
+        color: #888;
+        margin-bottom: 0.5rem;
+    }
+    .nomoar-rich-footer-sub .row {
+        display: flex;
+        gap: 0.5rem;
+    }
+    .nomoar-rich-footer-sub input {
+        flex: 1;
+        background: #141414;
+        border: 1px solid #333;
+        color: #fff;
+        padding: 0.55rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+    }
+    .nomoar-rich-footer-sub button {
+        background: #fff;
+        color: #111;
+        border: none;
+        font-weight: 700;
+        padding: 0.55rem 1rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        white-space: nowrap;
+    }
+    .nomoar-footer-disclaimer {
+        text-align: center;
+        font-size: 0.75rem;
+        color: #555;
+        padding: 1rem 1.5rem 2rem;
+        background: #000;
+        margin: 0;
+    }
+    .nomoar-footer-disclaimer a { color: #888; }
 </style>
+{% endblock %}
+
+{% block content %}
+<div class="nomoar-map-page">
+{% if map_events %}
+{{ map_events|json_script:"nomoar-map-events" }}
+<div class="nomoar-map-layout">
+    <aside class="nomoar-map-sidebar" aria-label="Events list">
+        <div class="nomoar-map-sidebar-head">
+            <h1>Archive map</h1>
+            <p>{{ map_events|length }} event{{ map_events|length|pluralize }} on the map. Select a card to focus the marker. Clusters split when you zoom in or click.</p>
+        </div>
+        <div class="nomoar-map-sidebar-list" id="nomoar-sidebar-list">
+            {% for ev in map_events %}
+            <button type="button" class="nomoar-map-sidebar-card" data-slug="{{ ev.slug }}" style="--badge-color: {{ ev.color }};">
+                <div class="year">{{ ev.year }}</div>
+                <span class="nomoar-type-badge" style="background: {{ ev.color }}22; color: {{ ev.color }}; border-color: {{ ev.color }}55;">{{ ev.type }}</span>
+                <div class="card-title">{{ ev.title }}</div>
+                {% if ev.location %}
+                <p class="card-loc">{{ ev.location }}</p>
+                {% endif %}
+            </button>
+            {% endfor %}
+        </div>
+    </aside>
+    <div class="nomoar-map-stage">
+        <div id="nomoar-map" role="region" aria-label="Archive events map"></div>
+        <div class="nomoar-map-legend-box" aria-hidden="false">
+            <h3>Event types</h3>
+            {% for lt in legend_types %}
+            <div class="nomoar-map-legend-row">
+                <span class="nomoar-map-legend-dot" style="background: {{ lt.color }};"></span>
+                <span>{{ lt.label }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% else %}
+<div style="padding:2rem 1.5rem;">
+    <h1>Map</h1>
+    <p class="muted">No geocoded events yet. In Django admin, set <strong>latitude</strong> and <strong>longitude</strong> (WGS84) on each historical event.</p>
+</div>
+{% endif %}
+</div>
+{% endblock %}
+
+{% block footer %}
+<footer class="nomoar-rich-footer">
+    <div class="nomoar-rich-footer-inner">
+        <div class="nomoar-rich-footer-brand">
+            <div class="nomoar-rich-footer-logo">
+                <span class="nomoar-rich-footer-logo-mark" aria-hidden="true">◎</span>
+                <span class="nomoar-rich-footer-logo-text">NOMOAR</span>
+            </div>
+            <p class="nomoar-rich-footer-tagline">Documenting American Racism &amp; Resistance Since 1776</p>
+            <div class="nomoar-rich-footer-social">
+                <a href="https://twitter.com" rel="noopener noreferrer" target="_blank" aria-label="X">𝕏</a>
+                <a href="https://instagram.com" rel="noopener noreferrer" target="_blank" aria-label="Instagram">◎</a>
+                <a href="https://linkedin.com" rel="noopener noreferrer" target="_blank" aria-label="LinkedIn">in</a>
+                <a href="https://facebook.com" rel="noopener noreferrer" target="_blank" aria-label="Facebook">f</a>
+            </div>
+        </div>
+        <div class="nomoar-rich-footer-col">
+            <h4>Navigate</h4>
+            <ul>
+                <li><a href="{% url 'nomoar:home' %}">Home</a></li>
+                <li><a href="{% url 'nomoar:home' %}#about">About</a></li>
+                <li><a href="{% url 'nomoar:timeline' %}">The platform</a></li>
+                <li><a href="{% url 'nomoar:submit' %}">Get involved</a></li>
+                <li><a href="{% url 'homepage' %}">Contact</a></li>
+                <li><a href="https://nomoar.org/" rel="noopener noreferrer" target="_blank">Privacy policy</a></li>
+                <li><a href="https://nomoar.org/" rel="noopener noreferrer" target="_blank">Terms of service</a></li>
+            </ul>
+        </div>
+        <div class="nomoar-rich-footer-col">
+            <h4>Support</h4>
+            <a class="nomoar-rich-footer-donate" href="{% url 'nomoar:pricing' %}">♥ DONATE</a>
+            <div class="nomoar-rich-footer-sub">
+                <label for="nomoar-footer-email">Stay updated</label>
+                <form class="row" action="#" method="get" onsubmit="return false;">
+                    <input id="nomoar-footer-email" type="email" name="email" placeholder="Your email" autocomplete="email">
+                    <button type="button">Subscribe</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</footer>
+<p class="nomoar-footer-disclaimer">Inspired by <a href="https://nomoar.org/" rel="noopener noreferrer" target="_blank">nomoar.org</a>. Independent educational deployment — not affiliated with the original site.</p>
+{% endblock %}
+
+{% block extra_js %}
+{% if map_events %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin=""></script>
+<script>
+(function() {
+    var el = document.getElementById('nomoar-map-events');
+    if (!el) return;
+    var events = JSON.parse(el.textContent);
+    if (!events.length) return;
+
+    function esc(s) {
+        if (s == null) return '';
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+    }
+
+    function popupHtml(ev) {
+        var h = '<div class="nomoar-map-popup">';
+        h += '<span class="nomoar-map-popup-badge">' + esc(ev.type) + '</span>';
+        h += '<h3>' + esc(ev.title) + '</h3>';
+        h += '<div class="nomoar-map-popup-year">' + esc(ev.year) + '</div>';
+        h += '<p>' + esc(ev.summary) + '</p>';
+        h += '<a href="' + String(ev.url).replace(/"/g, '&quot;') + '">Learn more ↗</a>';
+        h += '</div>';
+        return h;
+    }
+
+    var map = L.map('nomoar-map', { scrollWheelZoom: true });
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 20
+    }).addTo(map);
+
+    var cluster = L.markerClusterGroup({
+        maxClusterRadius: 45,
+        spiderfyOnMaxZoom: true,
+        showCoverageOnHover: false,
+        zoomToBoundsOnClick: true,
+        disableClusteringAtZoom: 14
+    });
+
+    var markersBySlug = {};
+    var activeSlug = null;
+
+    events.forEach(function(ev) {
+        var lat = ev.lat, lng = ev.lng;
+        if (lat == null || lng == null) return;
+        var fill = ev.color || '#1e88e5';
+
+        var marker = L.circleMarker([lat, lng], {
+            radius: 11,
+            fillColor: fill,
+            color: '#ffffff',
+            weight: 3,
+            opacity: 1,
+            fillOpacity: 0.92
+        });
+
+        var tip = '<strong>' + esc(ev.year) + '</strong> · ' + esc(ev.title);
+        if (ev.location) tip += '<br><span style="opacity:0.85;font-size:11px;">' + esc(ev.location) + '</span>';
+        marker.bindTooltip(tip, { direction: 'top', offset: [0, -10], className: 'nomoar-leaflet-tooltip' });
+
+        marker.bindPopup(popupHtml(ev), {
+            className: 'nomoar-light-popup-wrap',
+            maxWidth: 320
+        });
+        marker.on('popupopen', function() {
+            var w = marker.getPopup().getElement();
+            if (w) {
+                var elw = w.querySelector('.leaflet-popup-content-wrapper');
+                var tipEl = w.querySelector('.leaflet-popup-tip');
+                if (elw) elw.classList.add('nomoar-light-popup');
+                if (tipEl) tipEl.classList.add('nomoar-light-popup-tip');
+            }
+        });
+
+        cluster.addLayer(marker);
+        markersBySlug[ev.slug] = marker;
+    });
+
+    map.addLayer(cluster);
+    if (cluster.getLayers().length === 1) {
+        map.setView(cluster.getBounds().getCenter(), 6);
+    } else {
+        map.fitBounds(cluster.getBounds(), { padding: [48, 48], maxZoom: 6 });
+    }
+
+    function setActiveCard(slug) {
+        document.querySelectorAll('.nomoar-map-sidebar-card').forEach(function(btn) {
+            btn.classList.toggle('is-active', btn.getAttribute('data-slug') === slug);
+        });
+    }
+
+    document.getElementById('nomoar-sidebar-list').addEventListener('click', function(e) {
+        var btn = e.target.closest('.nomoar-map-sidebar-card');
+        if (!btn) return;
+        var slug = btn.getAttribute('data-slug');
+        var m = markersBySlug[slug];
+        if (!m) return;
+        activeSlug = slug;
+        setActiveCard(slug);
+        var ll = m.getLatLng();
+        map.flyTo(ll, Math.max(map.getZoom(), 10), { duration: 0.6 });
+        setTimeout(function() { m.openPopup(); }, 350);
+    });
+
+    map.on('popupclose', function() {
+        setActiveCard(null);
+    });
+})();
+</script>
 {% endif %}
 {% endblock %}

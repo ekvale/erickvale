@@ -67,7 +67,8 @@
             font-weight: 500;
         }
         .nomoar-nav a:hover { color: var(--nomoar-link); }
-        main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+        .nomoar-main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+        .nomoar-main--map { max-width: none; width: 100%; margin: 0; padding: 0; }
         .nomoar-eyebrow {
             font-size: 0.75rem;
             text-transform: uppercase;
@@ -195,7 +196,7 @@
             </nav>
         </div>
     </header>
-    <main>
+    <main class="nomoar-main {% block main_extra_class %}{% endblock %}">
         {% if messages %}
             {% for message in messages %}
                 <div class="alert alert-{{ message.tags }}">{{ message }}</div>
@@ -203,9 +204,11 @@
         {% endif %}
         {% block content %}{% endblock %}
     </main>
+    {% block footer %}
     <footer class="site-footer">
         <p>Inspired by the mission of <a href="https://nomoar.org/" rel="noopener noreferrer" target="_blank">nomoar.org</a> — National Online Museum of American Racism. This deployment is an independent educational recreation.</p>
     </footer>
+    {% endblock %}
     {% block extra_js %}{% endblock %}
 </body>
 </html>

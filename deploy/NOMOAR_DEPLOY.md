@@ -9,6 +9,7 @@ cd /home/erickvale/erickvale
 git pull origin main
 source venv/bin/activate
 python manage.py migrate nomoar
+# Map uses event_type (violence/policy/legislation/discrimination); seed sets colors.
 python manage.py loaddata nomoar/fixtures/initial.json
 python manage.py collectstatic --noinput
 sudo systemctl restart erickvale

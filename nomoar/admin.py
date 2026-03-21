@@ -14,8 +14,17 @@ class CollectionAdmin(admin.ModelAdmin):
 
 @admin.register(HistoricalEvent)
 class HistoricalEventAdmin(admin.ModelAdmin):
-    list_display = ['year', 'title', 'location', 'latitude', 'longitude', 'featured', 'created_at']
-    list_filter = ['featured', 'year', 'state']
+    list_display = [
+        'year',
+        'title',
+        'event_type',
+        'location',
+        'latitude',
+        'longitude',
+        'featured',
+        'created_at',
+    ]
+    list_filter = ['featured', 'year', 'state', 'event_type']
     search_fields = ['title', 'summary', 'location']
     prepopulated_fields = {'slug': ('title',)}
     filter_horizontal = ['collections', 'tags']

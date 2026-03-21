@@ -6,6 +6,23 @@ from django.db import models
 from django.urls import reverse
 
 
+class ArchiveEventType(models.TextChoices):
+    """Map marker / legend categories (aligned with nomoar.org-style archive)."""
+    VIOLENCE = 'violence', 'Violence'
+    POLICY = 'policy', 'Policy'
+    LEGISLATION = 'legislation', 'Legislation'
+    DISCRIMINATION = 'discrimination', 'Discrimination'
+
+
+# Hex colors for Leaflet markers and UI (Violence=red, Policy=blue, Legislation=purple, Discrimination=orange)
+ARCHIVE_EVENT_TYPE_COLORS = {
+    ArchiveEventType.VIOLENCE: '#e53935',
+    ArchiveEventType.POLICY: '#1e88e5',
+    ArchiveEventType.LEGISLATION: '#8e24aa',
+    ArchiveEventType.DISCRIMINATION: '#fb8c00',
+}
+
+
 class Tag(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(max_length=100, unique=True)
@@ -40,6 +57,13 @@ class HistoricalEvent(models.Model):
     body = models.TextField(blank=True, help_text='Optional longer narrative')
     location = models.CharField(max_length=300, blank=True)
     state = models.CharField(max_length=2, blank=True, help_text='US state code if applicable')
+    event_type = models.CharField(
+        max_length=32,
+        choices=ArchiveEventType.choices,
+        default=ArchiveEventType.POLICY,
+        db_index=True,
+        help_text='Category for map color and legend',
+    )
     latitude = models.FloatField(
         null=True,
         blank=True,
@@ -71,6 +95,10 @@ class HistoricalEvent(models.Model):
 
     def get_absolute_url(self):
         return reverse('nomoar:event_detail', kwargs={'slug': self.slug})
+
+    @property
+    def event_type_color(self):
+        return ARCHIVE_EVENT_TYPE_COLORS.get(self.event_type, '#1e88e5')
 
 
 class SiteStat(models.Model):

@@ -11,7 +11,7 @@ from pathlib import Path
 from django.core.management.base import BaseCommand
 from django.utils import dateparse
 
-from nomoar.models import HistoricalEvent, SiteStat
+from nomoar.models import ArchiveEventType, HistoricalEvent, SiteStat
 
 
 def _parse_dt(s):
@@ -58,6 +58,9 @@ class Command(BaseCommand):
                 if not slug:
                     continue
                 lat, lng = fields.get('latitude'), fields.get('longitude')
+                et = fields.get('event_type') or ArchiveEventType.POLICY
+                if et not in ArchiveEventType.values:
+                    et = ArchiveEventType.POLICY
                 defaults = {
                     'title': fields.get('title', ''),
                     'year': int(fields['year']) if fields.get('year') is not None else 0,
@@ -65,6 +68,7 @@ class Command(BaseCommand):
                     'body': fields.get('body', ''),
                     'location': fields.get('location', ''),
                     'state': fields.get('state', ''),
+                    'event_type': et,
                     'latitude': float(lat) if lat is not None else None,
                     'longitude': float(lng) if lng is not None else None,
                     'featured': bool(fields.get('featured', False)),

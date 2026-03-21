@@ -5,6 +5,9 @@
 {% block content %}
 <p><a href="{% url 'nomoar:timeline' %}" class="muted" style="text-decoration:none;">← Timeline</a></p>
 <p class="nomoar-eyebrow">{{ event.year }}</p>
+{% if event.event_type %}
+<span class="nomoar-type-badge" style="display:inline-block;margin-bottom:0.75rem;background:{{ event.event_type_color }}22;color:{{ event.event_type_color }};border:1px solid {{ event.event_type_color }}55;">{{ event.get_event_type_display }}</span>
+{% endif %}
 <h1>{{ event.title }}</h1>
 {% if event.location %}
 <p class="muted" style="font-size:1.05rem;">{{ event.location }}{% if event.state %}, {{ event.state }}{% endif %}</p>
