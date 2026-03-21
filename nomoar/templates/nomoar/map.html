@@ -52,6 +52,81 @@
         color: #888;
         line-height: 1.45;
     }
+    .nomoar-map-filters {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #222;
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+    }
+    .nomoar-map-filters label {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        font-size: 0.72rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #888;
+    }
+    .nomoar-map-filters input[type="number"],
+    .nomoar-map-filters input[type="search"] {
+        width: 100%;
+        padding: 0.45rem 0.55rem;
+        border-radius: 6px;
+        border: 1px solid #333;
+        background: #111;
+        color: #eee;
+        font-size: 0.88rem;
+        font-weight: 400;
+        text-transform: none;
+        letter-spacing: normal;
+    }
+    .nomoar-map-filters .nomoar-map-filter-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+    }
+    .nomoar-map-filters-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    .nomoar-map-filters button[type="submit"] {
+        background: #c9a227;
+        color: #111;
+        border: none;
+        font-weight: 700;
+        padding: 0.5rem 0.9rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.8rem;
+    }
+    .nomoar-map-filters .nomoar-map-clear {
+        font-size: 0.78rem;
+        color: #888;
+        text-decoration: none;
+    }
+    .nomoar-map-filters .nomoar-map-clear:hover { color: #ccc; }
+    .nomoar-map-filters .nomoar-map-copy-link {
+        background: transparent;
+        border: 1px solid #444;
+        color: #bbb;
+        font-weight: 600;
+        padding: 0.45rem 0.65rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.75rem;
+    }
+    .nomoar-map-filters .nomoar-map-copy-link:hover { border-color: #666; color: #fff; }
+    .nomoar-map-sidebar-empty {
+        padding: 1rem 0;
+        font-size: 0.85rem;
+        color: #888;
+        line-height: 1.5;
+    }
     .nomoar-map-sidebar-list {
         flex: 1;
         overflow-y: auto;
@@ -375,24 +450,61 @@
 
 {% block content %}
 <div class="nomoar-map-page">
-{% if map_events %}
+{% if map_geocoded_count %}
 {{ map_events|json_script:"nomoar-map-events" }}
 <div class="nomoar-map-layout">
     <aside class="nomoar-map-sidebar" aria-label="Events list">
         <div class="nomoar-map-sidebar-head">
             <h1>Archive map</h1>
-            <p>{{ map_events|length }} event{{ map_events|length|pluralize }} on the map. Select a card to focus the marker. Clusters split when you zoom in or click.</p>
+            <p>
+                {% if map_filters_active %}
+                Showing <strong>{{ map_events|length }}</strong> of {{ map_geocoded_count }} geocoded event{{ map_geocoded_count|pluralize }}.
+                {% else %}
+                <strong>{{ map_events|length }}</strong> event{{ map_events|length|pluralize }} on the map. Select a card to focus the marker. Clusters split when you zoom in or click.
+                {% endif %}
+            </p>
+            <form class="nomoar-map-filters" method="get" action="{% url 'nomoar:map' %}" role="search">
+                {% if map_focus_slug %}<input type="hidden" name="focus" value="{{ map_focus_slug|escape }}">{% endif %}
+                <div class="nomoar-map-filter-row">
+                    <label>Year from
+                        <input type="number" name="year_from" min="1400" max="2100" step="1"
+                            placeholder="{% if map_year_hint_min %}{{ map_year_hint_min }}{% else %}e.g. 1960{% endif %}"
+                            value="{{ map_year_from }}">
+                    </label>
+                    <label>Year to
+                        <input type="number" name="year_to" min="1400" max="2100" step="1"
+                            placeholder="{% if map_year_hint_max %}{{ map_year_hint_max }}{% else %}e.g. 2025{% endif %}"
+                            value="{{ map_year_to }}">
+                    </label>
+                </div>
+                <label>Search
+                    <input type="search" name="q" value="{{ map_q|escape }}" placeholder="Title or description" autocomplete="off">
+                </label>
+                <div class="nomoar-map-filters-actions">
+                    <button type="submit">Apply filters</button>
+                    <a class="nomoar-map-clear" href="{% url 'nomoar:map' %}">Clear all</a>
+                    <button type="button" class="nomoar-map-copy-link" id="nomoar-map-copy-url" data-share-url="{{ request.build_absolute_uri|escape }}">Copy map link</button>
+                </div>
+            </form>
         </div>
         <div class="nomoar-map-sidebar-list" id="nomoar-sidebar-list">
             {% for ev in map_events %}
             <button type="button" class="nomoar-map-sidebar-card" data-slug="{{ ev.slug }}" style="--badge-color: {{ ev.color }};">
                 <div class="year">{{ ev.year }}</div>
-                <span class="nomoar-type-badge" style="background: {{ ev.color }}22; color: {{ ev.color }}; border-color: {{ ev.color }}55;">{{ ev.type }}</span>
+                <span class="nomoar-type-badge" style="background: {{ ev.color }}22; color: {{ ev.color }}; border-color: {{ ev.color }}55;">{{ ev.type_label }}</span>
                 <div class="card-title">{{ ev.title }}</div>
                 {% if ev.location %}
                 <p class="card-loc">{{ ev.location }}</p>
                 {% endif %}
             </button>
+            {% empty %}
+            <div class="nomoar-map-sidebar-empty">
+                {% if map_filters_active %}
+                No events match these filters. Try widening the year range or clearing search.
+                {% else %}
+                No markers to show.
+                {% endif %}
+            </div>
             {% endfor %}
         </div>
     </aside>
@@ -464,7 +576,7 @@
 {% endblock %}
 
 {% block extra_js %}
-{% if map_events %}
+{% if map_geocoded_count %}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin=""></script>
 <script>
@@ -472,7 +584,7 @@
     var el = document.getElementById('nomoar-map-events');
     if (!el) return;
     var events = JSON.parse(el.textContent);
-    if (!events.length) return;
+    if (!Array.isArray(events)) events = [];
 
     function esc(s) {
         if (s == null) return '';
@@ -481,7 +593,7 @@
 
     function popupHtml(ev) {
         var h = '<div class="nomoar-map-popup">';
-        h += '<span class="nomoar-map-popup-badge">' + esc(ev.type) + '</span>';
+        h += '<span class="nomoar-map-popup-badge">' + esc(ev.type_label || ev.type) + '</span>';
         h += '<h3>' + esc(ev.title) + '</h3>';
         h += '<div class="nomoar-map-popup-year">' + esc(ev.year) + '</div>';
         h += '<p>' + esc(ev.summary) + '</p>';
@@ -585,22 +697,37 @@
         });
     }
 
-    document.getElementById('nomoar-sidebar-list').addEventListener('click', function(e) {
-        var btn = e.target.closest('.nomoar-map-sidebar-card');
-        if (!btn) return;
-        var slug = btn.getAttribute('data-slug');
-        var m = markersBySlug[slug];
-        if (!m) return;
-        activeSlug = slug;
-        setActiveCard(slug);
-        var ll = m.getLatLng();
-        map.flyTo(ll, Math.max(map.getZoom(), 10), { duration: 0.6 });
-        setTimeout(function() { m.openPopup(); }, 350);
-    });
+    var sideList = document.getElementById('nomoar-sidebar-list');
+    if (sideList) {
+        sideList.addEventListener('click', function(e) {
+            var btn = e.target.closest('.nomoar-map-sidebar-card');
+            if (!btn) return;
+            var slug = btn.getAttribute('data-slug');
+            var m = markersBySlug[slug];
+            if (!m) return;
+            activeSlug = slug;
+            setActiveCard(slug);
+            var ll = m.getLatLng();
+            map.flyTo(ll, Math.max(map.getZoom(), 10), { duration: 0.6 });
+            setTimeout(function() { m.openPopup(); }, 350);
+        });
+    }
 
     map.on('popupclose', function() {
         setActiveCard(null);
     });
+
+    var copyBtn = document.getElementById('nomoar-map-copy-url');
+    if (copyBtn && navigator.clipboard && navigator.clipboard.writeText) {
+        copyBtn.addEventListener('click', function() {
+            var url = (copyBtn.getAttribute('data-share-url') || window.location.href).split('#')[0];
+            navigator.clipboard.writeText(url).then(function() {
+                var t = copyBtn.textContent;
+                copyBtn.textContent = 'Copied!';
+                setTimeout(function() { copyBtn.textContent = t; }, 2000);
+            });
+        });
+    }
 })();
 </script>
 {% endif %}

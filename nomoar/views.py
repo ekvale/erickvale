@@ -1,5 +1,5 @@
 from django.db import connection
-from django.db.models import Count, Q
+from django.db.models import Count, Max, Min, Q
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.generic import DetailView, ListView, TemplateView
@@ -14,6 +14,33 @@ from .models import (
     SiteStat,
 )
 from .forms import EventSubmissionForm
+
+
+def _apply_events_text_search(qs, q_raw):
+    """Full-text on Postgres (plain query); icontains fallback elsewhere."""
+    q = (q_raw or '').strip()
+    if not q:
+        return qs
+    if connection.vendor == 'postgresql':
+        from django.contrib.postgres.search import SearchQuery, SearchVector
+
+        vector = (
+            SearchVector('title', weight='A')
+            + SearchVector('summary', weight='B')
+            + SearchVector('body', weight='C')
+        )
+        return qs.annotate(search=vector).filter(
+            search=SearchQuery(
+                q,
+                config='english',
+                search_type='plain',
+            ),
+        )
+    return qs.filter(
+        Q(title__icontains=q)
+        | Q(summary__icontains=q)
+        | Q(body__icontains=q),
+    )
 
 
 class HomeView(TemplateView):
@@ -53,29 +80,7 @@ class TimelineView(ListView):
         y = self.request.GET.get('year')
         if y and y.isdigit():
             qs = qs.filter(year=int(y))
-        q = self.request.GET.get('q', '').strip()
-        if q:
-            if connection.vendor == 'postgresql':
-                from django.contrib.postgres.search import SearchQuery, SearchVector
-
-                vector = (
-                    SearchVector('title', weight='A')
-                    + SearchVector('summary', weight='B')
-                    + SearchVector('body', weight='C')
-                )
-                qs = qs.annotate(search=vector).filter(
-                    search=SearchQuery(
-                        q,
-                        config='english',
-                        search_type='plain',
-                    ),
-                )
-            else:
-                qs = qs.filter(
-                    Q(title__icontains=q)
-                    | Q(summary__icontains=q)
-                    | Q(body__icontains=q),
-                )
+        qs = _apply_events_text_search(qs, self.request.GET.get('q', ''))
         decade = self.request.GET.get('decade', '').strip().lower()
         if decade and decade != 'all':
             if len(decade) >= 5 and decade.endswith('s') and decade[:4].isdigit():
@@ -144,11 +149,26 @@ class MapView(TemplateView):
             .annotate(n=Count('id'))
             .order_by('-n')
         )
-        mapped = []
-        qs = HistoricalEvent.objects.filter(
+        base_qs = HistoricalEvent.objects.filter(
             latitude__isnull=False,
             longitude__isnull=False,
-        ).order_by('-year', 'title')
+        )
+        ctx['map_geocoded_count'] = base_qs.count()
+        bounds = base_qs.aggregate(y_min=Min('year'), y_max=Max('year'))
+        ctx['map_year_hint_min'] = bounds['y_min']
+        ctx['map_year_hint_max'] = bounds['y_max']
+
+        req = self.request.GET
+        qs = base_qs.order_by('-year', 'title')
+        yf_raw = req.get('year_from', '').strip()
+        yt_raw = req.get('year_to', '').strip()
+        if yf_raw.isdigit():
+            qs = qs.filter(year__gte=int(yf_raw))
+        if yt_raw.isdigit():
+            qs = qs.filter(year__lte=int(yt_raw))
+        qs = _apply_events_text_search(qs, req.get('q', ''))
+
+        mapped = []
         for e in qs:
             color = ARCHIVE_EVENT_TYPE_COLORS.get(e.event_type, '#1e88e5')
             tf_url = reverse('nomoar:timeline') + '?focus=' + e.slug
@@ -170,7 +190,15 @@ class MapView(TemplateView):
                 },
             )
         ctx['map_events'] = mapped
-        ctx['map_focus_slug'] = self.request.GET.get('focus', '').strip()
+        ctx['map_focus_slug'] = req.get('focus', '').strip()
+        ctx['map_q'] = req.get('q', '').strip()
+        ctx['map_year_from'] = yf_raw if yf_raw.isdigit() else ''
+        ctx['map_year_to'] = yt_raw if yt_raw.isdigit() else ''
+        ctx['map_filters_active'] = bool(
+            ctx['map_q']
+            or ctx['map_year_from']
+            or ctx['map_year_to'],
+        )
         ctx['legend_types'] = [
             {
                 'slug': c.value,
