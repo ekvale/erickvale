@@ -1,5 +1,7 @@
 from django.urls import path
+
 from . import views
+from .feeds import LatestEventsFeed
 
 app_name = 'nomoar'
 
@@ -18,4 +20,9 @@ urlpatterns = [
     path('Pricing/', views.PricingView.as_view(), name='pricing'),
     path('Heroes/', views.HeroesView.as_view(), name='heroes'),
     path('HeroDetail/<slug:slug>/', views.HeroDetailView.as_view(), name='hero_detail'),
+    path('feed/events.xml', LatestEventsFeed(), name='events_feed_rss'),
+    path('feed/events.json', views.events_feed_json, name='events_feed_json'),
+    path('oembed/', views.oembed, name='oembed'),
+    path('Embed/Event/<slug:slug>/', views.embed_event, name='embed_event'),
+    path('Embed/slice/', views.embed_slice, name='embed_slice'),
 ]

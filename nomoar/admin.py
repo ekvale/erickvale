@@ -51,7 +51,7 @@ class HistoricalEventAdmin(admin.ModelAdmin):
     list_filter = ['featured', 'year', 'state', 'event_type', 'last_reviewed']
     search_fields = ['title', 'summary', 'body', 'location']
     prepopulated_fields = {'slug': ('title',)}
-    filter_horizontal = ['collections', 'tags']
+    filter_horizontal = ['collections', 'tags', 'theme_labels', 'curated_related']
     inlines = [EventSourceInline]
     fieldsets = (
         (
@@ -73,6 +73,7 @@ class HistoricalEventAdmin(admin.ModelAdmin):
                     'collections',
                     'tags',
                     'theme_labels',
+                    'curated_related',
                 )
             },
         ),

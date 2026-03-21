@@ -1,6 +1,13 @@
 {% extends 'nomoar/base.html' %}
+{% load nomoar_tags %}
 
 {% block title %}{{ event.title|truncatewords:8 }}{% endblock %}
+
+{% block extra_head %}
+<link rel="alternate" type="application/rss+xml" title="NOMOAR archive updates" href="{{ rss_feed_url }}">
+<link rel="alternate" type="application/json" title="NOMOAR archive updates (JSON)" href="{{ json_feed_url }}">
+<link rel="alternate" type="application/json+oembed" href="{{ oembed_json_url }}" title="oEmbed">
+{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -67,6 +74,18 @@
     .nomoar-ed-fist-label { font-size: 0.7rem; color: var(--nomoar-muted); }
     .nomoar-ed-groups { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; margin-top: 1rem; }
     .nomoar-ed-group-pill { font-size: 0.7rem; color: #999; background: #1e1e1e; padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid #333; }
+    .nomoar-ed-related { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--nomoar-border); }
+    .nomoar-ed-related h2 { font-size: 1.05rem; margin: 0 0 0.75rem; }
+    .nomoar-ed-related ul { list-style: none; padding: 0; margin: 0; }
+    .nomoar-ed-related li { margin-bottom: 0.65rem; }
+    .nomoar-ed-related a { color: var(--nomoar-link); text-decoration: none; font-weight: 600; }
+    .nomoar-ed-related a:hover { text-decoration: underline; }
+    .nomoar-ed-related .muted { font-size: 0.85rem; font-weight: 400; }
+    .nomoar-ed-embed { margin-top: 2rem; padding: 1rem; background: var(--nomoar-surface); border: 1px solid var(--nomoar-border); border-radius: 8px; }
+    .nomoar-ed-embed h2 { font-size: 1rem; margin: 0 0 0.5rem; }
+    .nomoar-ed-embed textarea { width: 100%; min-height: 4.5rem; font-family: ui-monospace, monospace; font-size: 0.75rem; background: var(--nomoar-bg); color: var(--nomoar-text); border: 1px solid var(--nomoar-border); border-radius: 6px; padding: 0.5rem; }
+    .nomoar-ed-embed p { font-size: 0.8rem; color: var(--nomoar-muted); margin: 0.5rem 0 0; }
+    .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
 </style>
 {% endblock %}
 
@@ -89,11 +108,11 @@
 {% if event.location %}
 <p class="muted" style="font-size:1.05rem;">{{ event.location }}{% if event.state %}, {{ event.state }}{% endif %}
     {% if event.is_geocoded %}
-    · <a href="{% url 'nomoar:map' %}?focus={{ event.slug }}">On map</a>
+    · <a href="{{ map_href_shared }}">On map</a>
     {% endif %}
 </p>
 {% elif event.is_geocoded %}
-<p class="muted" style="font-size:1.05rem;"><a href="{% url 'nomoar:map' %}?focus={{ event.slug }}">View on map</a></p>
+<p class="muted" style="font-size:1.05rem;"><a href="{{ map_href_shared }}">View on map</a></p>
 {% endif %}
 <div style="margin:1.5rem 0; line-height:1.75;">
     {{ event.summary|linebreaks }}
@@ -101,12 +120,37 @@
     {{ event.body|linebreaks }}
     {% endif %}
 </div>
-{% if event.raised_fists %}
-<p>✊ <strong>{{ event.raised_fists }}</strong> community acknowledgments</p>
+{% if related_events_list %}
+<div class="nomoar-ed-related">
+    <h2>Related archive entries</h2>
+    <p class="muted" style="font-size:0.85rem;margin-bottom:0.75rem;">Curated picks, shared tags, state, or decade. <a href="{% url 'nomoar:timeline' %}">Browse the timeline</a>.</p>
+    <ul>
+        {% for rel in related_events_list %}
+        <li>
+            <a href="{{ rel.get_absolute_url }}">{{ rel.year }} — {{ rel.title }}</a>
+            <span class="muted"> · {{ rel.get_event_type_display }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
 {% endif %}
+
 {% if event.tags.all %}
-<p class="muted">Tags: {% for t in event.tags.all %}{{ t.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+<div class="nomoar-ed-groups" style="margin-top:1rem;">
+    <span aria-hidden="true">👤</span>
+    {% for t in event.tags.all %}
+    <span class="nomoar-ed-group-pill">{{ t.name }}</span>
+    {% endfor %}
+</div>
 {% endif %}
+
+<div class="nomoar-ed-embed">
+    <h2>Embed &amp; feeds</h2>
+    <p class="muted" style="font-size:0.85rem;margin-bottom:0.5rem;">iframe this entry, use oEmbed, or subscribe for partners.</p>
+    <label class="visually-hidden" for="nomoar-embed-iframe">Embed code</label>
+    <textarea id="nomoar-embed-iframe" readonly rows="3">{{ embed_iframe_code }}</textarea>
+    <p><a href="{{ embed_slice_example_url }}" target="_blank" rel="noopener">Filtered list embed (slice)</a> · <a href="{{ oembed_json_url }}">oEmbed JSON</a> · <a href="{{ rss_feed_url }}">RSS</a> · <a href="{{ json_feed_url }}">JSON</a></p>
+</div>
 
 {% if event.sources.all %}
 <div class="nomoar-sources">

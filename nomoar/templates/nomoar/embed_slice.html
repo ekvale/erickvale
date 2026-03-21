@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOMOAR — entries</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: system-ui, sans-serif; background: #111; color: #e0e0e0; font-size: 13px; padding: 10px 12px; }
+        a { color: #d4b84a; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        ul { list-style: none; padding: 0; margin: 0; }
+        li { padding: 8px 0; border-bottom: 1px solid #2a2a2a; }
+        .y { color: #ff6b00; font-weight: 700; font-size: 11px; margin-right: 6px; }
+        .footer { margin-top: 12px; font-size: 11px; color: #666; }
+    </style>
+</head>
+<body>
+    <ul>
+        {% for e, abs_url in events_with_urls %}
+        <li>
+            <span class="y">{{ e.year }}</span>
+            <a href="{{ abs_url }}" target="_blank" rel="noopener noreferrer">{{ e.title }}</a>
+        </li>
+        {% empty %}
+        <li>No entries match these filters.</li>
+        {% endfor %}
+    </ul>
+    <p class="footer"><a href="{{ full_timeline_url }}" target="_blank" rel="noopener">Full timeline →</a> · NOMOAR embed</p>
+</body>
+</html>

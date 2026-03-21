@@ -1,5 +1,6 @@
 {% extends 'nomoar/base.html' %}
 {% load static %}
+{% load nomoar_tags %}
 
 {% block title %}Map{% endblock %}
 
@@ -494,6 +495,14 @@
                             value="{{ map_year_to }}">
                     </label>
                 </div>
+                <label>State
+                    <select name="state" aria-label="Filter by US state">
+                        <option value=""{% if not map_state %} selected{% endif %}>All states</option>
+                        {% for st in map_states %}
+                        <option value="{{ st }}"{% if map_state == st %} selected{% endif %}>{{ st }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
                 <label>Search
                     <input type="search" name="q" value="{{ map_q|escape }}" placeholder="Title or description" autocomplete="off">
                 </label>
@@ -501,6 +510,7 @@
                     <button type="submit">Apply filters</button>
                     <a class="nomoar-map-clear" href="{% url 'nomoar:map' %}">Clear all</a>
                     <button type="button" class="nomoar-map-copy-link" id="nomoar-map-copy-url" data-share-url="{{ request.build_absolute_uri|escape }}">Copy map link</button>
+                    <a class="nomoar-map-clear" href="{% timeline_url_from_map %}" style="border:1px solid #444;padding:0.45rem 0.65rem;border-radius:6px;">Timeline (same filters)</a>
                 </div>
             </form>
         </div>

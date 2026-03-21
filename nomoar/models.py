@@ -102,6 +102,13 @@ class HistoricalEvent(models.Model):
         related_name='events',
         help_text='Pills above the title (institutional, cultural, court case, …)',
     )
+    curated_related = models.ManyToManyField(
+        'self',
+        symmetrical=False,
+        blank=True,
+        related_name='related_from_curated',
+        help_text='Manually curated related entries (shown first on the detail page).',
+    )
     last_reviewed = models.DateField(
         null=True,
         blank=True,

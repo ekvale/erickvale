@@ -1,3 +1,4 @@
+{% load nomoar_tags %}
 <article class="nomoar-tl-card">
     <div class="nomoar-tl-card-date">{{ e.year }}</div>
     <div class="nomoar-tl-tags">
@@ -36,7 +37,7 @@
         </button>
         <span class="nomoar-tl-card-footer-links">
             {% if e.is_geocoded %}
-            <a href="{% url 'nomoar:map' %}?focus={{ e.slug }}" class="nomoar-tl-expand">On map</a>
+            <a href="{% map_url focus=e.slug %}" class="nomoar-tl-expand">On map</a>
             {% endif %}
             <a href="{{ e.get_absolute_url }}" class="nomoar-tl-expand">Full entry →</a>
         </span>

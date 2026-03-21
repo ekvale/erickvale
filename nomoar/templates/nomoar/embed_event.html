@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ event.year }} — {{ event.title|truncatewords:12 }}</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: system-ui, Segoe UI, Roboto, sans-serif;
+            background: #111;
+            color: #e8e6e3;
+            line-height: 1.5;
+            padding: 12px 14px 16px;
+            font-size: 14px;
+        }
+        a { color: #d4b84a; }
+        .eyebrow { font-size: 12px; font-weight: 700; color: #ff6b00; margin: 0 0 6px; }
+        h1 { font-size: 1.05rem; margin: 0 0 8px; line-height: 1.3; }
+        .summary { color: #aaa; font-size: 13px; margin: 0 0 12px; }
+        .loc { color: #888; font-size: 12px; margin: 0 0 12px; }
+        .footer { margin-top: 14px; padding-top: 10px; border-top: 1px solid #333; font-size: 11px; color: #666; }
+    </style>
+</head>
+<body>
+    <p class="eyebrow">{{ event.year }}</p>
+    <h1>{{ event.title }}</h1>
+    {% if event.location %}
+    <p class="loc">{{ event.location }}{% if event.state %}, {{ event.state }}{% endif %}</p>
+    {% endif %}
+    <p class="summary">{{ event.summary|truncatewords:48 }}</p>
+    <p><a href="{{ full_site_url }}" target="_blank" rel="noopener noreferrer">Open full entry →</a></p>
+    <div class="footer">NOMOAR — educational archive. Not legal advice.</div>
+</body>
+</html>
