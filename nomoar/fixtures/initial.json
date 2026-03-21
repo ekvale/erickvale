@@ -1,0 +1,134 @@
+[
+  {
+    "model": "nomoar.sitestat",
+    "pk": 1,
+    "fields": {
+      "key": "years",
+      "label": "Years Documented",
+      "value": "247",
+      "suffix": "+"
+    }
+  },
+  {
+    "model": "nomoar.sitestat",
+    "pk": 3,
+    "fields": {
+      "key": "states",
+      "label": "States Covered",
+      "value": "25",
+      "suffix": ""
+    }
+  },
+  {
+    "model": "nomoar.sitestat",
+    "pk": 4,
+    "fields": {
+      "key": "collections",
+      "label": "Curated Collections",
+      "value": "6",
+      "suffix": "+"
+    }
+  },
+  {
+    "model": "nomoar.historicalevent",
+    "pk": 1,
+    "fields": {
+      "title": "Grand Canyon Indigenous Displacement References Removed",
+      "slug": "grand-canyon-indigenous-displacement-references-removed",
+      "year": 2025,
+      "summary": "National Park Service removed signs and exhibits referencing the forced displacement of Native Americans from Grand Canyon region when the National Park was created.",
+      "body": "",
+      "location": "Grand Canyon National Park, Arizona",
+      "state": "AZ",
+      "featured": true,
+      "raised_fists": 0,
+      "created_at": "2025-01-01T12:00:00Z",
+      "updated_at": "2025-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "nomoar.historicalevent",
+    "pk": 2,
+    "fields": {
+      "title": "Executive Order 14253: 'Restoring Truth and Sanity to American History'",
+      "slug": "executive-order-14253-restoring-truth-and-sanity",
+      "year": 2025,
+      "summary": "President Trump signed Executive Order 14253 directing the Department of the Interior and National Park Service to remove exhibits about slavery, Indigenous genocide, civil rights, and climate science from national parks and federal lands.",
+      "body": "",
+      "location": "White House, Washington D.C.",
+      "state": "DC",
+      "featured": true,
+      "raised_fists": 0,
+      "created_at": "2025-01-01T12:00:00Z",
+      "updated_at": "2025-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "nomoar.historicalevent",
+    "pk": 3,
+    "fields": {
+      "title": "Muir Woods 'History Under Construction' Exhibit Removal",
+      "slug": "muir-woods-history-under-construction-exhibit-removal",
+      "year": 2025,
+      "summary": "Trump administration removed 'History Under Construction' exhibit acknowledging Coast Miwok Indigenous history and the racist roots of conservation movements at Muir Woods National Monument.",
+      "body": "",
+      "location": "Muir Woods National Monument, California",
+      "state": "CA",
+      "featured": true,
+      "raised_fists": 0,
+      "created_at": "2025-01-01T12:00:00Z",
+      "updated_at": "2025-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "nomoar.historicalevent",
+    "pk": 4,
+    "fields": {
+      "title": "Stonewall National Monument LGBTQ+ History Altered",
+      "slug": "stonewall-national-monument-lgbtq-history-altered",
+      "year": 2025,
+      "summary": "Trump administration removed and altered references to transgender and queer people at Stonewall National Monument — the birthplace of the modern LGBTQ+ rights movement.",
+      "body": "",
+      "location": "Stonewall National Monument, New York City",
+      "state": "NY",
+      "featured": true,
+      "raised_fists": 0,
+      "created_at": "2025-01-01T12:00:00Z",
+      "updated_at": "2025-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "nomoar.historicalevent",
+    "pk": 5,
+    "fields": {
+      "title": "President's House Slavery Exhibit Removal - Philadelphia",
+      "slug": "presidents-house-slavery-exhibit-removal-philadelphia",
+      "year": 2026,
+      "summary": "National Park Service workers used crowbars to remove the only federal historic site exhibit commemorating slavery in America — 'The President's House: Freedom and Slavery in the Making of a New Nation.'",
+      "body": "",
+      "location": "Independence National Historical Park, Philadelphia, Pennsylvania",
+      "state": "PA",
+      "featured": true,
+      "raised_fists": 0,
+      "created_at": "2025-01-01T12:00:00Z",
+      "updated_at": "2025-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "nomoar.historicalevent",
+    "pk": 6,
+    "fields": {
+      "title": "Glacier National Park Climate Change Science Removed",
+      "slug": "glacier-national-park-climate-change-science-removed",
+      "year": 2025,
+      "summary": "Officials removed descriptions and educational materials explaining how climate change is contributing to glacial loss at Glacier National Park.",
+      "body": "",
+      "location": "Glacier National Park, Montana",
+      "state": "MT",
+      "featured": true,
+      "raised_fists": 0,
+      "created_at": "2025-01-01T12:00:00Z",
+      "updated_at": "2025-01-01T12:00:00Z"
+    }
+  }
+]

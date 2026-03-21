@@ -1,0 +1,19 @@
+{% extends 'nomoar/base.html' %}
+
+{% block title %}Submit an Event{% endblock %}
+
+{% block content %}
+<h1>Submit an Event</h1>
+<p class="muted">Suggest documentation for the archive. Submissions are reviewed before publication.</p>
+<form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+    <div class="row">
+        {{ field.errors }}
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+    </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+{% endblock %}

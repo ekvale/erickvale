@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'allminnesota',
     'arm_chair_detective',
     'chess_trainer',
+    'nomoar',
 ]
 
 MIDDLEWARE = [

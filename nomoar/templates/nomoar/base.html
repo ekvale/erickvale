@@ -1,0 +1,210 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}NOMOAR{% endblock %} — Living American History</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --nomoar-bg: #0d0d0f;
+            --nomoar-surface: #16161a;
+            --nomoar-elevated: #1c1c22;
+            --nomoar-border: #2a2a32;
+            --nomoar-text: #e8e6e3;
+            --nomoar-muted: #9a9690;
+            --nomoar-accent: #c9a227;
+            --nomoar-accent-soft: rgba(201, 162, 39, 0.15);
+            --nomoar-link: #d4b84a;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Source Sans 3', system-ui, sans-serif;
+            background: var(--nomoar-bg);
+            color: var(--nomoar-text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        .nomoar-header {
+            border-bottom: 1px solid var(--nomoar-border);
+            background: var(--nomoar-surface);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .nomoar-header-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 1rem 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+        .nomoar-logo {
+            font-family: 'Crimson Pro', Georgia, serif;
+            font-weight: 700;
+            font-size: 1.15rem;
+            letter-spacing: 0.04em;
+            color: var(--nomoar-text);
+            text-decoration: none;
+        }
+        .nomoar-logo span { color: var(--nomoar-accent); }
+        .nomoar-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 1.25rem;
+        }
+        .nomoar-nav a {
+            color: var(--nomoar-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .nomoar-nav a:hover { color: var(--nomoar-link); }
+        main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+        .nomoar-eyebrow {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--nomoar-accent);
+            margin-bottom: 0.5rem;
+        }
+        h1, h2, h3 {
+            font-family: 'Crimson Pro', Georgia, serif;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+        h1 { font-size: clamp(1.75rem, 4vw, 2.75rem); margin: 0 0 1rem; }
+        h2 { font-size: 1.5rem; margin: 2.5rem 0 1rem; border-bottom: 1px solid var(--nomoar-border); padding-bottom: 0.5rem; }
+        .btn {
+            display: inline-block;
+            padding: 0.65rem 1.25rem;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: var(--nomoar-accent);
+            color: #0d0d0f;
+        }
+        .btn-primary:hover { filter: brightness(1.08); }
+        .btn-outline {
+            background: transparent;
+            color: var(--nomoar-link);
+            border: 1px solid var(--nomoar-border);
+        }
+        .btn-outline:hover { border-color: var(--nomoar-accent); }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        .stat-card {
+            background: var(--nomoar-elevated);
+            border: 1px solid var(--nomoar-border);
+            padding: 1.25rem;
+            text-align: center;
+            border-radius: 6px;
+        }
+        .stat-value {
+            font-family: 'Crimson Pro', Georgia, serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--nomoar-accent);
+        }
+        .stat-label { font-size: 0.8rem; color: var(--nomoar-muted); margin-top: 0.25rem; }
+        .event-card {
+            display: block;
+            background: var(--nomoar-elevated);
+            border: 1px solid var(--nomoar-border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            text-decoration: none;
+            color: inherit;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .event-card:hover {
+            border-color: var(--nomoar-accent);
+            background: var(--nomoar-accent-soft);
+        }
+        .event-card .year { color: var(--nomoar-accent); font-weight: 700; font-size: 0.85rem; }
+        .event-card h3 { margin: 0.35rem 0; font-size: 1.1rem; }
+        .event-card p { margin: 0; font-size: 0.9rem; color: var(--nomoar-muted); }
+        .cta-row { display: flex; flex-wrap: wrap; gap: 1rem; margin: 1.5rem 0; }
+        .footer-cta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--nomoar-border);
+        }
+        .footer-cta-box {
+            background: var(--nomoar-surface);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--nomoar-border);
+        }
+        .footer-cta-box h3 { margin-top: 0; font-size: 1.1rem; }
+        .site-footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--nomoar-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--nomoar-border);
+        }
+        .site-footer a { color: var(--nomoar-link); }
+        .muted { color: var(--nomoar-muted); }
+        .alert { padding: 1rem; border-radius: 6px; margin-bottom: 1rem; }
+        .alert-success { background: rgba(46, 125, 50, 0.2); border: 1px solid #2e7d32; color: #a5d6a7; }
+        form .row { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 0.35rem; font-weight: 500; }
+        input, textarea, select {
+            width: 100%; max-width: 100%;
+            padding: 0.6rem 0.75rem;
+            background: var(--nomoar-bg);
+            border: 1px solid var(--nomoar-border);
+            color: var(--nomoar-text);
+            border-radius: 4px;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <header class="nomoar-header">
+        <div class="nomoar-header-inner">
+            <a href="{% url 'nomoar:home' %}" class="nomoar-logo">NOMOAR<span>.</span></a>
+            <nav class="nomoar-nav">
+                <a href="{% url 'nomoar:timeline' %}">Timeline</a>
+                <a href="{% url 'nomoar:map' %}">Map</a>
+                <a href="{% url 'nomoar:submit' %}">Submit</a>
+                <a href="{% url 'nomoar:educators' %}">Educators</a>
+                <a href="{% url 'nomoar:pricing' %}">Support</a>
+                <a href="{% url 'homepage' %}">eric kvale</a>
+            </nav>
+        </div>
+    </header>
+    <main>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+    <footer class="site-footer">
+        <p>Inspired by the mission of <a href="https://nomoar.org/" rel="noopener noreferrer" target="_blank">nomoar.org</a> — National Online Museum of American Racism. This deployment is an independent educational recreation.</p>
+    </footer>
+</body>
+</html>

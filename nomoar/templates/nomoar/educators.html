@@ -1,0 +1,14 @@
+{% extends 'nomoar/base.html' %}
+
+{% block title %}For Educators{% endblock %}
+
+{% block content %}
+<h1>For Educators</h1>
+<p class="muted">This section mirrors the educator outreach described on <a href="https://nomoar.org/" target="_blank" rel="noopener">nomoar.org</a>.</p>
+<ul style="line-height:2;">
+    <li>Lesson plans and discussion guides can be linked or uploaded here as the project grows.</li>
+    <li>Primary source documents and timeline entries support classroom use.</li>
+    <li>Free educator verification: contact the site administrator to request a staff account or shared materials.</li>
+</ul>
+<p><a href="{% url 'nomoar:timeline' %}" class="btn btn-primary">Explore the timeline</a></p>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends 'nomoar/base.html' %}
+
+{% block title %}Map{% endblock %}
+
+{% block content %}
+<h1>Map</h1>
+<p class="muted">Events by U.S. state (where location data includes a state code). A full interactive map can be added later (e.g. Leaflet + GeoJSON).</p>
+
+{% if events_with_state %}
+<ul style="list-style:none; padding:0; max-width:28rem;">
+    {% for row in events_with_state %}
+    <li style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid var(--nomoar-border);">
+        <span>{{ row.state }}</span>
+        <span class="muted">{{ row.n }} event{{ row.n|pluralize }}</span>
+    </li>
+    {% endfor %}
+</ul>
+<p><a href="{% url 'nomoar:timeline' %}" class="btn btn-outline">Browse full timeline</a></p>
+{% else %}
+<p class="muted">No state-tagged events yet. Add <code>state</code> codes in admin when editing events.</p>
+{% endif %}
+{% endblock %}

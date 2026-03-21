@@ -34,6 +34,7 @@ urlpatterns = [
     path('apps/allminnesota/', include('allminnesota.urls')),
     path('apps/arm-chair-detective/', include('arm_chair_detective.urls')),
     path('chess/', include('chess_trainer.urls')),
+    path('apps/nomoar/', include('nomoar.urls')),
     path('ckeditor/', include('ckeditor_uploader.urls')),
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),

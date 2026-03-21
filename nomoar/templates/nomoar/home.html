@@ -1,0 +1,81 @@
+{% extends 'nomoar/base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<p class="nomoar-eyebrow">A Living Archive</p>
+<h1>National Online Museum of<br>American Racism</h1>
+<p class="muted" style="font-size: 1.1rem; max-width: 42rem;">
+    Documenting the historical and ongoing timeline of racist events, policies, and systems in America.
+    Because understanding our past is essential to changing our future.
+</p>
+<div class="cta-row">
+    <a href="{% url 'nomoar:timeline' %}" class="btn btn-primary">Explore Timeline</a>
+    <a href="{% url 'nomoar:map' %}" class="btn btn-outline">View Map</a>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{% if stats.years %}{{ stats.years.value }}{{ stats.years.suffix }}{% else %}247+{% endif %}</div>
+        <div class="stat-label">{% if stats.years %}{{ stats.years.label }}{% else %}Years Documented{% endif %}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{% if stats.events %}{{ stats.events.value }}{{ stats.events.suffix }}{% else %}{{ event_count }}+{% endif %}</div>
+        <div class="stat-label">{% if stats.events %}{{ stats.events.label }}{% else %}Events Archived{% endif %}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{% if stats.states %}{{ stats.states.value }}{{ stats.states.suffix }}{% else %}{{ state_count }}{% endif %}</div>
+        <div class="stat-label">{% if stats.states %}{{ stats.states.label }}{% else %}States Covered{% endif %}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{% if stats.collections %}{{ stats.collections.value }}{{ stats.collections.suffix }}{% else %}6+{% endif %}</div>
+        <div class="stat-label">{% if stats.collections %}{{ stats.collections.label }}{% else %}Curated Collections{% endif %}</div>
+    </div>
+</div>
+
+<h2>Recent History</h2>
+{% for e in recent_events %}
+<a href="{{ e.get_absolute_url }}" class="event-card">
+    <span class="year">{{ e.year }}</span>
+    <h3>{{ e.title }}</h3>
+    <p>{{ e.summary|truncatewords:40 }}</p>
+    {% if e.raised_fists %}<span class="muted" style="font-size:0.8rem;">✊ {{ e.raised_fists }} raised fists</span>{% endif %}
+</a>
+{% empty %}
+<p class="muted">No events yet. Add entries in Django admin or load fixtures.</p>
+{% endfor %}
+
+<h2>Featured Events</h2>
+<p class="muted">Significant moments that shaped American history</p>
+<p><a href="{% url 'nomoar:timeline' %}" class="btn btn-outline">View All</a></p>
+{% for e in featured_events %}
+<a href="{{ e.get_absolute_url }}" class="event-card">
+    <span class="year">{{ e.year }}</span>
+    <h3>{{ e.title }}</h3>
+    <p>{{ e.summary|truncatewords:35 }}</p>
+    {% if e.location %}<p class="muted" style="font-size:0.85rem;">{{ e.location }}</p>{% endif %}
+</a>
+{% empty %}
+<p class="muted">No featured events yet.</p>
+{% endfor %}
+
+<p style="margin-top:1.5rem;"><a href="{% url 'nomoar:timeline' %}" class="btn btn-primary">View All Events</a></p>
+
+<div class="footer-cta">
+    <div class="footer-cta-box">
+        <h3>Share History</h3>
+        <p class="muted">Know of an event that should be documented? Help build a comprehensive archive by submitting events from your community's history.</p>
+        <a href="{% url 'nomoar:submit' %}" class="btn btn-primary">Submit an Event</a>
+    </div>
+    <div class="footer-cta-box">
+        <h3>Support Our Mission</h3>
+        <p class="muted">Support helps keep archives free and accessible. See options for sustaining research and educational outreach.</p>
+        <a href="{% url 'nomoar:pricing' %}" class="btn btn-outline">View Plans</a>
+    </div>
+    <div class="footer-cta-box">
+        <h3>For Educators</h3>
+        <p class="muted">Access lesson plans, discussion guides, and primary source documents. Free educator resources with verification.</p>
+        <a href="{% url 'nomoar:educators' %}" class="btn btn-outline">Learn More</a>
+    </div>
+</div>
+{% endblock %}

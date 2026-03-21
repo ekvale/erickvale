@@ -1,0 +1,24 @@
+{% extends 'nomoar/base.html' %}
+
+{% block title %}{{ event.title|truncatewords:8 }}{% endblock %}
+
+{% block content %}
+<p><a href="{% url 'nomoar:timeline' %}" class="muted" style="text-decoration:none;">← Timeline</a></p>
+<p class="nomoar-eyebrow">{{ event.year }}</p>
+<h1>{{ event.title }}</h1>
+{% if event.location %}
+<p class="muted" style="font-size:1.05rem;">{{ event.location }}{% if event.state %}, {{ event.state }}{% endif %}</p>
+{% endif %}
+<div style="margin:1.5rem 0; line-height:1.75;">
+    {{ event.summary|linebreaks }}
+    {% if event.body %}
+    {{ event.body|linebreaks }}
+    {% endif %}
+</div>
+{% if event.raised_fists %}
+<p>✊ <strong>{{ event.raised_fists }}</strong> community acknowledgments</p>
+{% endif %}
+{% if event.tags.all %}
+<p class="muted">Tags: {% for t in event.tags.all %}{{ t.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+{% endif %}
+{% endblock %}

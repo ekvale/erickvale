@@ -1,0 +1,43 @@
+{% extends 'nomoar/base.html' %}
+
+{% block title %}Timeline{% endblock %}
+
+{% block content %}
+<h1>Timeline</h1>
+<p class="muted">Browse documented events. Filter by year or search.</p>
+<form method="get" style="display:flex; flex-wrap:wrap; gap:0.75rem; margin-bottom:1.5rem; align-items:flex-end;">
+    <div>
+        <label for="q">Search</label>
+        <input type="text" name="q" id="q" value="{{ request.GET.q }}" placeholder="Title or summary">
+    </div>
+    <div>
+        <label for="year">Year</label>
+        <input type="number" name="year" id="year" value="{{ request.GET.year }}" placeholder="e.g. 2025" style="width:8rem;">
+    </div>
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a href="{% url 'nomoar:timeline' %}" class="btn btn-outline">Clear</a>
+</form>
+
+{% for e in events %}
+<a href="{{ e.get_absolute_url }}" class="event-card">
+    <span class="year">{{ e.year }}</span>
+    <h3>{{ e.title }}</h3>
+    <p>{{ e.summary|truncatewords:50 }}</p>
+    {% if e.location %}<p class="muted" style="font-size:0.85rem;">{{ e.location }}</p>{% endif %}
+</a>
+{% empty %}
+<p class="muted">No events match your filters.</p>
+{% endfor %}
+
+{% if is_paginated %}
+<nav style="margin-top:2rem;">
+    {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.year %}&year={{ request.GET.year }}{% endif %}" class="btn btn-outline">Previous</a>
+    {% endif %}
+    <span class="muted" style="margin:0 1rem;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.year %}&year={{ request.GET.year }}{% endif %}" class="btn btn-outline">Next</a>
+    {% endif %}
+</nav>
+{% endif %}
+{% endblock %}
