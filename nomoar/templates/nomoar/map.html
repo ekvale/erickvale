@@ -490,12 +490,12 @@
         return h;
     }
 
-    /* Pine Ridge, SD — explicit L.latLng(lat, lng). Grid was giving 0-height map → broken projection toward northern Canada. */
+    /* Pine Ridge, SD — starting center; then fitBounds(CONUS) so the whole contiguous US is visible (zoom-from-center alone clips on some screens). */
     var pineRidge = L.latLng(43.115, -102.557);
-    var defaultZoom = 7;
+    var usaBounds = L.latLngBounds(L.latLng(24.35, -124.85), L.latLng(49.42, -66.95));
     var map = L.map('nomoar-map', {
         center: pineRidge,
-        zoom: defaultZoom,
+        zoom: 4,
         scrollWheelZoom: true
     });
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
@@ -552,14 +552,14 @@
     });
 
     map.addLayer(cluster);
-    map.whenReady(function() {
+    function fitUsa() {
         map.invalidateSize();
-        map.setView(pineRidge, defaultZoom, { animate: false });
-    });
-    window.addEventListener('load', function() {
-        map.invalidateSize();
-        map.setView(pineRidge, defaultZoom, { animate: false });
-    });
+        if (usaBounds.isValid()) {
+            map.fitBounds(usaBounds, { padding: [36, 36], animate: false });
+        }
+    }
+    map.whenReady(fitUsa);
+    window.addEventListener('load', fitUsa);
 
     function setActiveCard(slug) {
         document.querySelectorAll('.nomoar-map-sidebar-card').forEach(function(btn) {
