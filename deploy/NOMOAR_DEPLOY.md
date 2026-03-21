@@ -9,6 +9,7 @@ cd /home/erickvale/erickvale
 git pull origin main
 source venv/bin/activate
 python manage.py migrate nomoar
+# 0006–0008: theme labels (timeline pills), session-based ✊ votes (EventFistVote).
 # Map uses event_type (violence/policy/legislation/discrimination); seed sets colors.
 python manage.py loaddata nomoar/fixtures/initial.json
 python manage.py collectstatic --noinput
@@ -44,4 +45,6 @@ Uses [Leaflet](https://leafletjs.com/) + [MarkerCluster](https://github.com/Leaf
 
 **Env (optional):** `NOMOAR_CORRECTIONS_EMAIL` — shown in the site-wide educational disclaimer and on event pages for reporting corrections.
 
-Admin: add/edit `HistoricalEvent` (inline **Event sources**), `ChangeMaker` (**Related events**), `SiteStat`, `Collection`, `Tag`.
+Admin: add/edit `HistoricalEvent` (inline **Event sources**; **Theme labels** + **Tags**), `EventThemeLabel`, `ChangeMaker` (**Related events**), `SiteStat`, `Collection`, `Tag`.
+
+**API:** `POST /apps/nomoar/api/event/<slug>/fist/` toggles one raised-fist per browser session (CSRF + session cookie). Timeline and event detail use this for the ✊ control.

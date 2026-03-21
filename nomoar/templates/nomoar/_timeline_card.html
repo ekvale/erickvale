@@ -1,15 +1,10 @@
 <article class="nomoar-tl-card">
     <div class="nomoar-tl-card-date">{{ e.year }}</div>
     <div class="nomoar-tl-tags">
-        <span class="nomoar-tl-tag nomoar-tl-tag--{{ e.event_type }}">{{ e.get_event_type_display }}</span>
-        {% for c in e.collections.all %}
-        {% if forloop.first %}
-        <span class="nomoar-tl-tag nomoar-tl-tag--inst">institutional</span>
-        {% endif %}
+        {% for tl in e.theme_labels.all %}
+        <span class="nomoar-tl-tag nomoar-tl-tag--theme-{{ tl.slug }}">{{ tl.name|lower }}</span>
         {% endfor %}
-        {% if e.event_type == 'discrimination' or e.event_type == 'violence' %}
-        <span class="nomoar-tl-tag nomoar-tl-tag--cultural">cultural</span>
-        {% endif %}
+        <span class="nomoar-tl-tag nomoar-tl-tag--{{ e.event_type }}">{{ e.get_event_type_display|lower }}</span>
     </div>
     <h2 class="nomoar-tl-card-title"><a href="{{ e.get_absolute_url }}">{{ e.title }}</a></h2>
     <p class="nomoar-tl-card-desc">{{ e.summary|truncatewords:42 }}</p>
@@ -21,13 +16,24 @@
     {% endif %}
     {% if e.tags.all %}
     <div class="nomoar-tl-groups">
+        <span class="nomoar-tl-groups-icon" aria-hidden="true">👤</span>
         {% for t in e.tags.all %}
         <span class="nomoar-tl-group-pill">{{ t.name }}</span>
         {% endfor %}
     </div>
     {% endif %}
     <div class="nomoar-tl-card-footer">
-        <span>✊ {{ e.raised_fists }} raised fist{{ e.raised_fists|pluralize }}</span>
+        <button type="button"
+            class="nomoar-tl-fist-btn{% if e.pk in fisted_event_ids %} is-active{% endif %}"
+            data-fist-url="{% url 'nomoar:toggle_event_fist' slug=e.slug %}"
+            data-slug="{{ e.slug|escape }}"
+            data-count="{{ e.raised_fists }}"
+            aria-pressed="{% if e.pk in fisted_event_ids %}true{% else %}false{% endif %}"
+            aria-label="Toggle raised fist acknowledgment for this entry">
+            <span class="nomoar-tl-fist-emoji" aria-hidden="true">✊</span>
+            <span class="nomoar-tl-fist-count">{{ e.raised_fists }}</span>
+            <span class="nomoar-tl-fist-label">raised fist{% if e.raised_fists != 1 %}s{% endif %}</span>
+        </button>
         <span class="nomoar-tl-card-footer-links">
             {% if e.is_geocoded %}
             <a href="{% url 'nomoar:map' %}?focus={{ e.slug }}" class="nomoar-tl-expand">On map</a>

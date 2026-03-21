@@ -32,15 +32,58 @@
     .nomoar-sources ul { margin: 0; padding-left: 1.2rem; color: var(--nomoar-muted); }
     .nomoar-sources li { margin-bottom: 0.5rem; }
     .nomoar-sources a { color: var(--nomoar-link); word-break: break-all; }
+    .nomoar-ed-theme-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0.5rem 0 1rem; align-items: center; }
+    .nomoar-ed-pill {
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: lowercase;
+        padding: 0.2rem 0.5rem;
+        border-radius: 999px;
+        border: 1px solid transparent;
+    }
+    .nomoar-ed-pill--theme-institutional { background: rgba(120,120,120,0.12); color: #bbb; border-color: #555; }
+    .nomoar-ed-pill--theme-cultural { background: rgba(38, 166, 154, 0.15); color: #4db6ac; border-color: rgba(38, 166, 154, 0.35); }
+    .nomoar-ed-pill--theme-court-case { background: rgba(255, 193, 7, 0.1); color: #ffca28; border-color: rgba(255, 193, 7, 0.45); }
+    .nomoar-ed-fist-wrap { margin: 1.25rem 0; padding: 1rem 0; border-top: 1px solid var(--nomoar-border); border-bottom: 1px solid var(--nomoar-border); }
+    .nomoar-ed-fist {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.05rem;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 0.35rem 0.5rem;
+        border-radius: 8px;
+        color: var(--nomoar-muted);
+        font: inherit;
+    }
+    .nomoar-ed-fist:hover { color: var(--nomoar-accent); background: rgba(201, 162, 39, 0.08); }
+    .nomoar-ed-fist.is-active .nomoar-ed-fist-emoji,
+    .nomoar-ed-fist.is-active .nomoar-ed-fist-count { color: var(--nomoar-accent); }
+    .nomoar-ed-fist-emoji { font-size: 1.25rem; }
+    .nomoar-ed-fist-count { font-weight: 700; font-size: 1rem; }
+    .nomoar-ed-fist:not(.is-active) .nomoar-ed-fist-count { color: var(--nomoar-muted); }
+    .nomoar-ed-fist-label { font-size: 0.7rem; color: var(--nomoar-muted); }
+    .nomoar-ed-groups { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; margin-top: 1rem; }
+    .nomoar-ed-group-pill { font-size: 0.7rem; color: #999; background: #1e1e1e; padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid #333; }
 </style>
 {% endblock %}
 
 {% block content %}
+{% csrf_token %}
 <p><a href="{% url 'nomoar:timeline' %}" class="muted" style="text-decoration:none;">← Timeline</a></p>
 
 <p class="nomoar-eyebrow">{{ event.year }}</p>
-{% if event.event_type %}
-<span class="nomoar-type-badge" style="display:inline-block;margin-bottom:0.75rem;background:{{ event.event_type_color }}22;color:{{ event.event_type_color }};border:1px solid {{ event.event_type_color }}55;">{{ event.get_event_type_display }}</span>
+{% if event.theme_labels.all or event.event_type %}
+<div class="nomoar-ed-theme-tags">
+    {% for tl in event.theme_labels.all %}
+    <span class="nomoar-ed-pill nomoar-ed-pill--theme-{{ tl.slug }}">{{ tl.name|lower }}</span>
+    {% endfor %}
+    {% if event.event_type %}
+    <span class="nomoar-ed-pill" style="background:{{ event.event_type_color }}22;color:{{ event.event_type_color }};border:1px solid {{ event.event_type_color }}55;">{{ event.get_event_type_display|lower }}</span>
+    {% endif %}
+</div>
 {% endif %}
 <h1>{{ event.title }}</h1>
 {% if event.location %}
@@ -81,4 +124,38 @@
     </ul>
 </div>
 {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    function getCookie(name) {
+        var v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+        return v ? decodeURIComponent(v[2]) : '';
+    }
+    var btn = document.getElementById('nomoar-event-fist-btn');
+    if (!btn) return;
+    btn.addEventListener('click', function() {
+        var url = btn.getAttribute('data-fist-url');
+        if (!url || btn.disabled) return;
+        btn.disabled = true;
+        fetch(url, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Accept': 'application/json',
+            },
+        }).then(function(r) { return r.json(); }).then(function(data) {
+            if (!data || !data.ok) return;
+            var n = data.raised_fists;
+            btn.querySelector('.nomoar-ed-fist-count').textContent = n;
+            var lab = btn.querySelector('.nomoar-ed-fist-label');
+            if (lab) lab.textContent = n === 1 ? 'raised fist' : 'raised fists';
+            btn.setAttribute('aria-pressed', data.user_has_fisted ? 'true' : 'false');
+            btn.classList.toggle('is-active', data.user_has_fisted);
+        }).catch(function() {}).finally(function() { btn.disabled = false; });
+    });
+})();
+</script>
 {% endblock %}

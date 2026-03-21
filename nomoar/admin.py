@@ -4,6 +4,7 @@ from .models import (
     ChangeMaker,
     Collection,
     EventSource,
+    EventThemeLabel,
     HistoricalEvent,
     SiteStat,
     Tag,
@@ -19,6 +20,13 @@ class EventSourceInline(admin.TabularInline):
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
+
+
+@admin.register(EventThemeLabel)
+class EventThemeLabelAdmin(admin.ModelAdmin):
+    list_display = ['name', 'slug', 'order']
+    prepopulated_fields = {'slug': ('name',)}
+    ordering = ['order', 'slug']
 
 
 @admin.register(Collection)
@@ -64,6 +72,7 @@ class HistoricalEventAdmin(admin.ModelAdmin):
                     'raised_fists',
                     'collections',
                     'tags',
+                    'theme_labels',
                 )
             },
         ),

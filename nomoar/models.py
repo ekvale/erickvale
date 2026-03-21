@@ -34,6 +34,24 @@ class Tag(models.Model):
         return self.name
 
 
+class EventThemeLabel(models.Model):
+    """
+    Top-row pills on timeline cards (e.g. institutional, cultural, court case).
+    Distinct from ArchiveEventType (violence/policy/…) and from Tag (affected groups).
+    """
+    slug = models.SlugField(max_length=64, unique=True)
+    name = models.CharField(max_length=120, help_text='Shown on cards (lowercased in CSS)')
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order', 'slug']
+        verbose_name = 'Theme label'
+        verbose_name_plural = 'Theme labels'
+
+    def __str__(self):
+        return self.name
+
+
 class Collection(models.Model):
     """Curated grouping of events."""
     title = models.CharField(max_length=200)
@@ -78,6 +96,12 @@ class HistoricalEvent(models.Model):
     raised_fists = models.PositiveIntegerField(default=0, help_text='Community acknowledgment count')
     collections = models.ManyToManyField(Collection, blank=True, related_name='events')
     tags = models.ManyToManyField(Tag, blank=True, related_name='events')
+    theme_labels = models.ManyToManyField(
+        EventThemeLabel,
+        blank=True,
+        related_name='events',
+        help_text='Pills above the title (institutional, cultural, court case, …)',
+    )
     last_reviewed = models.DateField(
         null=True,
         blank=True,
@@ -112,6 +136,27 @@ class HistoricalEvent(models.Model):
     @property
     def is_geocoded(self):
         return self.latitude is not None and self.longitude is not None
+
+
+class EventFistVote(models.Model):
+    """One raised-fist per browser session per event (toggle on/off)."""
+    event = models.ForeignKey(
+        HistoricalEvent,
+        on_delete=models.CASCADE,
+        related_name='fist_votes',
+    )
+    session_key = models.CharField(max_length=40, db_index=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['event', 'session_key'],
+                name='nomoar_eventfistvote_event_session_uniq',
+            ),
+        ]
+
+    def __str__(self):
+        return f'{self.event_id}:{self.session_key[:8]}…'
 
 
 class EventSource(models.Model):

@@ -1,7 +1,9 @@
-from django.db import connection
-from django.db.models import Count, Max, Min, Q
-from django.shortcuts import render
+from django.db import connection, transaction
+from django.db.models import Count, F, Max, Min, Q
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
+from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, ListView, TemplateView
 from django.contrib import messages
 
@@ -10,6 +12,7 @@ from .models import (
     ArchiveEventType,
     ChangeMaker,
     Collection,
+    EventFistVote,
     HistoricalEvent,
     SiteStat,
 )
@@ -75,7 +78,7 @@ class TimelineView(ListView):
 
     def get_queryset(self):
         qs = HistoricalEvent.objects.prefetch_related(
-            'tags', 'collections', 'sources',
+            'tags', 'collections', 'sources', 'theme_labels',
         )
         y = self.request.GET.get('year')
         if y and y.isdigit():
@@ -123,7 +126,54 @@ class TimelineView(ListView):
             .distinct()
             .order_by('state'),
         )
+        page_events = list(ctx.get('events') or [])
+        sk = self.request.session.session_key
+        fisted_ids = set()
+        if sk and page_events:
+            eids = [e.pk for e in page_events]
+            fisted_ids = set(
+                EventFistVote.objects.filter(
+                    session_key=sk,
+                    event_id__in=eids,
+                ).values_list('event_id', flat=True),
+            )
+        ctx['fisted_event_ids'] = fisted_ids
         return ctx
+
+
+@require_POST
+def toggle_event_fist(request, slug):
+    """Toggle this session's raised-fist for an event (+1 / -1 on aggregate count)."""
+    event = get_object_or_404(HistoricalEvent, slug=slug)
+    if not request.session.session_key:
+        request.session.save()
+    sk = request.session.session_key
+    if not sk:
+        return JsonResponse({'ok': False, 'error': 'session'}, status=400)
+
+    with transaction.atomic():
+        ev = HistoricalEvent.objects.select_for_update().get(pk=event.pk)
+        vote = EventFistVote.objects.filter(event=ev, session_key=sk).first()
+        if vote:
+            vote.delete()
+            HistoricalEvent.objects.filter(pk=ev.pk, raised_fists__gt=0).update(
+                raised_fists=F('raised_fists') - 1,
+            )
+            user_has = False
+        else:
+            EventFistVote.objects.create(event=ev, session_key=sk)
+            HistoricalEvent.objects.filter(pk=ev.pk).update(
+                raised_fists=F('raised_fists') + 1,
+            )
+            user_has = True
+    ev.refresh_from_db()
+    return JsonResponse(
+        {
+            'ok': True,
+            'raised_fists': ev.raised_fists,
+            'user_has_fisted': user_has,
+        },
+    )
 
 
 class EventDetailView(DetailView):
@@ -134,8 +184,18 @@ class EventDetailView(DetailView):
 
     def get_queryset(self):
         return HistoricalEvent.objects.prefetch_related(
-            'sources', 'tags', 'collections',
+            'sources', 'tags', 'collections', 'theme_labels',
         )
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        sk = self.request.session.session_key
+        evt = ctx['event']
+        ctx['user_has_fisted'] = (
+            bool(sk)
+            and EventFistVote.objects.filter(event=evt, session_key=sk).exists()
+        )
+        return ctx
 
 
 class MapView(TemplateView):

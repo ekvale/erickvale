@@ -255,8 +255,9 @@
     .nomoar-tl-tag--violence { background: rgba(229, 57, 53, 0.2); color: #ef5350; border-color: rgba(229, 57, 53, 0.35); }
     .nomoar-tl-tag--legislation { background: rgba(142, 36, 170, 0.2); color: #ce93d8; border-color: rgba(142, 36, 170, 0.35); }
     .nomoar-tl-tag--discrimination { background: rgba(251, 140, 0, 0.2); color: #ffb74d; border-color: rgba(251, 140, 0, 0.35); }
-    .nomoar-tl-tag--inst { background: var(--tl-tag-inst); color: #bbb; border-color: #555; }
-    .nomoar-tl-tag--cultural { background: rgba(38, 166, 154, 0.15); color: #4db6ac; border-color: rgba(38, 166, 154, 0.35); }
+    .nomoar-tl-tag--theme-institutional { background: rgba(120, 120, 120, 0.12); color: #bbb; border-color: #555; }
+    .nomoar-tl-tag--theme-cultural { background: rgba(38, 166, 154, 0.15); color: #4db6ac; border-color: rgba(38, 166, 154, 0.35); }
+    .nomoar-tl-tag--theme-court-case { background: rgba(255, 193, 7, 0.1); color: #ffca28; border-color: rgba(255, 193, 7, 0.45); }
 
     .nomoar-tl-card-title {
         margin: 0 0 0.5rem;
@@ -293,9 +294,11 @@
     .nomoar-tl-groups {
         display: flex;
         flex-wrap: wrap;
+        align-items: center;
         gap: 0.35rem;
         margin-bottom: 0.75rem;
     }
+    .nomoar-tl-groups-icon { font-size: 0.75rem; opacity: 0.85; margin-right: 0.1rem; }
     .nomoar-tl-row--left .nomoar-tl-groups { justify-content: flex-end; }
     .nomoar-tl-group-pill {
         font-size: 0.65rem;
@@ -347,6 +350,35 @@
         line-height: 1.55;
     }
     .nomoar-tl-details-body a { color: var(--tl-orange); font-weight: 600; }
+    .nomoar-tl-fist-btn {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.05rem;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 0.2rem 0.4rem;
+        margin: 0;
+        border-radius: 8px;
+        color: var(--tl-muted);
+        font: inherit;
+        text-align: center;
+        line-height: 1.15;
+        transition: color 0.15s, background 0.15s;
+    }
+    .nomoar-tl-fist-btn:hover {
+        color: var(--tl-orange);
+        background: rgba(255, 107, 0, 0.08);
+    }
+    .nomoar-tl-fist-btn.is-active .nomoar-tl-fist-emoji,
+    .nomoar-tl-fist-btn.is-active .nomoar-tl-fist-count {
+        color: var(--tl-orange);
+    }
+    .nomoar-tl-fist-emoji { font-size: 1.1rem; line-height: 1; }
+    .nomoar-tl-fist-count { font-weight: 700; font-size: 0.95rem; color: var(--tl-orange); }
+    .nomoar-tl-fist-btn:not(.is-active) .nomoar-tl-fist-count { color: var(--tl-muted); }
+    .nomoar-tl-fist-label { font-size: 0.62rem; color: var(--tl-muted); max-width: 5.5rem; }
     .nomoar-tl-card-footer-links { display: flex; flex-wrap: wrap; gap: 0.5rem 0.75rem; align-items: center; }
     .nomoar-tl-row--left .nomoar-tl-card-footer-links { flex-direction: row-reverse; }
     @media (max-width: 720px) {
@@ -415,6 +447,7 @@
 
 {% block content %}
 <div class="nomoar-timeline-page">
+    {% csrf_token %}
     <div class="nomoar-editorial-banner--compact">
         Educational archive — not legal advice.
         {% if nomoar_corrections_email %}
@@ -455,7 +488,7 @@
     </div>
     {% endif %}
 
-    <div class="nomoar-timeline-wrap">
+    <div class="nomoar-timeline-wrap" id="nomoar-timeline-wrap">
         {% for e in events %}
             {% ifchanged e.year %}
             <div class="nomoar-tl-year">{{ e.year }}</div>
@@ -463,7 +496,7 @@
             {% if forloop.counter0|divisibleby:2 %}
             <div class="nomoar-tl-row nomoar-tl-row--left" id="nomoar-tl-{{ e.slug }}">
                 <div class="nomoar-tl-card-wrap">
-                    {% include 'nomoar/_timeline_card.html' %}
+                    {% include 'nomoar/_timeline_card.html' with e=e fisted_event_ids=fisted_event_ids %}
                 </div>
                 <div class="nomoar-tl-dot"><span></span></div>
                 <div class="nomoar-tl-spacer" aria-hidden="true"></div>
@@ -473,7 +506,7 @@
                 <div class="nomoar-tl-spacer" aria-hidden="true"></div>
                 <div class="nomoar-tl-dot"><span></span></div>
                 <div class="nomoar-tl-card-wrap">
-                    {% include 'nomoar/_timeline_card.html' %}
+                    {% include 'nomoar/_timeline_card.html' with e=e fisted_event_ids=fisted_event_ids %}
                 </div>
             </div>
             {% endif %}
@@ -499,6 +532,38 @@
 {% block extra_js %}
 <script>
 (function() {
+    function getCookie(name) {
+        var v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+        return v ? decodeURIComponent(v[2]) : '';
+    }
+    var wrap = document.getElementById('nomoar-timeline-wrap');
+    if (wrap) {
+        wrap.addEventListener('click', function(ev) {
+            var btn = ev.target.closest('.nomoar-tl-fist-btn');
+            if (!btn || btn.disabled) return;
+            ev.preventDefault();
+            var url = btn.getAttribute('data-fist-url');
+            if (!url) return;
+            btn.disabled = true;
+            fetch(url, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Accept': 'application/json',
+                },
+            }).then(function(r) { return r.json(); }).then(function(data) {
+                if (!data || !data.ok) return;
+                var n = data.raised_fists;
+                btn.querySelector('.nomoar-tl-fist-count').textContent = n;
+                var lab = btn.querySelector('.nomoar-tl-fist-label');
+                if (lab) lab.textContent = n === 1 ? 'raised fist' : 'raised fists';
+                btn.setAttribute('data-count', n);
+                btn.setAttribute('aria-pressed', data.user_has_fisted ? 'true' : 'false');
+                btn.classList.toggle('is-active', data.user_has_fisted);
+            }).catch(function() {}).finally(function() { btn.disabled = false; });
+        });
+    }
     var btn = document.getElementById('nomoar-copy-filter-url');
     var status = document.getElementById('nomoar-copy-status');
     if (btn) {
