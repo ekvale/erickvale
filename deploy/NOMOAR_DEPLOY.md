@@ -14,7 +14,19 @@ python manage.py collectstatic --noinput
 sudo systemctl restart erickvale
 ```
 
-**Map:** Set `latitude` and `longitude` (WGS84) on each `HistoricalEvent` in admin to plot it. Seed fixture includes coords. The map uses [Leaflet](https://leafletjs.com/) + CARTO dark basemap; hover = tooltip, click = popup with summary and link.
+**Map:** Set `latitude` and `longitude` (WGS84) on each `HistoricalEvent` in admin to plot it. Seed fixture includes coords. Markers **cluster** when they overlap (e.g. several in D.C.)—zoom in or click a cluster to see all pins.
+
+If the map legend shows fewer plotted events than expected (seed = **18**), the DB is missing rows or coordinates. Prefer:
+
+```bash
+python manage.py nomoar_seed_from_fixture
+```
+
+That upserts every `HistoricalEvent` and `SiteStat` from `nomoar/fixtures/initial.json` by slug/key (no PK conflicts). You can still use `loaddata` for a clean install; use `nomoar_sync_coords` only to refresh lat/lng on existing rows without changing other fields.
+
+If Django reports `Unknown command: 'nomoar_seed_from_fixture'`, your server copy is missing `nomoar/management/commands/` — run `git pull` after the repo has been updated (those files must be committed and pushed).
+
+Uses [Leaflet](https://leafletjs.com/) + [MarkerCluster](https://github.com/Leaflet/Leaflet.markercluster) + CARTO dark tiles.
 
 ## URLs
 
