@@ -78,6 +78,8 @@
       "body": "",
       "location": "Muir Woods National Monument, California",
       "state": "CA",
+      "latitude": 37.8969,
+      "longitude": -122.5829,
       "featured": true,
       "raised_fists": 0,
       "created_at": "2025-01-01T12:00:00Z",
@@ -114,6 +116,8 @@
       "body": "",
       "location": "Independence National Historical Park, Philadelphia, Pennsylvania",
       "state": "PA",
+      "latitude": 39.9489,
+      "longitude": -75.15,
       "featured": true,
       "raised_fists": 0,
       "created_at": "2025-01-01T12:00:00Z",
@@ -137,6 +141,234 @@
       "raised_fists": 0,
       "created_at": "2025-01-01T12:00:00Z",
       "updated_at": "2025-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "nomoar.historicalevent",
+    "pk": 7,
+    "fields": {
+      "title": "Little Bighorn Battlefield Native American Signage Removed",
+      "slug": "little-bighorn-native-american-signage-removed",
+      "year": 2026,
+      "summary": "National Park Service removed or altered Native American–related signage at Little Bighorn Battlefield National Monument; tribal leaders and the Northern Cheyenne Tribal Council opposed changes to markers at the site. Reported by Military Times and others.",
+      "body": "",
+      "location": "Little Bighorn Battlefield National Monument, Montana",
+      "state": "MT",
+      "latitude": 45.5714,
+      "longitude": -107.4286,
+      "featured": true,
+      "raised_fists": 0,
+      "created_at": "2025-06-01T12:00:00Z",
+      "updated_at": "2025-06-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "nomoar.historicalevent",
+    "pk": 8,
+    "fields": {
+      "title": "Acadia National Park Climate and Indigenous Educational Signs Removed",
+      "slug": "acadia-climate-indigenous-signs-removed",
+      "year": 2025,
+      "summary": "Acadia National Park removed educational signs addressing climate change and Indigenous history, part of broader NPS interpretive changes under federal direction. Covered by Vermont Public and regional outlets.",
+      "body": "",
+      "location": "Acadia National Park, Maine",
+      "state": "ME",
+      "latitude": 44.3517,
+      "longitude": -68.2009,
+      "featured": true,
+      "raised_fists": 0,
+      "created_at": "2025-06-01T12:00:00Z",
+      "updated_at": "2025-06-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "nomoar.historicalevent",
+    "pk": 9,
+    "fields": {
+      "title": "NMAAHC: Major Artifacts Rotated Off Display",
+      "slug": "nmaahc-artifacts-rotated-off-display-2025",
+      "year": 2025,
+      "summary": "NBC News and other outlets reported dozens of objects tied to slavery and civil rights were no longer on public view at the National Museum of African American History and Culture, including items linked to Harriet Tubman and Frederick Douglass, following an executive order on Smithsonian content; the Smithsonian cited standard rotations and loan practices.",
+      "body": "",
+      "location": "National Museum of African American History and Culture, Washington D.C.",
+      "state": "DC",
+      "latitude": 38.891,
+      "longitude": -77.0326,
+      "featured": true,
+      "raised_fists": 0,
+      "created_at": "2025-06-01T12:00:00Z",
+      "updated_at": "2025-06-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "nomoar.historicalevent",
+    "pk": 10,
+    "fields": {
+      "title": "National Museum of American History: Impeachment Exhibit Revised",
+      "slug": "american-history-museum-impeachment-exhibit-revised",
+      "year": 2025,
+      "summary": "Reuters reported the National Museum of American History removed Donald Trump's name from an exhibit on presidential impeachment, restoring an earlier version of the display.",
+      "body": "",
+      "location": "National Museum of American History, Washington D.C.",
+      "state": "DC",
+      "latitude": 38.8882,
+      "longitude": -77.03,
+      "featured": false,
+      "raised_fists": 0,
+      "created_at": "2025-06-01T12:00:00Z",
+      "updated_at": "2025-06-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "nomoar.historicalevent",
+    "pk": 11,
+    "fields": {
+      "title": "Federal Review of NPS Signs on Native Mistreatment and Climate",
+      "slug": "federal-review-nps-signs-native-climate-2026",
+      "year": 2026,
+      "summary": "The Washington Post and Reuters reported national parks were directed to review and remove signage on mistreatment of Native Americans and on climate change, affecting many sites across several states.",
+      "body": "",
+      "location": "Department of the Interior / National Park System (national scope)",
+      "state": "DC",
+      "latitude": 38.894,
+      "longitude": -77.0424,
+      "featured": true,
+      "raised_fists": 0,
+      "created_at": "2025-06-01T12:00:00Z",
+      "updated_at": "2025-06-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "nomoar.historicalevent",
+    "pk": 12,
+    "fields": {
+      "title": "Zion National Park: Indigenous and Climate Interpretation Targeted",
+      "slug": "zion-nps-indigenous-climate-interpretation",
+      "year": 2026,
+      "summary": "Zion National Park in Utah was among sites named in coverage of removals or reviews of interpretive material on Indigenous displacement and climate, alongside other Southwest parks.",
+      "body": "",
+      "location": "Zion National Park, Utah",
+      "state": "UT",
+      "latitude": 37.2982,
+      "longitude": -113.0263,
+      "featured": false,
+      "raised_fists": 0,
+      "created_at": "2025-06-01T12:00:00Z",
+      "updated_at": "2025-06-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "nomoar.historicalevent",
+    "pk": 13,
+    "fields": {
+      "title": "Big Bend National Park Interpretive Content Reviewed",
+      "slug": "big-bend-nps-interpretive-content-reviewed",
+      "year": 2026,
+      "summary": "Big Bend National Park, Texas, was listed among parks where Native-related and climate-related interpretive content faced removal or review under the same federal initiative reported by Arizona Central, Reuters, and others.",
+      "body": "",
+      "location": "Big Bend National Park, Texas",
+      "state": "TX",
+      "latitude": 29.1275,
+      "longitude": -103.2425,
+      "featured": false,
+      "raised_fists": 0,
+      "created_at": "2025-06-01T12:00:00Z",
+      "updated_at": "2025-06-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "nomoar.historicalevent",
+    "pk": 14,
+    "fields": {
+      "title": "Philadelphia Lawsuit Over President's House Exhibit Removal",
+      "slug": "philadelphia-lawsuit-presidents-house-exhibit-2026",
+      "year": 2026,
+      "summary": "Philadelphia officials filed suit over the dismantling of slavery-related exhibits at the President's House site, citing a 2006 city–federal agreement; AP News and local outlets covered the dispute and judicial review.",
+      "body": "",
+      "location": "Philadelphia, Pennsylvania",
+      "state": "PA",
+      "latitude": 39.9526,
+      "longitude": -75.1652,
+      "featured": false,
+      "raised_fists": 0,
+      "created_at": "2025-06-01T12:00:00Z",
+      "updated_at": "2025-06-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "nomoar.historicalevent",
+    "pk": 15,
+    "fields": {
+      "title": "Tribes Protest Grand Canyon Native History Exhibit Changes",
+      "slug": "tribes-protest-grand-canyon-native-exhibits-2026",
+      "year": 2026,
+      "summary": "Arizona Republic reported tribal nations protested National Park Service actions targeting Native history exhibits and interpretation at Grand Canyon National Park.",
+      "body": "",
+      "location": "Grand Canyon National Park, Arizona",
+      "state": "AZ",
+      "latitude": 36.1069,
+      "longitude": -112.1129,
+      "featured": false,
+      "raised_fists": 0,
+      "created_at": "2025-06-01T12:00:00Z",
+      "updated_at": "2025-06-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "nomoar.historicalevent",
+    "pk": 16,
+    "fields": {
+      "title": "Redlining and Racial Covenants: HOLC 'Security Maps' (New Deal Era)",
+      "slug": "holc-redlining-security-maps-new-deal",
+      "year": 1935,
+      "summary": "The federal Home Owners' Loan Corporation produced 'Residential Security' maps grading neighborhoods; 'D' areas were often redlined, excluding Black borrowers and shaping decades of segregated wealth. Documented by the Mapping Inequality project and historians.",
+      "body": "",
+      "location": "United States (federal program; maps for 200+ cities)",
+      "state": "",
+      "latitude": 39.8283,
+      "longitude": -98.5795,
+      "featured": true,
+      "raised_fists": 0,
+      "created_at": "2025-06-01T12:00:00Z",
+      "updated_at": "2025-06-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "nomoar.historicalevent",
+    "pk": 17,
+    "fields": {
+      "title": "Chinese Exclusion Act",
+      "slug": "chinese-exclusion-act-1882",
+      "year": 1882,
+      "summary": "Federal law barred most Chinese immigration and denied naturalization to Chinese residents—the first major U.S. law restricting immigration by nationality. Repealed in stages; remains a landmark of race-based immigration policy.",
+      "body": "",
+      "location": "Washington D.C. (federal law)",
+      "state": "DC",
+      "latitude": 38.8899,
+      "longitude": -77.0091,
+      "featured": false,
+      "raised_fists": 0,
+      "created_at": "2025-06-01T12:00:00Z",
+      "updated_at": "2025-06-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "nomoar.historicalevent",
+    "pk": 18,
+    "fields": {
+      "title": "Tulsa Race Massacre",
+      "slug": "tulsa-race-massacre-1921",
+      "year": 1921,
+      "summary": "A white mob destroyed Greenwood, Tulsa's prosperous Black district—killing hundreds and leveling homes and businesses. Long minimized in public memory; now widely taught as one of the worst episodes of racial terror in U.S. history.",
+      "body": "",
+      "location": "Greenwood, Tulsa, Oklahoma",
+      "state": "OK",
+      "latitude": 36.1597,
+      "longitude": -95.9877,
+      "featured": true,
+      "raised_fists": 0,
+      "created_at": "2025-06-01T12:00:00Z",
+      "updated_at": "2025-06-01T12:00:00Z"
     }
   }
 ]
