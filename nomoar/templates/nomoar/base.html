@@ -197,6 +197,20 @@
         .muted { color: var(--nomoar-muted); }
         .alert { padding: 1rem; border-radius: 6px; margin-bottom: 1rem; }
         .alert-success { background: rgba(46, 125, 50, 0.2); border: 1px solid #2e7d32; color: #a5d6a7; }
+        .nomoar-editorial-banner {
+            background: var(--nomoar-surface);
+            border-bottom: 1px solid var(--nomoar-border);
+            padding: 0.85rem 1.25rem;
+            font-size: 0.85rem;
+            line-height: 1.55;
+            color: var(--nomoar-muted);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .nomoar-editorial-banner__lead { margin: 0 0 0.5rem; color: var(--nomoar-text); }
+        .nomoar-editorial-banner__meta { margin: 0.35rem 0 0; font-size: 0.8rem; }
+        .nomoar-editorial-banner__note { margin: 0.5rem 0 0; color: var(--nomoar-text); }
+        .nomoar-editorial-banner a { color: var(--nomoar-link); }
         form .row { margin-bottom: 1rem; }
         label { display: block; margin-bottom: 0.35rem; font-weight: 500; }
         input, textarea, select {
@@ -230,6 +244,7 @@
         </div>
     </header>
     <main class="nomoar-main {% block main_extra_class %}{% endblock %}">
+        {% block editorial_banner %}{% include 'nomoar/_editorial_banner.html' %}{% endblock %}
         {% if messages %}
             {% for message in messages %}
                 <div class="alert alert-{{ message.tags }}">{{ message }}</div>

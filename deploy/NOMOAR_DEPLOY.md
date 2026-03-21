@@ -34,12 +34,14 @@ Uses [Leaflet](https://leafletjs.com/) + [MarkerCluster](https://github.com/Leaf
 ## URLs
 
 - **Home:** `/apps/nomoar/`
-- **Timeline:** `/apps/nomoar/Timeline/` (decade pills `?decade=2020s`, search `?q=`)
-- **Map:** `/apps/nomoar/Map/`
+- **Timeline:** `/apps/nomoar/Timeline/` — filters: `?decade=2020s`, `?type=`, `?state=` (2-letter), `?q=` (Postgres: full-text; SQLite: icontains). Deep-link an entry: `?focus=<event-slug>`. **Copy link to filters** copies the current query string.
+- **Map:** `/apps/nomoar/Map/` — optional `?focus=<slug>` flies to that marker and opens the popup. Popups link **On timeline** to the same focus URL.
 - **Heroes & change makers:** `/apps/nomoar/Heroes/`
 - **Hero profile:** `/apps/nomoar/HeroDetail/<slug>/`
 - **Event:** `/apps/nomoar/EventDetail/<slug>/`
 - **Submit:** `/apps/nomoar/Submit/`
 - **Educators / Support:** `/apps/nomoar/Educators/`, `/apps/nomoar/Pricing/`
 
-Admin: add/edit `HistoricalEvent`, `ChangeMaker`, `SiteStat`, `Collection`, `Tag`.
+**Env (optional):** `NOMOAR_CORRECTIONS_EMAIL` — shown in the site-wide educational disclaimer and on event pages for reporting corrections.
+
+Admin: add/edit `HistoricalEvent` (inline **Event sources**), `ChangeMaker` (**Related events**), `SiteStat`, `Collection`, `Tag`.

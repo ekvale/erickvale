@@ -397,7 +397,7 @@
         </div>
     </aside>
     <div class="nomoar-map-stage">
-        <div id="nomoar-map" role="region" aria-label="Archive events map"></div>
+        <div id="nomoar-map" role="region" aria-label="Archive events map" data-focus="{{ map_focus_slug|default:'' }}"></div>
         <div class="nomoar-map-legend-box" aria-hidden="false">
             <h3>Event types</h3>
             {% for lt in legend_types %}
@@ -486,6 +486,9 @@
         h += '<div class="nomoar-map-popup-year">' + esc(ev.year) + '</div>';
         h += '<p>' + esc(ev.summary) + '</p>';
         h += '<a href="' + String(ev.url).replace(/"/g, '&quot;') + '">Learn more ↗</a>';
+        if (ev.timeline_focus_url) {
+            h += '<p style="margin:8px 0 0;font-size:12px;line-height:1.4;"><a href="' + String(ev.timeline_focus_url).replace(/"/g, '&quot;') + '">On timeline ↗</a></p>';
+        }
         h += '</div>';
         return h;
     }
@@ -558,8 +561,23 @@
             map.fitBounds(usaBounds, { padding: [36, 36], animate: false });
         }
     }
-    map.whenReady(fitUsa);
-    window.addEventListener('load', fitUsa);
+    function focusMarkerFromQuery() {
+        var mapEl = document.getElementById('nomoar-map');
+        var slug = mapEl && mapEl.getAttribute('data-focus');
+        if (!slug || !markersBySlug[slug]) return;
+        var m = markersBySlug[slug];
+        map.flyTo(m.getLatLng(), Math.max(map.getZoom(), 10), { duration: 0.55 });
+        setTimeout(function() { m.openPopup(); }, 450);
+    }
+
+    map.whenReady(function() {
+        fitUsa();
+        setTimeout(focusMarkerFromQuery, 200);
+    });
+    window.addEventListener('load', function() {
+        fitUsa();
+        setTimeout(focusMarkerFromQuery, 350);
+    });
 
     function setActiveCard(slug) {
         document.querySelectorAll('.nomoar-map-sidebar-card').forEach(function(btn) {

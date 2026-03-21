@@ -1,0 +1,25 @@
+{# Per-entry fields when `event` is set; global disclaimer always for NOMOAR routes. #}
+<div class="nomoar-editorial-banner" role="note">
+    <p class="nomoar-editorial-banner__lead">
+        <strong>Educational archive.</strong> This site is for learning and historical context, not legal, medical, or professional advice.
+        Summaries may omit nuance; always consult primary sources and qualified experts.
+    </p>
+    {% if event %}
+        {% if event.last_reviewed %}
+        <p class="nomoar-editorial-banner__meta">Last reviewed: {{ event.last_reviewed|date:"F j, Y" }}</p>
+        {% endif %}
+        {% if event.editorial_note %}
+        <p class="nomoar-editorial-banner__note">{{ event.editorial_note|linebreaksbr }}</p>
+        {% endif %}
+    {% endif %}
+    {% if nomoar_corrections_email %}
+    <p class="nomoar-editorial-banner__meta">
+        Report a factual correction:
+        <a href="mailto:{{ nomoar_corrections_email }}?subject=NOMOAR%20correction">{{ nomoar_corrections_email }}</a>
+    </p>
+    {% else %}
+    <p class="nomoar-editorial-banner__meta">
+        Corrections: use the <a href="{% url 'nomoar:submit' %}">submission form</a> or contact the site maintainer.
+    </p>
+    {% endif %}
+</div>

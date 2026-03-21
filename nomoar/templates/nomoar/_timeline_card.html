@@ -28,7 +28,12 @@
     {% endif %}
     <div class="nomoar-tl-card-footer">
         <span>✊ {{ e.raised_fists }} raised fist{{ e.raised_fists|pluralize }}</span>
-        <a href="{{ e.get_absolute_url }}" class="nomoar-tl-expand">Full entry →</a>
+        <span class="nomoar-tl-card-footer-links">
+            {% if e.is_geocoded %}
+            <a href="{% url 'nomoar:map' %}?focus={{ e.slug }}" class="nomoar-tl-expand">On map</a>
+            {% endif %}
+            <a href="{{ e.get_absolute_url }}" class="nomoar-tl-expand">Full entry →</a>
+        </span>
     </div>
     {% if e.body %}
     <details class="nomoar-tl-details">

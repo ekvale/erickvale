@@ -78,6 +78,15 @@ class HistoricalEvent(models.Model):
     raised_fists = models.PositiveIntegerField(default=0, help_text='Community acknowledgment count')
     collections = models.ManyToManyField(Collection, blank=True, related_name='events')
     tags = models.ManyToManyField(Tag, blank=True, related_name='events')
+    last_reviewed = models.DateField(
+        null=True,
+        blank=True,
+        help_text='Last editorial or fact-check review (optional)',
+    )
+    editorial_note = models.TextField(
+        blank=True,
+        help_text='Optional note shown on the entry (e.g. review status)',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -99,6 +108,34 @@ class HistoricalEvent(models.Model):
     @property
     def event_type_color(self):
         return ARCHIVE_EVENT_TYPE_COLORS.get(self.event_type, '#1e88e5')
+
+    @property
+    def is_geocoded(self):
+        return self.latitude is not None and self.longitude is not None
+
+
+class EventSource(models.Model):
+    """URL + short citation for a historical event (admin inline)."""
+    event = models.ForeignKey(
+        HistoricalEvent,
+        on_delete=models.CASCADE,
+        related_name='sources',
+    )
+    url = models.URLField(max_length=500, blank=True)
+    citation = models.CharField(
+        max_length=500,
+        blank=True,
+        help_text='Publication, author, or short reference line',
+    )
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order', 'pk']
+        verbose_name = 'Source'
+        verbose_name_plural = 'Sources'
+
+    def __str__(self):
+        return self.citation[:60]
 
 
 class ChangeMaker(models.Model):
@@ -122,6 +159,12 @@ class ChangeMaker(models.Model):
         blank=True,
         null=True,
         help_text='Optional photo (upload in admin)',
+    )
+    related_events = models.ManyToManyField(
+        HistoricalEvent,
+        blank=True,
+        related_name='related_heroes',
+        help_text='Timeline entries to highlight on this profile',
     )
     order = models.PositiveIntegerField(default=0)
     is_published = models.BooleanField(default=True, db_index=True)

@@ -64,4 +64,20 @@
     {{ hero.body|linebreaks }}
     {% endif %}
 </div>
+
+{% if hero.related_events.all %}
+<h2 style="margin-top:2.5rem;">Related archive entries</h2>
+<p class="muted" style="font-size:0.9rem;">Curated links to events in the timeline.</p>
+<ul style="list-style:none;padding:0;">
+    {% for ev in hero.related_events.all %}
+    <li style="margin-bottom:0.75rem;">
+        <a href="{{ ev.get_absolute_url }}" class="event-card" style="display:block;margin:0;">
+            <span class="year">{{ ev.year }}</span>
+            <strong style="display:block;margin-top:0.35rem;">{{ ev.title }}</strong>
+            <span class="muted" style="font-size:0.85rem;">{{ ev.summary|truncatewords:22 }}</span>
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+{% endif %}
 {% endblock %}

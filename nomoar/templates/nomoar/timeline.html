@@ -1,4 +1,5 @@
 {% extends 'nomoar/base.html' %}
+{% load nomoar_tags %}
 
 {% block title %}Timeline{% endblock %}
 
@@ -9,6 +10,8 @@
     {% if active_decade and active_decade != 'all' %}
     <input type="hidden" name="decade" value="{{ active_decade }}">
     {% endif %}
+    {% if active_type %}<input type="hidden" name="type" value="{{ active_type }}">{% endif %}
+    {% if active_state %}<input type="hidden" name="state" value="{{ active_state }}">{% endif %}
     <label class="visually-hidden" for="tl-q">Search timeline</label>
     <input type="search" id="tl-q" name="q" value="{{ request.GET.q }}" placeholder="Search…" class="nomoar-tl-search-input">
     <button type="submit" class="nomoar-tl-search-btn" aria-label="Search">⌕</button>
@@ -344,22 +347,113 @@
         line-height: 1.55;
     }
     .nomoar-tl-details-body a { color: var(--tl-orange); font-weight: 600; }
+    .nomoar-tl-card-footer-links { display: flex; flex-wrap: wrap; gap: 0.5rem 0.75rem; align-items: center; }
+    .nomoar-tl-row--left .nomoar-tl-card-footer-links { flex-direction: row-reverse; }
+    @media (max-width: 720px) {
+        .nomoar-tl-card-footer-links { flex-direction: row !important; }
+    }
+    .nomoar-tl--focused {
+        outline: 2px solid var(--tl-orange);
+        outline-offset: 4px;
+        border-radius: 14px;
+    }
+    .nomoar-tl-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem 1rem;
+        margin-bottom: 1rem;
+    }
+    .nomoar-tl-copy-btn {
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding: 0.4rem 0.75rem;
+        border-radius: 6px;
+        border: 1px solid var(--tl-card-border);
+        background: var(--tl-card);
+        color: var(--tl-muted);
+        cursor: pointer;
+    }
+    .nomoar-tl-copy-btn:hover { color: var(--tl-text); border-color: #555; }
+    .nomoar-filter-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+    .nomoar-filter-row span { font-size: 0.72rem; color: var(--tl-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-right: 0.25rem; }
+    .nomoar-filter-chip {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.35rem 0.65rem;
+        border-radius: 999px;
+        text-decoration: none;
+        color: var(--tl-muted);
+        border: 1px solid var(--tl-card-border);
+        background: var(--tl-card);
+    }
+    .nomoar-filter-chip:hover { color: var(--tl-text); border-color: #555; }
+    .nomoar-filter-chip.is-active {
+        border-color: var(--tl-orange);
+        color: var(--tl-orange);
+        background: rgba(255, 107, 0, 0.12);
+    }
+    .nomoar-editorial-banner--compact {
+        background: #121212;
+        border: 1px solid var(--tl-card-border);
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        margin-bottom: 1.25rem;
+        font-size: 0.78rem;
+        line-height: 1.5;
+        color: var(--tl-muted);
+    }
+    .nomoar-editorial-banner--compact a { color: var(--tl-orange); }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="nomoar-timeline-page">
+    <div class="nomoar-editorial-banner--compact">
+        Educational archive — not legal advice.
+        {% if nomoar_corrections_email %}
+        Corrections: <a href="mailto:{{ nomoar_corrections_email }}">{{ nomoar_corrections_email }}</a>.
+        {% else %}
+        <a href="{% url 'nomoar:submit' %}">Submit a correction</a>.
+        {% endif %}
+    </div>
+    <div class="nomoar-tl-toolbar">
+        <button type="button" class="nomoar-tl-copy-btn" id="nomoar-copy-filter-url" title="Copy this filtered view">Copy link to filters</button>
+        <span class="visually-hidden" id="nomoar-copy-status" aria-live="polite"></span>
+    </div>
     <div class="nomoar-decade-bar" aria-label="Filter by decade">
         {% for value, label in decade_options %}
         {% if value == 'all' %}
-        <a href="{% url 'nomoar:timeline' %}{% if request.GET.q %}?q={{ request.GET.q|urlencode }}{% endif %}"
+        <a href="{% timeline_url decade='' %}"
            class="nomoar-decade-pill{% if active_decade == 'all' %} is-active{% endif %}">{{ label }}</a>
         {% else %}
-        <a href="{% url 'nomoar:timeline' %}?decade={{ value }}{% if request.GET.q %}&q={{ request.GET.q|urlencode }}{% endif %}"
+        <a href="{% timeline_url decade=value %}"
            class="nomoar-decade-pill{% if active_decade == value %} is-active{% endif %}">{{ label }}</a>
         {% endif %}
         {% endfor %}
     </div>
+    <div class="nomoar-filter-row" aria-label="Filter by type">
+        <span>Type</span>
+        <a href="{% timeline_url type='' %}" class="nomoar-filter-chip{% if not active_type %} is-active{% endif %}">All</a>
+        {% for val, lbl in event_type_choices %}
+        <a href="{% timeline_url type=val %}" class="nomoar-filter-chip{% if active_type == val %} is-active{% endif %}">{{ lbl }}</a>
+        {% endfor %}
+    </div>
+    {% if timeline_states %}
+    <div class="nomoar-filter-row" aria-label="Filter by state">
+        <span>State</span>
+        <a href="{% timeline_url state='' %}" class="nomoar-filter-chip{% if not active_state %} is-active{% endif %}">All</a>
+        {% for st in timeline_states %}
+        <a href="{% timeline_url state=st %}" class="nomoar-filter-chip{% if active_state == st %} is-active{% endif %}">{{ st }}</a>
+        {% endfor %}
+    </div>
+    {% endif %}
 
     <div class="nomoar-timeline-wrap">
         {% for e in events %}
@@ -367,7 +461,7 @@
             <div class="nomoar-tl-year">{{ e.year }}</div>
             {% endifchanged %}
             {% if forloop.counter0|divisibleby:2 %}
-            <div class="nomoar-tl-row nomoar-tl-row--left">
+            <div class="nomoar-tl-row nomoar-tl-row--left" id="nomoar-tl-{{ e.slug }}">
                 <div class="nomoar-tl-card-wrap">
                     {% include 'nomoar/_timeline_card.html' %}
                 </div>
@@ -375,7 +469,7 @@
                 <div class="nomoar-tl-spacer" aria-hidden="true"></div>
             </div>
             {% else %}
-            <div class="nomoar-tl-row nomoar-tl-row--right">
+            <div class="nomoar-tl-row nomoar-tl-row--right" id="nomoar-tl-{{ e.slug }}">
                 <div class="nomoar-tl-spacer" aria-hidden="true"></div>
                 <div class="nomoar-tl-dot"><span></span></div>
                 <div class="nomoar-tl-card-wrap">
@@ -391,13 +485,44 @@
     {% if is_paginated %}
     <nav class="nomoar-tl-pager" style="display:flex;flex-wrap:wrap;gap:1rem;justify-content:center;align-items:center;padding:2rem 0;">
         {% if page_obj.has_previous %}
-        <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q|urlencode }}{% endif %}{% if active_decade and active_decade != 'all' %}&decade={{ active_decade }}{% endif %}" class="btn btn-outline">Previous</a>
+        <a href="{% timeline_url page=page_obj.previous_page_number %}" class="btn btn-outline">Previous</a>
         {% endif %}
         <span class="muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
         {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q|urlencode }}{% endif %}{% if active_decade and active_decade != 'all' %}&decade={{ active_decade }}{% endif %}" class="btn btn-outline">Next</a>
+        <a href="{% timeline_url page=page_obj.next_page_number %}" class="btn btn-outline">Next</a>
         {% endif %}
     </nav>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    var btn = document.getElementById('nomoar-copy-filter-url');
+    var status = document.getElementById('nomoar-copy-status');
+    if (btn) {
+        btn.addEventListener('click', function() {
+            var url = (btn.getAttribute('data-share-url') || window.location.href).split('#')[0];
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(function() {
+                    if (status) { status.textContent = 'Link copied.'; setTimeout(function() { status.textContent = ''; }, 2500); }
+                }).catch(function() { window.prompt('Copy this URL:', url); });
+            } else {
+                window.prompt('Copy this URL:', url);
+            }
+        });
+    }
+    var focus = "{{ focus_slug|default:''|escapejs }}";
+    if (focus.length) {
+        var el = document.getElementById('nomoar-tl-' + focus);
+        if (el) {
+            setTimeout(function() {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.classList.add('nomoar-tl--focused');
+            }, 200);
+        }
+    }
+})();
+</script>
 {% endblock %}
