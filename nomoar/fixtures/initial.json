@@ -516,5 +516,113 @@
       "created_at": "2025-01-01T12:00:00Z",
       "updated_at": "2025-01-01T12:00:00Z"
     }
+  },
+  {
+    "model": "nomoar.changemaker",
+    "pk": 9,
+    "fields": {
+      "name": "Wilma Mankiller",
+      "slug": "wilma-mankiller",
+      "tagline": "First woman Principal Chief of the Cherokee Nation",
+      "summary": "Mankiller revitalized Cherokee self-governance and rural community development—expanding housing, health care, and tribal enterprises while mentoring Native women in leadership across Indian Country.",
+      "body": "Elected principal chief in 1985 and again in 1991, she emphasized nation-building through infrastructure and education. She received the Presidential Medal of Freedom in 1998. Her legacy ties sovereignty to practical community renewal.",
+      "birth_year": 1945,
+      "death_year": 2010,
+      "order": 9,
+      "is_published": true,
+      "related_events": [1, 15, 11],
+      "created_at": "2025-01-01T12:00:00Z",
+      "updated_at": "2025-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "nomoar.changemaker",
+    "pk": 10,
+    "fields": {
+      "name": "Vine Deloria Jr.",
+      "slug": "vine-deloria-jr",
+      "tagline": "Standing Rock Sioux author, theologian, and sovereignty advocate",
+      "summary": "His book Custer Died for Your Sins helped reset U.S. conversations about treaties, tribal governments, and misrepresentation of Native people—blending law, humor, and history.",
+      "body": "Deloria chaired the National Congress of American Indians, taught political science, and argued that tribal nations are political entities, not racial minorities. His work influenced federal policy debates and generations of Native scholars and lawyers.",
+      "birth_year": 1933,
+      "death_year": 2005,
+      "order": 10,
+      "is_published": true,
+      "related_events": [2, 7, 9, 11],
+      "created_at": "2025-01-01T12:00:00Z",
+      "updated_at": "2025-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "nomoar.changemaker",
+    "pk": 11,
+    "fields": {
+      "name": "Winona LaDuke",
+      "slug": "winona-laduke",
+      "tagline": "Anishinaabe economist, environmentalist, and land defender",
+      "summary": "LaDuke founded the White Earth Land Recovery Project and Honor the Earth, organizing around treaty rights, renewable energy, and opposition to pipelines that threaten treaty lands and water.",
+      "body": "She was the Green Party vice-presidential nominee in 1996 and 2000. Her work links climate justice to Indigenous stewardship and food systems—centering tribal communities in debates over extraction and energy transition.",
+      "birth_year": 1959,
+      "death_year": null,
+      "order": 11,
+      "is_published": true,
+      "related_events": [3, 6, 8, 12, 13],
+      "created_at": "2025-01-01T12:00:00Z",
+      "updated_at": "2025-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "nomoar.changemaker",
+    "pk": 12,
+    "fields": {
+      "name": "Deb Haaland",
+      "slug": "deb-haaland",
+      "tagline": "Laguna Pueblo leader; first Native American U.S. Cabinet secretary",
+      "summary": "A former U.S. representative from New Mexico, Haaland served as Secretary of the Interior—overseeing agencies that shape tribal relations, public lands, and the protection of sacred sites.",
+      "body": "Her tenure highlighted consultation with tribes, restoration of national monuments, and reckoning with the Interior Department’s role in boarding schools and assimilation policies. She represents a historic shift in who holds federal land and trust responsibility.",
+      "birth_year": 1960,
+      "death_year": null,
+      "order": 12,
+      "is_published": true,
+      "related_events": [1, 2, 11, 12, 15],
+      "created_at": "2025-01-01T12:00:00Z",
+      "updated_at": "2025-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "nomoar.changemaker",
+    "pk": 13,
+    "fields": {
+      "name": "Billy Frank Jr.",
+      "slug": "billy-frank-jr",
+      "tagline": "Nisqually treaty-rights activist and fish-in leader",
+      "summary": "Frank organized 'fish-ins' on the Nisqually River to assert treaty fishing rights guaranteed in treaties—facing arrest dozens of times before courts affirmed tribal salmon fisheries in the Pacific Northwest.",
+      "body": "The Boldt decision (1974) recognized tribes as co-managers of salmon runs. Frank later chaired the Northwest Indian Fisheries Commission. His life connects Coast Salish sovereignty to ongoing stewardship of rivers and salmon.",
+      "birth_year": 1931,
+      "death_year": 2014,
+      "order": 13,
+      "is_published": true,
+      "related_events": [3, 8, 11],
+      "created_at": "2025-01-01T12:00:00Z",
+      "updated_at": "2025-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "nomoar.changemaker",
+    "pk": 14,
+    "fields": {
+      "name": "John Trudell",
+      "slug": "john-trudell",
+      "tagline": "Santee Dakota poet, musician, and American Indian Movement leader",
+      "summary": "Trudell was a spokesperson for the 1969 Alcatraz occupation and during the 1973 Wounded Knee standoff—then rebuilt his public voice as a poet and recording artist after personal tragedy.",
+      "body": "He chaired the American Indian Movement and used plain-spoken poetry to indict colonialism and environmental destruction. His art extended activism into culture and memory for Native and allied audiences worldwide.",
+      "birth_year": 1946,
+      "death_year": 2015,
+      "order": 14,
+      "is_published": true,
+      "related_events": [2, 7, 11],
+      "created_at": "2025-01-01T12:00:00Z",
+      "updated_at": "2025-01-01T12:00:00Z"
+    }
   }
 ]

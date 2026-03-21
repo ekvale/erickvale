@@ -23,7 +23,7 @@ If the map legend shows fewer plotted events than expected (seed = **18**), the 
 python manage.py nomoar_seed_from_fixture
 ```
 
-That upserts `HistoricalEvent`, `SiteStat`, and **`ChangeMaker`** (heroes) from `nomoar/fixtures/initial.json` by slug/key (no PK conflicts). You can still use `loaddata` for a clean install; use `nomoar_sync_coords` only to refresh lat/lng on existing rows without changing other fields.
+That upserts `HistoricalEvent`, `SiteStat`, and **`ChangeMaker`** (heroes, including Native American change makers with **related timeline events**) from `nomoar/fixtures/initial.json` by slug/key (no PK conflicts). You can still use `loaddata` for a clean install; use `nomoar_sync_coords` only to refresh lat/lng on existing rows without changing other fields.
 
 **Logo:** `nomoar/static/nomoar/NOMOARLogo.jpg` is collected to static; ensure it exists after pull.
 

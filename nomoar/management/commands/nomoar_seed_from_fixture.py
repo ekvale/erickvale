@@ -127,6 +127,17 @@ class Command(BaseCommand):
                 else:
                     heroes_updated += 1
                     self.stdout.write(f'Updated hero: {slug}')
+                # M2M: list of HistoricalEvent primary keys (matches loaddata shape)
+                rel_pks = fields.get('related_events')
+                if rel_pks is not None:
+                    valid = list(
+                        HistoricalEvent.objects.filter(
+                            pk__in=[int(x) for x in rel_pks if x is not None],
+                        ).values_list('pk', flat=True),
+                    )
+                    obj.related_events.set(valid)
+                    if valid:
+                        self.stdout.write(f'  linked {len(valid)} related event(s)')
 
         self.stdout.write(
             self.style.SUCCESS(
