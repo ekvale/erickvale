@@ -19,6 +19,7 @@
         display: grid;
         grid-template-columns: minmax(280px, 380px) 1fr;
         min-height: calc(100vh - 56px);
+        align-items: stretch;
     }
     @media (max-width: 900px) {
         .nomoar-map-layout {
@@ -111,7 +112,8 @@
     }
     .nomoar-map-stage {
         position: relative;
-        min-height: 360px;
+        min-height: min(65vh, 560px);
+        height: 100%;
         background: #111;
     }
     #nomoar-map {
@@ -487,7 +489,15 @@
         return h;
     }
 
-    var map = L.map('nomoar-map', { scrollWheelZoom: true });
+    /* Leaflet needs center+zoom at creation; otherwise first paint can sit on a world default (reads as “Canada”). */
+    var defaultCenter = [39.8283, -98.5795];
+    var defaultZoom = 6;
+    var map = L.map('nomoar-map', {
+        center: defaultCenter,
+        zoom: defaultZoom,
+        scrollWheelZoom: true,
+        worldCopyJump: true
+    });
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
         subdomains: 'abcd',
@@ -542,13 +552,15 @@
     });
 
     map.addLayer(cluster);
-    /*
-     * Default view: geographic center of the contiguous US (not fitBounds — wide marker spread skews bounds).
-     * Leaflet uses [latitude, longitude]. Pine Ridge, SD would be ~[43.02, -102.56] at zoom 7 for local focus.
-     */
-    var defaultCenter = [39.8283, -98.5795];
-    var defaultZoom = 5;
-    map.setView(defaultCenter, defaultZoom);
+    /* Re-apply after layout (sidebar flex can give the map pane zero size on first frame). Zoom 6 > 5 = less of Canada in view. */
+    function applyDefaultView() {
+        map.invalidateSize();
+        map.setView(defaultCenter, defaultZoom, { animate: false });
+    }
+    applyDefaultView();
+    requestAnimationFrame(applyDefaultView);
+    setTimeout(applyDefaultView, 100);
+    setTimeout(applyDefaultView, 400);
 
     function setActiveCard(slug) {
         document.querySelectorAll('.nomoar-map-sidebar-card').forEach(function(btn) {
