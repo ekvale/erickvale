@@ -542,11 +542,10 @@
     });
 
     map.addLayer(cluster);
-    if (cluster.getLayers().length === 1) {
-        map.setView(cluster.getBounds().getCenter(), 6);
-    } else {
-        map.fitBounds(cluster.getBounds(), { padding: [48, 48], maxZoom: 6 });
-    }
+    /* Default view: Pine Ridge, SD (not fitBounds — wide US spread skewed center toward Atlantic/Greenland) */
+    var pineRidge = [43.12, -102.57];
+    var defaultZoom = 6;
+    map.setView(pineRidge, defaultZoom);
 
     function setActiveCard(slug) {
         document.querySelectorAll('.nomoar-map-sidebar-card').forEach(function(btn) {
