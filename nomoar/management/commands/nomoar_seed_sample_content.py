@@ -3,10 +3,16 @@ Idempotent sample rows for NOMOAR engagement models (paths, kits, glossary, etc.
 Requires existing HistoricalEvent rows (run nomoar_seed_from_fixture first).
 
   python manage.py nomoar_seed_sample_content
+
+Also adds a placeholder **Event photo** on the Zion National Park entry (if it has no photos yet)
+so the gallery / timeline thumbnail are demo-ready — replace the file in admin with a
+rights-cleared image.
 """
+from io import BytesIO
 from pathlib import Path
 
 from django.conf import settings
+from django.core.files.base import ContentFile
 from django.core.files import File
 from django.core.management.base import BaseCommand
 from django.db.models import Max
@@ -16,6 +22,7 @@ from nomoar.models import (
     ArchiveNewsPost,
     Collection,
     EngagementConfig,
+    EventPhoto,
     EventSource,
     GlossaryTerm,
     HistoricalEvent,
@@ -33,6 +40,32 @@ def _event(slug):
 
 def _static_sample_pdf_path():
     return Path(settings.BASE_DIR) / 'nomoar' / 'static' / 'nomoar' / 'samples' / 'sample-poster.pdf'
+
+
+def _zion_placeholder_jpeg_bytes():
+    """Small landscape JPEG (Utah-ish palette) — not a real photo; for demo only."""
+    from PIL import Image, ImageDraw, ImageFont
+
+    w, h = 960, 540
+    img = Image.new('RGB', (w, h), color=(45, 36, 24))
+    draw = ImageDraw.Draw(img)
+    for i in range(7):
+        y0 = int(i * h / 7)
+        y1 = int((i + 1) * h / 7)
+        r, g, b = 55 + i * 14, 42 + i * 10, 28 + i * 6
+        draw.rectangle([0, y0, w, y1], fill=(min(r, 220), min(g, 200), min(b, 120)))
+    draw.rectangle([0, 0, w, int(h * 0.22)], fill=(135, 168, 206))
+    font = ImageFont.load_default()
+    lines = ['Sample gallery image', 'Zion entry — replace in admin']
+    y = int(h * 0.38)
+    for line in lines:
+        bbox = draw.textbbox((0, 0), line, font=font)
+        tw = bbox[2] - bbox[0]
+        draw.text(((w - tw) // 2, y), line, fill=(255, 250, 235), font=font)
+        y += (bbox[3] - bbox[1]) + 10
+    buf = BytesIO()
+    img.save(buf, format='JPEG', quality=88, optimize=True)
+    return buf.getvalue()
 
 
 class Command(BaseCommand):
@@ -356,6 +389,34 @@ class Command(BaseCommand):
                     ),
                 )
                 self.stdout.write(self.style.SUCCESS('EventSource sample on Grand Canyon event'))
+                n += 1
+
+        # --- Placeholder Event photo: Zion National Park entry (fixture slug) ---
+        zion = _event('zion-nps-indigenous-climate-interpretation')
+        if zion and not zion.photos.exists():
+            try:
+                raw = _zion_placeholder_jpeg_bytes()
+            except ImportError:
+                self.stderr.write(
+                    self.style.WARNING('Pillow not available; skipping Zion sample Event photo'),
+                )
+            else:
+                photo = EventPhoto(
+                    event=zion,
+                    order=0,
+                    caption='Placeholder — upload a rights-cleared photo in admin (Event photos).',
+                    alt_text='Placeholder graphic for the Zion National Park archive entry',
+                )
+                photo.image.save(
+                    'zion-archive-entry-placeholder.jpg',
+                    ContentFile(raw),
+                    save=True,
+                )
+                self.stdout.write(
+                    self.style.SUCCESS(
+                        'EventPhoto: placeholder on Zion NPS entry (slug zion-nps-indigenous-climate-interpretation) — replace in admin',
+                    ),
+                )
                 n += 1
 
         self.stdout.write(self.style.SUCCESS(f'Done. Sample objects touched/created: ~{n}+ (collections M2M, etc.)'))
