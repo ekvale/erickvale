@@ -1,142 +1,281 @@
 {% extends 'nomoar/base.html' %}
+{% load static %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .nomoar-home-bootstrap .card {
+        background-color: var(--nomoar-elevated) !important;
+        border-color: var(--nomoar-border) !important;
+        color: var(--nomoar-text) !important;
+    }
+    .nomoar-home-hero.card {
+        background: linear-gradient(145deg, var(--nomoar-surface) 0%, var(--nomoar-elevated) 100%) !important;
+        border-color: var(--nomoar-border) !important;
+    }
+    .nomoar-home-logo {
+        width: 96px;
+        height: 96px;
+        object-fit: contain;
+        border-radius: 14px;
+        border: 1px solid var(--nomoar-border);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+    }
+    @media (min-width: 768px) {
+        .nomoar-home-logo { width: 120px; height: 120px; }
+    }
+    .nomoar-home-hero .nomoar-eyebrow { margin-top: 0; }
+    .nomoar-home-hero h1 { margin-bottom: 0.75rem; }
+    .nomoar-home-bootstrap .stat-card-bs .stat-value {
+        font-family: 'Crimson Pro', Georgia, serif;
+        font-size: 1.85rem;
+        font-weight: 700;
+        color: var(--nomoar-accent);
+        line-height: 1.2;
+    }
+    .nomoar-home-bootstrap .stat-card-bs .stat-label {
+        font-size: 0.8rem;
+        color: var(--nomoar-muted);
+        margin-top: 0.35rem;
+    }
+    .nomoar-home-bootstrap .list-group-item {
+        background-color: transparent;
+        border-color: var(--nomoar-border);
+        color: var(--nomoar-text);
+    }
+    .nomoar-home-bootstrap h2.card-title,
+    .nomoar-home-bootstrap .card-header {
+        font-family: 'Crimson Pro', Georgia, serif;
+        color: var(--nomoar-text);
+        border-bottom-color: var(--nomoar-border);
+        background: transparent !important;
+    }
+    .nomoar-home-bootstrap a.list-group-item-action {
+        color: var(--nomoar-text) !important;
+        text-decoration: none !important;
+    }
+    .nomoar-home-bootstrap a.list-group-item-action:hover,
+    .nomoar-home-bootstrap a.list-group-item-action:focus {
+        background: var(--nomoar-accent-soft) !important;
+        color: var(--nomoar-text) !important;
+        border-color: var(--nomoar-border);
+    }
+</style>
+{% endblock %}
 
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<p class="nomoar-eyebrow">A Living Archive</p>
-<h1>National Online Museum of<br>American Racism</h1>
-<p class="muted" style="font-size: 1.1rem; max-width: 42rem;">
-    Documenting the historical and ongoing timeline of racist events, policies, and systems in America.
-    Because understanding our past is essential to changing our future.
-</p>
-<div class="cta-row">
-    <a href="{% url 'nomoar:timeline' %}" class="btn btn-primary">Explore Timeline</a>
-    <a href="{% url 'nomoar:map' %}" class="btn btn-outline">View Map</a>
-    <a href="{% url 'nomoar:heroes' %}" class="btn btn-outline">Heroes &amp; change makers</a>
-    <a href="{% url 'nomoar:learning_path_list' %}" class="btn btn-outline">Learning paths</a>
-</div>
-
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-value">{% if stats.years %}{{ stats.years.value }}{{ stats.years.suffix }}{% else %}247+{% endif %}</div>
-        <div class="stat-label">{% if stats.years %}{{ stats.years.label }}{% else %}Years Documented{% endif %}</div>
+<div class="nomoar-home-bootstrap">
+    <div class="card nomoar-home-hero border-secondary shadow mb-4">
+        <div class="card-body p-4 p-md-5">
+            <div class="row align-items-center g-4">
+                <div class="col-auto text-center text-md-start">
+                    <img class="nomoar-home-logo" src="{% static 'nomoar/NOMOARLogo.jpg' %}" width="120" height="120" alt="NOMOAR logo">
+                </div>
+                <div class="col">
+                    <p class="nomoar-eyebrow">A Living Archive</p>
+                    <h1 class="display-6 fw-semibold">National Online Museum of<br>American Racism</h1>
+                    <p class="muted mb-3 mb-md-4" style="font-size: 1.1rem; max-width: 42rem;">
+                        Documenting the historical and ongoing timeline of racist events, policies, and systems in America.
+                        Because understanding our past is essential to changing our future.
+                    </p>
+                    <div class="cta-row d-flex flex-wrap gap-2 gap-md-3">
+                        <a href="{% url 'nomoar:timeline' %}" class="btn btn-primary">Explore Timeline</a>
+                        <a href="{% url 'nomoar:map' %}" class="btn btn-outline">View Map</a>
+                        <a href="{% url 'nomoar:heroes' %}" class="btn btn-outline">Heroes &amp; change makers</a>
+                        <a href="{% url 'nomoar:learning_path_list' %}" class="btn btn-outline">Learning paths</a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="stat-card">
-        <div class="stat-value">{% if stats.events %}{{ stats.events.value }}{{ stats.events.suffix }}{% else %}{{ event_count }}+{% endif %}</div>
-        <div class="stat-label">{% if stats.events %}{{ stats.events.label }}{% else %}Events Archived{% endif %}</div>
+
+    <div class="row g-3 g-md-4 mb-4 mb-md-5">
+        <div class="col-6 col-lg-3">
+            <div class="card stat-card-bs border-secondary h-100 shadow-sm">
+                <div class="card-body text-center py-4">
+                    <div class="stat-value">{% if stats.years %}{{ stats.years.value }}{{ stats.years.suffix }}{% else %}247+{% endif %}</div>
+                    <div class="stat-label">{% if stats.years %}{{ stats.years.label }}{% else %}Years Documented{% endif %}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card stat-card-bs border-secondary h-100 shadow-sm">
+                <div class="card-body text-center py-4">
+                    <div class="stat-value">{% if stats.events %}{{ stats.events.value }}{{ stats.events.suffix }}{% else %}{{ event_count }}+{% endif %}</div>
+                    <div class="stat-label">{% if stats.events %}{{ stats.events.label }}{% else %}Events Archived{% endif %}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card stat-card-bs border-secondary h-100 shadow-sm">
+                <div class="card-body text-center py-4">
+                    <div class="stat-value">{% if stats.states %}{{ stats.states.value }}{{ stats.states.suffix }}{% else %}{{ state_count }}{% endif %}</div>
+                    <div class="stat-label">{% if stats.states %}{{ stats.states.label }}{% else %}States Covered{% endif %}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card stat-card-bs border-secondary h-100 shadow-sm">
+                <div class="card-body text-center py-4">
+                    <div class="stat-value">{% if stats.collections %}{{ stats.collections.value }}{{ stats.collections.suffix }}{% else %}6+{% endif %}</div>
+                    <div class="stat-label">{% if stats.collections %}{{ stats.collections.label }}{% else %}Curated Collections{% endif %}</div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="stat-card">
-        <div class="stat-value">{% if stats.states %}{{ stats.states.value }}{{ stats.states.suffix }}{% else %}{{ state_count }}{% endif %}</div>
-        <div class="stat-label">{% if stats.states %}{{ stats.states.label }}{% else %}States Covered{% endif %}</div>
+
+    {% if learning_paths %}
+    <div class="card border-secondary shadow-sm mb-4">
+        <div class="card-header py-3">
+            <h2 class="h4 mb-0 card-title border-0">Learning paths</h2>
+            <p class="muted small mb-0 mt-1">Guided sequences for classrooms and tours.</p>
+        </div>
+        <ul class="list-group list-group-flush">
+            {% for p in learning_paths %}
+            <li class="list-group-item py-3">
+                <a href="{{ p.get_absolute_url }}">{{ p.title }}</a>
+                {% if p.theme_place_decade_note %}<span class="muted small d-block mt-1">{{ p.theme_place_decade_note }}</span>{% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        <div class="card-body pt-0">
+            <a href="{% url 'nomoar:learning_path_list' %}" class="btn btn-outline btn-sm">All paths</a>
+        </div>
     </div>
-    <div class="stat-card">
-        <div class="stat-value">{% if stats.collections %}{{ stats.collections.value }}{{ stats.collections.suffix }}{% else %}6+{% endif %}</div>
-        <div class="stat-label">{% if stats.collections %}{{ stats.collections.label }}{% else %}Curated Collections{% endif %}</div>
+    {% endif %}
+
+    {% if commentary_posts %}
+    <div class="card border-secondary shadow-sm mb-4">
+        <div class="card-header py-3">
+            <h2 class="h4 mb-0 card-title border-0">Commentary</h2>
+            <p class="muted small mb-0 mt-1">Archive in the news — curated links to entries.</p>
+        </div>
+        <div class="list-group list-group-flush">
+            {% for post in commentary_posts %}
+            <a href="{{ post.get_absolute_url }}" class="list-group-item list-group-item-action py-3">
+                <span class="fw-semibold d-block" style="color: var(--nomoar-text);">{{ post.title }}</span>
+                <span class="muted small">{{ post.published_at|date:"M j, Y" }}</span>
+            </a>
+            {% endfor %}
+        </div>
+        <div class="card-body pt-0">
+            <a href="{% url 'nomoar:news_post_list' %}" class="btn btn-outline btn-sm">All commentary</a>
+        </div>
     </div>
-</div>
+    {% endif %}
 
-{% if learning_paths %}
-<h2>Learning paths</h2>
-<p class="muted">Guided sequences for classrooms and tours.</p>
-<ul style="list-style:none;padding:0;margin-bottom:2rem;">
-{% for p in learning_paths %}
-<li style="margin-bottom:0.65rem;"><a href="{{ p.get_absolute_url }}">{{ p.title }}</a>{% if p.theme_place_decade_note %} <span class="muted" style="font-size:0.85rem;">— {{ p.theme_place_decade_note }}</span>{% endif %}</li>
-{% endfor %}
-</ul>
-<p><a href="{% url 'nomoar:learning_path_list' %}" class="btn btn-outline">All paths</a></p>
-{% endif %}
+    {% if partner_collections %}
+    <div class="card border-secondary shadow-sm mb-4">
+        <div class="card-header py-3">
+            <h2 class="h4 mb-0 card-title border-0">Partner spotlights</h2>
+            <p class="muted small mb-0 mt-1">Collections from libraries, museums, and community partners.</p>
+        </div>
+        <ul class="list-group list-group-flush">
+            {% for c in partner_collections %}
+            <li class="list-group-item py-3">
+                <a href="{{ c.get_absolute_url }}">{{ c.title }}</a>
+                {% if c.partner_organization %}<span class="muted small d-block mt-1">{{ c.partner_organization }}</span>{% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
 
-{% if commentary_posts %}
-<h2>Commentary</h2>
-<p class="muted">Archive in the news — curated links to entries.</p>
-{% for post in commentary_posts %}
-<a href="{{ post.get_absolute_url }}" class="event-card" style="margin-bottom:0.75rem;">
-<h3 style="margin:0;font-size:1rem;">{{ post.title }}</h3>
-<span class="muted" style="font-size:0.8rem;">{{ post.published_at|date:"M j, Y" }}</span>
-</a>
-{% endfor %}
-<p style="margin-top:0.75rem;"><a href="{% url 'nomoar:news_post_list' %}" class="btn btn-outline">All commentary</a></p>
-{% endif %}
+    {% if resource_packs %}
+    <div class="card border-secondary shadow-sm mb-4">
+        <div class="card-header py-3">
+            <h2 class="h4 mb-0 card-title border-0">Localized packs</h2>
+            <p class="muted small mb-0 mt-1">City and county slices with printable resources.</p>
+        </div>
+        <ul class="list-group list-group-flush">
+            {% for pk in resource_packs %}
+            <li class="list-group-item py-3"><a href="{{ pk.get_absolute_url }}">{{ pk.title }}</a></li>
+            {% endfor %}
+        </ul>
+        <div class="card-body pt-0">
+            <a href="{% url 'nomoar:resource_pack_list' %}" class="btn btn-outline btn-sm">All packs</a>
+        </div>
+    </div>
+    {% endif %}
 
-{% if partner_collections %}
-<h2>Partner spotlights</h2>
-<p class="muted">Collections from libraries, museums, and community partners.</p>
-<ul style="list-style:none;padding:0;margin-bottom:1rem;">
-{% for c in partner_collections %}
-<li style="margin-bottom:0.5rem;"><a href="{{ c.get_absolute_url }}">{{ c.title }}</a>{% if c.partner_organization %} <span class="muted" style="font-size:0.85rem;">({{ c.partner_organization }})</span>{% endif %}</li>
-{% endfor %}
-</ul>
-{% endif %}
+    {% if heroes_preview %}
+    <h2 class="mt-5 mb-3 pb-2 border-bottom border-secondary">Heroes &amp; change makers</h2>
+    <p class="muted mb-3">People who fought for justice and collective liberation—alongside the events we document.</p>
+    <div class="row g-3 mb-4">
+        {% for h in heroes_preview %}
+        <div class="col-12 col-sm-6 col-lg-4">
+            <a href="{{ h.get_absolute_url }}" class="event-card h-100 d-block" style="margin-bottom:0;">
+                <span class="year" style="font-size:0.75rem;">{% if h.life_span_display %}{{ h.life_span_display }}{% else %}Profile{% endif %}</span>
+                <h3 style="font-size:1rem;">{{ h.name }}</h3>
+                <p style="font-size:0.85rem;">{% if h.tagline %}{{ h.tagline|truncatewords:18 }}{% else %}{{ h.summary|truncatewords:18 }}{% endif %}</p>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    <p><a href="{% url 'nomoar:heroes' %}" class="btn btn-outline">View all heroes</a></p>
+    {% endif %}
 
-{% if resource_packs %}
-<h2>Localized packs</h2>
-<p class="muted">City and county slices with printable resources.</p>
-<ul style="list-style:none;padding:0;margin-bottom:1rem;">
-{% for pk in resource_packs %}
-<li style="margin-bottom:0.5rem;"><a href="{{ pk.get_absolute_url }}">{{ pk.title }}</a></li>
-{% endfor %}
-</ul>
-<p><a href="{% url 'nomoar:resource_pack_list' %}" class="btn btn-outline">All packs</a></p>
-{% endif %}
-
-{% if heroes_preview %}
-<h2>Heroes &amp; change makers</h2>
-<p class="muted">People who fought for justice and collective liberation—alongside the events we document.</p>
-<div class="nomoar-heroes-preview-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;margin-bottom:2rem;">
-    {% for h in heroes_preview %}
-    <a href="{{ h.get_absolute_url }}" class="event-card" style="margin-bottom:0;">
-        <span class="year" style="font-size:0.75rem;">{% if h.life_span_display %}{{ h.life_span_display }}{% else %}Profile{% endif %}</span>
-        <h3 style="font-size:1rem;">{{ h.name }}</h3>
-        <p style="font-size:0.85rem;">{% if h.tagline %}{{ h.tagline|truncatewords:18 }}{% else %}{{ h.summary|truncatewords:18 }}{% endif %}</p>
+    <h2 class="mt-5 mb-3 pb-2 border-bottom border-secondary">Recent History</h2>
+    {% for e in recent_events %}
+    <a href="{{ e.get_absolute_url }}" class="event-card">
+        <span class="year">{{ e.year }}</span>
+        <h3>{{ e.title }}</h3>
+        <p>{{ e.summary|truncatewords:40 }}</p>
+        {% if e.raised_fists %}<span class="muted" style="font-size:0.8rem;">✊ {{ e.raised_fists }} raised fists</span>{% endif %}
     </a>
+    {% empty %}
+    <p class="muted">No events yet. Add entries in Django admin or load fixtures.</p>
     {% endfor %}
-</div>
-<p><a href="{% url 'nomoar:heroes' %}" class="btn btn-outline">View all heroes</a></p>
-{% endif %}
 
-<h2>Recent History</h2>
-{% for e in recent_events %}
-<a href="{{ e.get_absolute_url }}" class="event-card">
-    <span class="year">{{ e.year }}</span>
-    <h3>{{ e.title }}</h3>
-    <p>{{ e.summary|truncatewords:40 }}</p>
-    {% if e.raised_fists %}<span class="muted" style="font-size:0.8rem;">✊ {{ e.raised_fists }} raised fists</span>{% endif %}
-</a>
-{% empty %}
-<p class="muted">No events yet. Add entries in Django admin or load fixtures.</p>
-{% endfor %}
+    <h2 class="mt-5 mb-3 pb-2 border-bottom border-secondary">Featured Events</h2>
+    <p class="muted">Significant moments that shaped American history</p>
+    <p class="mb-3"><a href="{% url 'nomoar:timeline' %}" class="btn btn-outline">View All</a></p>
+    {% for e in featured_events %}
+    <a href="{{ e.get_absolute_url }}" class="event-card">
+        <span class="year">{{ e.year }}</span>
+        <h3>{{ e.title }}</h3>
+        <p>{{ e.summary|truncatewords:35 }}</p>
+        {% if e.location %}<p class="muted" style="font-size:0.85rem;">{{ e.location }}</p>{% endif %}
+    </a>
+    {% empty %}
+    <p class="muted">No featured events yet.</p>
+    {% endfor %}
 
-<h2>Featured Events</h2>
-<p class="muted">Significant moments that shaped American history</p>
-<p><a href="{% url 'nomoar:timeline' %}" class="btn btn-outline">View All</a></p>
-{% for e in featured_events %}
-<a href="{{ e.get_absolute_url }}" class="event-card">
-    <span class="year">{{ e.year }}</span>
-    <h3>{{ e.title }}</h3>
-    <p>{{ e.summary|truncatewords:35 }}</p>
-    {% if e.location %}<p class="muted" style="font-size:0.85rem;">{{ e.location }}</p>{% endif %}
-</a>
-{% empty %}
-<p class="muted">No featured events yet.</p>
-{% endfor %}
+    <p class="mt-4"><a href="{% url 'nomoar:timeline' %}" class="btn btn-primary">View All Events</a></p>
 
-<p style="margin-top:1.5rem;"><a href="{% url 'nomoar:timeline' %}" class="btn btn-primary">View All Events</a></p>
-
-<div class="footer-cta">
-    <div class="footer-cta-box">
-        <h3>Share History</h3>
-        <p class="muted">Know of an event that should be documented? Help build a comprehensive archive by submitting events from your community's history.</p>
-        <a href="{% url 'nomoar:submit' %}" class="btn btn-primary">Submit an Event</a>
-    </div>
-    <div class="footer-cta-box">
-        <h3>Support Our Mission</h3>
-        <p class="muted">Support helps keep archives free and accessible. See options for sustaining research and educational outreach.</p>
-        <a href="{% url 'nomoar:pricing' %}" class="btn btn-outline">View Plans</a>
-    </div>
-    <div class="footer-cta-box">
-        <h3>For Educators</h3>
-        <p class="muted">Access lesson plans, discussion guides, and primary source documents. Free educator resources with verification.</p>
-        <a href="{% url 'nomoar:educators' %}" class="btn btn-outline">Learn More</a>
+    <div class="row g-4 mt-2 pt-4 border-top border-secondary">
+        <div class="col-md-4">
+            <div class="card border-secondary h-100 shadow-sm">
+                <div class="card-body d-flex flex-column">
+                    <h3 class="h5 card-title">Share History</h3>
+                    <p class="muted small flex-grow-1">Know of an event that should be documented? Help build a comprehensive archive by submitting events from your community's history.</p>
+                    <a href="{% url 'nomoar:submit' %}" class="btn btn-primary mt-2">Submit an Event</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-secondary h-100 shadow-sm">
+                <div class="card-body d-flex flex-column">
+                    <h3 class="h5 card-title">Support Our Mission</h3>
+                    <p class="muted small flex-grow-1">Support helps keep archives free and accessible. See options for sustaining research and educational outreach.</p>
+                    <a href="{% url 'nomoar:pricing' %}" class="btn btn-outline mt-2">View Plans</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-secondary h-100 shadow-sm">
+                <div class="card-body d-flex flex-column">
+                    <h3 class="h5 card-title">For Educators</h3>
+                    <p class="muted small flex-grow-1">Access lesson plans, discussion guides, and primary source documents. Free educator resources with verification.</p>
+                    <a href="{% url 'nomoar:educators' %}" class="btn btn-outline mt-2">Learn More</a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

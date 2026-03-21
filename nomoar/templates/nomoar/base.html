@@ -19,6 +19,9 @@
             --nomoar-accent: #c9a227;
             --nomoar-accent-soft: rgba(201, 162, 39, 0.15);
             --nomoar-link: #d4b84a;
+            /* Inline / body links on dark bg (avoid default browser blue) */
+            --nomoar-link-readable: #9ecfff;
+            --nomoar-link-readable-hover: #cfe8ff;
         }
         * { box-sizing: border-box; }
         body {
@@ -193,8 +196,20 @@
             font-size: 0.85rem;
             border-top: 1px solid var(--nomoar-border);
         }
-        .site-footer a { color: var(--nomoar-link); }
+        .site-footer a { color: var(--nomoar-link-readable); }
+        .site-footer a:hover { color: var(--nomoar-link-readable-hover); }
         .muted { color: var(--nomoar-muted); }
+        /* Readable links in page body (not nav, not full-card links, not buttons) */
+        .nomoar-main a:not(.btn):not(.event-card) {
+            color: var(--nomoar-link-readable);
+            text-decoration: underline;
+            text-decoration-color: rgba(158, 207, 255, 0.4);
+            text-underline-offset: 0.15em;
+        }
+        .nomoar-main a:not(.btn):not(.event-card):hover {
+            color: var(--nomoar-link-readable-hover);
+            text-decoration-color: rgba(207, 232, 255, 0.7);
+        }
         .alert { padding: 1rem; border-radius: 6px; margin-bottom: 1rem; }
         .alert-success { background: rgba(46, 125, 50, 0.2); border: 1px solid #2e7d32; color: #a5d6a7; }
         .nomoar-editorial-banner {
