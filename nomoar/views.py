@@ -1,4 +1,5 @@
 import re
+from collections import Counter
 from html import escape as html_escape
 from urllib.parse import quote, urlencode
 
@@ -444,6 +445,7 @@ class MapView(TemplateView):
         ctx['map_year_to'] = yt_raw if yt_raw.isdigit() else ''
         ctx['map_type'] = et
         ctx['map_state'] = st_map
+        ctx['map_location'] = loc_map
         ctx['map_states'] = list(
             HistoricalEvent.objects.exclude(state='')
             .values_list('state', flat=True)
