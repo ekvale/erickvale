@@ -5,6 +5,7 @@ alwaysApply: true
 
 # Git / GitHub
 
-- When you make substantive code or config changes the user cares about, **commit with a clear message** and **`git push origin main`** (or the branch they use) unless they explicitly say not to push.
+- **Always push to GitHub** after committing work in this repo: run **`git push origin main`** (or the active tracked branch) as part of the same turn unless the user explicitly says not to push.
+- When you make substantive code or config changes the user cares about, **commit with a clear message** and push immediately after.
 - If `git push` fails (auth, conflicts), report the error and what they need to do locally.
 - Do not push unrelated dirty files (e.g. other people’s WIP) unless the user asked to include them; prefer focused commits for the work you just did.
