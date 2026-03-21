@@ -1,0 +1,44 @@
+<article class="nomoar-tl-card">
+    <div class="nomoar-tl-card-date">{{ e.year }}</div>
+    <div class="nomoar-tl-tags">
+        <span class="nomoar-tl-tag nomoar-tl-tag--{{ e.event_type }}">{{ e.get_event_type_display }}</span>
+        {% for c in e.collections.all %}
+        {% if forloop.first %}
+        <span class="nomoar-tl-tag nomoar-tl-tag--inst">institutional</span>
+        {% endif %}
+        {% endfor %}
+        {% if e.event_type == 'discrimination' or e.event_type == 'violence' %}
+        <span class="nomoar-tl-tag nomoar-tl-tag--cultural">cultural</span>
+        {% endif %}
+    </div>
+    <h2 class="nomoar-tl-card-title"><a href="{{ e.get_absolute_url }}">{{ e.title }}</a></h2>
+    <p class="nomoar-tl-card-desc">{{ e.summary|truncatewords:42 }}</p>
+    {% if e.location %}
+    <div class="nomoar-tl-loc">
+        <span aria-hidden="true">📍</span>
+        <span>{{ e.location }}{% if e.state %}, {{ e.state }}{% endif %}</span>
+    </div>
+    {% endif %}
+    {% if e.tags.all %}
+    <div class="nomoar-tl-groups">
+        {% for t in e.tags.all %}
+        <span class="nomoar-tl-group-pill">{{ t.name }}</span>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <div class="nomoar-tl-card-footer">
+        <span>✊ {{ e.raised_fists }} raised fist{{ e.raised_fists|pluralize }}</span>
+        <a href="{{ e.get_absolute_url }}" class="nomoar-tl-expand">Full entry →</a>
+    </div>
+    {% if e.body %}
+    <details class="nomoar-tl-details">
+        <summary>Click to expand</summary>
+        <div class="nomoar-tl-details-body">{{ e.body|linebreaksbr }}</div>
+    </details>
+    {% else %}
+    <details class="nomoar-tl-details">
+        <summary>Click to expand</summary>
+        <div class="nomoar-tl-details-body">{{ e.summary|linebreaksbr }} <a href="{{ e.get_absolute_url }}">Read full entry →</a></div>
+    </details>
+    {% endif %}
+</article>

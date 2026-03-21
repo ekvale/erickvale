@@ -34,7 +34,7 @@ Uses [Leaflet](https://leafletjs.com/) + [MarkerCluster](https://github.com/Leaf
 ## URLs
 
 - **Home:** `/apps/nomoar/`
-- **Timeline:** `/apps/nomoar/Timeline/`
+- **Timeline:** `/apps/nomoar/Timeline/` (decade pills `?decade=2020s`, search `?q=`)
 - **Map:** `/apps/nomoar/Map/`
 - **Heroes & change makers:** `/apps/nomoar/Heroes/`
 - **Hero profile:** `/apps/nomoar/HeroDetail/<slug>/`

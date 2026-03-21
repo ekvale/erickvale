@@ -43,17 +43,43 @@ class TimelineView(ListView):
     model = HistoricalEvent
     template_name = 'nomoar/timeline.html'
     context_object_name = 'events'
-    paginate_by = 20
+    paginate_by = 24
 
     def get_queryset(self):
-        qs = HistoricalEvent.objects.all()
+        qs = HistoricalEvent.objects.prefetch_related('tags', 'collections')
         y = self.request.GET.get('year')
         if y and y.isdigit():
             qs = qs.filter(year=int(y))
         q = self.request.GET.get('q', '').strip()
         if q:
             qs = qs.filter(Q(title__icontains=q) | Q(summary__icontains=q))
+        decade = self.request.GET.get('decade', '').strip().lower()
+        if decade and decade != 'all':
+            if len(decade) >= 5 and decade.endswith('s') and decade[:4].isdigit():
+                start = int(decade[:4])
+                qs = qs.filter(year__gte=start, year__lte=start + 9)
         return qs
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['decade_options'] = [
+            ('all', 'All Time'),
+            ('2020s', '2020s'),
+            ('2010s', '2010s'),
+            ('2000s', '2000s'),
+            ('1990s', '1990s'),
+            ('1980s', '1980s'),
+            ('1970s', '1970s'),
+            ('1960s', '1960s'),
+            ('1950s', '1950s'),
+            ('1940s', '1940s'),
+            ('1930s', '1930s'),
+            ('1920s', '1920s'),
+            ('1910s', '1910s'),
+            ('1900s', '1900s'),
+        ]
+        ctx['active_decade'] = self.request.GET.get('decade', 'all').strip().lower() or 'all'
+        return ctx
 
 
 class EventDetailView(DetailView):
