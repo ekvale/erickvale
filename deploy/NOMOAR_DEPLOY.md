@@ -35,7 +35,7 @@ Uses [Leaflet](https://leafletjs.com/) + [MarkerCluster](https://github.com/Leaf
 
 - **Home:** `/apps/nomoar/`
 - **Timeline:** `/apps/nomoar/Timeline/` — filters: `?decade=2020s`, `?type=`, `?state=` (2-letter), `?q=` (Postgres: full-text; SQLite: icontains). Deep-link an entry: `?focus=<event-slug>`. **Copy link to filters** copies the current query string.
-- **Map:** `/apps/nomoar/Map/` — optional `?focus=<slug>` flies to that marker and opens the popup. Popups link **On timeline** to the same focus URL. Filter markers: `?year_from=`, `?year_to=`, `?q=` (same full-text / icontains behavior as the timeline). **Copy map link** preserves the current query string.
+- **Map:** `/apps/nomoar/Map/` — optional `?focus=<slug>` flies to that marker and opens the popup. Popups link **On timeline** to the same focus URL. Filter markers: `?year_from=`, `?year_to=`, `?type=` (same values as timeline event type), `?q=` (full-text / icontains). **Copy map link** preserves the current query string.
 - **Heroes & change makers:** `/apps/nomoar/Heroes/`
 - **Hero profile:** `/apps/nomoar/HeroDetail/<slug>/`
 - **Event:** `/apps/nomoar/EventDetail/<slug>/`

@@ -71,7 +71,8 @@
         color: #888;
     }
     .nomoar-map-filters input[type="number"],
-    .nomoar-map-filters input[type="search"] {
+    .nomoar-map-filters input[type="search"],
+    .nomoar-map-filters select {
         width: 100%;
         padding: 0.45rem 0.55rem;
         border-radius: 6px;
@@ -82,6 +83,9 @@
         font-weight: 400;
         text-transform: none;
         letter-spacing: normal;
+    }
+    .nomoar-map-filters select {
+        cursor: pointer;
     }
     .nomoar-map-filters .nomoar-map-filter-row {
         display: grid;
@@ -500,7 +504,7 @@
             {% empty %}
             <div class="nomoar-map-sidebar-empty">
                 {% if map_filters_active %}
-                No events match these filters. Try widening the year range or clearing search.
+                No events match these filters. Try another event type, widening the year range, or clearing search.
                 {% else %}
                 No markers to show.
                 {% endif %}

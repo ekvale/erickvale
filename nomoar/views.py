@@ -166,6 +166,11 @@ class MapView(TemplateView):
             qs = qs.filter(year__gte=int(yf_raw))
         if yt_raw.isdigit():
             qs = qs.filter(year__lte=int(yt_raw))
+        et = req.get('type', '').strip()
+        if et and et in ArchiveEventType.values:
+            qs = qs.filter(event_type=et)
+        else:
+            et = ''
         qs = _apply_events_text_search(qs, req.get('q', ''))
 
         mapped = []
@@ -194,10 +199,13 @@ class MapView(TemplateView):
         ctx['map_q'] = req.get('q', '').strip()
         ctx['map_year_from'] = yf_raw if yf_raw.isdigit() else ''
         ctx['map_year_to'] = yt_raw if yt_raw.isdigit() else ''
+        ctx['map_type'] = et
+        ctx['map_event_type_choices'] = ArchiveEventType.choices
         ctx['map_filters_active'] = bool(
             ctx['map_q']
             or ctx['map_year_from']
-            or ctx['map_year_to'],
+            or ctx['map_year_to']
+            or ctx['map_type'],
         )
         ctx['legend_types'] = [
             {
