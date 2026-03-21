@@ -542,10 +542,13 @@
     });
 
     map.addLayer(cluster);
-    /* Default view: Pine Ridge, SD (not fitBounds — wide US spread skewed center toward Atlantic/Greenland) */
-    var pineRidge = [43.12, -102.57];
-    var defaultZoom = 6;
-    map.setView(pineRidge, defaultZoom);
+    /*
+     * Default view: geographic center of the contiguous US (not fitBounds — wide marker spread skews bounds).
+     * Leaflet uses [latitude, longitude]. Pine Ridge, SD would be ~[43.02, -102.56] at zoom 7 for local focus.
+     */
+    var defaultCenter = [39.8283, -98.5795];
+    var defaultZoom = 5;
+    map.setView(defaultCenter, defaultZoom);
 
     function setActiveCard(slug) {
         document.querySelectorAll('.nomoar-map-sidebar-card').forEach(function(btn) {
