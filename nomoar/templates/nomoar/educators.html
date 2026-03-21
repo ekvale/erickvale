@@ -3,12 +3,72 @@
 {% block title %}For Educators{% endblock %}
 
 {% block content %}
-<h1>For Educators</h1>
-<p class="muted">This section mirrors the educator outreach described on <a href="https://nomoar.org/" target="_blank" rel="noopener">nomoar.org</a>.</p>
-<ul style="line-height:2;">
-    <li>Lesson plans and discussion guides can be linked or uploaded here as the project grows.</li>
-    <li>Primary source documents and timeline entries support classroom use.</li>
-    <li>Free educator verification: contact the site administrator to request a staff account or shared materials.</li>
+<h1>Educator and partner hub</h1>
+<p class="muted" style="max-width:44rem;">Lesson kits, curated paths, primary sources on every entry, embeds, RSS/JSON feeds, and optional email digests. This site does not paywall the public record or sell placement in search.</p>
+
+<h2>What is new</h2>
+<p class="muted">Machine-readable updates: <a href="{{ rss_feed_url }}">RSS</a> &middot; <a href="{{ json_feed_url }}">JSON</a> &middot; <a href="{% url 'nomoar:whats_new' %}">Web list</a></p>
+
+<h2>Email digest (educators)</h2>
+<p class="muted" style="font-size:0.95rem;">We store your address for future digests. Connect Mailchimp, Buttondown, or SES in your deployment.</p>
+<form method="post" action="{% url 'nomoar:educator_subscribe' %}" style="max-width:22rem;margin-bottom:2rem;">
+{% csrf_token %}
+<label for="id_email">Email</label>
+{{ newsletter_form.email }}
+<button type="submit" class="btn btn-primary" style="margin-top:0.75rem;">Subscribe</button>
+</form>
+
+<h2>Lesson kits</h2>
+{% if lesson_kits %}
+<ul style="list-style:none;padding:0;">
+{% for k in lesson_kits %}
+<li style="margin-bottom:0.65rem;"><a href="{{ k.get_absolute_url }}">{{ k.title }}</a></li>
+{% endfor %}
 </ul>
-<p><a href="{% url 'nomoar:timeline' %}" class="btn btn-primary">Explore the timeline</a></p>
+<p><a href="{% url 'nomoar:lesson_kit_list' %}" class="btn btn-outline">All lesson kits</a></p>
+{% else %}
+<p class="muted">Add lesson kits in admin (standards, prompts, PDFs).</p>
+{% endif %}
+
+<h2>Learning paths</h2>
+{% if learning_paths %}
+<ul style="list-style:none;padding:0;">
+{% for p in learning_paths %}
+<li style="margin-bottom:0.65rem;"><a href="{{ p.get_absolute_url }}">{{ p.title }}</a></li>
+{% endfor %}
+</ul>
+<p><a href="{% url 'nomoar:learning_path_list' %}" class="btn btn-outline">All paths</a></p>
+{% else %}
+<p class="muted">Add learning paths in admin.</p>
+{% endif %}
+
+<p><a href="{% url 'nomoar:collection_list' %}" class="btn btn-outline">All curated collections</a></p>
+
+<h2>Partner spotlights</h2>
+{% if partner_collections %}
+<ul style="list-style:none;padding:0;">
+{% for c in partner_collections %}
+<li style="margin-bottom:0.65rem;"><a href="{{ c.get_absolute_url }}">{{ c.title }}</a>{% if c.partner_organization %} <span class="muted">({{ c.partner_organization }})</span>{% endif %}</li>
+{% endfor %}
+</ul>
+{% else %}
+<p class="muted">Mark collections as partner spotlight in admin.</p>
+{% endif %}
+
+<h2>Localized packs and places</h2>
+{% if resource_packs %}
+<ul style="list-style:none;padding:0;">
+{% for pk in resource_packs %}
+<li style="margin-bottom:0.5rem;"><a href="{{ pk.get_absolute_url }}">{{ pk.title }}</a></li>
+{% endfor %}
+</ul>
+{% endif %}
+<p><a href="{% url 'nomoar:resource_pack_list' %}" class="btn btn-outline">Resource packs</a>
+<a href="{% url 'nomoar:place_index' %}" class="btn btn-outline">Places index</a>
+<a href="{% url 'nomoar:glossary_list' %}" class="btn btn-outline">Glossary</a></p>
+
+<h2>Embeds</h2>
+<p class="muted">Single event iframe and filtered slice widgets — see any entry page under Embed and feeds.</p>
+
+<p style="margin-top:2rem;"><a href="{% url 'nomoar:timeline' %}" class="btn btn-primary">Explore the timeline</a></p>
 {% endblock %}

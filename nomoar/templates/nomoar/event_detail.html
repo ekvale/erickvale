@@ -105,6 +105,11 @@
 </div>
 {% endif %}
 <h1>{{ event.title }}</h1>
+{% if event_collections_published %}
+<p class="muted" style="font-size:0.9rem;">Collections:
+{% for c in event_collections_published %}<a href="{{ c.get_absolute_url }}">{{ c.title }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
+</p>
+{% endif %}
 {% if event.location %}
 <p class="muted" style="font-size:1.05rem;">{{ event.location }}{% if event.state %}, {{ event.state }}{% endif %}
     {% if event.is_geocoded %}
@@ -120,6 +125,18 @@
     {{ event.body|linebreaks }}
     {% endif %}
 </div>
+{% if glossary_for_event %}
+<div class="nomoar-ed-related" style="margin-top:1.25rem;">
+    <h2>Glossary</h2>
+    <p class="muted" style="font-size:0.85rem;">Terms linked to this entry.</p>
+    <ul style="margin:0;padding-left:1.2rem;">
+        {% for gt in glossary_for_event %}
+        <li><a href="{{ gt.get_absolute_url }}">{{ gt.title }}</a></li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
 {% if related_events_list %}
 <div class="nomoar-ed-related">
     <h2>Related archive entries</h2>
@@ -154,14 +171,23 @@
 
 {% if event.sources.all %}
 <div class="nomoar-sources">
-    <h2>Sources</h2>
-    <ul>
+    <h2>Primary sources &amp; references</h2>
+    <p class="muted" style="font-size:0.85rem;margin-bottom:0.75rem;">Links, uploads, and classroom context notes.</p>
+    <ul style="list-style:none;padding-left:0;">
         {% for s in event.sources.all %}
-        <li>
+        <li style="margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--nomoar-border);">
+            <span class="muted" style="font-size:0.7rem;text-transform:uppercase;">{{ s.get_source_kind_display }}</span>
             {% if s.url %}
-            <a href="{{ s.url }}" rel="noopener noreferrer" target="_blank">{{ s.citation|default:s.url }}</a>
-            {% else %}
-            {{ s.citation }}
+            <div><a href="{{ s.url }}" rel="noopener noreferrer" target="_blank">{{ s.citation|default:s.url }}</a></div>
+            {% elif s.citation %}
+            <div>{{ s.citation }}</div>
+            {% endif %}
+            {% if s.context_note %}<p class="muted" style="font-size:0.88rem;margin:0.35rem 0 0;">{{ s.context_note|linebreaksbr }}</p>{% endif %}
+            {% if s.attachment %}
+            <p style="margin:0.35rem 0 0;"><a href="{{ s.attachment.url }}" rel="noopener">Download attachment</a></p>
+            {% endif %}
+            {% if s.media_embed_url %}
+            <p style="margin:0.35rem 0 0;"><a href="{{ s.media_embed_url }}" rel="noopener noreferrer" target="_blank">Audio / video</a></p>
             {% endif %}
         </li>
         {% endfor %}

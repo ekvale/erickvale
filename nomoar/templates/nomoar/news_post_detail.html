@@ -1,0 +1,17 @@
+{% extends 'nomoar/base.html' %}
+{% block title %}{{ post.title }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'nomoar:news_post_list' %}" class="muted">&larr; Commentary</a></p>
+<h1>{{ post.title }}</h1>
+<p class="muted">{{ post.published_at|date:"F j, Y" }}</p>
+{% if post.teaser %}<p>{{ post.teaser|linebreaksbr }}</p>{% endif %}
+<div style="max-width:42rem;line-height:1.75;">{{ post.body|linebreaks }}</div>
+{% if post.related_events.all %}
+<h2>Related entries</h2>
+<ul style="list-style:none;padding:0;">
+{% for e in post.related_events.all %}
+<li style="margin-bottom:0.75rem;"><a href="{{ e.get_absolute_url }}" class="event-card" style="display:block;margin:0;"><span class="year">{{ e.year }}</span><strong style="display:block;">{{ e.title }}</strong></a></li>
+{% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

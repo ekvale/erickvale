@@ -5,7 +5,7 @@ from urllib.parse import quote, urlencode
 from django.db import connection, transaction
 from django.db.models import Count, F, Max, Min, Q
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.http import require_GET, require_POST
@@ -14,14 +14,20 @@ from django.contrib import messages
 
 from .models import (
     ARCHIVE_EVENT_TYPE_COLORS,
+    ArchiveNewsPost,
     ArchiveEventType,
     ChangeMaker,
     Collection,
     EventFistVote,
+    GlossaryTerm,
     HistoricalEvent,
+    LearningPath,
+    LessonKit,
+    LocalizedResourcePack,
+    NewsletterSubscriber,
     SiteStat,
 )
-from .forms import EventSubmissionForm
+from .forms import EducatorNewsletterForm, EventSubmissionForm
 from .related_events import combined_related_events
 from .utils import map_timeline_focus_url, map_url_with_timeline_filters, timeline_params_from_map_get
 
@@ -73,6 +79,21 @@ class HomeView(TemplateView):
         ctx['featured_events'] = fe
         ctx['heroes_preview'] = list(
             ChangeMaker.objects.filter(is_published=True).order_by('order', 'name')[:4]
+        )
+        ctx['learning_paths'] = list(
+            LearningPath.objects.filter(is_published=True).order_by('order', 'title')[:5]
+        )
+        ctx['commentary_posts'] = list(
+            ArchiveNewsPost.objects.filter(is_published=True).order_by('-published_at')[:3]
+        )
+        ctx['partner_collections'] = list(
+            Collection.objects.filter(
+                is_published=True,
+                is_partner_spotlight=True,
+            ).order_by('order', 'title')[:4]
+        )
+        ctx['resource_packs'] = list(
+            LocalizedResourcePack.objects.filter(is_published=True).order_by('order', 'title')[:4]
         )
         return ctx
 
@@ -146,6 +167,7 @@ class TimelineView(ListView):
             )
         ctx['fisted_event_ids'] = fisted_ids
         ctx['map_href_shared'] = map_url_with_timeline_filters(self.request)
+        ctx['active_location'] = self.request.GET.get('location', '').strip()
         return ctx
 
 
@@ -248,6 +270,9 @@ def embed_slice(request):
         qs = qs.filter(year__gte=int(yf))
     if yt.isdigit():
         qs = qs.filter(year__lte=int(yt))
+    loc = request.GET.get('location', '').strip()
+    if loc:
+        qs = qs.filter(location=loc)
     events = list(qs.order_by('-year', 'title')[:limit])
     events_with_urls = [(e, request.build_absolute_uri(e.get_absolute_url())) for e in events]
     return render(
@@ -308,6 +333,7 @@ class EventDetailView(DetailView):
             'collections',
             'theme_labels',
             'curated_related',
+            'glossary_terms',
         )
 
     def get_context_data(self, **kwargs):
@@ -340,6 +366,8 @@ class EventDetailView(DetailView):
         ctx['rss_feed_url'] = req.build_absolute_uri(reverse('nomoar:events_feed_rss'))
         ctx['json_feed_url'] = req.build_absolute_uri(reverse('nomoar:events_feed_json'))
         ctx['map_href_shared'] = map_url_with_timeline_filters(req, focus=evt.slug)
+        ctx['glossary_for_event'] = list(evt.glossary_terms.all())
+        ctx['event_collections_published'] = list(evt.collections.filter(is_published=True))
         return ctx
 
 
@@ -382,6 +410,11 @@ class MapView(TemplateView):
             qs = qs.filter(state=st_map)
         else:
             st_map = ''
+        loc_map = req.get('location', '').strip()
+        if loc_map:
+            qs = qs.filter(location=loc_map)
+        else:
+            loc_map = ''
 
         mapped = []
         for e in qs:
@@ -417,13 +450,17 @@ class MapView(TemplateView):
             .distinct()
             .order_by('state'),
         )
+        loc_rows = base_qs.exclude(location='').values_list('location', flat=True)
+        loc_counts = Counter(loc_rows)
+        ctx['map_top_locations'] = loc_counts.most_common(60)
         ctx['map_event_type_choices'] = ArchiveEventType.choices
         ctx['map_filters_active'] = bool(
             ctx['map_q']
             or ctx['map_year_from']
             or ctx['map_year_to']
             or ctx['map_type']
-            or ctx['map_state'],
+            or ctx['map_state']
+            or ctx['map_location'],
         )
         tparams = timeline_params_from_map_get(req)
         ctx['timeline_href_shared'] = reverse('nomoar:timeline') + (
@@ -458,9 +495,236 @@ def submit_event(request):
 class EducatorsView(TemplateView):
     template_name = 'nomoar/educators.html'
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        req = self.request
+        ctx['lesson_kits'] = list(
+            LessonKit.objects.filter(is_published=True).order_by('order', 'title')[:12]
+        )
+        ctx['learning_paths'] = list(
+            LearningPath.objects.filter(is_published=True).order_by('order', 'title')[:12]
+        )
+        ctx['resource_packs'] = list(
+            LocalizedResourcePack.objects.filter(is_published=True).order_by('order', 'title')[:12]
+        )
+        ctx['partner_collections'] = list(
+            Collection.objects.filter(
+                is_published=True,
+                is_partner_spotlight=True,
+            ).order_by('order', 'title')[:8]
+        )
+        ctx['newsletter_form'] = EducatorNewsletterForm()
+        ctx['rss_feed_url'] = req.build_absolute_uri(reverse('nomoar:events_feed_rss'))
+        ctx['json_feed_url'] = req.build_absolute_uri(reverse('nomoar:events_feed_json'))
+        return ctx
+
 
 class PricingView(TemplateView):
     template_name = 'nomoar/pricing.html'
+
+
+@require_POST
+def subscribe_educator_newsletter(request):
+    form = EducatorNewsletterForm(request.POST)
+    if form.is_valid():
+        email = form.cleaned_data['email'].strip().lower()
+        obj, created = NewsletterSubscriber.objects.get_or_create(
+            email=email,
+            defaults={'active': True},
+        )
+        if not created:
+            if not obj.active:
+                obj.active = True
+                obj.save(update_fields=['active'])
+        messages.success(
+            request,
+            'Thanks — you’re on the educator digest list. '
+            'We’ll only use this for updates; you can also subscribe via RSS or JSON anytime.',
+        )
+    else:
+        messages.error(request, 'Please enter a valid email address.')
+    return redirect('nomoar:educators')
+
+
+class LearningPathListView(ListView):
+    model = LearningPath
+    template_name = 'nomoar/learning_path_list.html'
+    context_object_name = 'paths'
+
+    def get_queryset(self):
+        return LearningPath.objects.filter(is_published=True).order_by('order', 'title')
+
+
+class LearningPathDetailView(DetailView):
+    model = LearningPath
+    template_name = 'nomoar/learning_path_detail.html'
+    context_object_name = 'path'
+    slug_url_kwarg = 'slug'
+
+    def get_queryset(self):
+        return (
+            LearningPath.objects.filter(is_published=True)
+            .prefetch_related('steps__event__tags', 'steps__event__theme_labels')
+        )
+
+
+class CollectionListView(ListView):
+    model = Collection
+    template_name = 'nomoar/collection_list.html'
+    context_object_name = 'collections'
+
+    def get_queryset(self):
+        return Collection.objects.filter(is_published=True).order_by('order', 'title')
+
+
+class CollectionDetailView(DetailView):
+    model = Collection
+    template_name = 'nomoar/collection_detail.html'
+    context_object_name = 'collection'
+    slug_url_kwarg = 'slug'
+
+    def get_queryset(self):
+        return Collection.objects.filter(is_published=True).prefetch_related(
+            'events__tags',
+            'events__theme_labels',
+        )
+
+
+class LessonKitListView(ListView):
+    model = LessonKit
+    template_name = 'nomoar/lesson_kit_list.html'
+    context_object_name = 'kits'
+
+    def get_queryset(self):
+        return LessonKit.objects.filter(is_published=True).select_related('related_path').order_by(
+            'order', 'title'
+        )
+
+
+class LessonKitDetailView(DetailView):
+    model = LessonKit
+    template_name = 'nomoar/lesson_kit_detail.html'
+    context_object_name = 'kit'
+    slug_url_kwarg = 'slug'
+
+    def get_queryset(self):
+        return LessonKit.objects.filter(is_published=True).select_related('related_path')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        k = ctx['kit']
+        ctx['embed_slice_url'] = self.request.build_absolute_uri(reverse('nomoar:embed_slice'))
+        if k.related_path_id:
+            ctx['related_path'] = k.related_path
+        return ctx
+
+
+class WhatsNewView(ListView):
+    """Recently created or updated archive entries (digest-friendly)."""
+    model = HistoricalEvent
+    template_name = 'nomoar/whats_new.html'
+    context_object_name = 'events'
+    paginate_by = 30
+
+    def get_queryset(self):
+        return HistoricalEvent.objects.order_by('-updated_at').prefetch_related('tags', 'theme_labels')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['rss_feed_url'] = self.request.build_absolute_uri(reverse('nomoar:events_feed_rss'))
+        ctx['json_feed_url'] = self.request.build_absolute_uri(reverse('nomoar:events_feed_json'))
+        return ctx
+
+
+class GlossaryListView(ListView):
+    model = GlossaryTerm
+    template_name = 'nomoar/glossary_list.html'
+    context_object_name = 'terms'
+
+    def get_queryset(self):
+        return GlossaryTerm.objects.all().order_by('order', 'title')
+
+
+class GlossaryTermDetailView(DetailView):
+    model = GlossaryTerm
+    template_name = 'nomoar/glossary_term_detail.html'
+    context_object_name = 'term'
+    slug_url_kwarg = 'slug'
+
+    def get_queryset(self):
+        return GlossaryTerm.objects.prefetch_related(
+            'related_events__tags',
+            'related_events__theme_labels',
+        )
+
+
+class PlaceIndexView(TemplateView):
+    template_name = 'nomoar/place_index.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        rows = (
+            HistoricalEvent.objects.exclude(location='')
+            .values('location', 'state')
+            .annotate(event_count=Count('id'))
+            .order_by('-event_count', 'location')[:400]
+        )
+        ctx['places'] = list(rows)
+        return ctx
+
+
+class NewsPostListView(ListView):
+    model = ArchiveNewsPost
+    template_name = 'nomoar/news_post_list.html'
+    context_object_name = 'posts'
+    paginate_by = 20
+
+    def get_queryset(self):
+        return ArchiveNewsPost.objects.filter(is_published=True).prefetch_related(
+            'related_events',
+        ).order_by('-published_at')
+
+
+class NewsPostDetailView(DetailView):
+    model = ArchiveNewsPost
+    template_name = 'nomoar/news_post_detail.html'
+    context_object_name = 'post'
+    slug_url_kwarg = 'slug'
+
+    def get_queryset(self):
+        return ArchiveNewsPost.objects.filter(is_published=True).prefetch_related(
+            'related_events',
+        )
+
+
+class ResourcePackListView(ListView):
+    model = LocalizedResourcePack
+    template_name = 'nomoar/resource_pack_list.html'
+    context_object_name = 'packs'
+
+    def get_queryset(self):
+        return LocalizedResourcePack.objects.filter(is_published=True).order_by('order', 'title')
+
+
+class ResourcePackDetailView(DetailView):
+    model = LocalizedResourcePack
+    template_name = 'nomoar/resource_pack_detail.html'
+    context_object_name = 'pack'
+    slug_url_kwarg = 'slug'
+
+    def get_queryset(self):
+        return LocalizedResourcePack.objects.filter(is_published=True)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        p = ctx['pack']
+        ctx['embed_slice_url'] = self.request.build_absolute_uri(reverse('nomoar:embed_slice'))
+        ctx['timeline_location_url'] = ''
+        if p.city:
+            ctx['timeline_location_url'] = reverse('nomoar:timeline') + '?' + urlencode(
+                {'location': p.city}
+            )
+        return ctx
 
 
 class HeroesView(ListView):

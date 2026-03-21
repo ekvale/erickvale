@@ -1,0 +1,20 @@
+{% extends 'nomoar/base.html' %}
+
+{% block title %}Places{% endblock %}
+
+{% block content %}
+<h1>Places index</h1>
+<p class="muted" style="max-width:42rem;">Locations appearing in the archive. Each link opens the timeline filtered to that exact <code>location</code> string (pair with map search for geography).</p>
+<ul style="list-style:none;padding:0;columns:2 18rem;gap:1rem;">
+    {% for p in places %}
+    <li style="margin-bottom:0.5rem;">
+        <a href="{% url 'nomoar:timeline' %}?location={{ p.location|urlencode }}">{{ p.location }}{% if p.state %}, {{ p.state }}{% endif %}</a>
+        <span class="muted" style="font-size:0.8rem;"> — {{ p.event_count }} entries</span>
+    </li>
+    {% empty %}
+    <li class="muted">No locations yet.</li>
+    {% endfor %}
+</ul>
+<p><a href="{% url 'nomoar:map' %}" class="btn btn-outline">Map</a>
+   <a href="{% url 'nomoar:resource_pack_list' %}" class="btn btn-outline">Localized packs</a></p>
+{% endblock %}

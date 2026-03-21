@@ -1,0 +1,26 @@
+{% extends 'nomoar/base.html' %}
+{% load nomoar_tags %}
+{% block title %}{{ path.title }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'nomoar:learning_path_list' %}" class="muted" style="text-decoration:none;">&larr; Learning paths</a></p>
+<h1>{{ path.title }}</h1>
+{% if path.theme_place_decade_note %}<p class="muted">{{ path.theme_place_decade_note }}</p>{% endif %}
+<div style="max-width:42rem;line-height:1.75;margin-bottom:2rem;">{{ path.intro|linebreaks }}</div>
+<ol style="padding-left:1.25rem;max-width:48rem;">
+{% for step in path.steps.all %}
+<li style="margin-bottom:2rem;">
+{% if step.instructor_note %}
+<p class="muted" style="font-size:0.9rem;margin-bottom:0.5rem;border-left:3px solid var(--nomoar-accent);padding-left:0.75rem;">{{ step.instructor_note|linebreaksbr }}</p>
+{% endif %}
+<a href="{{ step.event.get_absolute_url }}" class="event-card" style="display:block;text-decoration:none;">
+<span class="year">{{ step.event.year }}</span>
+<strong style="display:block;margin-top:0.35rem;">{{ step.event.title }}</strong>
+<span class="muted" style="font-size:0.88rem;">{{ step.event.summary|truncatewords:36 }}</span>
+</a>
+<p style="margin-top:0.5rem;font-size:0.82rem;"><a href="{% map_url focus=step.event.slug %}">Map</a> &middot; <a href="{% url 'nomoar:timeline' %}?focus={{ step.event.slug }}">Timeline focus</a></p>
+</li>
+{% empty %}
+<li class="muted">No steps yet.</li>
+{% endfor %}
+</ol>
+{% endblock %}

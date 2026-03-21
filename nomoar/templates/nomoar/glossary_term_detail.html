@@ -1,0 +1,23 @@
+{% extends 'nomoar/base.html' %}
+
+{% block title %}{{ term.title }}{% endblock %}
+
+{% block content %}
+<p><a href="{% url 'nomoar:glossary_list' %}" class="muted" style="text-decoration:none;">← Glossary</a></p>
+<h1>{{ term.title }}</h1>
+<div style="max-width:42rem;line-height:1.75;">{{ term.definition|linebreaks }}</div>
+
+{% if term.related_events.all %}
+<h2>Related archive entries</h2>
+<ul style="list-style:none;padding:0;">
+    {% for e in term.related_events.all %}
+    <li style="margin-bottom:0.75rem;">
+        <a href="{{ e.get_absolute_url }}" class="event-card" style="display:block;margin:0;">
+            <span class="year">{{ e.year }}</span>
+            <strong style="display:block;margin-top:0.25rem;">{{ e.title }}</strong>
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

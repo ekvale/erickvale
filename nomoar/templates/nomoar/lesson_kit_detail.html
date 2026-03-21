@@ -1,0 +1,13 @@
+{% extends 'nomoar/base.html' %}
+{% block title %}{{ kit.title }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'nomoar:lesson_kit_list' %}" class="muted">&larr; Lesson kits</a></p>
+<h1>{{ kit.title }}</h1>
+{% if kit.summary %}<p class="muted">{{ kit.summary|linebreaksbr }}</p>{% endif %}
+{% if kit.related_path %}<p><a href="{{ kit.related_path.get_absolute_url }}" class="btn btn-outline">Related path</a></p>{% endif %}
+{% if kit.pdf_file %}<p><a href="{{ kit.pdf_file.url }}" class="btn btn-primary">Download PDF</a></p>{% endif %}
+{% if kit.standards_alignment %}<h2>Standards</h2><div>{{ kit.standards_alignment|linebreaks }}</div>{% endif %}
+{% if kit.discussion_prompts %}<h2>Discussion</h2><div>{{ kit.discussion_prompts|linebreaks }}</div>{% endif %}
+{% if kit.map_timeline_activity %}<h2>Activity</h2><div>{{ kit.map_timeline_activity|linebreaks }}</div><p class="muted"><code>{{ embed_slice_url }}?limit=12</code></p>{% endif %}
+{% if kit.body %}<h2>Narrative</h2><div>{{ kit.body|linebreaks }}</div>{% endif %}
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends 'nomoar/base.html' %}
+
+{% block title %}What is new{% endblock %}
+
+{% block content %}
+<h1>What is new</h1>
+<p class="muted">Recently updated archive entries for digests. Subscribe: <a href="{{ rss_feed_url }}">RSS</a> or <a href="{{ json_feed_url }}">JSON</a>, or the <a href="{% url 'nomoar:educators' %}">educator email list</a>.</p>
+
+{% for e in events %}
+<a href="{{ e.get_absolute_url }}" class="event-card">
+    <span class="year">{{ e.year }}</span>
+    <h3>{{ e.title }}</h3>
+    <p>{{ e.summary|truncatewords:36 }}</p>
+    <span class="muted" style="font-size:0.8rem;">Updated {{ e.updated_at|date:"M j, Y" }}</span>
+</a>
+{% empty %}
+<p class="muted">No events yet.</p>
+{% endfor %}
+
+{% if is_paginated %}
+<p class="muted">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}
+    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+</p>
+{% endif %}
+{% endblock %}

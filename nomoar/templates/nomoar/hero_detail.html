@@ -60,8 +60,9 @@
 
 <div class="nomoar-hero-detail-body">
     <p>{{ hero.summary|linebreaksbr }}</p>
-    {% if hero.body %}
-    {{ hero.body|linebreaks }}
+    {% if hero.biography %}
+    <h2 class="visually-hidden" style="position:absolute;width:1px;height:1px;overflow:hidden;">Biography</h2>
+    {{ hero.biography|linebreaks }}
     {% endif %}
 </div>
 

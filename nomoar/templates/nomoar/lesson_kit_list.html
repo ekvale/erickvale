@@ -1,0 +1,22 @@
+{% extends 'nomoar/base.html' %}
+
+{% block title %}Lesson kits{% endblock %}
+
+{% block content %}
+<h1>Lesson kits</h1>
+<p class="muted" style="max-width:42rem;">Standards alignment, discussion prompts, and map/timeline activities using embeds. PDFs can be attached per kit in admin.</p>
+<ul style="list-style:none;padding:0;">
+    {% for k in kits %}
+    <li style="margin-bottom:1rem;">
+        <a href="{{ k.get_absolute_url }}" class="event-card" style="display:block;">
+            <strong>{{ k.title }}</strong>
+            {% if k.summary %}<span class="muted" style="display:block;font-size:0.88rem;margin-top:0.35rem;">{{ k.summary|truncatewords:28 }}</span>{% endif %}
+        </a>
+    </li>
+    {% empty %}
+    <p class="muted">No lesson kits yet. Create them in admin.</p>
+    {% endfor %}
+</ul>
+<p><a href="{% url 'nomoar:learning_path_list' %}" class="btn btn-outline">Learning paths</a>
+   <a href="{% url 'nomoar:embed_slice' %}" class="btn btn-outline">Open slice embed</a></p>
+{% endblock %}

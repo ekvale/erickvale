@@ -83,6 +83,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'nomoar.context_processors.nomoar_banner',
+                'nomoar.context_processors.nomoar_engagement',
             ],
         },
     },

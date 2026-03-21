@@ -503,6 +503,14 @@
                         {% endfor %}
                     </select>
                 </label>
+                <label>Place (exact location text)
+                    <input type="text" name="location" value="{{ map_location|escape }}" placeholder="e.g. city from archive" list="nomoar-map-locations" autocomplete="off">
+                    <datalist id="nomoar-map-locations">
+                        {% for loc, n in map_top_locations %}
+                        <option value="{{ loc }}">{{ loc }} ({{ n }} events)</option>
+                        {% endfor %}
+                    </datalist>
+                </label>
                 <label>Search
                     <input type="search" name="q" value="{{ map_q|escape }}" placeholder="Title or description" autocomplete="off">
                 </label>

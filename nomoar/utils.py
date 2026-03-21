@@ -11,7 +11,7 @@ def timeline_filter_querystring(request, **overrides):
     skip = {k for k, v in overrides.items() if v is None or v == ''}
 
     merged = {}
-    for key in ('decade', 'q', 'type', 'state'):
+    for key in ('decade', 'q', 'type', 'state', 'location'):
         if key in skip:
             continue
         if key in overrides and overrides[key] not in (None, ''):
@@ -40,7 +40,7 @@ def map_filter_querystring(request, **overrides):
     """
     skip = {k for k, v in overrides.items() if v is None or v == ''}
     merged = {}
-    for key in ('year_from', 'year_to', 'type', 'state', 'q', 'focus'):
+    for key in ('year_from', 'year_to', 'type', 'state', 'q', 'focus', 'location'):
         if key in skip:
             continue
         if key in overrides and overrides[key] not in (None, ''):
@@ -75,7 +75,7 @@ def timeline_params_from_map_get(get) -> dict:
 def map_params_from_timeline_get(get) -> dict:
     """Timeline query → map query dict (type, state, q, year_from/to, focus)."""
     out = {}
-    for key in ('type', 'state', 'q', 'focus'):
+    for key in ('type', 'state', 'q', 'focus', 'location'):
         v = get.get(key, '').strip()
         if v:
             out[key] = v

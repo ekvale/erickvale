@@ -1,0 +1,20 @@
+{% extends 'nomoar/base.html' %}
+{% block title %}Commentary{% endblock %}
+{% block content %}
+<h1>Archive commentary</h1>
+<p class="muted">Posts linking current events to the archive.</p>
+{% for post in posts %}
+<a href="{{ post.get_absolute_url }}" class="event-card">
+<h3 style="margin:0 0 0.35rem;">{{ post.title }}</h3>
+{% if post.teaser %}<p>{{ post.teaser|truncatewords:40 }}</p>{% endif %}
+<span class="muted" style="font-size:0.8rem;">{{ post.published_at|date:"F j, Y" }}</span>
+</a>
+{% empty %}
+<p class="muted">No posts yet.</p>
+{% endfor %}
+{% if is_paginated %}
+<p class="muted">{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">Prev</a>{% endif %}
+ Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+{% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">Next</a>{% endif %}</p>
+{% endif %}
+{% endblock %}

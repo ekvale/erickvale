@@ -1,0 +1,29 @@
+{% extends 'nomoar/base.html' %}
+
+{% block title %}{{ collection.title }}{% endblock %}
+
+{% block content %}
+<p><a href="{% url 'nomoar:timeline' %}" class="muted" style="text-decoration:none;">&larr; Timeline</a></p>
+<h1>{{ collection.title }}</h1>
+{% if collection.partner_organization %}
+<p class="muted">Partner spotlight{% if collection.partner_url %} &mdash; <a href="{{ collection.partner_url }}" rel="noopener noreferrer" target="_blank">{{ collection.partner_organization }}</a>{% else %} &mdash; {{ collection.partner_organization }}{% endif %}</p>
+{% endif %}
+{% if collection.guest_byline %}<p style="font-style:italic;color:var(--nomoar-muted);">{{ collection.guest_byline }}</p>{% endif %}
+{% if collection.sponsor_disclosure %}
+<div class="alert" style="background:rgba(201,162,39,0.12);border-color:var(--nomoar-accent);color:var(--nomoar-text);font-size:0.9rem;">
+    <strong>Sponsor disclosure</strong> &mdash; {{ collection.sponsor_disclosure|linebreaksbr }}
+</div>
+{% endif %}
+{% if collection.description %}<div style="max-width:42rem;line-height:1.75;margin:1rem 0;">{{ collection.description|linebreaks }}</div>{% endif %}
+
+<h2>Entries in this collection</h2>
+{% for e in collection.events.all %}
+<a href="{{ e.get_absolute_url }}" class="event-card">
+    <span class="year">{{ e.year }}</span>
+    <h3>{{ e.title }}</h3>
+    <p>{{ e.summary|truncatewords:40 }}</p>
+</a>
+{% empty %}
+<p class="muted">No events linked yet.</p>
+{% endfor %}
+{% endblock %}

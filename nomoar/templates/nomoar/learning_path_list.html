@@ -1,0 +1,15 @@
+{% extends 'nomoar/base.html' %}
+{% block title %}Learning paths{% endblock %}
+{% block content %}
+<h1>Curated learning paths</h1>
+<p class="muted">Guided sequences for classrooms and tours.</p>
+<ul style="list-style:none;padding:0;">
+{% for p in paths %}
+<li style="margin-bottom:1rem;"><a href="{{ p.get_absolute_url }}" class="event-card" style="display:block;"><strong>{{ p.title }}</strong>
+{% if p.theme_place_decade_note %}<span class="muted" style="display:block;font-size:0.88rem;margin-top:0.35rem;">{{ p.theme_place_decade_note }}</span>{% endif %}</a></li>
+{% empty %}
+<p class="muted">No published paths yet.</p>
+{% endfor %}
+</ul>
+<p><a href="{% url 'nomoar:lesson_kit_list' %}" class="btn btn-outline">Lesson kits</a> <a href="{% url 'nomoar:educators' %}" class="btn btn-outline">Educator hub</a></p>
+{% endblock %}

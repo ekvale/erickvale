@@ -1,0 +1,14 @@
+{% extends 'nomoar/base.html' %}
+{% block title %}Collections{% endblock %}
+{% block content %}
+<h1>Curated collections</h1>
+<p class="muted">Thematic groupings of archive entries. Partner and sponsored collections include disclosure text on the collection page.</p>
+<ul style="list-style:none;padding:0;">
+{% for c in collections %}
+<li style="margin-bottom:1rem;"><a href="{{ c.get_absolute_url }}" class="event-card" style="display:block;"><strong>{{ c.title }}</strong>
+{% if c.partner_organization %}<span class="muted" style="display:block;font-size:0.88rem;">{{ c.partner_organization }}</span>{% endif %}</a></li>
+{% empty %}
+<p class="muted">No collections yet.</p>
+{% endfor %}
+</ul>
+{% endblock %}

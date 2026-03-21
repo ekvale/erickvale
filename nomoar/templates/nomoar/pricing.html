@@ -3,15 +3,72 @@
 {% block title %}Support{% endblock %}
 
 {% block content %}
-<h1>Support Our Mission</h1>
-<p class="muted">Independent archives depend on community support. The original NOMOAR project describes premium subscriptions to fund research and outreach; this recreation is a template you can connect to donations or memberships.</p>
-<div class="footer-cta-box" style="margin-top:1.5rem;">
-    <h3 style="margin-top:0;">Suggested tiers (placeholder)</h3>
-    <ul>
-        <li><strong>Supporter</strong> — Help keep the archive online.</li>
-        <li><strong>Educator</strong> — Extended resources and verification.</li>
-        <li><strong>Institution</strong> — Bulk access and citation support.</li>
-    </ul>
-    <p class="muted">Integrate Stripe, PayPal, or a link to <a href="https://www.gofundme.com/f/support-nomoar-national-online-museum-of-american-racism" target="_blank" rel="noopener">community fundraisers</a> as appropriate.</p>
+<h1>Support our mission</h1>
+<p class="muted" style="max-width:44rem;">Independent archives need sustainable funding. Below are mission-aligned options. Edit URLs and copy in Django admin under <strong>Engagement &amp; support settings</strong>.</p>
+
+{% if nomoar_engagement.sponsorship_policy %}
+<div class="footer-cta-box" style="margin-top:1rem;">
+<h3 style="margin-top:0;">Sponsored collections</h3>
+<p>{{ nomoar_engagement.sponsorship_policy|linebreaksbr }}</p>
 </div>
+{% endif %}
+
+{% if nomoar_engagement.things_to_avoid_note %}
+<div class="footer-cta-box">
+<h3 style="margin-top:0;">What we avoid</h3>
+<p>{{ nomoar_engagement.things_to_avoid_note|linebreaksbr }}</p>
+</div>
+{% endif %}
+
+<div class="footer-cta-box">
+<h3 style="margin-top:0;">Suggested tiers</h3>
+<ul>
+<li><strong>Supporter</strong> — Keep the archive online; early features or PDF packs optional.</li>
+<li><strong>Educator</strong> — Verification, lesson kits, digest emails.</li>
+<li><strong>Institution</strong> — Ad-free embeds, bulk export, SSO (implement per deployment).</li>
+</ul>
+{% if nomoar_engagement.donation_url %}
+<p><a href="{{ nomoar_engagement.donation_url }}" class="btn btn-primary" rel="noopener noreferrer" target="_blank">Donate</a></p>
+{% endif %}
+{% if nomoar_engagement.membership_url %}
+<p><a href="{{ nomoar_engagement.membership_url }}" class="btn btn-outline" rel="noopener noreferrer" target="_blank">Membership / supporter tiers</a></p>
+{% endif %}
+{% if not nomoar_engagement.donation_url and not nomoar_engagement.membership_url %}
+<p class="muted">Set donation and membership URLs in admin (Engagement settings).</p>
+{% endif %}
+</div>
+
+{% if nomoar_engagement.grants_fiscal_sponsorship_blurb %}
+<div class="footer-cta-box">
+<h3 style="margin-top:0;">Grants and fiscal sponsorship</h3>
+<p>{{ nomoar_engagement.grants_fiscal_sponsorship_blurb|linebreaksbr }}</p>
+</div>
+{% endif %}
+
+{% if nomoar_engagement.museum_services_blurb %}
+<div class="footer-cta-box">
+<h3 style="margin-top:0;">Museum and archive services</h3>
+<p>{{ nomoar_engagement.museum_services_blurb|linebreaksbr }}</p>
+</div>
+{% endif %}
+
+{% if nomoar_engagement.api_partnerships_url %}
+<div class="footer-cta-box">
+<h3 style="margin-top:0;">API and data partnerships</h3>
+<p><a href="{{ nomoar_engagement.api_partnerships_url }}" rel="noopener noreferrer" target="_blank">API / licensing information</a></p>
+</div>
+{% endif %}
+
+{% if nomoar_engagement.institutional_contact_email %}
+<p class="muted">Institutional inquiries: <a href="mailto:{{ nomoar_engagement.institutional_contact_email }}">{{ nomoar_engagement.institutional_contact_email }}</a></p>
+{% endif %}
+
+{% if nomoar_engagement.merch_print_blurb %}
+<div class="footer-cta-box">
+<h3 style="margin-top:0;">Print and merch</h3>
+<p>{{ nomoar_engagement.merch_print_blurb|linebreaksbr }}</p>
+</div>
+{% endif %}
+
+<p class="muted" style="margin-top:1.5rem;">Community fundraisers: <a href="https://www.gofundme.com/f/support-nomoar-national-online-museum-of-american-racism" target="_blank" rel="noopener">example campaign</a>.</p>
 {% endblock %}

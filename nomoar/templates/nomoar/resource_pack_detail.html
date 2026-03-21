@@ -1,0 +1,19 @@
+{% extends 'nomoar/base.html' %}
+{% block title %}{{ pack.title }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'nomoar:resource_pack_list' %}" class="muted" style="text-decoration:none;">&larr; Localized packs</a></p>
+<h1>{{ pack.title }}</h1>
+<p class="muted">{% if pack.city %}{{ pack.city }}{% endif %}{% if pack.county %}{% if pack.city %}, {% endif %}{{ pack.county }}{% endif %}{% if pack.state %} &middot; {{ pack.state }}{% endif %}</p>
+{% if pack.description %}<div style="max-width:42rem;line-height:1.75;">{{ pack.description|linebreaks }}</div>{% endif %}
+{% if pack.printable_pdf %}
+<p><a href="{{ pack.printable_pdf.url }}" class="btn btn-primary" rel="noopener">Download printable PDF</a></p>
+{% endif %}
+{% if pack.embed_slice_hint %}
+<h2>Embed and filters</h2>
+<div style="max-width:42rem;" class="muted">{{ pack.embed_slice_hint|linebreaks }}</div>
+<p class="muted" style="font-size:0.85rem;">Base embed URL: <code style="word-break:break-all;">{{ embed_slice_url }}</code></p>
+{% endif %}
+{% if timeline_location_url %}
+<p><a href="{{ timeline_location_url }}" class="btn btn-outline">Open timeline for this place</a></p>
+{% endif %}
+{% endblock %}

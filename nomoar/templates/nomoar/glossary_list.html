@@ -1,0 +1,17 @@
+{% extends 'nomoar/base.html' %}
+
+{% block title %}Glossary{% endblock %}
+
+{% block content %}
+<h1>Glossary</h1>
+<p class="muted" style="max-width:40rem;">Stable URLs for terms and concepts. Link from syllabi or citations.</p>
+<ul style="line-height:2;columns:2 16rem;gap:2rem;">
+    {% for t in terms %}
+    <li><a href="{{ t.get_absolute_url }}">{{ t.title }}</a></li>
+    {% empty %}
+    <li class="muted">No terms yet. Add glossary entries in admin.</li>
+    {% endfor %}
+</ul>
+<p><a href="{% url 'nomoar:heroes' %}" class="btn btn-outline">Heroes</a>
+   <a href="{% url 'nomoar:place_index' %}" class="btn btn-outline">Places index</a></p>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends 'nomoar/base.html' %}
+{% block title %}Localized packs{% endblock %}
+{% block content %}
+<h1>Localized resource packs</h1>
+<p class="muted" style="max-width:42rem;">City and county slices with embed hints and optional printable PDFs for local history groups.</p>
+<ul style="list-style:none;padding:0;">
+{% for p in packs %}
+<li style="margin-bottom:1rem;"><a href="{{ p.get_absolute_url }}" class="event-card" style="display:block;"><strong>{{ p.title }}</strong>
+<span class="muted" style="display:block;font-size:0.88rem;margin-top:0.35rem;">{% if p.city %}{{ p.city }}{% endif %}{% if p.county %}{% if p.city %}, {% endif %}{{ p.county }}{% endif %}{% if p.state %} ({{ p.state }}){% endif %}</span></a></li>
+{% empty %}
+<p class="muted">No packs yet.</p>
+{% endfor %}
+</ul>
+<p><a href="{% url 'nomoar:place_index' %}" class="btn btn-outline">Places index</a> <a href="{% url 'nomoar:embed_slice' %}" class="btn btn-outline">Slice embed</a></p>
+{% endblock %}

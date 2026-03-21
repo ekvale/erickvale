@@ -9,3 +9,13 @@ def nomoar_banner(request):
     return {
         'nomoar_corrections_email': getattr(settings, 'NOMOAR_CORRECTIONS_EMAIL', '') or '',
     }
+
+
+def nomoar_engagement(request):
+    """Donation / support copy from admin (singleton) on NOMOAR routes."""
+    path = getattr(request, 'path', '') or ''
+    if not path.startswith('/apps/nomoar'):
+        return {}
+    from .models import EngagementConfig
+
+    return {'nomoar_engagement': EngagementConfig.get_solo()}

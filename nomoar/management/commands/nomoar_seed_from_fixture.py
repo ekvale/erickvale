@@ -105,7 +105,7 @@ class Command(BaseCommand):
                     'name': fields.get('name', ''),
                     'tagline': fields.get('tagline', ''),
                     'summary': fields.get('summary', ''),
-                    'body': fields.get('body', ''),
+                    'biography': fields.get('body', fields.get('biography', '')),
                     'birth_year': int(by) if by is not None else None,
                     'death_year': int(dy) if dy is not None else None,
                     'order': int(fields.get('order') or 0),

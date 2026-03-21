@@ -9,7 +9,7 @@ cd /home/erickvale/erickvale
 git pull origin main
 source venv/bin/activate
 python manage.py migrate nomoar
-# 0006–0008: theme labels, ✊ votes; 0009: curated_related (manual cross-links), feeds/embed.
+# 0006–0008: theme labels, ✊ votes; 0009: curated_related, feeds/embed; 0010: learning paths, lesson kits, glossary, commentary posts, localized packs, partner/sponsor collection fields, primary-source extras, educator newsletter signups, engagement settings; ChangeMaker.body renamed to biography (data preserved).
 # Map uses event_type (violence/policy/legislation/discrimination); seed sets colors.
 python manage.py loaddata nomoar/fixtures/initial.json
 python manage.py collectstatic --noinput
@@ -41,10 +41,19 @@ Uses [Leaflet](https://leafletjs.com/) + [MarkerCluster](https://github.com/Leaf
 - **Hero profile:** `/apps/nomoar/HeroDetail/<slug>/`
 - **Event:** `/apps/nomoar/EventDetail/<slug>/`
 - **Submit:** `/apps/nomoar/Submit/`
-- **Educators / Support:** `/apps/nomoar/Educators/`, `/apps/nomoar/Pricing/`
+- **Educators / Support:** `/apps/nomoar/Educators/` (lesson kits, paths, partner spotlights, RSS/JSON, **POST** digest signup `/apps/nomoar/Educators/subscribe/`), `/apps/nomoar/Pricing/` (reads **Engagement & support settings** from admin).
+- **Learning paths:** `/apps/nomoar/paths/`, `/apps/nomoar/paths/<slug>/`
+- **Collections (public):** `/apps/nomoar/collections/`, `/apps/nomoar/collections/<slug>/` — partner org, guest byline, sponsor disclosure fields in admin
+- **Lesson kits:** `/apps/nomoar/lesson-kits/`, `/apps/nomoar/lesson-kits/<slug>/` (optional PDF upload)
+- **What is new:** `/apps/nomoar/whats-new/` (recent `updated_at`; pair with RSS/JSON feeds)
+- **Glossary:** `/apps/nomoar/glossary/`, `/apps/nomoar/glossary/<slug>/`
+- **Places index:** `/apps/nomoar/places/` → timeline `?location=…`
+- **Commentary:** `/apps/nomoar/commentary/`, `/apps/nomoar/commentary/<slug>/`
+- **Localized packs:** `/apps/nomoar/packs/`, `/apps/nomoar/packs/<slug>/` (embed hints + optional PDF)
+- **Feeds / embed:** `feed/events.xml`, `feed/events.json`, `Embed/Event/<slug>/`, `Embed/slice/` (supports `location=` like timeline)
 
 **Env (optional):** `NOMOAR_CORRECTIONS_EMAIL` — shown in the site-wide educational disclaimer and on event pages for reporting corrections.
 
-Admin: add/edit `HistoricalEvent` (inline **Event sources**; **Theme labels**, **Tags**, **Curated related** for manual cross-links), `EventThemeLabel`, `ChangeMaker` (**Related events**), `SiteStat`, `Collection`, `Tag`.
+Admin: `HistoricalEvent` (inline **Event sources** — kind, context note, attachment, media URL; plus **Theme labels**, **Tags**, **Curated related**), `EventThemeLabel`, `ChangeMaker` (**Biography**, **Related events**), `SiteStat`, `Collection` (partner spotlight + sponsor disclosure), `Tag`, `LearningPath` + inline steps, `LessonKit`, `GlossaryTerm`, `ArchiveNewsPost`, `LocalizedResourcePack`, `NewsletterSubscriber`, **Engagement & support settings** (singleton).
 
 **API:** `POST /apps/nomoar/api/event/<slug>/fist/` toggles one raised-fist per browser session (CSRF + session cookie). Timeline and event detail use this for the ✊ control.

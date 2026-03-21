@@ -12,6 +12,7 @@
     {% endif %}
     {% if active_type %}<input type="hidden" name="type" value="{{ active_type }}">{% endif %}
     {% if active_state %}<input type="hidden" name="state" value="{{ active_state }}">{% endif %}
+    {% if active_location %}<input type="hidden" name="location" value="{{ active_location|escape }}">{% endif %}
     <label class="visually-hidden" for="tl-q">Search timeline</label>
     <input type="search" id="tl-q" name="q" value="{{ request.GET.q }}" placeholder="Search…" class="nomoar-tl-search-input">
     <button type="submit" class="nomoar-tl-search-btn" aria-label="Search">⌕</button>
@@ -485,8 +486,17 @@
         <a href="{{ map_href_shared }}" class="nomoar-tl-copy-btn" style="text-decoration:none;display:inline-block;">Map (same filters)</a>
         <a href="{% url 'nomoar:events_feed_rss' %}" class="nomoar-tl-copy-btn" style="text-decoration:none;display:inline-block;">RSS</a>
         <a href="{% url 'nomoar:events_feed_json' %}" class="nomoar-tl-copy-btn" style="text-decoration:none;display:inline-block;">JSON feed</a>
+        <a href="{% url 'nomoar:whats_new' %}" class="nomoar-tl-copy-btn" style="text-decoration:none;display:inline-block;">What is new</a>
         <span class="visually-hidden" id="nomoar-copy-status" aria-live="polite"></span>
     </div>
+    {% if active_location %}
+    <div class="nomoar-filter-row" style="margin-bottom:0.5rem;">
+        <span>Place</span>
+        <span class="nomoar-filter-chip is-active">{{ active_location }}</span>
+        <a href="{% timeline_url location='' %}" class="nomoar-filter-chip">Clear place</a>
+        <a href="{% url 'nomoar:place_index' %}" class="nomoar-filter-chip">All places</a>
+    </div>
+    {% endif %}
     <div class="nomoar-decade-bar" aria-label="Filter by decade">
         {% for value, label in decade_options %}
         {% if value == 'all' %}

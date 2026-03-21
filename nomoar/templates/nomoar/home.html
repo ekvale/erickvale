@@ -13,6 +13,7 @@
     <a href="{% url 'nomoar:timeline' %}" class="btn btn-primary">Explore Timeline</a>
     <a href="{% url 'nomoar:map' %}" class="btn btn-outline">View Map</a>
     <a href="{% url 'nomoar:heroes' %}" class="btn btn-outline">Heroes &amp; change makers</a>
+    <a href="{% url 'nomoar:learning_path_list' %}" class="btn btn-outline">Learning paths</a>
 </div>
 
 <div class="stats-grid">
@@ -33,6 +34,50 @@
         <div class="stat-label">{% if stats.collections %}{{ stats.collections.label }}{% else %}Curated Collections{% endif %}</div>
     </div>
 </div>
+
+{% if learning_paths %}
+<h2>Learning paths</h2>
+<p class="muted">Guided sequences for classrooms and tours.</p>
+<ul style="list-style:none;padding:0;margin-bottom:2rem;">
+{% for p in learning_paths %}
+<li style="margin-bottom:0.65rem;"><a href="{{ p.get_absolute_url }}">{{ p.title }}</a>{% if p.theme_place_decade_note %} <span class="muted" style="font-size:0.85rem;">— {{ p.theme_place_decade_note }}</span>{% endif %}</li>
+{% endfor %}
+</ul>
+<p><a href="{% url 'nomoar:learning_path_list' %}" class="btn btn-outline">All paths</a></p>
+{% endif %}
+
+{% if commentary_posts %}
+<h2>Commentary</h2>
+<p class="muted">Archive in the news — curated links to entries.</p>
+{% for post in commentary_posts %}
+<a href="{{ post.get_absolute_url }}" class="event-card" style="margin-bottom:0.75rem;">
+<h3 style="margin:0;font-size:1rem;">{{ post.title }}</h3>
+<span class="muted" style="font-size:0.8rem;">{{ post.published_at|date:"M j, Y" }}</span>
+</a>
+{% endfor %}
+<p style="margin-top:0.75rem;"><a href="{% url 'nomoar:news_post_list' %}" class="btn btn-outline">All commentary</a></p>
+{% endif %}
+
+{% if partner_collections %}
+<h2>Partner spotlights</h2>
+<p class="muted">Collections from libraries, museums, and community partners.</p>
+<ul style="list-style:none;padding:0;margin-bottom:1rem;">
+{% for c in partner_collections %}
+<li style="margin-bottom:0.5rem;"><a href="{{ c.get_absolute_url }}">{{ c.title }}</a>{% if c.partner_organization %} <span class="muted" style="font-size:0.85rem;">({{ c.partner_organization }})</span>{% endif %}</li>
+{% endfor %}
+</ul>
+{% endif %}
+
+{% if resource_packs %}
+<h2>Localized packs</h2>
+<p class="muted">City and county slices with printable resources.</p>
+<ul style="list-style:none;padding:0;margin-bottom:1rem;">
+{% for pk in resource_packs %}
+<li style="margin-bottom:0.5rem;"><a href="{{ pk.get_absolute_url }}">{{ pk.title }}</a></li>
+{% endfor %}
+</ul>
+<p><a href="{% url 'nomoar:resource_pack_list' %}" class="btn btn-outline">All packs</a></p>
+{% endif %}
 
 {% if heroes_preview %}
 <h2>Heroes &amp; change makers</h2>
