@@ -168,6 +168,30 @@
         align-items: stretch;
         margin-bottom: 1.5rem;
     }
+    /* Scroll-reveal: cards “pop in” as they enter the viewport */
+    .nomoar-tl-row.nomoar-tl-animate {
+        opacity: 0;
+        transform: translateY(1.25rem);
+        transition:
+            opacity 0.55s ease-out,
+            transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+        will-change: opacity, transform;
+    }
+    .nomoar-tl-row--left.nomoar-tl-animate { transform: translate(-0.85rem, 1.25rem); }
+    .nomoar-tl-row--right.nomoar-tl-animate { transform: translate(0.85rem, 1.25rem); }
+    .nomoar-tl-row.nomoar-tl-animate.is-revealed {
+        opacity: 1;
+        transform: translate(0, 0);
+        will-change: auto;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .nomoar-tl-row.nomoar-tl-animate {
+            opacity: 1;
+            transform: none;
+            transition: none;
+            will-change: auto;
+        }
+    }
     @media (max-width: 720px) {
         .nomoar-tl-row {
             grid-template-columns: 24px 1fr;
@@ -488,6 +512,11 @@
     </div>
     {% endif %}
 
+    <noscript>
+        <style>
+            .nomoar-tl-row.nomoar-tl-animate { opacity: 1 !important; transform: none !important; transition: none !important; }
+        </style>
+    </noscript>
     <div class="nomoar-timeline-wrap" id="nomoar-timeline-wrap">
         {% for e in events %}
             {% ifchanged e.year %}
@@ -502,7 +531,7 @@
                 <div class="nomoar-tl-spacer" aria-hidden="true"></div>
             </div>
             {% else %}
-            <div class="nomoar-tl-row nomoar-tl-row--right" id="nomoar-tl-{{ e.slug }}">
+            <div class="nomoar-tl-row nomoar-tl-row--right nomoar-tl-animate" id="nomoar-tl-{{ e.slug }}">
                 <div class="nomoar-tl-spacer" aria-hidden="true"></div>
                 <div class="nomoar-tl-dot"><span></span></div>
                 <div class="nomoar-tl-card-wrap">
@@ -538,6 +567,31 @@
     }
     var wrap = document.getElementById('nomoar-timeline-wrap');
     if (wrap) {
+        (function initTimelineReveal() {
+            var rows = wrap.querySelectorAll('.nomoar-tl-row.nomoar-tl-animate');
+            if (!rows.length) return;
+            var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (reduce) {
+                rows.forEach(function(row) { row.classList.add('is-revealed'); });
+                return;
+            }
+            if (!('IntersectionObserver' in window)) {
+                rows.forEach(function(row) { row.classList.add('is-revealed'); });
+                return;
+            }
+            var io = new IntersectionObserver(
+                function(entries) {
+                    entries.forEach(function(en) {
+                        if (!en.isIntersecting) return;
+                        en.target.classList.add('is-revealed');
+                        io.unobserve(en.target);
+                    });
+                },
+                { root: null, rootMargin: '0px 0px -6% 0px', threshold: 0.06 }
+            );
+            rows.forEach(function(row) { io.observe(row); });
+        })();
+
         wrap.addEventListener('click', function(ev) {
             var btn = ev.target.closest('.nomoar-tl-fist-btn');
             if (!btn || btn.disabled) return;
