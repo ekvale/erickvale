@@ -7,14 +7,25 @@
 
 {% block extra_css %}
 <style>
+    /* Bootstrap sets a white body bg — force true black page */
+    html,
+    body {
+        background-color: #000000 !important;
+        --bs-body-bg: #000000;
+        --bs-body-color: #e8e6e3;
+    }
+    .nomoar-main {
+        background-color: #000000 !important;
+    }
     .nomoar-home-bootstrap .card {
         background-color: var(--nomoar-elevated) !important;
         border-color: var(--nomoar-border) !important;
         color: var(--nomoar-text) !important;
     }
     .nomoar-home-hero.card {
-        background: linear-gradient(145deg, var(--nomoar-surface) 0%, var(--nomoar-elevated) 100%) !important;
+        background: #000000 !important;
         border-color: var(--nomoar-border) !important;
+        box-shadow: none;
     }
     .nomoar-home-logo {
         width: 96px;

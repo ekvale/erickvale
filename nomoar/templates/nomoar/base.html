@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --nomoar-bg: #0d0d0f;
+            --nomoar-bg: #000000;
             --nomoar-surface: #16161a;
             --nomoar-elevated: #1c1c22;
             --nomoar-border: #2a2a32;
@@ -34,7 +34,7 @@
         }
         .nomoar-header {
             border-bottom: 1px solid var(--nomoar-border);
-            background: var(--nomoar-surface);
+            background: #000000;
             position: sticky;
             top: 0;
             z-index: 50;
@@ -98,7 +98,12 @@
             font-weight: 500;
         }
         .nomoar-nav a:hover { color: var(--nomoar-link); }
-        .nomoar-main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+        .nomoar-main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 4rem;
+            background: var(--nomoar-bg);
+        }
         .nomoar-main--map { max-width: none; width: 100%; margin: 0; padding: 0; }
         .nomoar-eyebrow {
             font-size: 0.75rem;
@@ -195,6 +200,7 @@
             color: var(--nomoar-muted);
             font-size: 0.85rem;
             border-top: 1px solid var(--nomoar-border);
+            background: #000000;
         }
         .site-footer a { color: var(--nomoar-link-readable); }
         .site-footer a:hover { color: var(--nomoar-link-readable-hover); }
@@ -213,7 +219,7 @@
         .alert { padding: 1rem; border-radius: 6px; margin-bottom: 1rem; }
         .alert-success { background: rgba(46, 125, 50, 0.2); border: 1px solid #2e7d32; color: #a5d6a7; }
         .nomoar-editorial-banner {
-            background: var(--nomoar-surface);
+            background: #000000;
             border-bottom: 1px solid var(--nomoar-border);
             padding: 0.85rem 1.25rem;
             font-size: 0.85rem;
