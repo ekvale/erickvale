@@ -140,8 +140,19 @@ class DigestContextTests(TestCase):
             period_hint='as of today',
         )
         ctx = build_monthly_digest_context(include_grantscout=False)
-        self.assertEqual(len(ctx['business_calendar_events']), 1)
-        self.assertEqual(len(ctx['business_kpis']), 1)
+        tax_events = [
+            e for e in ctx['business_calendar_events'] if e.title == 'Property tax installment'
+        ]
+        self.assertEqual(len(tax_events), 1)
+        self.assertGreaterEqual(len(ctx['business_calendar_events']), 1)
+        occ = [k for k in ctx['business_kpis'] if k.label == 'Occupancy']
+        self.assertEqual(len(occ), 1)
+        self.assertTrue(
+            BusinessCalendarEvent.objects.filter(
+                event_type=BusinessCalendarEventType.LEASE,
+                property_label='211 4th St.',
+            ).exists()
+        )
         self.assertIn('calendar_window_end', ctx)
 
 

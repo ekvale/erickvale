@@ -48,6 +48,34 @@
     <p class="muted">No KPI rows yet — add them under Dream Blue → Business KPIs in admin.</p>
     {% endif %}
 
+    {% if business_lease_schedule %}
+    <h3 style="font-size:1rem;">Leases (monthly rent)</h3>
+    <table class="cal-table">
+        <thead>
+            <tr>
+                <th>Property</th>
+                <th>Tenant</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Rent/mo</th>
+                <th>Deposit / notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for e in business_lease_schedule %}
+            <tr>
+                <td>{{ e.property_label|default:"—" }}</td>
+                <td>{{ e.title }}</td>
+                <td>{{ e.due_date|date:"M j, Y" }}</td>
+                <td>{% if e.end_date %}{{ e.end_date|date:"M j, Y" }}{% else %}—{% endif %}</td>
+                <td>{% if e.amount %}${{ e.amount|floatformat:0 }}{% else %}—{% endif %}</td>
+                <td class="muted">{% if e.notes %}{{ e.notes|linebreaksbr }}{% else %}—{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
     {% if business_calendar_events %}
     <h3 style="font-size:1rem;">Upcoming dates</h3>
     <table class="cal-table">

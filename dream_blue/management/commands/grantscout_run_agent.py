@@ -2,7 +2,10 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils import timezone
 
-from dream_blue.digest_context import get_latest_completed_grantscout_run
+from dream_blue.digest_context import (
+    build_operations_calendar_markdown,
+    get_latest_completed_grantscout_run,
+)
 from dream_blue.grantscout_agent import GrantScoutAgentError, run_grantscout_agent
 from dream_blue.grantscout_reports import build_agent_snapshot, build_compiled_report
 from dream_blue.models import (
@@ -68,7 +71,10 @@ class Command(BaseCommand):
         prev = get_latest_completed_grantscout_run()
 
         snapshot = build_agent_snapshot(payload)
-        compiled = build_compiled_report(payload)
+        compiled = build_compiled_report(payload).strip()
+        calendar_md = build_operations_calendar_markdown()
+        if calendar_md:
+            compiled = f'{compiled}\n\n{calendar_md}'
 
         with transaction.atomic():
             run = GrantScoutRun.objects.create(
