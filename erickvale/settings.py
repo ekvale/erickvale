@@ -72,14 +72,18 @@ DREAM_BLUE_CALENDAR_LOOKAHEAD_DAYS = config(
 # Absolute origin for digest links (no trailing slash), e.g. https://your.domain.org — required for working Prev/Next month links in email.
 DREAM_BLUE_DIGEST_BASE_URL = config('DREAM_BLUE_DIGEST_BASE_URL', default='').strip()
 
-# Lease comparables agent (dream_blue_run_lease_comp_agent) — briefs injected into digest; override via env for your portfolio.
+# Lease comparables agent (dream_blue_run_lease_comp_agent) — briefs injected into digest; override via env.
 _DEFAULT_LEASE_COMP_REFERENCE = (
-    '401 Beltrami Ave, Bemidji, MN — reference ~8,000 sq ft building: fire sprinkler system, '
-    'fully remodeled, includes a kitchen (commercial / flex-style).'
+    'Our building at 401 Beltrami Ave, Bemidji, MN — the owner’s benchmark asset for tracking '
+    'local market trends and pricing. ~8,000 sq ft (whole building context): fire sprinkler system, '
+    'fully remodeled, includes a kitchen (commercial / flex-style). Use comps to contextualize '
+    'asking/target rent levels over time, not as an appraisal.'
 )
 _DEFAULT_LEASE_COMP_SUBJECT = (
-    'Subject portfolio: four units, each approximately 2,000 sq ft (~8,000 sq ft total). '
-    'One unit has a kitchen; other units are flex / light industrial / office-style unless noted.'
+    'Leasable stack: four units, each approximately 2,000 sq ft (~8,000 sq ft total). One unit '
+    'has a kitchen; other units are flex / light industrial / office-style unless noted. For each '
+    'comp or market signal, calling out NNN vs gross (or modified gross) and whether figures are '
+    'asking vs deal-reported is essential. Target and asking rents in either basis are fine to discuss.'
 )
 DREAM_BLUE_LEASE_COMP_REFERENCE = config(
     'DREAM_BLUE_LEASE_COMP_REFERENCE', default=_DEFAULT_LEASE_COMP_REFERENCE

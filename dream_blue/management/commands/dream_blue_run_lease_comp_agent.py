@@ -8,7 +8,8 @@ from dream_blue.models import GrantScoutRunStatus, LeaseCompResearchRun
 
 class Command(BaseCommand):
     help = (
-        'Run the lease / flex comparables LLM agent (same provider as GrantScout) and '
+        'Run the lease / flex comparables LLM agent (same provider as GrantScout; use '
+        'GRANTSCOUT_LLM_PROVIDER=perplexity + PERPLEXITY_API_KEY for fresher listings) and '
         'save a LeaseCompResearchRun. Latest completed run appears in dream_blue_send_digest.'
     )
 
