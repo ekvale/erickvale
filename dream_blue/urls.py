@@ -26,6 +26,16 @@ urlpatterns = [
         name='units_dashboard',
     ),
     path(
+        'operations/rollover/',
+        views.rollover_vacancy_dashboard,
+        name='rollover_vacancy_dashboard',
+    ),
+    path(
+        'operations/rollover/pipeline/',
+        views.rollover_pipeline_update,
+        name='rollover_pipeline_update',
+    ),
+    path(
         'api/grantscout/latest.json',
         views.grantscout_latest_api,
         name='grantscout_latest_api',

@@ -2,9 +2,9 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET, require_POST
 
 from .calendar_api import (
     EVENT_TYPE_COLORS,
@@ -20,10 +20,13 @@ from .digest_context import (
 )
 from .ics_feed import build_operations_calendar_ics
 from .lease_digest_bundle import build_lease_rates_digest_section
+from .rollover_vacancy import build_money_moves_bundle
 from .models import (
+    BusinessCalendarEvent,
     BusinessCalendarEventType,
     GrantScoutDriftEntry,
     GrantScoutRun,
+    LeasePipelineStatus,
 )
 
 
@@ -237,3 +240,40 @@ def units_dashboard(request):
             'portfolio': p,
         },
     )
+
+
+@require_GET
+@login_required
+def rollover_vacancy_dashboard(request):
+    """Prioritized vacant + renewal rows with pipeline status updates."""
+    _require_staff(request)
+    leases = active_lease_schedule()
+    mm = build_money_moves_bundle(leases)
+    return render(
+        request,
+        'dream_blue/rollover_vacancy_dashboard.html',
+        {
+            'money_moves': mm,
+            'pipeline_choices': LeasePipelineStatus.choices,
+        },
+    )
+
+
+@require_POST
+@login_required
+def rollover_pipeline_update(request):
+    _require_staff(request)
+    eid = request.POST.get('event_id')
+    status = (request.POST.get('lease_pipeline_status') or '').strip()
+    valid = {c.value for c in LeasePipelineStatus}
+    if not eid or status not in valid:
+        return redirect('dream_blue:rollover_vacancy_dashboard')
+    ev = get_object_or_404(
+        BusinessCalendarEvent,
+        pk=eid,
+        event_type=BusinessCalendarEventType.LEASE,
+        is_active=True,
+    )
+    ev.lease_pipeline_status = status
+    ev.save(update_fields=['lease_pipeline_status', 'updated_at'])
+    return redirect('dream_blue:rollover_vacancy_dashboard')

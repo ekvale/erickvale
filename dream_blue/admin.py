@@ -3,6 +3,7 @@ from django.contrib import admin
 from .models import (
     BusinessBooksReconciliation,
     BusinessCalendarEvent,
+    BusinessCalendarEventType,
     BusinessKPIEntry,
     BusinessReportSection,
     GrantScoutDriftEntry,
@@ -110,13 +111,15 @@ class BusinessCalendarEventAdmin(admin.ModelAdmin):
         'amount',
         'rent_basis',
         'lease_doc_short',
+        'lease_pipeline_column',
+        'vacancy_started',
         'interest_rate_annual',
         'refinance_date',
         'payoff_target_date',
         'account_reference_short',
         'is_active',
     )
-    list_filter = ('event_type', 'is_active', 'rent_basis')
+    list_filter = ('event_type', 'is_active', 'rent_basis', 'lease_pipeline_status')
     search_fields = (
         'title',
         'property_label',
@@ -144,6 +147,12 @@ class BusinessCalendarEventAdmin(admin.ModelAdmin):
         if not u:
             return '—'
         return (u[:28] + '…') if len(u) > 28 else u
+
+    @admin.display(description='Pipeline')
+    def lease_pipeline_column(self, obj):
+        if obj.event_type != BusinessCalendarEventType.LEASE:
+            return '—'
+        return obj.get_lease_pipeline_status_display()
 
 
 @admin.register(BusinessBooksReconciliation)

@@ -30,6 +30,38 @@
         </td>
     </tr>
 
+    {% if money_moves.show_section %}
+    <tr>
+        <td style="padding:16px 28px 8px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;border-top:1px solid #eef1f4;">
+            <p style="margin:0 0 4px 0;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#5c6978;">Money moves</p>
+            <h2 style="margin:0 0 8px 0;font-size:17px;font-weight:650;color:#9a3412;line-height:1.3;">Top {{ money_moves.digest_limit }} — rollover &amp; vacancy</h2>
+            <p style="margin:0 0 14px 0;font-size:12px;line-height:1.5;color:#5c6570;">Highest NOI urgency this week: vacant units (suggested rent × days vacant, when vacancy start is set), then lease ends in the next 12 months. <strong>Suggested − breakeven share</strong> is monthly suggested ask minus this suite’s pro-rata required GPR share — not a lease quote.{% if money_moves.rollover_dashboard_url %} <a href="{{ money_moves.rollover_dashboard_url }}" style="color:#155dfc;font-weight:600;">Open full command center →</a>{% endif %}</p>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e1e6ec;border-collapse:collapse;">
+                <tr>
+                    <th align="left" style="padding:8px 10px;font-size:10px;font-weight:600;text-transform:uppercase;color:#57606a;background:#fef3c7;border-bottom:1px solid #e1e6ec;">Unit</th>
+                    <th align="left" style="padding:8px 10px;font-size:10px;font-weight:600;text-transform:uppercase;color:#57606a;background:#fef3c7;border-bottom:1px solid #e1e6ec;">Situation</th>
+                    <th align="right" style="padding:8px 10px;font-size:10px;font-weight:600;text-transform:uppercase;color:#57606a;background:#fef3c7;border-bottom:1px solid #e1e6ec;">Current</th>
+                    <th align="right" style="padding:8px 10px;font-size:10px;font-weight:600;text-transform:uppercase;color:#57606a;background:#fef3c7;border-bottom:1px solid #e1e6ec;">Suggested</th>
+                    <th align="right" style="padding:8px 10px;font-size:10px;font-weight:600;text-transform:uppercase;color:#57606a;background:#fef3c7;border-bottom:1px solid #e1e6ec;">Δ sugg. vs breakeven</th>
+                    <th align="right" style="padding:8px 10px;font-size:10px;font-weight:600;text-transform:uppercase;color:#57606a;background:#fef3c7;border-bottom:1px solid #e1e6ec;">Timing</th>
+                    <th align="left" style="padding:8px 10px;font-size:10px;font-weight:600;text-transform:uppercase;color:#57606a;background:#fef3c7;border-bottom:1px solid #e1e6ec;">Pipeline</th>
+                </tr>
+                {% for m in money_moves.money_moves_digest %}
+                <tr>
+                    <td style="padding:10px 10px;font-size:12px;color:#122436;border-bottom:1px solid #eef1f4;vertical-align:top;"><strong>{{ m.property_label }}</strong><br><span style="font-size:11px;color:#5c6570;">{{ m.title }}</span></td>
+                    <td style="padding:10px 10px;font-size:11px;color:#24292f;border-bottom:1px solid #eef1f4;vertical-align:top;">{% if m.kind == 'vacant' %}Vacant{% else %}{{ m.renewal_band_label }}{% endif %}</td>
+                    <td align="right" style="padding:10px 10px;font-size:12px;border-bottom:1px solid #eef1f4;vertical-align:top;">{% if m.current_monthly is not None %}${{ m.current_monthly|floatformat:0 }}{% else %}—{% endif %}</td>
+                    <td align="right" style="padding:10px 10px;font-size:12px;font-weight:600;border-bottom:1px solid #eef1f4;vertical-align:top;">${{ m.suggested_monthly|floatformat:0 }}</td>
+                    <td align="right" style="padding:10px 10px;font-size:12px;border-bottom:1px solid #eef1f4;vertical-align:top;">{% if m.gap_suggested_minus_breakeven > 0 %}+{% endif %}${{ m.gap_suggested_minus_breakeven|floatformat:0 }}</td>
+                    <td align="right" style="padding:10px 10px;font-size:11px;color:#5c6570;border-bottom:1px solid #eef1f4;vertical-align:top;">{% if m.kind == 'vacant' %}{% if m.days_vacant %}Vacant {{ m.days_vacant }}d{% else %}Vacant (set vacancy start in admin){% endif %}{% else %}{{ m.days_to_end }}d to end{% endif %}</td>
+                    <td style="padding:10px 10px;font-size:11px;color:#24292f;border-bottom:1px solid #eef1f4;vertical-align:top;">{{ m.pipeline_label }}{% if m.last_change_summary %}<br><span style="color:#7a8490;">{{ m.last_change_summary }}</span>{% endif %}{% if m.doc_url %}<br><a href="{{ m.doc_url }}" style="color:#155dfc;font-weight:600;">Doc</a>{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </td>
+    </tr>
+    {% endif %}
+
     {% if digest_calendar %}
     <tr>
         <td style="padding:12px 28px 8px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">

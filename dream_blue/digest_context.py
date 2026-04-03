@@ -14,6 +14,7 @@ from django.utils import timezone
 from .calendar_api import EVENT_TYPE_COLORS, events_overlapping_range
 from .lease_economics import build_lease_economics_snapshot
 from .lease_digest_bundle import build_lease_rates_digest_section, lease_rates_markdown_lines
+from .rollover_vacancy import build_money_moves_bundle
 from .models import (
     BusinessBooksReconciliation,
     BusinessCalendarEvent,
@@ -513,6 +514,7 @@ def build_monthly_digest_context(*, include_grantscout: bool = True) -> dict:
     today = timezone.localdate()
     window_end = today + timedelta(days=_calendar_lookahead_days())
     lease_rows = active_lease_schedule()
+    money_moves = build_money_moves_bundle(lease_rows, today=today)
     ctx = {
         'generated_at': now,
         'title': 'Dream Blue report',
@@ -542,6 +544,7 @@ def build_monthly_digest_context(*, include_grantscout: bool = True) -> dict:
         'lease_comp_research': get_latest_completed_lease_comp_run(),
         'books_reconciliation': build_books_reconciliation_digest_row(),
         'lease_rent_roll_recent': recent_lease_rent_roll_changes(),
+        'money_moves': money_moves,
         'grantscout_run': None,
         'grantscout_opportunities': [],
         'grantscout_drift': [],

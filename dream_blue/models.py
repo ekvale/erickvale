@@ -236,6 +236,18 @@ class LeaseRentBasis(models.TextChoices):
     UNKNOWN = 'unknown', 'Unknown / mixed'
 
 
+class LeasePipelineStatus(models.TextChoices):
+    """Vacancy / renewal marketing funnel (lease rows only)."""
+
+    NOT_TRACKED = 'not_tracked', 'Not tracking'
+    PRICED = 'priced', 'Priced'
+    LISTED = 'listed', 'Listed'
+    TOURED = 'toured', 'Toured'
+    LOI_OUT = 'loi_out', 'LOI out'
+    OUT_FOR_SIGNATURE = 'out_for_signature', 'Out for signature'
+    LEASED_CLOSED = 'leased_closed', 'Leased / closed'
+
+
 class BusinessCalendarEventType(models.TextChoices):
     """High-level buckets for the operations calendar (digest + future KPI agent)."""
 
@@ -358,6 +370,18 @@ class BusinessCalendarEvent(models.Model):
         max_length=500,
         blank=True,
         help_text='Vendor link, portal, or secondary doc (utilities, loans, etc.)',
+    )
+    vacancy_started = models.DateField(
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text='Vacant lease rows: first day without rent — drives days vacant × $ impact sort',
+    )
+    lease_pipeline_status = models.CharField(
+        max_length=32,
+        choices=LeasePipelineStatus.choices,
+        default=LeasePipelineStatus.NOT_TRACKED,
+        help_text='Vacancy / renewal pipeline stage (staff command center + digest)',
     )
     is_active = models.BooleanField(default=True, db_index=True)
     sort_order = models.IntegerField(default=0)

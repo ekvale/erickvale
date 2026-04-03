@@ -27,6 +27,7 @@ from dream_blue.models import (
     GrantScoutRun,
     GrantScoutRunStatus,
     LeaseCompResearchRun,
+    LeasePipelineStatus,
     LeaseRentRollChange,
 )
 
@@ -389,6 +390,55 @@ class DigestHtmlTemplateSnapshotTests(TestCase):
         self.assertIn('Lease rates &amp; economics', html)
         self.assertIn('Rent<br>basis', html)
         self.assertIn('>Doc</th>', html)
+        self.assertIn('Money moves', html)
+
+
+class RolloverVacancyTests(TestCase):
+    def test_vacant_rows_listed_first(self):
+        from dream_blue.digest_context import active_lease_schedule
+        from dream_blue.rollover_vacancy import build_rollover_vacancy_rows
+
+        leases = active_lease_schedule()
+        rows = build_rollover_vacancy_rows(leases)
+        self.assertGreater(len(rows), 0)
+        self.assertEqual(rows[0]['kind'], 'vacant')
+        self.assertIn('207', rows[0]['property_label'])
+
+    def test_money_moves_bundle_limits_digest_rows(self):
+        from dream_blue.digest_context import active_lease_schedule
+        from dream_blue.rollover_vacancy import build_money_moves_bundle
+
+        leases = active_lease_schedule()
+        bundle = build_money_moves_bundle(leases)
+        self.assertTrue(bundle['show_section'])
+        self.assertLessEqual(len(bundle['money_moves_digest']), bundle['digest_limit'])
+        self.assertGreaterEqual(len(bundle['rollover_vacancy_rows']), len(bundle['money_moves_digest']))
+
+    def test_rollover_dashboard_and_pipeline_post(self):
+        client = Client()
+        staff = User.objects.create_user(
+            username='staff_ro',
+            password='pw',
+            is_staff=True,
+        )
+        ev = BusinessCalendarEvent.objects.get(
+            event_type=BusinessCalendarEventType.LEASE,
+            property_label='207 4th St.',
+        )
+        self.assertEqual(ev.lease_pipeline_status, LeasePipelineStatus.NOT_TRACKED)
+        client.login(username='staff_ro', password='pw')
+        url = reverse('dream_blue:rollover_vacancy_dashboard')
+        r = client.get(url)
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Rollover')
+        post_url = reverse('dream_blue:rollover_pipeline_update')
+        r2 = client.post(
+            post_url,
+            {'event_id': str(ev.id), 'lease_pipeline_status': LeasePipelineStatus.LISTED},
+        )
+        self.assertEqual(r2.status_code, 302)
+        ev.refresh_from_db()
+        self.assertEqual(ev.lease_pipeline_status, LeasePipelineStatus.LISTED)
 
 
 class LeaseRentRollLogTests(TestCase):

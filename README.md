@@ -171,7 +171,7 @@ chmod +x deploy/lease_comp_scheduled.sh
 20 7 * * * /home/erickvale/erickvale/deploy/lease_comp_scheduled.sh >> /home/erickvale/logs/lease_comp.log 2>&1
 ```
 
-**Staff tools (login + staff flag):** [Operations calendar](/apps/dream-blue/operations/calendar/), [units / $·sf dashboard](/apps/dream-blue/operations/units/), [ICS calendar feed](/apps/dream-blue/operations/calendar.ics) (add `?critical=1` for leases, property tax, and insurance only — useful for Google Calendar “subscribe by URL”).
+**Staff tools (login + staff flag):** [Operations calendar](/apps/dream-blue/operations/calendar/), [units / $·sf dashboard](/apps/dream-blue/operations/units/), **[rollover & vacancy command center](/apps/dream-blue/operations/rollover/)** (pipeline stages + NOI-priority sort), [ICS calendar feed](/apps/dream-blue/operations/calendar.ics) (add `?critical=1` for leases, property tax, and insurance only — useful for Google Calendar “subscribe by URL”). The HTML digest includes a short **Money moves** block (top N rows; `DREAM_BLUE_MONEY_MOVES_LIMIT`).
 
 **Digest-only on another schedule** (optional — e.g. monthly reminders without re-running the agent):
 

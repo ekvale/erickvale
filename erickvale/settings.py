@@ -71,6 +71,12 @@ DREAM_BLUE_CALENDAR_LOOKAHEAD_DAYS = config(
 )
 # Absolute origin for digest links (no trailing slash), e.g. https://your.domain.org — required for working Prev/Next month links in email.
 DREAM_BLUE_DIGEST_BASE_URL = config('DREAM_BLUE_DIGEST_BASE_URL', default='').strip()
+# Digest + email: max rows in the "Money moves" rollover / vacancy slice (default 5).
+DREAM_BLUE_MONEY_MOVES_LIMIT = config(
+    'DREAM_BLUE_MONEY_MOVES_LIMIT',
+    default=5,
+    cast=int,
+)
 
 # Lease comparables agent (dream_blue_run_lease_comp_agent) — briefs injected into digest; override via env.
 _DEFAULT_LEASE_COMP_REFERENCE = (

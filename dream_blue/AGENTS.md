@@ -28,6 +28,7 @@ Cron examples live under `deploy/` (`grantscout_agent_biweekly.sh`, `lease_comp_
 
 - Operations calendar: `/apps/dream-blue/operations/calendar/`
 - Units / $·sf dashboard: `/apps/dream-blue/operations/units/`
+- **Rollover & vacancy command center:** `/apps/dream-blue/operations/rollover/` — prioritized vacant + renewal rows, pipeline status updates; digest emails top N via `DREAM_BLUE_MONEY_MOVES_LIMIT`.
 - ICS: `/apps/dream-blue/operations/calendar.ics` — add `?critical=1` for leases, property tax, and insurance only (Google Calendar one-way subscribe).
 
 ## Improving agent quality (prompts and review)

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Rollover &amp; vacancy — Dream Blue</title>
+    <style>
+        :root { --bg: #f4f6f8; --ink: #0f172a; --muted: #64748b; --card: #fff; --border: #e2e8f0; --accent: #0d47a1; --urgent: #b45309; --vacant: #b91c1c; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; background: var(--bg); color: var(--ink); line-height: 1.45; }
+        header { background: var(--card); border-bottom: 1px solid var(--border); padding: 16px 24px; }
+        header h1 { margin: 0; font-size: 1.25rem; font-weight: 650; }
+        nav { margin-top: 8px; font-size: 0.9rem; }
+        nav a { color: var(--accent); margin-right: 16px; }
+        .wrap { max-width: 1400px; margin: 0 auto; padding: 20px 24px 48px; }
+        .hint { font-size: 0.88rem; color: var(--muted); max-width: 900px; margin-bottom: 20px; }
+        table.grid { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; font-size: 0.78rem; }
+        table.grid th, table.grid td { padding: 10px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+        table.grid th { background: #f8fafc; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+        table.grid td.num { text-align: right; font-variant-numeric: tabular-nums; }
+        .badge { display: inline-block; font-size: 0.68rem; font-weight: 650; padding: 2px 8px; border-radius: 6px; }
+        .badge.vacant { background: #fee2e2; color: var(--vacant); }
+        .badge.lt6 { background: #ffedd5; color: var(--urgent); }
+        .badge.mid { background: #e0e7ff; color: #3730a3; }
+        form.inline { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 6px; }
+        form.inline select { font: inherit; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border); max-width: 200px; }
+        form.inline button { font: inherit; padding: 6px 12px; border-radius: 6px; border: none; background: var(--accent); color: #fff; cursor: pointer; }
+        form.inline button:hover { opacity: 0.92; }
+        .empty { color: var(--muted); font-size: 0.9rem; }
+        a.doc { color: var(--accent); word-break: break-all; font-size: 0.72rem; }
+        .small { font-size: 0.72rem; color: var(--muted); }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Rollover &amp; vacancy command center</h1>
+    <nav>
+        <a href="/">Home</a>
+        <a href="{% url 'dream_blue:operations_calendar' %}">Calendar</a>
+        <a href="{% url 'dream_blue:units_dashboard' %}">Units</a>
+        <a href="{% url 'dream_blue:rollover_vacancy_dashboard' %}">Rollover</a>
+        <a href="{% url 'dream_blue:grantscout_dashboard' %}">GrantScout</a>
+        <a href="/admin/dream_blue/businesscalendarevent/?event_type__exact=lease">Admin (leases)</a>
+    </nav>
+</header>
+<div class="wrap">
+    <p class="hint">
+        <strong>Vacant</strong> rows sort by suggested rent × max(days vacant, 1) — set <strong>Vacancy started</strong> in admin for accurate days.
+        <strong>Rollover</strong> rows are occupied units with a lease end in the next 12 months (soonest first). Update pipeline stage below; the digest emails only the top few rows.
+    </p>
+    {% if money_moves.rollover_vacancy_rows %}
+    <table class="grid">
+        <thead>
+            <tr>
+                <th>Priority</th>
+                <th>Property / suite</th>
+                <th>Band</th>
+                <th class="num">Current /mo</th>
+                <th class="num">Suggested /mo</th>
+                <th class="num">Suggested − breakeven share</th>
+                <th class="num">Days vacant</th>
+                <th class="num">Days to lease end</th>
+                <th>Last rent-roll change</th>
+                <th>Doc</th>
+                <th>Pipeline</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in money_moves.rollover_vacancy_rows %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td><strong>{{ m.property_label }}</strong><br><span class="small">{{ m.title }}</span></td>
+                <td>
+                    {% if m.kind == 'vacant' %}
+                    <span class="badge vacant">Vacant</span>
+                    {% elif m.renewal_band == 'lt_6mo' %}
+                    <span class="badge lt6">{{ m.renewal_band_label }}</span>
+                    {% else %}
+                    <span class="badge mid">{{ m.renewal_band_label }}</span>
+                    {% endif %}
+                </td>
+                <td class="num">{% if m.current_monthly is not None %}${{ m.current_monthly|floatformat:0 }}{% else %}—{% endif %}</td>
+                <td class="num">${{ m.suggested_monthly|floatformat:0 }}</td>
+                <td class="num">{% if m.gap_suggested_minus_breakeven > 0 %}+{% endif %}${{ m.gap_suggested_minus_breakeven|floatformat:0 }}</td>
+                <td class="num">{% if m.days_vacant is not None %}{{ m.days_vacant }}{% else %}—{% endif %}</td>
+                <td class="num">{% if m.days_to_end is not None %}{{ m.days_to_end }}{% else %}—{% endif %}</td>
+                <td class="small">{% if m.last_change_summary %}{{ m.last_change_summary }}{% else %}—{% endif %}</td>
+                <td>{% if m.doc_url %}<a class="doc" href="{{ m.doc_url }}">link</a>{% else %}—{% endif %}</td>
+                <td>
+                    <form class="inline" method="post" action="{% url 'dream_blue:rollover_pipeline_update' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="event_id" value="{{ m.event_id }}">
+                        <select name="lease_pipeline_status" aria-label="Pipeline status for {{ m.property_label }}">
+                            {% for val, label in pipeline_choices %}
+                            <option value="{{ val }}" {% if m.pipeline_status == val %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit">Save</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty">No vacant units and no lease ends in the next 12 months in the active roster — or lease economics is hidden (no leases).</p>
+    {% endif %}
+</div>
+</body>
+</html>
