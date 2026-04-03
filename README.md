@@ -75,6 +75,7 @@ See `.env.example` for placeholders. Required for sending digests:
 | *or* `EMAIL_HOST` + `DEFAULT_FROM_EMAIL` (+ SMTP fields) | Send via SMTP |
 | `OPENAI_API_KEY` | GrantScout agent when `GRANTSCOUT_LLM_PROVIDER=openai` (JSON mode) |
 | `ANTHROPIC_API_KEY` | GrantScout agent when `GRANTSCOUT_LLM_PROVIDER=anthropic` (Claude Messages API) |
+| `GRANTSCOUT_ANTHROPIC_MODEL` | Optional; default `claude-sonnet-4-6`. Old ids (e.g. `claude-3-5-sonnet-*`) may 404 — check [Anthropic models](https://docs.anthropic.com/en/docs/about-claude/models/overview). |
 | `GRANTSCOUT_LLM_PROVIDER=perplexity` + `PERPLEXITY_API_KEY` | Perplexity **sonar** (live web / citations) |
 
 Never commit real recipients or API keys; use `.env` on the server only.

@@ -250,7 +250,7 @@ def run_grantscout_agent() -> dict[str, Any]:
         model = getattr(
             settings,
             'GRANTSCOUT_ANTHROPIC_MODEL',
-            'claude-3-5-sonnet-20241022',
+            'claude-sonnet-4-6',
         )
         content = _anthropic_messages(key, model)
     elif provider == 'perplexity':
