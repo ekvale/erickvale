@@ -55,9 +55,13 @@ class Command(BaseCommand):
         n_cal = len(context.get('business_calendar_events') or [])
         n_kpi = len(context.get('business_kpis') or [])
         n_sec = len(context.get('business_report_sections') or [])
+        n_lease = len(context.get('business_lease_schedule') or [])
+        n_loan = len(context.get('business_loan_schedule') or [])
+        n_util = len(context.get('business_utility_schedule') or [])
         self.stdout.write(
             self.style.SUCCESS(
-                f'Operations: {n_cal} calendar row(s), {n_kpi} KPI(s), '
+                f'Operations: {n_cal} upcoming calendar row(s), {n_lease} lease(s), '
+                f'{n_loan} loan(s), {n_util} utility account(s), {n_kpi} KPI(s), '
                 f'{n_sec} narrative section(s)'
             )
         )

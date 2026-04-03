@@ -11,6 +11,10 @@
 # Cron (check daily; script skips until interval elapsed):
 #   15 7 * * * /home/erickvale/erickvale/deploy/grantscout_agent_biweekly.sh >> /home/erickvale/logs/grantscout.log 2>&1
 #
+# If the script "skips" (interval not elapsed), no email is sent. To mail the digest anytime:
+#   ./venv/bin/python manage.py dream_blue_send_digest
+# Or: ./deploy/dream_blue_send_digest.sh
+#
 # Optional env (e.g. in cron line or a small wrapper):
 #   GRANTSCOUT_STATE=$HOME/.cache/dream_blue_grantscout_last_run
 #   GRANTSCOUT_INTERVAL_DAYS=14

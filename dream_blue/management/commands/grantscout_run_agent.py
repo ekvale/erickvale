@@ -1,3 +1,4 @@
+from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils import timezone
@@ -44,6 +45,14 @@ class Command(BaseCommand):
             '--skip-url-check',
             action='store_true',
             help='Keep opportunities without HTTP GET checks (faster; may include 404 links).',
+        )
+        parser.add_argument(
+            '--send-digest',
+            action='store_true',
+            help=(
+                'After saving this run, run dream_blue_send_digest (same as biweekly script). '
+                'Requires DREAM_BLUE_REPORT_RECIPIENTS and Resend or SMTP config.'
+            ),
         )
 
     def handle(self, *args, **options):
@@ -143,3 +152,6 @@ class Command(BaseCommand):
                 f'Created GrantScout run id={run.id} period={run.period_label} with {n} opportunities.'
             )
         )
+
+        if options['send_digest']:
+            call_command('dream_blue_send_digest', stdout=self.stdout, stderr=self.stderr)
