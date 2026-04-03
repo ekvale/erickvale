@@ -189,6 +189,71 @@
     </tr>
     {% endif %}
 
+    {% if lease_economics.show_section %}
+    <tr>
+        <td style="padding:24px 28px 8px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+            <p style="margin:0 0 4px 0;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#5c6978;">Lease economics</p>
+            <h3 style="margin:0 0 10px 0;font-size:16px;font-weight:650;color:#122436;">Breakeven rent &amp; benchmarks</h3>
+            <p style="margin:0 0 14px 0;font-size:12px;line-height:1.55;color:#5c6570;">Roll-up from active calendar rows (utilities, insurance, tax, recurring bills, maintenance, loans, etc.). <strong>Vacancy assumption:</strong> {{ lease_economics.vacancy_assumption_pct|floatformat:1 }}% economic vacancy — gross potential rent needed = cash out ÷ (1 − vacancy). Not tax or capex guidance; reconcile with your books.</p>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e1e6ec;border-collapse:collapse;margin-bottom:12px;">
+                <tr>
+                    <td style="padding:10px 14px;font-size:13px;color:#24292f;border-bottom:1px solid #eef1f4;background:#fafbfc;">Operating expenses (mo)</td>
+                    <td style="padding:10px 14px;font-size:13px;font-weight:600;text-align:right;border-bottom:1px solid #eef1f4;background:#fafbfc;">${{ lease_economics.monthly_operating|floatformat:0 }}</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px 14px;font-size:13px;color:#24292f;border-bottom:1px solid #eef1f4;">Loan payments (mo)</td>
+                    <td style="padding:10px 14px;font-size:13px;font-weight:600;text-align:right;border-bottom:1px solid #eef1f4;">${{ lease_economics.monthly_loans|floatformat:0 }}</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px 14px;font-size:13px;color:#122436;border-bottom:1px solid #eef1f4;"><strong>Total cash out (mo)</strong></td>
+                    <td style="padding:10px 14px;font-size:13px;font-weight:700;text-align:right;color:#122436;border-bottom:1px solid #eef1f4;">${{ lease_economics.monthly_out|floatformat:0 }}</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px 14px;font-size:13px;color:#24292f;border-bottom:1px solid #eef1f4;">Rent collected — occupied units (mo)</td>
+                    <td style="padding:10px 14px;font-size:13px;font-weight:600;text-align:right;border-bottom:1px solid #eef1f4;">${{ lease_economics.monthly_rent_collected|floatformat:0 }}</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px 14px;font-size:13px;color:#122436;border-bottom:1px solid #eef1f4;background:#f0f7ff;"><strong>Required gross potential rent (mo)</strong><br><span style="font-size:11px;font-weight:400;color:#5c6570;">Covers outflows at {{ lease_economics.vacancy_assumption_pct|floatformat:1 }}% vacancy</span></td>
+                    <td style="padding:10px 14px;font-size:15px;font-weight:700;text-align:right;color:#0d47a1;border-bottom:1px solid #eef1f4;background:#f0f7ff;">${{ lease_economics.required_gross_monthly|floatformat:0 }}</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px 14px;font-size:13px;color:#24292f;">Gap vs required (mo)</td>
+                    <td style="padding:10px 14px;font-size:13px;font-weight:600;text-align:right;{% if lease_economics.shortfall_monthly > 0 %}color:#b71c1c;{% else %}color:#1b5e20;{% endif %}">${{ lease_economics.shortfall_monthly|floatformat:0 }}{% if lease_economics.shortfall_monthly <= 0 %}<span style="font-size:11px;font-weight:400;color:#5c6570;"> (surplus)</span>{% endif %}</td>
+                </tr>
+            </table>
+            {% if lease_economics.total_leasable_sqft %}
+            <p style="margin:0 0 8px 0;font-size:13px;line-height:1.5;color:#24292f;"><strong>Leasable SF (lease rows):</strong> {{ lease_economics.total_leasable_sqft|floatformat:0 }} sf total · {{ lease_economics.occupied_sqft|floatformat:0 }} sf occupied · {{ lease_economics.vacant_sqft|floatformat:0 }} sf vacant{% if lease_economics.physical_occupancy_pct %} · {{ lease_economics.physical_occupancy_pct|floatformat:1 }}% physical occupancy{% endif %}</p>
+            {% if lease_economics.portfolio_occupied_psf_year %}
+            <p style="margin:0 0 8px 0;font-size:13px;line-height:1.5;color:#24292f;"><strong>Occupied portfolio rent:</strong> ~${{ lease_economics.portfolio_occupied_psf_year|floatformat:2 }}/sf/yr (gross rent on occupied SF only).</p>
+            {% endif %}
+            {% if lease_economics.required_psf_year_portfolio %}
+            <p style="margin:0 0 8px 0;font-size:13px;line-height:1.5;color:#122436;"><strong>Required ~${{ lease_economics.required_psf_year_portfolio|floatformat:2 }}/sf/yr</strong> on <em>all</em> leasable SF (if rent were uniform) to hit breakeven at {{ lease_economics.vacancy_assumption_pct|floatformat:1 }}% economic vacancy.</p>
+            {% endif %}
+            {% if lease_economics.required_avg_rent_per_unit %}
+            <p style="margin:0 0 8px 0;font-size:13px;line-height:1.5;color:#24292f;"><strong>Required average ~${{ lease_economics.required_avg_rent_per_unit|floatformat:0 }}/mo per unit</strong> ({{ lease_economics.lease_unit_count }} units), same math.</p>
+            {% endif %}
+            {% else %}
+            <p style="margin:0 0 8px 0;font-size:12px;color:#9a6700;">Add <code style="background:#f6f8fa;padding:2px 6px;border-radius:4px;">square_footage</code> on each lease row in admin for $/sf figures.</p>
+            {% endif %}
+            {% if lease_economics.benchmark_configured %}
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e1e6ec;border-collapse:collapse;margin-top:10px;">
+                <tr>
+                    <td style="padding:12px 14px;font-size:13px;line-height:1.5;color:#24292f;background:#fafbfc;border-left:4px solid #5c6bc0;">
+                        <strong>Market benchmark (configured):</strong> ${{ lease_economics.benchmark_psf_year|floatformat:2 }}/sf/yr<br>
+                        <span style="font-size:12px;color:#5c6570;">{{ lease_economics.benchmark_note|linebreaksbr }}</span>
+                        {% if lease_economics.vs_benchmark_psf_year is not None %}
+                        <br><span style="font-size:12px;color:#122436;margin-top:6px;display:inline-block;">Breakeven required portfolio $/sf is <strong>{% if lease_economics.vs_benchmark_psf_year > 0 %}above{% elif lease_economics.vs_benchmark_psf_year < 0 %}below{% else %}equal to{% endif %}</strong> your benchmark by ${{ lease_economics.vs_benchmark_psf_year|floatformat:2 }}/sf/yr.</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+            {% else %}
+            <p style="margin:10px 0 0 0;font-size:12px;line-height:1.5;color:#5c6570;"><strong>Industry / market average:</strong> set <code style="background:#f6f8fa;padding:2px 6px;border-radius:4px;">DREAM_BLUE_RENT_BENCHMARK_PSF_YEAR</code> and <code style="background:#f6f8fa;padding:2px 6px;border-radius:4px;">DREAM_BLUE_RENT_BENCHMARK_NOTE</code> (gross vs NNN, source, date) to compare required $/sf to a competitive benchmark.</p>
+            {% endif %}
+        </td>
+    </tr>
+    {% endif %}
+
     {% if business_utility_schedule %}
     <tr>
         <td style="padding:24px 28px 8px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">

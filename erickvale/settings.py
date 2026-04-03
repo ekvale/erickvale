@@ -94,6 +94,23 @@ DREAM_BLUE_LEASE_COMP_REFERENCE = config(
 DREAM_BLUE_LEASE_COMP_SUBJECT = config(
     'DREAM_BLUE_LEASE_COMP_SUBJECT', default=_DEFAULT_LEASE_COMP_SUBJECT
 )
+# Lease economics block in digest: assumed economic vacancy (%) for breakeven gross rent math.
+DREAM_BLUE_LEASE_ECONOMICS_VACANCY_PCT = config(
+    'DREAM_BLUE_LEASE_ECONOMICS_VACANCY_PCT',
+    default='8',
+)
+# Optional market benchmark: asking/market $/sf/year (gross or NNN — say which in note below).
+DREAM_BLUE_RENT_BENCHMARK_PSF_YEAR = config(
+    'DREAM_BLUE_RENT_BENCHMARK_PSF_YEAR',
+    default='',
+).strip()
+DREAM_BLUE_RENT_BENCHMARK_NOTE = config(
+    'DREAM_BLUE_RENT_BENCHMARK_NOTE',
+    default=(
+        'Set DREAM_BLUE_RENT_BENCHMARK_PSF_YEAR from broker, Crexi/LoopNet ranges, or appraisal. '
+        'State gross vs NNN in this note.'
+    ),
+)
 RESEND_API_KEY = config('RESEND_API_KEY', default='')
 RESEND_FROM_EMAIL = config('RESEND_FROM_EMAIL', default='')
 RESEND_API_URL = config('RESEND_API_URL', default='https://api.resend.com/emails')

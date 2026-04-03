@@ -65,11 +65,19 @@ class Command(BaseCommand):
         n_lease = len(context.get('business_lease_schedule') or [])
         n_loan = len(context.get('business_loan_schedule') or [])
         n_util = len(context.get('business_utility_schedule') or [])
+        le = context.get('lease_economics') or {}
+        eco = ''
+        if le.get('show_section'):
+            eco = (
+                f" | Lease economics: out ${le.get('monthly_out', 0):,.0f}/mo, "
+                f"required GPR ${le.get('required_gross_monthly', 0):,.0f}/mo "
+                f"(@ {le.get('vacancy_assumption_pct', 0)}% vacancy)"
+            )
         self.stdout.write(
             self.style.SUCCESS(
                 f'Operations: {n_cal} upcoming calendar row(s), {n_lease} lease(s), '
                 f'{n_loan} loan(s), {n_util} utility account(s), {n_kpi} KPI(s), '
-                f'{n_sec} narrative section(s), lease comp memo={n_lc}'
+                f'{n_sec} narrative section(s), lease comp memo={n_lc}{eco}'
             )
         )
 

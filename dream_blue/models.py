@@ -255,6 +255,11 @@ class BusinessCalendarEvent(models.Model):
         blank=True,
         help_text='Building, parcel, or entity label',
     )
+    square_footage = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text='Leasable sq ft (leases) — used for $/sf economics in digest',
+    )
     notes = models.TextField(blank=True)
     interest_rate_annual = models.DecimalField(
         max_digits=5,

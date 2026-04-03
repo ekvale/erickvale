@@ -1,5 +1,6 @@
 import calendar
 from datetime import date
+from decimal import Decimal
 from unittest.mock import MagicMock, patch
 
 from django.contrib.auth.models import User
@@ -469,6 +470,28 @@ class LeaseCompAgentTests(TestCase):
                     'report_markdown': 'too short',
                 }
             )
+
+
+class LeaseEconomicsTests(TestCase):
+    def test_snapshot_covers_outflows_and_has_sqft(self):
+        from dream_blue.lease_economics import build_lease_economics_snapshot
+
+        s = build_lease_economics_snapshot()
+        self.assertTrue(s['show_section'])
+        self.assertGreaterEqual(s['required_gross_monthly'], s['monthly_out'])
+        self.assertEqual(s['lease_unit_count'], 4)
+        self.assertEqual(s['total_leasable_sqft'], 8200)
+        self.assertTrue(s['sqft_complete'])
+        self.assertEqual(s['occupied_unit_count'], 3)
+        self.assertEqual(s['vacant_unit_count'], 1)
+
+    @override_settings(DREAM_BLUE_RENT_BENCHMARK_PSF_YEAR='14.50')
+    def test_benchmark_parsed_when_set(self):
+        from dream_blue.lease_economics import build_lease_economics_snapshot
+
+        s = build_lease_economics_snapshot()
+        self.assertTrue(s['benchmark_configured'])
+        self.assertEqual(s['benchmark_psf_year'], Decimal('14.50'))
 
 
 class DigestLeaseCompContextTests(TestCase):

@@ -12,6 +12,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from .calendar_api import EVENT_TYPE_COLORS, events_overlapping_range
+from .lease_economics import build_lease_economics_snapshot
 from .models import (
     BusinessCalendarEvent,
     BusinessCalendarEventType,
@@ -472,7 +473,7 @@ def build_monthly_digest_context(*, include_grantscout: bool = True) -> dict:
     ctx = {
         'generated_at': now,
         'title': 'Dream Blue report',
-        'report_subtitle': 'Operations, KPIs, lease comps, and GrantScout',
+        'report_subtitle': 'Operations, lease economics, KPIs, lease comps, and GrantScout',
         'calendar_window_start': today,
         'calendar_window_end': window_end,
         'digest_base_url_configured': bool(
@@ -484,6 +485,7 @@ def build_monthly_digest_context(*, include_grantscout: bool = True) -> dict:
         ),
         'business_calendar_events': upcoming_business_calendar_events(),
         'business_lease_schedule': active_lease_schedule(),
+        'lease_economics': build_lease_economics_snapshot(),
         'business_loan_schedule': active_loan_schedule(),
         'business_utility_schedule': active_utility_schedule(),
         'business_insurance_tax_schedule': insurance_and_tax_schedule(),
