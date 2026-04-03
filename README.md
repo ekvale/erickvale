@@ -145,6 +145,7 @@ After `git pull` in the project directory:
 source /path/to/venv/bin/activate   # if used
 pip install -r requirements.txt    # when dependencies change
 python manage.py migrate
+# If Dream Blue shows conflicting migrations, merge then migrate — merge files do not add columns; skipping migrate causes errors like missing rent_basis.
 python manage.py collectstatic --noinput   # if you serve static via whitenoise/collect
 sudo systemctl restart gunicorn            # or your unit name for uwsgi/gunicorn
 ```
