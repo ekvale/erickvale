@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title|default:"Dream Blue digest" }}</title>
+    <style>
+        body { font-family: system-ui, sans-serif; line-height: 1.5; color: #1a1a1a; max-width: 640px; margin: 0 auto; padding: 24px; }
+        h1 { font-size: 1.35rem; margin-top: 0; }
+        h2 { font-size: 1.1rem; margin-top: 1.5rem; border-bottom: 1px solid #ddd; padding-bottom: 6px; }
+        .muted { color: #555; font-size: 0.9rem; }
+        .opp { margin-bottom: 1rem; padding: 12px; background: #f6f8fa; border-radius: 8px; }
+        .opp-meta { font-size: 0.85rem; color: #444; margin-bottom: 6px; }
+        a { color: #0b57d0; }
+        ul.drift { padding-left: 1.2rem; }
+    </style>
+</head>
+<body>
+    <h1>{{ title|default:"Dream Blue monthly digest" }}</h1>
+    <p class="muted">Generated {{ generated_at|date:"N j, Y, P T" }}</p>
+
+    {% if grantscout_run %}
+    <h2>GrantScout — {{ grantscout_run.period_label }}</h2>
+    {% if grantscout_run.coverage_summary %}
+    <p>{{ grantscout_run.coverage_summary|linebreaksbr }}</p>
+    {% endif %}
+
+    {% if grantscout_opportunities %}
+    <h3 style="font-size:1rem;">Top priorities</h3>
+    {% for o in grantscout_opportunities %}
+    <div class="opp">
+        <div class="opp-meta">
+            <strong>{{ o.get_category_display }}</strong>
+            {% if o.opportunity_type %} · {{ o.opportunity_type }}{% endif %}
+            · score {{ o.priority_score }}
+            {% if o.deadline %} · deadline {{ o.deadline }}{% endif %}
+        </div>
+        <p style="margin:0 0 8px 0;">{{ o.summary|linebreaksbr }}</p>
+        {% if o.action_recommended %}<p style="margin:0 0 8px 0;"><em>Action:</em> {{ o.action_recommended|linebreaksbr }}</p>{% endif %}
+        <a href="{{ o.source_url }}">Source</a>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p class="muted">No opportunities linked to this run yet.</p>
+    {% endif %}
+
+    {% if grantscout_drift %}
+    <h3 style="font-size:1rem;">Changes vs previous run</h3>
+    <ul class="drift">
+        {% for d in grantscout_drift %}
+        <li><strong>{{ d.get_drift_type_display }}</strong> — {{ d.summary }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% else %}
+    <h2>GrantScout</h2>
+    <p class="muted">No completed GrantScout run in the database yet. Complete a run in admin or add data via your research workflow.</p>
+    {% endif %}
+
+    <p class="muted" style="margin-top:2rem;">Internal use only — Dream Blue.</p>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GrantScout — Dream Blue</title>
+    <style>
+        body { font-family: system-ui, sans-serif; line-height: 1.5; max-width: 900px; margin: 0 auto; padding: 24px; color: #111; }
+        h1 { font-size: 1.4rem; }
+        .muted { color: #555; font-size: 0.95rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #e5e5e5; vertical-align: top; }
+        th { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em; color: #444; }
+        .score { font-weight: 600; }
+        .drift { margin-top: 2rem; }
+        a { color: #0b57d0; }
+    </style>
+</head>
+<body>
+    <p><a href="/">Home</a> · <a href="/admin/dream_blue/">Admin</a></p>
+    <h1>GrantScout</h1>
+    <p class="muted">Latest run (any status). JSON: <a href="{% url 'dream_blue:grantscout_latest_api' %}">latest completed</a></p>
+
+    {% if run %}
+    <section>
+        <h2 style="font-size:1.15rem;">{{ run.period_label }} — {{ run.get_status_display }}</h2>
+        <p class="muted">Created {{ run.created_at|date:"N j, Y, P" }}</p>
+        {% if run.coverage_summary %}
+        <p>{{ run.coverage_summary|linebreaksbr }}</p>
+        {% endif %}
+    </section>
+
+    <section>
+        <h2 style="font-size:1.15rem;">Top priorities (this run)</h2>
+        {% if opportunities %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Score</th>
+                    <th>Category</th>
+                    <th>Summary</th>
+                    <th>Deadline</th>
+                    <th>Link</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for o in opportunities %}
+                <tr>
+                    <td class="score">{{ o.priority_score }}</td>
+                    <td>{{ o.get_category_display }}</td>
+                    <td>{{ o.summary|truncatewords:40 }}</td>
+                    <td>{% if o.deadline %}{{ o.deadline }}{% else %}—{% endif %}</td>
+                    <td><a href="{{ o.source_url }}" rel="noopener noreferrer">source</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="muted">No opportunities for this run.</p>
+        {% endif %}
+    </section>
+
+    {% if drift %}
+    <section class="drift">
+        <h2 style="font-size:1.15rem;">Drift (this run)</h2>
+        <ul>
+            {% for d in drift %}
+            <li><strong>{{ d.get_drift_type_display }}</strong> — {{ d.summary }}</li>
+            {% endfor %}
+        </ul>
+    </section>
+    {% endif %}
+
+    {% else %}
+    <p class="muted">No GrantScout runs yet. Add a run in the admin.</p>
+    {% endif %}
+</body>
+</html>
