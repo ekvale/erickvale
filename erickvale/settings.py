@@ -69,6 +69,8 @@ DREAM_BLUE_CALENDAR_LOOKAHEAD_DAYS = config(
     default=120,
     cast=int,
 )
+# Absolute origin for digest links (no trailing slash), e.g. https://your.domain.org — required for working Prev/Next month links in email.
+DREAM_BLUE_DIGEST_BASE_URL = config('DREAM_BLUE_DIGEST_BASE_URL', default='').strip()
 RESEND_API_KEY = config('RESEND_API_KEY', default='')
 RESEND_FROM_EMAIL = config('RESEND_FROM_EMAIL', default='')
 RESEND_API_URL = config('RESEND_API_URL', default='https://api.resend.com/emails')

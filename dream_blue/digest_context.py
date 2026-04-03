@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import calendar
 from datetime import date, timedelta
+from urllib.parse import urlencode
 
 from django.conf import settings
 from django.db.models import Q
+from django.urls import reverse
 from django.utils import timezone
 
 from .calendar_api import EVENT_TYPE_COLORS, events_overlapping_range
@@ -146,6 +148,74 @@ def build_email_calendar_year_grids(year: int) -> dict:
         _build_email_month_grid_from_events(year, m, evs) for m in range(1, 13)
     ]
     return {'year': year, 'months': months}
+
+
+def _digest_operations_calendar_url(
+    base_url: str,
+    year: int,
+    month: int,
+    extra_query: dict | None = None,
+) -> str:
+    path = reverse('dream_blue:operations_calendar')
+    query: dict = {'year': year, 'month': month}
+    if extra_query:
+        query.update(extra_query)
+    qs = urlencode(query)
+    root = base_url.rstrip('/') if base_url else ''
+    return f'{root}{path}?{qs}'
+
+
+def build_digest_email_calendar_bundle(*, today: date | None = None) -> dict:
+    """
+    One month grid for ``today`` plus prev/next month labels for email / web.
+    Month stepping uses the live Operations calendar (staff login).
+    """
+    if today is None:
+        today = timezone.localdate()
+    y, m = today.year, today.month
+    grid = build_email_calendar_month_grid(y, m)
+    if m == 1:
+        py, pm = y - 1, 12
+    else:
+        py, pm = y, m - 1
+    if m == 12:
+        ny, nm = y + 1, 1
+    else:
+        ny, nm = y, m + 1
+    return {
+        'grid': grid,
+        'prev_year': py,
+        'prev_month': pm,
+        'prev_label': f'{calendar.month_name[pm]} {py}',
+        'next_year': ny,
+        'next_month': nm,
+        'next_label': f'{calendar.month_name[nm]} {ny}',
+        'month_title': f'{calendar.month_name[m]} {y}',
+        'has_absolute_links': False,
+        'prev_url': '',
+        'next_url': '',
+        'current_url': '',
+        'full_year_url': '',
+    }
+
+
+def _attach_digest_calendar_absolute_urls(bundle: dict, base_url: str) -> dict:
+    if not (base_url or '').strip():
+        return bundle
+    base = base_url.strip()
+    gy, gm = bundle['grid']['year'], bundle['grid']['month']
+    bundle['has_absolute_links'] = True
+    bundle['prev_url'] = _digest_operations_calendar_url(
+        base, bundle['prev_year'], bundle['prev_month']
+    )
+    bundle['next_url'] = _digest_operations_calendar_url(
+        base, bundle['next_year'], bundle['next_month']
+    )
+    bundle['current_url'] = _digest_operations_calendar_url(base, gy, gm)
+    bundle['full_year_url'] = _digest_operations_calendar_url(
+        base, gy, gm, extra_query={'view': 'year'}
+    )
+    return bundle
 
 
 def active_lease_schedule():
@@ -376,7 +446,13 @@ def build_monthly_digest_context(*, include_grantscout: bool = True) -> dict:
         'report_subtitle': 'Operations, KPIs, and GrantScout',
         'calendar_window_start': today,
         'calendar_window_end': window_end,
-        'email_calendar_year': build_email_calendar_year_grids(today.year),
+        'digest_base_url_configured': bool(
+            (getattr(settings, 'DREAM_BLUE_DIGEST_BASE_URL', '') or '').strip()
+        ),
+        'digest_calendar': _attach_digest_calendar_absolute_urls(
+            build_digest_email_calendar_bundle(today=today),
+            getattr(settings, 'DREAM_BLUE_DIGEST_BASE_URL', '') or '',
+        ),
         'business_calendar_events': upcoming_business_calendar_events(),
         'business_lease_schedule': active_lease_schedule(),
         'business_loan_schedule': active_loan_schedule(),

@@ -1,3 +1,4 @@
+import calendar
 from datetime import date
 from unittest.mock import MagicMock, patch
 
@@ -140,11 +141,13 @@ class DigestContextTests(TestCase):
             value_display='94%',
             period_hint='as of today',
         )
+        last_dom = calendar.monthrange(d0.year, d0.month)[1]
+        end_d = date(d0.year, d0.month, last_dom)
         BusinessCalendarEvent.objects.create(
-            title='Year-end note',
+            title='Bridge note',
             event_type=BusinessCalendarEventType.LOAN,
-            due_date=date(d0.year, 1, 5),
-            end_date=date(d0.year, 12, 15),
+            due_date=date(d0.year, d0.month, 1),
+            end_date=end_d,
             property_label='HQ',
         )
         ctx = build_monthly_digest_context(include_grantscout=False)
@@ -153,30 +156,30 @@ class DigestContextTests(TestCase):
         ]
         self.assertEqual(len(tax_events), 1)
         self.assertGreaterEqual(len(ctx['business_calendar_events']), 1)
-        ycal = ctx['email_calendar_year']
-        self.assertEqual(ycal['year'], d0.year)
-        self.assertEqual(len(ycal['months']), 12)
-        mo = ycal['months'][d0.month - 1]
-        self.assertEqual(mo['month'], d0.month)
+        dc = ctx['digest_calendar']
+        grid = dc['grid']
+        self.assertEqual(grid['year'], d0.year)
+        self.assertEqual(grid['month'], d0.month)
         found_tax_chip = False
-        for week in mo['weeks']:
+        for week in grid['weeks']:
             for cell in week:
                 if cell.get('day') == d0.day and not cell.get('out_of_month'):
                     for chip in cell.get('chips', []):
                         if 'Property tax' in chip.get('text', ''):
                             found_tax_chip = True
-        self.assertTrue(found_tax_chip, 'year grid should include property tax on due date')
-        dec = ycal['months'][11]
+        self.assertTrue(found_tax_chip, 'digest month grid should include property tax on due date')
         found_loan_end = False
-        for week in dec['weeks']:
+        for week in grid['weeks']:
             for cell in week:
-                if cell.get('day') == 15 and not cell.get('out_of_month'):
+                if cell.get('day') == last_dom and not cell.get('out_of_month'):
                     for chip in cell.get('chips', []):
-                        if 'Ends' in chip.get('text', '') and 'Year-end note' in chip.get(
+                        if 'Ends' in chip.get('text', '') and 'Bridge note' in chip.get(
                             'text', ''
                         ):
                             found_loan_end = True
-        self.assertTrue(found_loan_end, 'December should show loan maturity chip')
+        self.assertTrue(found_loan_end, 'month grid should show loan maturity on last day')
+        self.assertFalse(ctx['digest_base_url_configured'])
+        self.assertFalse(dc['has_absolute_links'])
         occ = [k for k in ctx['business_kpis'] if k.label == 'Occupancy']
         self.assertEqual(len(occ), 1)
         self.assertTrue(
@@ -186,6 +189,27 @@ class DigestContextTests(TestCase):
             ).exists()
         )
         self.assertIn('calendar_window_end', ctx)
+
+    @override_settings(DREAM_BLUE_DIGEST_BASE_URL='https://example.org')
+    def test_digest_calendar_prev_next_urls(self):
+        from django.utils import timezone
+
+        from dream_blue.digest_context import build_monthly_digest_context
+
+        ctx = build_monthly_digest_context(include_grantscout=False)
+        self.assertTrue(ctx['digest_base_url_configured'])
+        dc = ctx['digest_calendar']
+        self.assertTrue(dc['has_absolute_links'])
+        for key in ('prev_url', 'next_url', 'current_url', 'full_year_url'):
+            self.assertIn(
+                'https://example.org/apps/dream-blue/operations/calendar/',
+                dc[key],
+                msg=f'{key} should point at operations calendar',
+            )
+        self.assertIn('view=year', dc['full_year_url'])
+        today = timezone.localdate()
+        self.assertIn(f'month={today.month}', dc['current_url'])
+        self.assertIn(f'year={today.year}', dc['current_url'])
 
 
 class OperationsCalendarApiTests(TestCase):

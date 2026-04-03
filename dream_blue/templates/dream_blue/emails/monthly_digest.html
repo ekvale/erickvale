@@ -4,313 +4,400 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ title|default:"Dream Blue digest" }}</title>
-    <style>
-        body { font-family: system-ui, sans-serif; line-height: 1.5; color: #1a1a1a; max-width: 640px; margin: 0 auto; padding: 24px; }
-        h1 { font-size: 1.35rem; margin-top: 0; }
-        h2 { font-size: 1.1rem; margin-top: 1.5rem; border-bottom: 1px solid #ddd; padding-bottom: 6px; }
-        .muted { color: #555; font-size: 0.9rem; }
-        .opp { margin-bottom: 1rem; padding: 12px; background: #f6f8fa; border-radius: 8px; }
-        .opp-meta { font-size: 0.85rem; color: #444; margin-bottom: 6px; }
-        a { color: #0b57d0; }
-        ul.drift { padding-left: 1.2rem; }
-        .kpi-grid { display: table; width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.95rem; }
-        .kpi-grid tr:nth-child(odd) { background: #fafbfc; }
-        .kpi-grid td { padding: 10px 8px; border-bottom: 1px solid #eee; vertical-align: top; }
-        .kpi-grid td.val { font-weight: 600; white-space: nowrap; }
-        .cal-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 12px 0; }
-        .cal-table th, .cal-table td { text-align: left; padding: 8px 6px; border-bottom: 1px solid #e8e8e8; }
-        .cal-table th { color: #444; font-weight: 600; }
-    </style>
+    <!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
 </head>
-<body>
-    <h1>{{ title|default:"Dream Blue report" }}</h1>
-    {% if report_subtitle %}<p class="muted" style="margin-top:-8px;">{{ report_subtitle }}</p>{% endif %}
-    <p class="muted">Generated {{ generated_at|date:"N j, Y, P T" }}</p>
+<body style="margin:0;padding:0;background-color:#e8ecf1;-webkit-text-size-adjust:100%;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#e8ecf1;">
+<tr>
+<td align="center" style="padding:28px 14px;">
+<table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="max-width:600px;width:100%;border-collapse:separate;background-color:#ffffff;border-radius:10px;box-shadow:0 1px 3px rgba(15,39,68,0.08);">
 
-    <h2>Operations &amp; KPIs</h2>
-    <p class="muted">Upcoming dates {{ calendar_window_start|date:"M j, Y" }} — {{ calendar_window_end|date:"M j, Y" }}</p>
+    <!-- Header -->
+    <tr>
+        <td style="background:linear-gradient(135deg,#0f2744 0%,#1a3a5c 100%);background-color:#0f2744;padding:32px 28px 28px 28px;border-radius:10px 10px 0 0;">
+            <p style="margin:0 0 6px 0;font-family:Georgia,'Times New Roman',serif;font-size:22px;line-height:1.25;font-weight:600;color:#ffffff;letter-spacing:-0.02em;">{{ title|default:"Dream Blue report" }}</p>
+            {% if report_subtitle %}<p style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:14px;line-height:1.45;color:rgba(255,255,255,0.88);">{{ report_subtitle }}</p>{% endif %}
+            <p style="margin:14px 0 0 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:12px;line-height:1.4;color:rgba(255,255,255,0.65);">Generated {{ generated_at|date:"N j, Y, P T" }}</p>
+        </td>
+    </tr>
 
-    {% if email_calendar_year %}
-    <h3 style="font-size:1rem;margin:1.25rem 0 0.35rem 0;">Full-year operations calendar — {{ email_calendar_year.year }}</h3>
-    <p class="muted" style="font-size:0.85rem;margin:0 0 14px 0;line-height:1.4;">Twelve month grids (Sun–Sat). Each label is a real <strong>lease start</strong>, <strong>due / installment</strong>, or <strong>lease or loan end</strong> from Dream Blue calendar data. Abbrev: Ls lease, Ln loan, Ut utility, Tx tax, In insurance, Bl bill, Mn maintenance, Lc license.</p>
-    {% for m in email_calendar_year.months %}
-    <h4 style="font-size:0.95rem;margin:1rem 0 0.35rem 0;padding-bottom:5px;border-bottom:1px solid #e0e0e0;color:#222;">{{ m.month_label }} {{ m.year }}</h4>
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;table-layout:fixed;font-size:10px;border:1px solid #ccc;margin:0 0 14px 0;">
-        <tr>
-            <th style="border:1px solid #ddd;background:#f0f4f8;padding:6px 2px;text-align:center;font-weight:600;color:#333;">Sun</th>
-            <th style="border:1px solid #ddd;background:#f0f4f8;padding:6px 2px;text-align:center;font-weight:600;color:#333;">Mon</th>
-            <th style="border:1px solid #ddd;background:#f0f4f8;padding:6px 2px;text-align:center;font-weight:600;color:#333;">Tue</th>
-            <th style="border:1px solid #ddd;background:#f0f4f8;padding:6px 2px;text-align:center;font-weight:600;color:#333;">Wed</th>
-            <th style="border:1px solid #ddd;background:#f0f4f8;padding:6px 2px;text-align:center;font-weight:600;color:#333;">Thu</th>
-            <th style="border:1px solid #ddd;background:#f0f4f8;padding:6px 2px;text-align:center;font-weight:600;color:#333;">Fri</th>
-            <th style="border:1px solid #ddd;background:#f0f4f8;padding:6px 2px;text-align:center;font-weight:600;color:#333;">Sat</th>
-        </tr>
-        {% for week in m.weeks %}
-        <tr>
-            {% for cell in week %}
-            <td valign="top" style="border:1px solid #e5e5e5;padding:4px 3px 6px 3px;width:14.28%;vertical-align:top;{% if cell.out_of_month %}background:#f7f7f7;{% else %}background:#ffffff;{% endif %}">
-                {% if cell.day %}
-                <div style="font-weight:700;font-size:12px;margin:0 0 3px 0;color:#1a1a1a;">{{ cell.day }}</div>
-                {% for chip in cell.chips %}
-                <span style="display:block;font-size:9px;line-height:1.2;margin:3px 0 0 0;padding:2px 4px;border-radius:3px;background-color:{{ chip.color }};color:#ffffff;word-break:break-word;">{{ chip.text }}</span>
-                {% endfor %}
-                {% else %}&nbsp;{% endif %}
-            </td>
-            {% endfor %}
-        </tr>
-        {% endfor %}
-    </table>
-    {% endfor %}
+    <!-- Operations intro -->
+    <tr>
+        <td style="padding:28px 28px 8px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+            <p style="margin:0 0 4px 0;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#5c6978;">Operations</p>
+            <h2 style="margin:0 0 10px 0;font-size:18px;font-weight:650;color:#122436;letter-spacing:-0.02em;border:none;line-height:1.3;">Performance &amp; calendar</h2>
+            <p style="margin:0;font-size:13px;line-height:1.55;color:#5c6570;">Upcoming focus <span style="color:#122436;font-weight:500;">{{ calendar_window_start|date:"M j, Y" }}</span> — <span style="color:#122436;font-weight:500;">{{ calendar_window_end|date:"M j, Y" }}</span></p>
+        </td>
+    </tr>
+
+    {% if digest_calendar %}
+    <tr>
+        <td style="padding:12px 28px 8px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e1e6ec;border-radius:8px;background-color:#fafbfc;">
+                <tr>
+                    <td style="padding:16px 18px 14px 18px;">
+                        <p style="margin:0 0 10px 0;font-size:14px;font-weight:600;color:#122436;">{{ digest_calendar.month_title }}</p>
+                        <p style="margin:0 0 14px 0;font-size:12px;line-height:1.5;color:#5c6570;">This month in the email; use <strong>Previous</strong> / <strong>Next</strong> to open other months in the browser (staff).</p>
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                            <tr>
+                                {% if digest_calendar.has_absolute_links %}
+                                <td align="left" style="padding:0 6px 12px 0;vertical-align:middle;">
+                                    <a href="{{ digest_calendar.prev_url }}" style="display:inline-block;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:13px;font-weight:600;color:#ffffff;text-decoration:none;background-color:#122436;padding:10px 16px;border-radius:6px;">← {{ digest_calendar.prev_label }}</a>
+                                </td>
+                                <td align="center" style="padding:0 6px 12px 0;vertical-align:middle;">
+                                    <a href="{{ digest_calendar.full_year_url }}" style="font-size:12px;font-weight:600;color:#155dfc;text-decoration:none;">Full year view</a>
+                                </td>
+                                <td align="right" style="padding:0 0 12px 6px;vertical-align:middle;">
+                                    <a href="{{ digest_calendar.next_url }}" style="display:inline-block;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:13px;font-weight:600;color:#ffffff;text-decoration:none;background-color:#122436;padding:10px 16px;border-radius:6px;">{{ digest_calendar.next_label }} →</a>
+                                </td>
+                                {% else %}
+                                <td style="padding:0 0 12px 0;font-size:12px;line-height:1.5;color:#5c6570;">
+                                    <strong>Month links:</strong> set <code style="background:#eef1f4;padding:2px 6px;border-radius:4px;font-size:11px;">DREAM_BLUE_DIGEST_BASE_URL</code> on the server (site origin, no trailing slash) so Previous/Next open the Operations calendar.
+                                </td>
+                                {% endif %}
+                            </tr>
+                        </table>
+
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;table-layout:fixed;font-size:10px;border:1px solid #d8dee6;background:#ffffff;">
+                            <tr>
+                                <th style="border:1px solid #e4e9ef;background-color:#f0f3f7;padding:7px 2px;text-align:center;font-family:-apple-system,sans-serif;font-size:10px;font-weight:600;color:#3d4f5f;">Sun</th>
+                                <th style="border:1px solid #e4e9ef;background-color:#f0f3f7;padding:7px 2px;text-align:center;font-family:-apple-system,sans-serif;font-size:10px;font-weight:600;color:#3d4f5f;">Mon</th>
+                                <th style="border:1px solid #e4e9ef;background-color:#f0f3f7;padding:7px 2px;text-align:center;font-family:-apple-system,sans-serif;font-size:10px;font-weight:600;color:#3d4f5f;">Tue</th>
+                                <th style="border:1px solid #e4e9ef;background-color:#f0f3f7;padding:7px 2px;text-align:center;font-family:-apple-system,sans-serif;font-size:10px;font-weight:600;color:#3d4f5f;">Wed</th>
+                                <th style="border:1px solid #e4e9ef;background-color:#f0f3f7;padding:7px 2px;text-align:center;font-family:-apple-system,sans-serif;font-size:10px;font-weight:600;color:#3d4f5f;">Thu</th>
+                                <th style="border:1px solid #e4e9ef;background-color:#f0f3f7;padding:7px 2px;text-align:center;font-family:-apple-system,sans-serif;font-size:10px;font-weight:600;color:#3d4f5f;">Fri</th>
+                                <th style="border:1px solid #e4e9ef;background-color:#f0f3f7;padding:7px 2px;text-align:center;font-family:-apple-system,sans-serif;font-size:10px;font-weight:600;color:#3d4f5f;">Sat</th>
+                            </tr>
+                            {% for week in digest_calendar.grid.weeks %}
+                            <tr>
+                                {% for cell in week %}
+                                <td valign="top" style="border:1px solid #eceff3;padding:5px 3px 7px 3px;width:14.28%;vertical-align:top;{% if cell.out_of_month %}background-color:#f6f7f9;{% else %}background-color:#ffffff;{% endif %}">
+                                    {% if cell.day %}
+                                    <div style="font-family:-apple-system,sans-serif;font-weight:700;font-size:12px;margin:0 0 3px 0;color:#122436;">{{ cell.day }}</div>
+                                    {% for chip in cell.chips %}
+                                    <span style="display:block;font-family:-apple-system,sans-serif;font-size:9px;line-height:1.2;margin:3px 0 0 0;padding:3px 4px;border-radius:3px;background-color:{{ chip.color }};color:#ffffff;word-break:break-word;">{{ chip.text }}</span>
+                                    {% endfor %}
+                                    {% else %}&nbsp;{% endif %}
+                                </td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </table>
+                        <p style="margin:12px 0 0 0;font-size:11px;line-height:1.45;color:#7a8490;">Abbrev: Ls lease · Ln loan · Ut utility · Tx tax · In insurance · Bl bill · Mn maintenance · Lc license. Labels show start/due and end dates.</p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
     {% endif %}
 
     {% if business_kpis %}
-    <h3 style="font-size:1rem;">Key metrics</h3>
-    <table class="kpi-grid" role="presentation">
-        {% for k in business_kpis %}
-        <tr>
-            <td>
-                <strong>{{ k.label }}</strong>
-                {% if k.period_hint %}<span class="muted"> — {{ k.period_hint }}</span>{% endif %}
-                {% if k.detail %}<br><span class="muted" style="font-size:0.88rem;">{{ k.detail|linebreaksbr }}</span>{% endif %}
-            </td>
-            <td class="val">{{ k.value_display }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+    <tr>
+        <td style="padding:20px 28px 8px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+                  <p style="margin:0 0 4px 0;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#5c6978;">Metrics</p>
+                  <h3 style="margin:0 0 12px 0;font-size:16px;font-weight:650;color:#122436;">Key metrics</h3>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e1e6ec;border-collapse:collapse;">
+                {% for k in business_kpis %}
+                <tr>
+                    <td style="padding:12px 14px;font-size:14px;line-height:1.45;color:#24292f;border-bottom:1px solid #eef1f4;vertical-align:top;background-color:{% if forloop.counter0|divisibleby:2 %}#ffffff{% else %}#fafbfc{% endif %};">
+                        <strong style="color:#122436;">{{ k.label }}</strong>
+                        {% if k.period_hint %}<span style="color:#7a8490;font-size:13px;"> — {{ k.period_hint }}</span>{% endif %}
+                        {% if k.detail %}<br><span style="color:#5c6570;font-size:12px;line-height:1.5;">{{ k.detail|linebreaksbr }}</span>{% endif %}
+                    </td>
+                    <td style="padding:12px 14px;font-size:14px;font-weight:600;color:#122436;border-bottom:1px solid #eef1f4;vertical-align:top;white-space:nowrap;background-color:{% if forloop.counter0|divisibleby:2 %}#ffffff{% else %}#fafbfc{% endif %};">{{ k.value_display }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </td>
+    </tr>
     {% else %}
-    <p class="muted">No KPI rows yet — add them under Dream Blue → Business KPIs in admin.</p>
+    <tr>
+        <td style="padding:20px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:13px;color:#5c6570;">No KPI rows yet — add them under Dream Blue → Business KPIs in admin.</td>
+    </tr>
     {% endif %}
 
+    <!-- Data sections: shared table header style -->
     {% if business_lease_schedule %}
-    <h3 style="font-size:1rem;">Leases (monthly rent)</h3>
-    <table class="cal-table">
-        <thead>
-            <tr>
-                <th>Property</th>
-                <th>Tenant</th>
-                <th>Start</th>
-                <th>End</th>
-                <th>Rent/mo</th>
-                <th>Deposit / notes</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for e in business_lease_schedule %}
-            <tr>
-                <td>{{ e.property_label|default:"—" }}</td>
-                <td>{{ e.title }}</td>
-                <td>{{ e.due_date|date:"M j, Y" }}</td>
-                <td>{% if e.end_date %}{{ e.end_date|date:"M j, Y" }}{% else %}—{% endif %}</td>
-                <td>{% if e.amount %}${{ e.amount|floatformat:0 }}{% else %}—{% endif %}</td>
-                <td class="muted">{% if e.notes %}{{ e.notes|linebreaksbr }}{% else %}—{% endif %}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <tr>
+        <td style="padding:24px 28px 8px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+            <p style="margin:0 0 4px 0;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#5c6978;">Portfolio</p>
+            <h3 style="margin:0 0 12px 0;font-size:16px;font-weight:650;color:#122436;">Leases (monthly rent)</h3>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e1e6ec;border-collapse:collapse;">
+                <tr>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Property</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Tenant</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Start</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">End</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Rent/mo</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Notes</th>
+                </tr>
+                {% for e in business_lease_schedule %}
+                <tr>
+                    <td style="padding:11px 12px;font-size:13px;color:#24292f;border-bottom:1px solid #eef1f4;">{{ e.property_label|default:"—" }}</td>
+                    <td style="padding:11px 12px;font-size:13px;color:#24292f;border-bottom:1px solid #eef1f4;">{{ e.title }}</td>
+                    <td style="padding:11px 12px;font-size:13px;color:#24292f;border-bottom:1px solid #eef1f4;">{{ e.due_date|date:"M j, Y" }}</td>
+                    <td style="padding:11px 12px;font-size:13px;color:#24292f;border-bottom:1px solid #eef1f4;">{% if e.end_date %}{{ e.end_date|date:"M j, Y" }}{% else %}—{% endif %}</td>
+                    <td style="padding:11px 12px;font-size:13px;color:#122436;font-weight:600;border-bottom:1px solid #eef1f4;">{% if e.amount %}${{ e.amount|floatformat:0 }}{% else %}—{% endif %}</td>
+                    <td style="padding:11px 12px;font-size:12px;color:#5c6570;border-bottom:1px solid #eef1f4;">{% if e.notes %}{{ e.notes|linebreaksbr }}{% else %}—{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </td>
+    </tr>
     {% endif %}
 
     {% if business_loan_schedule %}
-    <h3 style="font-size:1rem;">Loans</h3>
-    <table class="cal-table">
-        <thead>
-            <tr>
-                <th>Loan</th>
-                <th>Start</th>
-                <th>End</th>
-                <th>Rate</th>
-                <th>Payment/mo</th>
-                <th>Account / contact</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for e in business_loan_schedule %}
-            <tr>
-                <td>
-                    <strong>{{ e.title }}</strong>
-                    {% if e.property_label %}<br><span class="muted">{{ e.property_label }}</span>{% endif %}
-                </td>
-                <td>{{ e.due_date|date:"M j, Y" }}</td>
-                <td>{% if e.end_date %}{{ e.end_date|date:"M j, Y" }}{% else %}—{% endif %}</td>
-                <td>{% if e.interest_rate_annual is not None %}{{ e.interest_rate_annual|floatformat:2 }}%{% else %}—{% endif %}</td>
-                <td>{% if e.amount %}${{ e.amount|floatformat:0 }}{% else %}—{% endif %}</td>
-                <td class="muted">
-                    {% if e.account_reference %}Acct {{ e.account_reference }}<br>{% endif %}
-                    {% if e.contact_info %}{{ e.contact_info|linebreaksbr }}{% endif %}
-                    {% if e.notes %}<br>{{ e.notes|linebreaksbr }}{% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <tr>
+        <td style="padding:24px 28px 8px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+            <h3 style="margin:0 0 12px 0;font-size:16px;font-weight:650;color:#122436;">Loans</h3>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e1e6ec;border-collapse:collapse;">
+                <tr>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Loan</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Start</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">End</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Rate</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Pmt/mo</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Account</th>
+                </tr>
+                {% for e in business_loan_schedule %}
+                <tr>
+                    <td style="padding:11px 12px;font-size:13px;color:#24292f;border-bottom:1px solid #eef1f4;">
+                        <strong style="color:#122436;">{{ e.title }}</strong>
+                        {% if e.property_label %}<br><span style="color:#5c6570;font-size:12px;">{{ e.property_label }}</span>{% endif %}
+                    </td>
+                    <td style="padding:11px 12px;font-size:13px;border-bottom:1px solid #eef1f4;">{{ e.due_date|date:"M j, Y" }}</td>
+                    <td style="padding:11px 12px;font-size:13px;border-bottom:1px solid #eef1f4;">{% if e.end_date %}{{ e.end_date|date:"M j, Y" }}{% else %}—{% endif %}</td>
+                    <td style="padding:11px 12px;font-size:13px;border-bottom:1px solid #eef1f4;">{% if e.interest_rate_annual is not None %}{{ e.interest_rate_annual|floatformat:2 }}%{% else %}—{% endif %}</td>
+                    <td style="padding:11px 12px;font-size:13px;font-weight:600;color:#122436;border-bottom:1px solid #eef1f4;">{% if e.amount %}${{ e.amount|floatformat:0 }}{% else %}—{% endif %}</td>
+                    <td style="padding:11px 12px;font-size:12px;color:#5c6570;border-bottom:1px solid #eef1f4;">
+                        {% if e.account_reference %}Acct {{ e.account_reference }}<br>{% endif %}
+                        {% if e.contact_info %}{{ e.contact_info|linebreaksbr }}{% endif %}
+                        {% if e.notes %}<br>{{ e.notes|linebreaksbr }}{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </td>
+    </tr>
     {% endif %}
 
     {% if business_utility_schedule %}
-    <h3 style="font-size:1rem;">Utilities</h3>
-    <table class="cal-table">
-        <thead>
-            <tr>
-                <th>Service</th>
-                <th>Property</th>
-                <th>Account</th>
-                <th>Amt/mo (est.)</th>
-                <th>Contact / notes</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for e in business_utility_schedule %}
-            <tr>
-                <td>{{ e.title }}</td>
-                <td>{{ e.property_label|default:"—" }}</td>
-                <td class="muted">{{ e.account_reference|default:"—" }}</td>
-                <td>{% if e.amount %}${{ e.amount|floatformat:2 }}{% else %}—{% endif %}</td>
-                <td class="muted">
-                    {% if e.contact_info %}{{ e.contact_info }}{% if e.notes %}<br>{% endif %}{% endif %}
-                    {% if e.notes %}{{ e.notes|linebreaksbr }}{% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <tr>
+        <td style="padding:24px 28px 8px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+            <h3 style="margin:0 0 12px 0;font-size:16px;font-weight:650;color:#122436;">Utilities</h3>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e1e6ec;border-collapse:collapse;">
+                <tr>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Service</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Property</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Account</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Amt/mo</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Notes</th>
+                </tr>
+                {% for e in business_utility_schedule %}
+                <tr>
+                    <td style="padding:11px 12px;font-size:13px;border-bottom:1px solid #eef1f4;">{{ e.title }}</td>
+                    <td style="padding:11px 12px;font-size:13px;border-bottom:1px solid #eef1f4;">{{ e.property_label|default:"—" }}</td>
+                    <td style="padding:11px 12px;font-size:12px;color:#5c6570;border-bottom:1px solid #eef1f4;">{{ e.account_reference|default:"—" }}</td>
+                    <td style="padding:11px 12px;font-size:13px;font-weight:600;border-bottom:1px solid #eef1f4;">{% if e.amount %}${{ e.amount|floatformat:2 }}{% else %}—{% endif %}</td>
+                    <td style="padding:11px 12px;font-size:12px;color:#5c6570;border-bottom:1px solid #eef1f4;">
+                        {% if e.contact_info %}{{ e.contact_info }}{% if e.notes %}<br>{% endif %}{% endif %}
+                        {% if e.notes %}{{ e.notes|linebreaksbr }}{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </td>
+    </tr>
     {% endif %}
 
     {% if business_insurance_tax_schedule %}
-    <h3 style="font-size:1rem;">Insurance &amp; property tax</h3>
-    <table class="cal-table">
-        <thead>
-            <tr>
-                <th>Item</th>
-                <th>Property</th>
-                <th>Amt/mo</th>
-                <th>Contact / notes</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for e in business_insurance_tax_schedule %}
-            <tr>
-                <td>{{ e.title }}</td>
-                <td>{{ e.property_label|default:"—" }}</td>
-                <td>{% if e.amount %}${{ e.amount|floatformat:0 }}{% else %}—{% endif %}</td>
-                <td class="muted">{% if e.contact_info %}{{ e.contact_info }}<br>{% endif %}{{ e.notes|linebreaksbr }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <tr>
+        <td style="padding:24px 28px 8px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+            <h3 style="margin:0 0 12px 0;font-size:16px;font-weight:650;color:#122436;">Insurance &amp; property tax</h3>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e1e6ec;border-collapse:collapse;">
+                <tr>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Item</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Property</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Amt/mo</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Notes</th>
+                </tr>
+                {% for e in business_insurance_tax_schedule %}
+                <tr>
+                    <td style="padding:11px 12px;font-size:13px;border-bottom:1px solid #eef1f4;">{{ e.title }}</td>
+                    <td style="padding:11px 12px;font-size:13px;border-bottom:1px solid #eef1f4;">{{ e.property_label|default:"—" }}</td>
+                    <td style="padding:11px 12px;font-size:13px;font-weight:600;border-bottom:1px solid #eef1f4;">{% if e.amount %}${{ e.amount|floatformat:0 }}{% else %}—{% endif %}</td>
+                    <td style="padding:11px 12px;font-size:12px;color:#5c6570;border-bottom:1px solid #eef1f4;">{% if e.contact_info %}{{ e.contact_info }}<br>{% endif %}{{ e.notes|linebreaksbr }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </td>
+    </tr>
     {% endif %}
 
     {% if business_operating_bills %}
-    <h3 style="font-size:1rem;">Other recurring expenses</h3>
-    <table class="cal-table">
-        <thead>
-            <tr>
-                <th>Item</th>
-                <th>Type</th>
-                <th>Amt</th>
-                <th>Contact / notes</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for e in business_operating_bills %}
-            <tr>
-                <td>{{ e.title }}</td>
-                <td>{{ e.get_event_type_display }}</td>
-                <td>{% if e.amount %}${{ e.amount|floatformat:2 }}{% else %}—{% endif %}</td>
-                <td class="muted">{% if e.contact_info %}{{ e.contact_info }}<br>{% endif %}{{ e.notes|linebreaksbr }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <tr>
+        <td style="padding:24px 28px 8px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+            <h3 style="margin:0 0 12px 0;font-size:16px;font-weight:650;color:#122436;">Other recurring expenses</h3>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e1e6ec;border-collapse:collapse;">
+                <tr>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Item</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Type</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Amt</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Notes</th>
+                </tr>
+                {% for e in business_operating_bills %}
+                <tr>
+                    <td style="padding:11px 12px;font-size:13px;border-bottom:1px solid #eef1f4;">{{ e.title }}</td>
+                    <td style="padding:11px 12px;font-size:13px;border-bottom:1px solid #eef1f4;">{{ e.get_event_type_display }}</td>
+                    <td style="padding:11px 12px;font-size:13px;font-weight:600;border-bottom:1px solid #eef1f4;">{% if e.amount %}${{ e.amount|floatformat:2 }}{% else %}—{% endif %}</td>
+                    <td style="padding:11px 12px;font-size:12px;color:#5c6570;border-bottom:1px solid #eef1f4;">{% if e.contact_info %}{{ e.contact_info }}<br>{% endif %}{{ e.notes|linebreaksbr }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </td>
+    </tr>
     {% endif %}
 
     {% if business_calendar_events %}
-    <h3 style="font-size:1rem;">Upcoming dates</h3>
-    <table class="cal-table">
-        <thead>
-            <tr>
-                <th>Due</th>
-                <th>Type</th>
-                <th>Item</th>
-                <th>Property / notes</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for e in business_calendar_events %}
-            <tr>
-                <td>{{ e.due_date|date:"M j, Y" }}{% if e.end_date %} – {{ e.end_date|date:"M j, Y" }}{% endif %}</td>
-                <td>{{ e.get_event_type_display }}</td>
-                <td>
-                    {{ e.title }}
-                    {% if e.amount %}<br><span class="muted">{{ e.amount }}</span>{% endif %}
-                    {% if e.reference_url %}<br><a href="{{ e.reference_url }}">Reference</a>{% endif %}
-                </td>
-                <td class="muted">{% if e.property_label %}{{ e.property_label }}{% endif %}{% if e.notes %}<br>{{ e.notes|linebreaksbr }}{% endif %}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <tr>
+        <td style="padding:24px 28px 8px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+            <h3 style="margin:0 0 12px 0;font-size:16px;font-weight:650;color:#122436;">Upcoming dates</h3>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e1e6ec;border-collapse:collapse;">
+                <tr>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Due</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Type</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Item</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Property / notes</th>
+                </tr>
+                {% for e in business_calendar_events %}
+                <tr>
+                    <td style="padding:11px 12px;font-size:13px;border-bottom:1px solid #eef1f4;">{{ e.due_date|date:"M j, Y" }}{% if e.end_date %} – {{ e.end_date|date:"M j, Y" }}{% endif %}</td>
+                    <td style="padding:11px 12px;font-size:13px;border-bottom:1px solid #eef1f4;">{{ e.get_event_type_display }}</td>
+                    <td style="padding:11px 12px;font-size:13px;border-bottom:1px solid #eef1f4;">
+                        {{ e.title }}
+                        {% if e.amount %}<br><span style="color:#5c6570;font-size:12px;">{{ e.amount }}</span>{% endif %}
+                        {% if e.reference_url %}<br><a href="{{ e.reference_url }}" style="color:#155dfc;text-decoration:none;font-weight:600;">Reference</a>{% endif %}
+                    </td>
+                    <td style="padding:11px 12px;font-size:12px;color:#5c6570;border-bottom:1px solid #eef1f4;">{% if e.property_label %}{{ e.property_label }}{% endif %}{% if e.notes %}<br>{{ e.notes|linebreaksbr }}{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </td>
+    </tr>
     {% else %}
-    <p class="muted">No calendar events in this window — add Business calendar events in admin.</p>
+    <tr>
+        <td style="padding:20px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:13px;color:#5c6570;">No calendar events in this window — add Business calendar events in admin.</td>
+    </tr>
     {% endif %}
 
     {% if business_report_sections %}
-    <h3 style="font-size:1rem;">Report narrative</h3>
-    {% for s in business_report_sections %}
-    <div class="opp">
-        <div class="opp-meta">{{ s.title }}{% if s.source == 'agent' %} · <em>agent draft</em>{% endif %}</div>
-        <div style="margin:0;">{{ s.body|linebreaksbr }}</div>
-    </div>
-    {% endfor %}
+    <tr>
+        <td style="padding:24px 28px 8px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+            <p style="margin:0 0 4px 0;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#5c6978;">Narrative</p>
+            <h3 style="margin:0 0 14px 0;font-size:16px;font-weight:650;color:#122436;">Report sections</h3>
+            {% for s in business_report_sections %}
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:14px;border:1px solid #e1e6ec;border-radius:8px;border-collapse:separate;">
+                <tr>
+                    <td style="padding:16px 18px;border-left:4px solid #155dfc;background-color:#fafbfc;">
+                        <p style="margin:0 0 8px 0;font-size:12px;font-weight:600;color:#57606a;text-transform:uppercase;letter-spacing:0.06em;">{{ s.title }}{% if s.source == 'agent' %} · <em style="font-style:italic;font-weight:500;color:#7a8490;">agent draft</em>{% endif %}</p>
+                        <div style="margin:0;font-size:14px;line-height:1.55;color:#24292f;">{{ s.body|linebreaksbr }}</div>
+                    </td>
+                </tr>
+            </table>
+            {% endfor %}
+        </td>
+    </tr>
     {% endif %}
 
     {% if grantscout_run %}
-    <h2>GrantScout — {{ grantscout_run.period_label }}</h2>
-    {% if grantscout_run.coverage_summary %}
-    <p>{{ grantscout_run.coverage_summary|linebreaksbr }}</p>
-    {% endif %}
+    <tr>
+        <td style="padding:28px 28px 8px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;border-top:1px solid #eef1f4;">
+            <p style="margin:0 0 4px 0;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#5c6978;">GrantScout</p>
+            <h2 style="margin:0 0 10px 0;font-size:18px;font-weight:650;color:#122436;line-height:1.3;">{{ grantscout_run.period_label }}</h2>
+            {% if grantscout_run.coverage_summary %}<p style="margin:0 0 18px 0;font-size:14px;line-height:1.55;color:#24292f;">{{ grantscout_run.coverage_summary|linebreaksbr }}</p>{% endif %}
+        </td>
+    </tr>
 
     {% if grantscout_opportunities %}
-    <h3 style="font-size:1rem;">Top priorities</h3>
-    {% for o in grantscout_opportunities %}
-    <div class="opp">
-        <div class="opp-meta">
-            <strong>{{ o.get_category_display }}</strong>
-            {% if o.opportunity_type %} · {{ o.opportunity_type }}{% endif %}
-            · score {{ o.priority_score }}
-            {% if o.deadline %} · deadline {{ o.deadline }}{% endif %}
-        </div>
-        <p style="margin:0 0 8px 0;">{{ o.summary|linebreaksbr }}</p>
-        {% if o.action_recommended %}<p style="margin:0 0 8px 0;"><em>Action:</em> {{ o.action_recommended|linebreaksbr }}</p>{% endif %}
-        {% if o.source_url_check_passed == False %}<p class="muted" style="margin:0 0 8px 0;"><em>Automated link check failed — verify URL.</em></p>{% endif %}
-        <a href="{{ o.source_url }}">Source</a>
-    </div>
-    {% endfor %}
+    <tr>
+        <td style="padding:0 28px 8px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+            <h3 style="margin:0 0 14px 0;font-size:16px;font-weight:650;color:#122436;">Top priorities</h3>
+            {% for o in grantscout_opportunities %}
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:16px;border:1px solid #e1e6ec;border-collapse:separate;">
+                <tr>
+                    <td style="padding:16px 18px;background-color:#fff;border-left:4px solid #155dfc;">
+                        <p style="margin:0 0 10px 0;font-size:12px;color:#57606a;line-height:1.45;">
+                            <strong style="color:#122436;">{{ o.get_category_display }}</strong>
+                            {% if o.opportunity_type %}<span style="color:#7a8490;"> · {{ o.opportunity_type }}</span>{% endif %}
+                            <span style="color:#7a8490;"> · score {{ o.priority_score }}</span>
+                            {% if o.deadline %}<span style="color:#7a8490;"> · deadline {{ o.deadline }}</span>{% endif %}
+                        </p>
+                        <p style="margin:0 0 10px 0;font-size:14px;line-height:1.55;color:#24292f;">{{ o.summary|linebreaksbr }}</p>
+                        {% if o.action_recommended %}<p style="margin:0 0 10px 0;font-size:13px;line-height:1.5;color:#3d4f5f;"><em style="font-style:italic;color:#57606a;">Action:</em> {{ o.action_recommended|linebreaksbr }}</p>{% endif %}
+                        {% if o.source_url_check_passed == False %}<p style="margin:0 0 10px 0;font-size:12px;color:#9a6700;"><em>Link check failed — verify URL.</em></p>{% endif %}
+                        <a href="{{ o.source_url }}" style="font-size:13px;font-weight:600;color:#155dfc;text-decoration:none;">View source →</a>
+                    </td>
+                </tr>
+            </table>
+            {% endfor %}
+        </td>
+    </tr>
     {% else %}
-    <p class="muted">No opportunities linked to this run yet.</p>
+    <tr>
+        <td style="padding:0 28px 8px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:13px;color:#5c6570;">No opportunities linked to this run yet.</td>
+    </tr>
     {% endif %}
 
     {% if grantscout_drift %}
-    <h3 style="font-size:1rem;">Changes vs previous run</h3>
-    <ul class="drift">
-        {% for d in grantscout_drift %}
-        <li><strong>{{ d.get_drift_type_display }}</strong> — {{ d.summary }}</li>
-        {% endfor %}
-    </ul>
+    <tr>
+        <td style="padding:16px 28px 8px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+            <h3 style="margin:0 0 10px 0;font-size:16px;font-weight:650;color:#122436;">Changes vs previous run</h3>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e1e6ec;border-collapse:collapse;">
+                {% for d in grantscout_drift %}
+                <tr>
+                    <td style="padding:10px 14px;font-size:13px;color:#24292f;border-bottom:1px solid #eef1f4;"><strong style="color:#122436;">{{ d.get_drift_type_display }}</strong> — {{ d.summary }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </td>
+    </tr>
     {% endif %}
 
     {% if grantscout_opportunities_unverified %}
-    <h3 style="font-size:1rem;">Links that failed automated verification</h3>
-    <p class="muted">Programs above may still be valid — search by name or agency if the link 404s.</p>
-    <ul class="drift">
-        {% for o in grantscout_opportunities_unverified %}
-        <li><a href="{{ o.source_url }}">{{ o.source_url }}</a> — {{ o.summary|truncatewords:25 }}</li>
-        {% endfor %}
-    </ul>
+    <tr>
+        <td style="padding:16px 28px 8px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+            <h3 style="margin:0 0 6px 0;font-size:16px;font-weight:650;color:#122436;">Unverified links</h3>
+            <p style="margin:0 0 10px 0;font-size:12px;color:#5c6570;">Programs may still be valid if a link breaks.</p>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e1e6ec;border-collapse:collapse;">
+                {% for o in grantscout_opportunities_unverified %}
+                <tr>
+                    <td style="padding:10px 14px;font-size:12px;border-bottom:1px solid #eef1f4;"><a href="{{ o.source_url }}" style="color:#155dfc;word-break:break-all;">{{ o.source_url }}</a><br><span style="color:#5c6570;">{{ o.summary|truncatewords:25 }}</span></td>
+                </tr>
+                {% endfor %}
+            </table>
+        </td>
+    </tr>
     {% endif %}
 
     {% else %}
-    <h2>GrantScout</h2>
-    <p class="muted">No completed GrantScout run in the database yet. Run <code>grantscout_run_agent</code> or complete a run via your workflow.</p>
+    <tr>
+        <td style="padding:28px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;border-top:1px solid #eef1f4;">
+            <p style="margin:0 0 4px 0;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#5c6978;">GrantScout</p>
+            <h2 style="margin:0 0 8px 0;font-size:18px;font-weight:650;color:#122436;">No completed run</h2>
+            <p style="margin:0;font-size:13px;color:#5c6570;line-height:1.5;">Run <code style="background:#f0f3f7;padding:2px 6px;border-radius:4px;font-size:12px;">grantscout_run_agent</code> from your workflow.</p>
+        </td>
+    </tr>
     {% endif %}
 
-    <p class="muted" style="margin-top:2rem;">Internal use only — Dream Blue combined report.</p>
+    <tr>
+        <td style="padding:28px 28px 32px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;border-top:1px solid #eef1f4;">
+            <p style="margin:0;font-size:11px;line-height:1.5;color:#7a8490;text-align:center;">Internal use only — Dream Blue combined report.</p>
+        </td>
+    </tr>
+
+</table>
+</td>
+</tr>
+</table>
 </body>
 </html>
