@@ -187,6 +187,35 @@ class DigestCommandSendTests(TestCase):
         self.assertIn('text/html', mail.outbox[0].alternatives[0][1])
 
 
+class GrantScoutReportBuilderTests(TestCase):
+    def test_compiled_report_contains_sections(self):
+        from dream_blue.grantscout_reports import build_compiled_report
+
+        text = build_compiled_report(
+            {
+                'coverage_summary': 'MN focus.',
+                'search_queries': ['deed grants'],
+                'opportunities': [
+                    {
+                        'category': 'grant',
+                        'opportunity_type': 'Demo',
+                        'eligibility': 'SMB',
+                        'deadline': '2099-01-01',
+                        'summary': 'Do a thing',
+                        'action_recommended': 'Apply',
+                        'source_url': 'https://example.org/x',
+                        'priority_score': 50,
+                        'dedupe_key': 'x',
+                    }
+                ],
+            }
+        )
+        self.assertIn('GrantScout run report', text)
+        self.assertIn('MN focus.', text)
+        self.assertIn('deed grants', text)
+        self.assertIn('https://example.org/x', text)
+
+
 class GrantScoutAgentNormalizationTests(TestCase):
     def test_normalize_payload(self):
         from dream_blue.grantscout_agent import normalize_agent_payload
@@ -251,3 +280,5 @@ class GrantScoutRunAgentCommandTests(TestCase):
         run = GrantScoutRun.objects.get(period_label='2099-05')
         self.assertEqual(run.status, GrantScoutRunStatus.COMPLETED)
         self.assertEqual(run.opportunities.count(), 1)
+        self.assertIn('GrantScout run report', run.compiled_report)
+        self.assertEqual(len(run.agent_snapshot.get('opportunities', [])), 1)

@@ -61,6 +61,15 @@ class GrantScoutRun(models.Model):
         blank=True,
         help_text='Short narrative of jurisdictions/topics covered',
     )
+    compiled_report = models.TextField(
+        blank=True,
+        help_text='Full human-readable report (Markdown) generated when the agent runs',
+    )
+    agent_snapshot = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text='Full normalized agent payload (audit / re-import)',
+    )
     notes = models.TextField(blank=True)
 
     class Meta:

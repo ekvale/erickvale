@@ -58,7 +58,29 @@ erickvale/
 
 Private operational / BI surface: property intelligence, digests, and **GrantScout** (grants, incentives, regulatory signals — Bemidji / Beltrami / MN focus). You can **fill runs by hand in admin** or run the **LLM agent** (`grantscout_run_agent`) with `OPENAI_API_KEY`, **`ANTHROPIC_API_KEY` (Claude)**, or `PERPLEXITY_API_KEY` — set `GRANTSCOUT_LLM_PROVIDER` accordingly (see `.env.example`).
 
+**Stored reports:** Each completed agent run saves **`compiled_report`** (Markdown-style text) and **`agent_snapshot`** (full JSON payload) on `GrantScoutRun`, plus rows in `GrantScoutOpportunity`. View in Django admin under the run.
+
 **Planned later:** KPIs, upcoming bills, property tax milestones, **lease expirations**, and **maintenance schedules** in the same Dream Blue area (models + digest sections). Not implemented yet; GrantScout + email are the first slice.
+
+#### Make report storage live (server)
+
+```bash
+cd ~/erickvale
+git pull
+source venv/bin/activate   # if you use a venv
+pip install -r requirements.txt   # if dependencies changed
+python manage.py migrate
+sudo systemctl restart gunicorn   # or your app service — loads new code
+```
+
+**Smoke test (optional, uses API credits):**
+
+```bash
+python manage.py grantscout_run_agent --dry-run
+python manage.py grantscout_run_agent --period "$(date +%Y-%m)"
+```
+
+In **Admin → GrantScout runs →** open the new run: confirm **Stored report** shows **compiled_report** and **agent_snapshot**, and **Opportunities** inline matches. Old runs created before this migration have empty `compiled_report` / `agent_snapshot` until you re-run the agent or leave them as-is.
 
 ### URLs (staff only)
 

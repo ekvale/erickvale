@@ -29,12 +29,19 @@ class GrantScoutDriftEntryInline(admin.TabularInline):
 class GrantScoutRunAdmin(admin.ModelAdmin):
     list_display = ('period_label', 'status', 'created_at', 'previous_run')
     list_filter = ('status',)
-    search_fields = ('period_label', 'notes', 'coverage_summary')
-    readonly_fields = ('created_at', 'updated_at')
+    search_fields = ('period_label', 'notes', 'coverage_summary', 'compiled_report')
+    readonly_fields = ('created_at', 'updated_at', 'compiled_report', 'agent_snapshot')
     inlines = [GrantScoutOpportunityInline, GrantScoutDriftEntryInline]
     fieldsets = (
         (None, {'fields': ('period_label', 'status', 'previous_run')}),
         ('Coverage', {'fields': ('coverage_summary', 'search_query_log', 'notes')}),
+        (
+            'Stored report (from agent)',
+            {
+                'fields': ('compiled_report', 'agent_snapshot'),
+                'description': 'Full text report and JSON snapshot written when grantscout_run_agent completes.',
+            },
+        ),
         ('Meta', {'fields': ('created_at', 'updated_at')}),
     )
 
