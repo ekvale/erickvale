@@ -44,15 +44,13 @@ def _content_peek_max_bytes() -> int:
 
 def url_body_suggests_page_moved(text: str) -> bool:
     """
-    True when HTML/text looks like a generic “this URL moved / new website” page.
-
-    Many agencies return HTTP 200 with a short placeholder instead of 404 after
-    a redesign (e.g. Minnesota Commerce).
+    True when HTML/text looks like a useless placeholder: “moved” page, or soft 404
+    (HTTP 200 with “page not found” style copy).
     """
-    if not text or len(text) < 80:
+    if not text or len(text) < 50:
         return False
     t = text.lower()
-    markers = (
+    moved_markers = (
         'page you are looking for has moved',
         'please update your bookmarks',
         'update your bookmarks',
@@ -62,12 +60,32 @@ def url_body_suggests_page_moved(text: str) -> bool:
         'content has moved to a new location',
         'you can either search for the page or go to the homepage',
     )
-    if any(m in t for m in markers):
+    if any(m in t for m in moved_markers):
         return True
     if 'we have a new website' in t and (
         'bookmark' in t or 'homepage' in t or 'search for the page' in t
     ):
         return True
+
+    # Soft 404: real HTTP 200 but error copy (SharePoint, CMS, etc.)
+    soft404_phrases = (
+        'sorry, this page is not available',
+        'this page is no longer available',
+        'the requested page could not be found',
+        'requested page could not be found',
+        'we can\'t find that page',
+        "we can't find that page",
+        'the page you are trying to view does not exist',
+    )
+    if any(p in t for p in soft404_phrases):
+        return True
+    if 'page not found' in t and ('404' in t or 'error' in t):
+        return True
+    if 'error 404' in t and (
+        'not found' in t or 'not available' in t or 'unavailable' in t or 'sorry' in t
+    ):
+        return True
+
     return False
 
 
@@ -90,9 +108,9 @@ def source_url_is_reachable(url: str, **_: Any) -> bool:
     Return True if the URL responds with a likely-useful page after redirects.
 
     Uses GET with stream=True (bounded read) and a browser-like User-Agent.
-    Rejects 404, 410, and 5xx. For 2xx (except 204), scans the first part of the
-    body for common “page moved / update bookmarks” placeholders that still use
-    HTTP 200. Treats 401/403 as OK when the site may block bots (logged).
+    Rejects 404, 410, and 5xx.     For 2xx (except 204), scans the first part of the body for “page moved” or
+    soft-404 wording that still returns HTTP 200. Treats 401/403 as OK when the
+    site may block bots (logged).
     """
     timeout = _timeout()
     peek = _content_peek_max_bytes()
@@ -126,7 +144,7 @@ def source_url_is_reachable(url: str, **_: Any) -> bool:
                 text = prefix.decode('utf-8', errors='ignore')
                 if url_body_suggests_page_moved(text):
                     logger.info(
-                        'URL check: %s — HTTP %s but body looks like moved/placeholder page',
+                        'URL check: %s — HTTP %s but body looks like moved/soft-404 page',
                         url[:120],
                         code,
                     )

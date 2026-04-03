@@ -318,6 +318,16 @@ class GrantScoutUrlBodyHeuristicTests(TestCase):
 
         self.assertFalse(url_body_suggests_page_moved('moved'))
 
+    def test_soft404_style_page(self):
+        from dream_blue.url_check import url_body_suggests_page_moved
+
+        html = """<!DOCTYPE html><html><body>
+        <h1>Page Not Found.</h1>
+        <p>Error 404.</p>
+        <p>Sorry, this page is not available.</p>
+        </body></html>"""
+        self.assertTrue(url_body_suggests_page_moved(html))
+
     @patch('dream_blue.url_check.requests.get')
     def test_http_200_placeholder_counts_as_unreachable(self, mock_get):
         from dream_blue.url_check import source_url_is_reachable
