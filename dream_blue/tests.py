@@ -1,6 +1,8 @@
 from unittest.mock import MagicMock, patch
 
 from django.contrib.auth.models import User
+from io import StringIO
+
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.test import Client, TestCase, override_settings
@@ -83,6 +85,15 @@ class SendDigestCommandTests(TestCase):
     @override_settings(DREAM_BLUE_REPORT_RECIPIENTS='a@example.com')
     def test_dry_run(self):
         call_command('dream_blue_send_digest', '--dry-run')
+
+
+class DreamBlueOpsDbCheckCommandTests(TestCase):
+    def test_check_ops_db_reports_ok(self):
+        out = StringIO()
+        call_command('dream_blue_check_ops_db', stdout=out)
+        text = out.getvalue()
+        self.assertIn('0004_business_calendar_kpi_report_sections', text)
+        self.assertIn('Operations tables are present.', text)
 
 
 class DigestContextTests(TestCase):
