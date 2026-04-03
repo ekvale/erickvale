@@ -56,45 +56,48 @@ def upcoming_business_calendar_events():
     )
 
 
-def build_email_calendar_month_grid(year: int, month: int) -> dict:
-    """
-    Sunday-first weeks for the given month; each day lists short labels for
-    milestones and spans (leases, loans, bills, tax, etc.) for HTML email clients.
-    """
-    last_day = calendar.monthrange(year, month)[1]
-    first = date(year, month, 1)
-    last = date(year, month, last_day)
-    evs = events_overlapping_range(first, last)
+_EMAIL_EVENT_TYPE_ABBR = {
+    BusinessCalendarEventType.LEASE: 'Ls',
+    BusinessCalendarEventType.LOAN: 'Ln',
+    BusinessCalendarEventType.UTILITY: 'Ut',
+    BusinessCalendarEventType.PROPERTY_TAX: 'Tx',
+    BusinessCalendarEventType.INSURANCE: 'In',
+    BusinessCalendarEventType.BILL: 'Bl',
+    BusinessCalendarEventType.MAINTENANCE: 'Mn',
+    BusinessCalendarEventType.LICENSE: 'Lc',
+    BusinessCalendarEventType.OTHER: '·',
+}
 
-    type_abbr = {
-        BusinessCalendarEventType.LEASE: 'Ls',
-        BusinessCalendarEventType.LOAN: 'Ln',
-        BusinessCalendarEventType.UTILITY: 'Ut',
-        BusinessCalendarEventType.PROPERTY_TAX: 'Tx',
-        BusinessCalendarEventType.INSURANCE: 'In',
-        BusinessCalendarEventType.BILL: 'Bl',
-        BusinessCalendarEventType.MAINTENANCE: 'Mn',
-        BusinessCalendarEventType.LICENSE: 'Lc',
-        BusinessCalendarEventType.OTHER: '·',
-    }
 
-    def chips_for_day(d: date) -> list[dict]:
-        """Start/due and end days only (not every day of multi-year spans)."""
-        chips: list[dict] = []
-        for ev in evs:
-            ab = type_abbr.get(ev.event_type, '·')
-            col = EVENT_TYPE_COLORS.get(ev.event_type, '#455a64')
-            if ev.due_date == d:
-                if ev.end_date and ev.end_date > ev.due_date:
-                    label = f'{ab} {ev.title[:22]} → {ev.end_date.strftime("%b %d, %Y")}'
-                else:
-                    label = f'{ab} {ev.title[:30]}'
-                chips.append({'text': label.strip()[:46], 'color': col})
-            elif ev.end_date and ev.end_date == d and ev.due_date < d:
-                label = f'{ab} Ends: {ev.title[:26]}'
-                chips.append({'text': label.strip()[:46], 'color': col})
-        return chips[:8]
+def _email_chips_for_day(
+    evs: list[BusinessCalendarEvent],
+    d: date,
+    *,
+    max_chips: int = 8,
+) -> list[dict]:
+    """Labels for **due/start** and **end** on this day (not every day of a long span)."""
+    chips: list[dict] = []
+    for ev in evs:
+        ab = _EMAIL_EVENT_TYPE_ABBR.get(ev.event_type, '·')
+        col = EVENT_TYPE_COLORS.get(ev.event_type, '#455a64')
+        if ev.due_date == d:
+            if ev.end_date and ev.end_date > ev.due_date:
+                label = f'{ab} {ev.title[:22]} → {ev.end_date.strftime("%b %d, %Y")}'
+            else:
+                label = f'{ab} {ev.title[:30]}'
+            chips.append({'text': label.strip()[:46], 'color': col})
+        elif ev.end_date and ev.end_date == d and ev.due_date < d:
+            label = f'{ab} Ends: {ev.title[:26]}'
+            chips.append({'text': label.strip()[:46], 'color': col})
+    return chips[:max_chips]
 
+
+def _build_email_month_grid_from_events(
+    year: int,
+    month: int,
+    evs: list[BusinessCalendarEvent],
+) -> dict:
+    """Sunday-first month grid; ``evs`` may cover a wider range (e.g. full year)."""
     cal = calendar.Calendar(firstweekday=6)
     weeks = []
     for week in cal.monthdatescalendar(year, month):
@@ -107,17 +110,42 @@ def build_email_calendar_month_grid(year: int, month: int) -> dict:
                     {
                         'day': d.day,
                         'out_of_month': False,
-                        'chips': chips_for_day(d),
+                        'chips': _email_chips_for_day(evs, d),
                     }
                 )
         weeks.append(row)
-
     return {
         'year': year,
         'month': month,
         'month_label': calendar.month_name[month],
         'weeks': weeks,
     }
+
+
+def build_email_calendar_month_grid(year: int, month: int) -> dict:
+    """
+    Sunday-first weeks for the given month; each day lists short labels for
+    milestones and spans (leases, loans, bills, tax, etc.) for HTML email clients.
+    """
+    last_day = calendar.monthrange(year, month)[1]
+    first = date(year, month, 1)
+    last = date(year, month, last_day)
+    evs = events_overlapping_range(first, last)
+    return _build_email_month_grid_from_events(year, month, evs)
+
+
+def build_email_calendar_year_grids(year: int) -> dict:
+    """
+    All twelve months for ``year``, with one DB query for events overlapping
+    Jan 1–Dec 31 (lease starts/ends, loan maturity, tax installments, etc.).
+    """
+    year_start = date(year, 1, 1)
+    year_end = date(year, 12, 31)
+    evs = events_overlapping_range(year_start, year_end)
+    months = [
+        _build_email_month_grid_from_events(year, m, evs) for m in range(1, 13)
+    ]
+    return {'year': year, 'months': months}
 
 
 def active_lease_schedule():
@@ -348,7 +376,7 @@ def build_monthly_digest_context(*, include_grantscout: bool = True) -> dict:
         'report_subtitle': 'Operations, KPIs, and GrantScout',
         'calendar_window_start': today,
         'calendar_window_end': window_end,
-        'email_calendar_grid': build_email_calendar_month_grid(today.year, today.month),
+        'email_calendar_year': build_email_calendar_year_grids(today.year),
         'business_calendar_events': upcoming_business_calendar_events(),
         'business_lease_schedule': active_lease_schedule(),
         'business_loan_schedule': active_loan_schedule(),

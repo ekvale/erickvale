@@ -1,3 +1,4 @@
+from datetime import date
 from unittest.mock import MagicMock, patch
 
 from django.contrib.auth.models import User
@@ -139,24 +140,43 @@ class DigestContextTests(TestCase):
             value_display='94%',
             period_hint='as of today',
         )
+        BusinessCalendarEvent.objects.create(
+            title='Year-end note',
+            event_type=BusinessCalendarEventType.LOAN,
+            due_date=date(d0.year, 1, 5),
+            end_date=date(d0.year, 12, 15),
+            property_label='HQ',
+        )
         ctx = build_monthly_digest_context(include_grantscout=False)
         tax_events = [
             e for e in ctx['business_calendar_events'] if e.title == 'Property tax installment'
         ]
         self.assertEqual(len(tax_events), 1)
         self.assertGreaterEqual(len(ctx['business_calendar_events']), 1)
-        grid = ctx['email_calendar_grid']
-        self.assertEqual(grid['year'], d0.year)
-        self.assertEqual(grid['month'], d0.month)
-        self.assertTrue(grid['weeks'])
+        ycal = ctx['email_calendar_year']
+        self.assertEqual(ycal['year'], d0.year)
+        self.assertEqual(len(ycal['months']), 12)
+        mo = ycal['months'][d0.month - 1]
+        self.assertEqual(mo['month'], d0.month)
         found_tax_chip = False
-        for week in grid['weeks']:
+        for week in mo['weeks']:
             for cell in week:
                 if cell.get('day') == d0.day and not cell.get('out_of_month'):
                     for chip in cell.get('chips', []):
                         if 'Property tax' in chip.get('text', ''):
                             found_tax_chip = True
-        self.assertTrue(found_tax_chip, 'email month grid should include property tax on due date')
+        self.assertTrue(found_tax_chip, 'year grid should include property tax on due date')
+        dec = ycal['months'][11]
+        found_loan_end = False
+        for week in dec['weeks']:
+            for cell in week:
+                if cell.get('day') == 15 and not cell.get('out_of_month'):
+                    for chip in cell.get('chips', []):
+                        if 'Ends' in chip.get('text', '') and 'Year-end note' in chip.get(
+                            'text', ''
+                        ):
+                            found_loan_end = True
+        self.assertTrue(found_loan_end, 'December should show loan maturity chip')
         occ = [k for k in ctx['business_kpis'] if k.label == 'Occupancy']
         self.assertEqual(len(occ), 1)
         self.assertTrue(
