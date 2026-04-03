@@ -499,7 +499,10 @@ def build_monthly_digest_context(*, include_grantscout: bool = True) -> dict:
     ctx = {
         'generated_at': now,
         'title': 'Dream Blue report',
-        'report_subtitle': 'Operations, lease economics, suggested rents, KPIs, lease comps, GrantScout',
+        'report_subtitle': (
+            'Calendar, KPIs, leases (above + storage sf), illustrated asking rents per unit, '
+            'breakeven rent & 8–10% cap band, loans & utilities, lease comps, GrantScout'
+        ),
         'calendar_window_start': today,
         'calendar_window_end': window_end,
         'digest_base_url_configured': bool(
