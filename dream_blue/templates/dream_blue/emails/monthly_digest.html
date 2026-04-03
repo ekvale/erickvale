@@ -235,20 +235,35 @@
             {% else %}
             <p style="margin:0 0 8px 0;font-size:12px;color:#9a6700;">Add <code style="background:#f6f8fa;padding:2px 6px;border-radius:4px;">square_footage</code> on each lease row in admin for $/sf figures.</p>
             {% endif %}
-            {% if lease_economics.benchmark_configured %}
             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e1e6ec;border-collapse:collapse;margin-top:10px;">
                 <tr>
                     <td style="padding:12px 14px;font-size:13px;line-height:1.5;color:#24292f;background:#fafbfc;border-left:4px solid #5c6bc0;">
-                        <strong>Market benchmark (configured):</strong> ${{ lease_economics.benchmark_psf_year|floatformat:2 }}/sf/yr<br>
-                        <span style="font-size:12px;color:#5c6570;">{{ lease_economics.benchmark_note|linebreaksbr }}</span>
-                        {% if lease_economics.vs_benchmark_psf_year is not None %}
-                        <br><span style="font-size:12px;color:#122436;margin-top:6px;display:inline-block;">Breakeven required portfolio $/sf is <strong>{% if lease_economics.vs_benchmark_psf_year > 0 %}above{% elif lease_economics.vs_benchmark_psf_year < 0 %}below{% else %}equal to{% endif %}</strong> your benchmark by ${{ lease_economics.vs_benchmark_psf_year|floatformat:2 }}/sf/yr.</span>
+                        <strong>Market-style cap rate band:</strong> {{ lease_economics.cap_rate_benchmark_low_pct|floatformat:1 }}%–{{ lease_economics.cap_rate_benchmark_high_pct|floatformat:1 }}% (configure with <code style="background:#eef1f4;padding:2px 6px;border-radius:4px;">DREAM_BLUE_CAP_RATE_BENCHMARK_LOW</code> / <code style="background:#eef1f4;padding:2px 6px;border-radius:4px;">HIGH</code>).<br>
+                        <span style="font-size:12px;color:#5c6570;display:inline-block;margin-top:6px;"><strong>Trailing NOI</strong> (for this band): rent collected minus <em>operating</em> expenses only — <strong>excludes loan payments</strong>. Monthly ${{ lease_economics.noi_monthly|floatformat:0 }} · annual ~${{ lease_economics.noi_annual|floatformat:0 }}.</span>
+                        {% if lease_economics.show_cap_implied_value %}
+                        <br><span style="font-size:12px;color:#122436;margin-top:8px;display:inline-block;"><strong>Implied value from NOI ÷ cap:</strong> ~${{ lease_economics.implied_value_range_min|floatformat:0 }} – ${{ lease_economics.implied_value_range_max|floatformat:0 }}</span>
+                        {% if lease_economics.cap_implied_psf_low %}
+                        <span style="font-size:12px;color:#122436;"> (~${{ lease_economics.cap_implied_psf_low|floatformat:2 }}–${{ lease_economics.cap_implied_psf_high|floatformat:2 }}/sf on {{ lease_economics.total_leasable_sqft|floatformat:0 }} leasable sf).</span>
+                        {% endif %}
+                        <span style="font-size:11px;color:#5c6570;display:block;margin-top:6px;">Illustrative only: uses current calendar amounts, not stabilized income or formal appraisal.</span>
+                        {% else %}
+                        <br><span style="font-size:12px;color:#9a6700;margin-top:8px;display:inline-block;">Implied cap value not shown: trailing NOI is zero or negative at current rent vs operating expenses.</span>
                         {% endif %}
                     </td>
                 </tr>
             </table>
-            {% else %}
-            <p style="margin:10px 0 0 0;font-size:12px;line-height:1.5;color:#5c6570;"><strong>Industry / market average:</strong> set <code style="background:#f6f8fa;padding:2px 6px;border-radius:4px;">DREAM_BLUE_RENT_BENCHMARK_PSF_YEAR</code> and <code style="background:#f6f8fa;padding:2px 6px;border-radius:4px;">DREAM_BLUE_RENT_BENCHMARK_NOTE</code> (gross vs NNN, source, date) to compare required $/sf to a competitive benchmark.</p>
+            {% if lease_economics.benchmark_configured %}
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e1e6ec;border-collapse:collapse;margin-top:10px;">
+                <tr>
+                    <td style="padding:12px 14px;font-size:13px;line-height:1.5;color:#24292f;background:#fafbfc;border-left:4px solid #7e57c2;">
+                        <strong>Optional $/sf benchmark:</strong> ${{ lease_economics.benchmark_psf_year|floatformat:2 }}/sf/yr<br>
+                        <span style="font-size:12px;color:#5c6570;">{{ lease_economics.benchmark_note|linebreaksbr }}</span>
+                        {% if lease_economics.vs_benchmark_psf_year is not None %}
+                        <br><span style="font-size:12px;color:#122436;margin-top:6px;display:inline-block;">Breakeven required portfolio $/sf is <strong>{% if lease_economics.vs_benchmark_psf_year > 0 %}above{% elif lease_economics.vs_benchmark_psf_year < 0 %}below{% else %}equal to{% endif %}</strong> this figure by ${{ lease_economics.vs_benchmark_psf_year|floatformat:2 }}/sf/yr.</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
             {% endif %}
         </td>
     </tr>

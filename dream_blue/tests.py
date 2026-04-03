@@ -484,6 +484,29 @@ class LeaseEconomicsTests(TestCase):
         self.assertTrue(s['sqft_complete'])
         self.assertEqual(s['occupied_unit_count'], 3)
         self.assertEqual(s['vacant_unit_count'], 1)
+        self.assertEqual(s['cap_rate_benchmark_low_pct'], Decimal('8'))
+        self.assertEqual(s['cap_rate_benchmark_high_pct'], Decimal('10'))
+        if s['show_cap_implied_value']:
+            self.assertLessEqual(
+                s['implied_value_range_min'], s['implied_value_range_max']
+            )
+            self.assertGreater(s['implied_value_range_max'], Decimal('0'))
+
+    @override_settings(
+        DREAM_BLUE_CAP_RATE_BENCHMARK_LOW='8',
+        DREAM_BLUE_CAP_RATE_BENCHMARK_HIGH='10',
+    )
+    def test_cap_implied_value_ordering(self):
+        from dream_blue.lease_economics import build_lease_economics_snapshot
+
+        s = build_lease_economics_snapshot()
+        if not s['show_cap_implied_value']:
+            self.skipTest('seed data NOI not positive')
+        noi = s['noi_annual']
+        v10 = (noi / Decimal('0.10')).quantize(Decimal('0'))
+        v8 = (noi / Decimal('0.08')).quantize(Decimal('0'))
+        self.assertEqual(s['implied_value_range_min'], min(v10, v8))
+        self.assertEqual(s['implied_value_range_max'], max(v10, v8))
 
     @override_settings(DREAM_BLUE_RENT_BENCHMARK_PSF_YEAR='14.50')
     def test_benchmark_parsed_when_set(self):

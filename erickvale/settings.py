@@ -99,7 +99,16 @@ DREAM_BLUE_LEASE_ECONOMICS_VACANCY_PCT = config(
     'DREAM_BLUE_LEASE_ECONOMICS_VACANCY_PCT',
     default='8',
 )
-# Optional market benchmark: asking/market $/sf/year (gross or NNN — say which in note below).
+# Cap-rate band for digest lease economics (market-style implied value from trailing NOI).
+DREAM_BLUE_CAP_RATE_BENCHMARK_LOW = config(
+    'DREAM_BLUE_CAP_RATE_BENCHMARK_LOW',
+    default='8',
+)
+DREAM_BLUE_CAP_RATE_BENCHMARK_HIGH = config(
+    'DREAM_BLUE_CAP_RATE_BENCHMARK_HIGH',
+    default='10',
+)
+# Optional extra benchmark: asking/market $/sf/year (gross or NNN — say which in note below).
 DREAM_BLUE_RENT_BENCHMARK_PSF_YEAR = config(
     'DREAM_BLUE_RENT_BENCHMARK_PSF_YEAR',
     default='',

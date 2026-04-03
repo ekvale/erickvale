@@ -1,7 +1,8 @@
 """
-Portfolio lease economics for digest: expense roll-up, vacancy-adjusted breakeven, $/sf vs benchmark.
+Portfolio lease economics for digest: expense roll-up, vacancy-adjusted breakeven,
+cap-rate implied value band (default 8–10%), optional $/sf benchmark.
 
-Uses active BusinessCalendarEvent rows (amounts). Benchmark $/sf/year is optional via settings.
+Uses active BusinessCalendarEvent rows (amounts).
 """
 
 from __future__ import annotations
@@ -41,6 +42,28 @@ def _vacancy_pct() -> Decimal:
     if v > Decimal('40'):
         v = Decimal('40')
     return v
+
+
+def _cap_rate_bounds_pct() -> tuple[Decimal, Decimal]:
+    """Returns (low_pct, high_pct) as whole numbers e.g. 8 and 10 for 8% and 10%."""
+
+    def _pct(key: str, default: str) -> Decimal:
+        raw = getattr(settings, key, default)
+        try:
+            v = Decimal(str(raw).strip())
+        except Exception:
+            v = Decimal(default)
+        return v
+
+    low = _pct('DREAM_BLUE_CAP_RATE_BENCHMARK_LOW', '8')
+    high = _pct('DREAM_BLUE_CAP_RATE_BENCHMARK_HIGH', '10')
+    if low < Decimal('3'):
+        low = Decimal('3')
+    if high > Decimal('40'):
+        high = Decimal('40')
+    if low >= high:
+        low, high = Decimal('8'), Decimal('10')
+    return low, high
 
 
 def _benchmark_psf_year() -> tuple[Decimal | None, str]:
@@ -121,6 +144,27 @@ def build_lease_economics_snapshot() -> dict:
     if bench_psf is not None and required_psf_year_portfolio is not None:
         vs_benchmark = (required_psf_year_portfolio - bench_psf).quantize(Decimal('0.01'))
 
+    cap_low_pct, cap_high_pct = _cap_rate_bounds_pct()
+    noi_monthly = (monthly_rent - monthly_operating).quantize(Decimal('0.01'))
+    noi_annual = (noi_monthly * Decimal('12')).quantize(Decimal('0.01'))
+    show_cap_implied_value = noi_annual > 0
+    implied_value_range_min = None
+    implied_value_range_max = None
+    cap_implied_psf_low = None
+    cap_implied_psf_high = None
+    if show_cap_implied_value:
+        v_hi_cap = (noi_annual / (cap_high_pct / Decimal('100'))).quantize(Decimal('0'))
+        v_lo_cap = (noi_annual / (cap_low_pct / Decimal('100'))).quantize(Decimal('0'))
+        implied_value_range_min = min(v_hi_cap, v_lo_cap)
+        implied_value_range_max = max(v_hi_cap, v_lo_cap)
+        if total_leasable_sqft > 0:
+            cap_implied_psf_low = (
+                implied_value_range_min / Decimal(total_leasable_sqft)
+            ).quantize(Decimal('0.01'))
+            cap_implied_psf_high = (
+                implied_value_range_max / Decimal(total_leasable_sqft)
+            ).quantize(Decimal('0.01'))
+
     physical_occupancy_pct = None
     if n_units > 0:
         physical_occupancy_pct = (
@@ -143,6 +187,15 @@ def build_lease_economics_snapshot() -> dict:
         'benchmark_configured': bench_psf is not None,
         'benchmark_note': bench_note,
         'vs_benchmark_psf_year': vs_benchmark,
+        'cap_rate_benchmark_low_pct': cap_low_pct,
+        'cap_rate_benchmark_high_pct': cap_high_pct,
+        'noi_monthly': noi_monthly,
+        'noi_annual': noi_annual,
+        'show_cap_implied_value': show_cap_implied_value,
+        'implied_value_range_min': implied_value_range_min,
+        'implied_value_range_max': implied_value_range_max,
+        'cap_implied_psf_low': cap_implied_psf_low,
+        'cap_implied_psf_high': cap_implied_psf_high,
         'lease_unit_count': n_units,
         'occupied_unit_count': len(occupied),
         'vacant_unit_count': len(vacant),
