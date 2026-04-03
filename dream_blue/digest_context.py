@@ -169,11 +169,15 @@ def build_operations_calendar_markdown() -> str:
             en = row.end_date.isoformat() if row.end_date else ''
             rate = f'{row.interest_rate_annual:.2f}' if row.interest_rate_annual is not None else ''
             pay = _md_money(row.amount)
+            extra_bits = [
+                _md_row_escape(row.contact_info or ''),
+                _md_row_escape(row.notes or ''),
+            ]
+            extra = '; '.join(b for b in extra_bits if b)
             lines.append(
                 f'| {_md_row_escape(row.title)} | {_md_row_escape(row.property_label)} | '
                 f'{st} | {en} | {rate} | {pay} | '
-                f'{_md_row_escape(row.account_reference)} | '
-                f'{_md_row_escape(row.contact_info)}; {_md_row_escape(row.notes)} |'
+                f'{_md_row_escape(row.account_reference)} | {extra} |'
             )
 
     lines.extend(

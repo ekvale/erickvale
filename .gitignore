@@ -120,3 +120,6 @@ deploy/ALLMINNESOTA_DEPLOY.md
 deploy/FRAUD_DETECTION_QUICK_DEPLOY.md
 card_maker/kvale_set/uploaded_images/
 
+# Local preview output (GrantScout report dry-run)
+grantscout_report_preview.md
+
