@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
-from datetime import timedelta
+import calendar
+from datetime import date, timedelta
 
 from django.conf import settings
 from django.db.models import Q
 from django.utils import timezone
 
+from .calendar_api import EVENT_TYPE_COLORS, events_overlapping_range
 from .models import (
     BusinessCalendarEvent,
     BusinessCalendarEventType,
@@ -52,6 +54,70 @@ def upcoming_business_calendar_events():
         .distinct()
         .order_by('due_date', 'sort_order', 'id')
     )
+
+
+def build_email_calendar_month_grid(year: int, month: int) -> dict:
+    """
+    Sunday-first weeks for the given month; each day lists short labels for
+    milestones and spans (leases, loans, bills, tax, etc.) for HTML email clients.
+    """
+    last_day = calendar.monthrange(year, month)[1]
+    first = date(year, month, 1)
+    last = date(year, month, last_day)
+    evs = events_overlapping_range(first, last)
+
+    type_abbr = {
+        BusinessCalendarEventType.LEASE: 'Ls',
+        BusinessCalendarEventType.LOAN: 'Ln',
+        BusinessCalendarEventType.UTILITY: 'Ut',
+        BusinessCalendarEventType.PROPERTY_TAX: 'Tx',
+        BusinessCalendarEventType.INSURANCE: 'In',
+        BusinessCalendarEventType.BILL: 'Bl',
+        BusinessCalendarEventType.MAINTENANCE: 'Mn',
+        BusinessCalendarEventType.LICENSE: 'Lc',
+        BusinessCalendarEventType.OTHER: '·',
+    }
+
+    def chips_for_day(d: date) -> list[dict]:
+        """Start/due and end days only (not every day of multi-year spans)."""
+        chips: list[dict] = []
+        for ev in evs:
+            ab = type_abbr.get(ev.event_type, '·')
+            col = EVENT_TYPE_COLORS.get(ev.event_type, '#455a64')
+            if ev.due_date == d:
+                if ev.end_date and ev.end_date > ev.due_date:
+                    label = f'{ab} {ev.title[:22]} → {ev.end_date.strftime("%b %d, %Y")}'
+                else:
+                    label = f'{ab} {ev.title[:30]}'
+                chips.append({'text': label.strip()[:46], 'color': col})
+            elif ev.end_date and ev.end_date == d and ev.due_date < d:
+                label = f'{ab} Ends: {ev.title[:26]}'
+                chips.append({'text': label.strip()[:46], 'color': col})
+        return chips[:8]
+
+    cal = calendar.Calendar(firstweekday=6)
+    weeks = []
+    for week in cal.monthdatescalendar(year, month):
+        row = []
+        for d in week:
+            if d.month != month:
+                row.append({'day': None, 'out_of_month': True, 'chips': []})
+            else:
+                row.append(
+                    {
+                        'day': d.day,
+                        'out_of_month': False,
+                        'chips': chips_for_day(d),
+                    }
+                )
+        weeks.append(row)
+
+    return {
+        'year': year,
+        'month': month,
+        'month_label': calendar.month_name[month],
+        'weeks': weeks,
+    }
 
 
 def active_lease_schedule():
@@ -282,6 +348,7 @@ def build_monthly_digest_context(*, include_grantscout: bool = True) -> dict:
         'report_subtitle': 'Operations, KPIs, and GrantScout',
         'calendar_window_start': today,
         'calendar_window_end': window_end,
+        'email_calendar_grid': build_email_calendar_month_grid(today.year, today.month),
         'business_calendar_events': upcoming_business_calendar_events(),
         'business_lease_schedule': active_lease_schedule(),
         'business_loan_schedule': active_loan_schedule(),

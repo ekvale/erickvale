@@ -30,6 +30,36 @@
     <h2>Operations &amp; KPIs</h2>
     <p class="muted">Upcoming dates {{ calendar_window_start|date:"M j, Y" }} — {{ calendar_window_end|date:"M j, Y" }}</p>
 
+    {% if email_calendar_grid %}
+    <h3 style="font-size:1rem;margin:1.25rem 0 0.35rem 0;">Month at a glance — {{ email_calendar_grid.month_label }} {{ email_calendar_grid.year }}</h3>
+    <p class="muted" style="font-size:0.85rem;margin:0 0 10px 0;line-height:1.4;">Each cell is one day (Sun–Sat). Labels show <strong>start/due</strong> and <strong>end</strong> dates only. Abbrev: Ls lease, Ln loan, Ut utility, Tx tax, In insurance, Bl bill, Mn maintenance, Lc license.</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;table-layout:fixed;font-size:11px;border:1px solid #ccc;margin:0 0 16px 0;">
+        <tr>
+            <th style="border:1px solid #ddd;background:#f0f4f8;padding:8px 4px;text-align:center;font-weight:600;color:#333;">Sun</th>
+            <th style="border:1px solid #ddd;background:#f0f4f8;padding:8px 4px;text-align:center;font-weight:600;color:#333;">Mon</th>
+            <th style="border:1px solid #ddd;background:#f0f4f8;padding:8px 4px;text-align:center;font-weight:600;color:#333;">Tue</th>
+            <th style="border:1px solid #ddd;background:#f0f4f8;padding:8px 4px;text-align:center;font-weight:600;color:#333;">Wed</th>
+            <th style="border:1px solid #ddd;background:#f0f4f8;padding:8px 4px;text-align:center;font-weight:600;color:#333;">Thu</th>
+            <th style="border:1px solid #ddd;background:#f0f4f8;padding:8px 4px;text-align:center;font-weight:600;color:#333;">Fri</th>
+            <th style="border:1px solid #ddd;background:#f0f4f8;padding:8px 4px;text-align:center;font-weight:600;color:#333;">Sat</th>
+        </tr>
+        {% for week in email_calendar_grid.weeks %}
+        <tr>
+            {% for cell in week %}
+            <td valign="top" style="border:1px solid #e5e5e5;padding:5px 4px 8px 4px;width:14.28%;vertical-align:top;{% if cell.out_of_month %}background:#f7f7f7;{% else %}background:#ffffff;{% endif %}">
+                {% if cell.day %}
+                <div style="font-weight:700;font-size:13px;margin:0 0 4px 0;color:#1a1a1a;">{{ cell.day }}</div>
+                {% for chip in cell.chips %}
+                <span style="display:block;font-size:10px;line-height:1.25;margin:4px 0 0 0;padding:3px 5px;border-radius:3px;background-color:{{ chip.color }};color:#ffffff;word-break:break-word;">{{ chip.text }}</span>
+                {% endfor %}
+                {% else %}&nbsp;{% endif %}
+            </td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
     {% if business_kpis %}
     <h3 style="font-size:1rem;">Key metrics</h3>
     <table class="kpi-grid" role="presentation">

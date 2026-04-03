@@ -145,6 +145,18 @@ class DigestContextTests(TestCase):
         ]
         self.assertEqual(len(tax_events), 1)
         self.assertGreaterEqual(len(ctx['business_calendar_events']), 1)
+        grid = ctx['email_calendar_grid']
+        self.assertEqual(grid['year'], d0.year)
+        self.assertEqual(grid['month'], d0.month)
+        self.assertTrue(grid['weeks'])
+        found_tax_chip = False
+        for week in grid['weeks']:
+            for cell in week:
+                if cell.get('day') == d0.day and not cell.get('out_of_month'):
+                    for chip in cell.get('chips', []):
+                        if 'Property tax' in chip.get('text', ''):
+                            found_tax_chip = True
+        self.assertTrue(found_tax_chip, 'email month grid should include property tax on due date')
         occ = [k for k in ctx['business_kpis'] if k.label == 'Occupancy']
         self.assertEqual(len(occ), 1)
         self.assertTrue(
