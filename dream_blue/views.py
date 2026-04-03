@@ -1,4 +1,5 @@
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_GET
@@ -10,14 +11,15 @@ from .digest_context import (
 from .models import GrantScoutDriftEntry, GrantScoutRun
 
 
-def _staff(u):
-    return u.is_authenticated and u.is_staff
+def _require_staff(request):
+    if not request.user.is_staff:
+        raise PermissionDenied
 
 
 @require_GET
 @login_required
-@user_passes_test(_staff)
 def grantscout_dashboard(request):
+    _require_staff(request)
     run = (
         GrantScoutRun.objects.order_by('-created_at').select_related('previous_run').first()
     )
@@ -41,8 +43,8 @@ def grantscout_dashboard(request):
 
 @require_GET
 @login_required
-@user_passes_test(_staff)
 def grantscout_latest_api(request):
+    _require_staff(request)
     run = get_latest_completed_grantscout_run()
     if not run:
         return JsonResponse(

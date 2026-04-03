@@ -1,8 +1,10 @@
 from unittest.mock import MagicMock, patch
 
+from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.core.management.base import CommandError
-from django.test import TestCase, override_settings
+from django.test import Client, TestCase, override_settings
+from django.urls import reverse
 
 from dream_blue.emailing import (
     DreamBlueEmailConfigError,
@@ -104,3 +106,82 @@ class DigestContextTests(TestCase):
         self.assertEqual(ctx['grantscout_run'].id, done.id)
         self.assertNotEqual(ctx['grantscout_run'].id, draft.id)
         self.assertEqual(len(ctx['grantscout_opportunities']), 1)
+
+
+class GrantScoutHttpTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.staff = User.objects.create_user(
+            username='staff_gs',
+            password='pw',
+            is_staff=True,
+        )
+        self.user = User.objects.create_user(
+            username='regular_gs',
+            password='pw',
+            is_staff=False,
+        )
+
+    def test_dashboard_redirects_anonymous(self):
+        url = reverse('dream_blue:grantscout_dashboard')
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 302)
+        self.assertIn('/login/', r.url)
+
+    def test_dashboard_forbidden_non_staff(self):
+        self.client.login(username='regular_gs', password='pw')
+        r = self.client.get(reverse('dream_blue:grantscout_dashboard'))
+        self.assertEqual(r.status_code, 403)
+
+    def test_dashboard_ok_staff(self):
+        GrantScoutRun.objects.create(
+            period_label='2099-03',
+            status=GrantScoutRunStatus.COMPLETED,
+        )
+        self.client.login(username='staff_gs', password='pw')
+        r = self.client.get(reverse('dream_blue:grantscout_dashboard'))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'GrantScout')
+        self.assertContains(r, '2099-03')
+
+    def test_latest_api_json_staff(self):
+        run = GrantScoutRun.objects.create(
+            period_label='2099-04',
+            status=GrantScoutRunStatus.COMPLETED,
+            coverage_summary='API test',
+        )
+        GrantScoutOpportunity.objects.create(
+            run=run,
+            category=GrantScoutCategory.REBATE,
+            summary='Heat pump rebate',
+            source_url='https://example.org/rebate',
+            priority_score=99,
+        )
+        self.client.login(username='staff_gs', password='pw')
+        r = self.client.get(reverse('dream_blue:grantscout_latest_api'))
+        self.assertEqual(r.status_code, 200)
+        data = r.json()
+        self.assertEqual(data['run']['period_label'], '2099-04')
+        self.assertEqual(len(data['opportunities']), 1)
+        self.assertEqual(data['opportunities'][0]['priority_score'], 99)
+
+
+class DigestCommandSendTests(TestCase):
+    """Full command path: template render + Django mail backend (no network)."""
+
+    @override_settings(
+        DREAM_BLUE_REPORT_RECIPIENTS='digest@example.com',
+        RESEND_API_KEY='',
+        RESEND_FROM_EMAIL='',
+        EMAIL_HOST='localhost',
+        DEFAULT_FROM_EMAIL='from@example.com',
+        EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',
+    )
+    def test_send_digest_creates_locmem_message(self):
+        from django.core import mail
+
+        mail.outbox.clear()
+        call_command('dream_blue_send_digest', '--no-grantscout')
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('Dream Blue digest', mail.outbox[0].subject)
+        self.assertIn('text/html', mail.outbox[0].alternatives[0][1])
