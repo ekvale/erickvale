@@ -263,6 +263,37 @@ class BusinessCalendarEvent(models.Model):
         blank=True,
         help_text='Annual interest rate % for loans (e.g. 7.50 for 7.5%)',
     )
+    original_principal = models.DecimalField(
+        max_digits=14,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text='Original loan amount at opening (loans)',
+    )
+    payoff_balance = models.DecimalField(
+        max_digits=14,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text='Principal payoff / balance for the as-of date below',
+    )
+    payoff_balance_as_of = models.DateField(
+        null=True,
+        blank=True,
+        help_text='Date the payoff_balance figure applies to',
+    )
+    payoff_target_date = models.DateField(
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text='Show on calendar (e.g. payoff quote target date)',
+    )
+    refinance_date = models.DateField(
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text='Last refinance closing date — shown on calendar',
+    )
     account_reference = models.CharField(
         max_length=120,
         blank=True,

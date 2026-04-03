@@ -61,6 +61,8 @@ def upcoming_business_calendar_events():
         .filter(
             Q(due_date__gte=today, due_date__lte=end)
             | Q(end_date__gte=today, end_date__lte=end)
+            | Q(refinance_date__gte=today, refinance_date__lte=end)
+            | Q(payoff_target_date__gte=today, payoff_target_date__lte=end)
         )
         .distinct()
         .order_by('due_date', 'sort_order', 'id')
@@ -84,9 +86,9 @@ def _email_chips_for_day(
     evs: list[BusinessCalendarEvent],
     d: date,
     *,
-    max_chips: int = 8,
+    max_chips: int = 12,
 ) -> list[dict]:
-    """Labels for **due/start** and **end** on this day (not every day of a long span)."""
+    """Labels for **due/start**, **end**, **refinance_date**, **payoff_target_date**."""
     chips: list[dict] = []
     for ev in evs:
         ab = _EMAIL_EVENT_TYPE_ABBR.get(ev.event_type, '·')
@@ -100,6 +102,16 @@ def _email_chips_for_day(
         elif ev.end_date and ev.end_date == d and ev.due_date < d:
             label = f'{ab} Ends: {ev.title[:26]}'
             chips.append({'text': label.strip()[:46], 'color': col})
+        refi = getattr(ev, 'refinance_date', None)
+        if refi and refi == d:
+            chips.append({'text': f'{ab} Refi: {ev.title[:28]}'.strip()[:46], 'color': col})
+        ptd = getattr(ev, 'payoff_target_date', None)
+        if ptd and ptd == d:
+            bal = getattr(ev, 'payoff_balance', None)
+            extra = f' ${bal:,.0f}' if bal is not None else ''
+            chips.append(
+                {'text': f'{ab} Payoff{extra}: {ev.title[:16]}'.strip()[:46], 'color': col}
+            )
     return chips[:max_chips]
 
 
@@ -329,8 +341,8 @@ def build_operations_calendar_markdown() -> str:
             '',
             '### Loans',
             '',
-            '| Loan | Property | Start | End | Rate % | Payment/mo | Account | Contact / notes |',
-            '| --- | --- | --- | --- | ---: | ---: | --- | --- |',
+            '| Loan | Property | Opened | Maturity | Rate % | Pmt/mo | Orig | Payoff bal | Payoff cal | Refi | Acct | Notes |',
+            '| --- | --- | --- | --- | ---: | ---: | ---: | --- | --- | --- | --- | --- |',
         ]
     )
     loans = active_loan_schedule()
@@ -342,6 +354,14 @@ def build_operations_calendar_markdown() -> str:
             en = row.end_date.isoformat() if row.end_date else ''
             rate = f'{row.interest_rate_annual:.2f}' if row.interest_rate_annual is not None else ''
             pay = _md_money(row.amount)
+            orig = _md_money(row.original_principal) if row.original_principal is not None else ''
+            payb = ''
+            if row.payoff_balance is not None:
+                payb = _md_money(row.payoff_balance)
+                if row.payoff_balance_as_of:
+                    payb += f' as of {row.payoff_balance_as_of.isoformat()}'
+            paycal = row.payoff_target_date.isoformat() if row.payoff_target_date else ''
+            refi = row.refinance_date.isoformat() if row.refinance_date else ''
             extra_bits = [
                 _md_row_escape(row.contact_info or ''),
                 _md_row_escape(row.notes or ''),
@@ -349,7 +369,7 @@ def build_operations_calendar_markdown() -> str:
             extra = '; '.join(b for b in extra_bits if b)
             lines.append(
                 f'| {_md_row_escape(row.title)} | {_md_row_escape(row.property_label)} | '
-                f'{st} | {en} | {rate} | {pay} | '
+                f'{st} | {en} | {rate} | {pay} | {orig} | {_md_row_escape(payb)} | {paycal} | {refi} | '
                 f'{_md_row_escape(row.account_reference)} | {extra} |'
             )
 

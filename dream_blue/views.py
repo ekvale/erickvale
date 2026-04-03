@@ -173,7 +173,7 @@ def operations_calendar_events_api(request):
         {
             'start': start.isoformat(),
             'end': end.isoformat(),
-            'events': serialize_events_for_json(evs),
+            'events': serialize_events_for_json(evs, range_start=start, range_end=end),
         }
     )
 

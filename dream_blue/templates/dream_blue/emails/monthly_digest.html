@@ -153,11 +153,14 @@
             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e1e6ec;border-collapse:collapse;">
                 <tr>
                     <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Loan</th>
-                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Start</th>
-                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">End</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Opened</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Maturity</th>
                     <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Rate</th>
                     <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Pmt/mo</th>
-                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Account</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Orig</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Payoff</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Refi</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Acct / notes</th>
                 </tr>
                 {% for e in business_loan_schedule %}
                 <tr>
@@ -169,6 +172,11 @@
                     <td style="padding:11px 12px;font-size:13px;border-bottom:1px solid #eef1f4;">{% if e.end_date %}{{ e.end_date|date:"M j, Y" }}{% else %}—{% endif %}</td>
                     <td style="padding:11px 12px;font-size:13px;border-bottom:1px solid #eef1f4;">{% if e.interest_rate_annual is not None %}{{ e.interest_rate_annual|floatformat:2 }}%{% else %}—{% endif %}</td>
                     <td style="padding:11px 12px;font-size:13px;font-weight:600;color:#122436;border-bottom:1px solid #eef1f4;">{% if e.amount %}${{ e.amount|floatformat:0 }}{% else %}—{% endif %}</td>
+                    <td style="padding:11px 12px;font-size:13px;border-bottom:1px solid #eef1f4;">{% if e.original_principal %}${{ e.original_principal|floatformat:0 }}{% else %}—{% endif %}</td>
+                    <td style="padding:11px 12px;font-size:12px;color:#24292f;border-bottom:1px solid #eef1f4;">
+                        {% if e.payoff_balance %}${{ e.payoff_balance|floatformat:0 }}{% if e.payoff_balance_as_of %}<br><span style="color:#5c6570;">as of {{ e.payoff_balance_as_of|date:"M j, Y" }}</span>{% endif %}{% if e.payoff_target_date %}<br><span style="color:#5c6570;">cal {{ e.payoff_target_date|date:"M j, Y" }}</span>{% endif %}{% else %}{% if e.payoff_target_date %}<span style="color:#5c6570;">Cal {{ e.payoff_target_date|date:"M j, Y" }}</span>{% else %}—{% endif %}{% endif %}
+                    </td>
+                    <td style="padding:11px 12px;font-size:13px;border-bottom:1px solid #eef1f4;">{% if e.refinance_date %}{{ e.refinance_date|date:"M j, Y" }}{% else %}—{% endif %}</td>
                     <td style="padding:11px 12px;font-size:12px;color:#5c6570;border-bottom:1px solid #eef1f4;">
                         {% if e.account_reference %}Acct {{ e.account_reference }}<br>{% endif %}
                         {% if e.contact_info %}{{ e.contact_info|linebreaksbr }}{% endif %}
@@ -271,7 +279,7 @@
                 </tr>
                 {% for e in business_calendar_events %}
                 <tr>
-                    <td style="padding:11px 12px;font-size:13px;border-bottom:1px solid #eef1f4;">{{ e.due_date|date:"M j, Y" }}{% if e.end_date %} – {{ e.end_date|date:"M j, Y" }}{% endif %}</td>
+                    <td style="padding:11px 12px;font-size:13px;border-bottom:1px solid #eef1f4;">{{ e.due_date|date:"M j, Y" }}{% if e.end_date %} – {{ e.end_date|date:"M j, Y" }}{% endif %}{% if e.refinance_date %}<br><span style="color:#5c6570;font-size:12px;">Refi {{ e.refinance_date|date:"M j, Y" }}</span>{% endif %}{% if e.payoff_target_date %}<br><span style="color:#5c6570;font-size:12px;">Payoff cal {{ e.payoff_target_date|date:"M j, Y" }}{% if e.payoff_balance %} (${{ e.payoff_balance|floatformat:0 }}){% endif %}</span>{% endif %}</td>
                     <td style="padding:11px 12px;font-size:13px;border-bottom:1px solid #eef1f4;">{{ e.get_event_type_display }}</td>
                     <td style="padding:11px 12px;font-size:13px;border-bottom:1px solid #eef1f4;">
                         {{ e.title }}

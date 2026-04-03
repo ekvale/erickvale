@@ -97,6 +97,8 @@ class BusinessCalendarEventAdmin(admin.ModelAdmin):
         'property_label',
         'amount',
         'interest_rate_annual',
+        'refinance_date',
+        'payoff_target_date',
         'account_reference_short',
         'is_active',
     )
