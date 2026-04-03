@@ -108,11 +108,24 @@ python manage.py collectstatic --noinput   # if you serve static via whitenoise/
 sudo systemctl restart gunicorn            # or your unit name for uwsgi/gunicorn
 ```
 
-**Example cron** (first day of month — adjust paths; run agent before digest if you want fresh opportunities in the email):
+**GrantScout every two weeks:** use `deploy/grantscout_agent_biweekly.sh` — it runs daily from cron but **skips** until `GRANTSCOUT_INTERVAL_DAYS` (default **14**) have passed since the last successful run (tracked by a small state file under `~/.cache`).
+
+```bash
+chmod +x deploy/grantscout_agent_biweekly.sh
+mkdir -p ~/logs
+```
 
 ```cron
-15 7 1 * * cd /home/erickvale/erickvale && /home/erickvale/erickvale/venv/bin/python manage.py grantscout_run_agent >> /home/erickvale/logs/grantscout.log 2>&1
-30 7 1 * * cd /home/erickvale/erickvale && /home/erickvale/erickvale/venv/bin/python manage.py dream_blue_send_digest >> /home/erickvale/logs/dream_blue_digest.log 2>&1
+# 07:15 UTC daily; script only runs agent when 14+ days since last success
+15 7 * * * /home/erickvale/erickvale/deploy/grantscout_agent_biweekly.sh >> /home/erickvale/logs/grantscout.log 2>&1
+```
+
+Adjust `GRANTSCOUT_INTERVAL_DAYS`, `GRANTSCOUT_STATE`, or `GRANTSCOUT_PYTHON` if your paths differ.
+
+**Monthly digest email** (example — run after agent if you want the email to pick up the newest run):
+
+```cron
+30 7 1 * * cd /home/erickvale/erickvale && ./venv/bin/python manage.py dream_blue_send_digest >> /home/erickvale/logs/dream_blue_digest.log 2>&1
 ```
 
 The digest uses the latest **completed** GrantScout run (from the agent or admin).
