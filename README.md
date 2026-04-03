@@ -56,7 +56,7 @@ erickvale/
 
 ## Dream Blue (internal)
 
-Private operational / BI surface: property intelligence, digests, and **GrantScout** (grants, incentives, regulatory signals — Bemidji / Beltrami / MN focus). You can **fill runs by hand in admin** or run the **LLM agent** (`grantscout_run_agent`) using `OPENAI_API_KEY` or `PERPLEXITY_API_KEY` (see `.env.example`).
+Private operational / BI surface: property intelligence, digests, and **GrantScout** (grants, incentives, regulatory signals — Bemidji / Beltrami / MN focus). You can **fill runs by hand in admin** or run the **LLM agent** (`grantscout_run_agent`) with `OPENAI_API_KEY`, **`ANTHROPIC_API_KEY` (Claude)**, or `PERPLEXITY_API_KEY` — set `GRANTSCOUT_LLM_PROVIDER` accordingly (see `.env.example`).
 
 ### URLs (staff only)
 
@@ -73,8 +73,9 @@ See `.env.example` for placeholders. Required for sending digests:
 | `DREAM_BLUE_REPORT_RECIPIENTS` | Comma-separated To: addresses |
 | `RESEND_API_KEY` + `RESEND_FROM_EMAIL` | Send via Resend |
 | *or* `EMAIL_HOST` + `DEFAULT_FROM_EMAIL` (+ SMTP fields) | Send via SMTP |
-| `OPENAI_API_KEY` | GrantScout agent (default provider: OpenAI JSON mode) |
-| `GRANTSCOUT_LLM_PROVIDER=perplexity` + `PERPLEXITY_API_KEY` | Agent uses Perplexity **sonar** (better for live web/citations) |
+| `OPENAI_API_KEY` | GrantScout agent when `GRANTSCOUT_LLM_PROVIDER=openai` (JSON mode) |
+| `ANTHROPIC_API_KEY` | GrantScout agent when `GRANTSCOUT_LLM_PROVIDER=anthropic` (Claude Messages API) |
+| `GRANTSCOUT_LLM_PROVIDER=perplexity` + `PERPLEXITY_API_KEY` | Perplexity **sonar** (live web / citations) |
 
 Never commit real recipients or API keys; use `.env` on the server only.
 
@@ -92,7 +93,7 @@ python manage.py dream_blue_send_digest --dry-run
 python manage.py dream_blue_send_digest
 ```
 
-The agent only keeps opportunities with **valid https** `source_url` values. **Perplexity** is usually better than raw OpenAI for up-to-date program links; still verify critical deadlines in primary sources.
+The agent only keeps opportunities with **valid https** `source_url` values. **Perplexity** is usually best for live web + citations. **Claude** and **OpenAI** use training knowledge and must follow the prompt to use real URLs—always verify deadlines on official pages.
 
 ### Deployment (DigitalOcean Ubuntu, user `erickvale`, project under `~`)
 

@@ -1,7 +1,7 @@
 """
-GrantScout LLM agent: calls OpenAI or Perplexity (web-capable) and returns structured JSON.
+GrantScout LLM agent: calls OpenAI, Anthropic (Claude), or Perplexity and returns structured JSON.
 
-Secrets: OPENAI_API_KEY and/or PERPLEXITY_API_KEY via Django settings / env only.
+Secrets only via Django settings / environment (e.g. OPENAI_API_KEY, ANTHROPIC_API_KEY).
 """
 
 from __future__ import annotations
@@ -197,26 +197,81 @@ def _chat_completions(url: str, api_key: str, model: str, timeout: int = 120) ->
     return str(content)
 
 
+def _anthropic_messages(api_key: str, model: str, timeout: int = 180) -> str:
+    """Anthropic Messages API; returns assistant text (expected JSON)."""
+    url = getattr(settings, 'ANTHROPIC_API_URL', 'https://api.anthropic.com/v1/messages')
+    version = getattr(settings, 'ANTHROPIC_VERSION', '2023-06-01')
+    try:
+        max_tokens = int(getattr(settings, 'GRANTSCOUT_ANTHROPIC_MAX_TOKENS', 8192))
+    except (TypeError, ValueError):
+        max_tokens = 8192
+    max_tokens = max(1024, min(max_tokens, 8192))
+
+    resp = requests.post(
+        url,
+        headers={
+            'x-api-key': api_key,
+            'anthropic-version': str(version),
+            'Content-Type': 'application/json',
+        },
+        json={
+            'model': model,
+            'max_tokens': max_tokens,
+            'system': SYSTEM_PROMPT,
+            'messages': [{'role': 'user', 'content': USER_PROMPT}],
+        },
+        timeout=timeout,
+    )
+    if resp.status_code >= 400:
+        logger.error('Anthropic HTTP %s: %s', resp.status_code, resp.text[:800])
+        resp.raise_for_status()
+    body = resp.json()
+    parts = body.get('content') or []
+    texts: list[str] = []
+    for block in parts:
+        if isinstance(block, dict) and block.get('type') == 'text':
+            texts.append(block.get('text') or '')
+    if not texts:
+        raise GrantScoutAgentError('Anthropic response missing text content')
+    return ''.join(texts)
+
+
 def run_grantscout_agent() -> dict[str, Any]:
     """
     Call configured LLM provider and return normalized payload:
     coverage_summary, search_queries, opportunities (list of dicts).
     """
     provider = (getattr(settings, 'GRANTSCOUT_LLM_PROVIDER', 'openai') or 'openai').strip().lower()
-    if provider == 'perplexity':
+
+    if provider == 'anthropic':
+        key = (getattr(settings, 'ANTHROPIC_API_KEY', '') or '').strip()
+        if not key:
+            raise GrantScoutAgentError('Set ANTHROPIC_API_KEY for provider=anthropic')
+        model = getattr(
+            settings,
+            'GRANTSCOUT_ANTHROPIC_MODEL',
+            'claude-3-5-sonnet-20241022',
+        )
+        content = _anthropic_messages(key, model)
+    elif provider == 'perplexity':
         key = (getattr(settings, 'PERPLEXITY_API_KEY', '') or '').strip()
         if not key:
             raise GrantScoutAgentError('Set PERPLEXITY_API_KEY for provider=perplexity')
         model = getattr(settings, 'GRANTSCOUT_PERPLEXITY_MODEL', 'sonar')
         url = getattr(settings, 'PERPLEXITY_API_URL', 'https://api.perplexity.ai/chat/completions')
         content = _chat_completions(url, key, model)
-    else:
+    elif provider == 'openai':
         key = (getattr(settings, 'OPENAI_API_KEY', '') or '').strip()
         if not key:
-            raise GrantScoutAgentError('Set OPENAI_API_KEY or use GRANTSCOUT_LLM_PROVIDER=perplexity')
+            raise GrantScoutAgentError('Set OPENAI_API_KEY for provider=openai')
         model = getattr(settings, 'GRANTSCOUT_OPENAI_MODEL', 'gpt-4o-mini')
         url = getattr(settings, 'OPENAI_CHAT_COMPLETIONS_URL', 'https://api.openai.com/v1/chat/completions')
         content = _chat_completions(url, key, model)
+    else:
+        raise GrantScoutAgentError(
+            f'Unknown GRANTSCOUT_LLM_PROVIDER={provider!r}. '
+            'Use openai, anthropic, or perplexity.'
+        )
     try:
         data = _extract_json_object(content)
     except (json.JSONDecodeError, ValueError) as e:

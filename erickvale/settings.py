@@ -82,6 +82,23 @@ PERPLEXITY_API_URL = config(
 )
 GRANTSCOUT_PERPLEXITY_MODEL = config('GRANTSCOUT_PERPLEXITY_MODEL', default='sonar')
 
+# Anthropic (Claude) for GrantScout when GRANTSCOUT_LLM_PROVIDER=anthropic
+ANTHROPIC_API_KEY = config('ANTHROPIC_API_KEY', default='')
+ANTHROPIC_API_URL = config(
+    'ANTHROPIC_API_URL',
+    default='https://api.anthropic.com/v1/messages',
+)
+ANTHROPIC_VERSION = config('ANTHROPIC_VERSION', default='2023-06-01')
+GRANTSCOUT_ANTHROPIC_MODEL = config(
+    'GRANTSCOUT_ANTHROPIC_MODEL',
+    default='claude-3-5-sonnet-20241022',
+)
+GRANTSCOUT_ANTHROPIC_MAX_TOKENS = config(
+    'GRANTSCOUT_ANTHROPIC_MAX_TOKENS',
+    default=8192,
+    cast=int,
+)
+
 # Optional SMTP (same variables as Django; defaults match Django when unset).
 EMAIL_HOST = config('EMAIL_HOST', default='')
 EMAIL_PORT = config('EMAIL_PORT', default=25, cast=int)
