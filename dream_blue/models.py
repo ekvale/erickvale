@@ -119,6 +119,11 @@ class GrantScoutOpportunity(models.Model):
         db_index=True,
         help_text='Stable id across runs (e.g. hash of canonical URL)',
     )
+    source_url_check_passed = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text='True if HTTP check passed, False if check failed (link may still be useful), null if not checked',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

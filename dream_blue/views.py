@@ -25,11 +25,17 @@ def grantscout_dashboard(request):
     )
     opportunities = []
     drift = []
+    unverified = []
     if run:
         opportunities = list(
             run.opportunities.order_by('-priority_score', '-created_at')[:25]
         )
         drift = list(run.drift_entries.all()[:40])
+        unverified = list(
+            run.opportunities.filter(source_url_check_passed=False).order_by(
+                '-priority_score', '-created_at'
+            )[:25]
+        )
     return render(
         request,
         'dream_blue/grantscout_dashboard.html',
@@ -37,6 +43,7 @@ def grantscout_dashboard(request):
             'run': run,
             'opportunities': opportunities,
             'drift': drift,
+            'unverified_opportunities': unverified,
         },
     )
 
@@ -48,7 +55,12 @@ def grantscout_latest_api(request):
     run = get_latest_completed_grantscout_run()
     if not run:
         return JsonResponse(
-            {'run': None, 'opportunities': [], 'drift': []},
+            {
+                'run': None,
+                'opportunities': [],
+                'opportunities_unverified': [],
+                'drift': [],
+            },
         )
     opps = top_grantscout_opportunities(run, limit=25)
     drift_qs = GrantScoutDriftEntry.objects.filter(run=run).order_by('id')[:50]
@@ -74,8 +86,20 @@ def grantscout_latest_api(request):
                     'action_recommended': o.action_recommended,
                     'source_url': o.source_url,
                     'priority_score': o.priority_score,
+                    'source_url_check_passed': o.source_url_check_passed,
                 }
                 for o in opps
+            ],
+            'opportunities_unverified': [
+                {
+                    'id': o.id,
+                    'summary': o.summary,
+                    'source_url': o.source_url,
+                    'priority_score': o.priority_score,
+                }
+                for o in run.opportunities.filter(source_url_check_passed=False).order_by(
+                    '-priority_score', '-created_at'
+                )[:25]
             ],
             'drift': [
                 {

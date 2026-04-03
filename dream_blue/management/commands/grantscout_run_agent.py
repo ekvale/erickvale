@@ -95,6 +95,7 @@ class Command(BaseCommand):
                         source_url=o['source_url'],
                         priority_score=o['priority_score'],
                         dedupe_key=o['dedupe_key'],
+                        source_url_check_passed=o.get('source_url_check_passed'),
                     )
                 )
             GrantScoutOpportunity.objects.bulk_create(opps)

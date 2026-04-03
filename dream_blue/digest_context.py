@@ -37,5 +37,10 @@ def build_monthly_digest_context(*, include_grantscout: bool = True) -> dict:
         return ctx
     ctx['grantscout_run'] = run
     ctx['grantscout_opportunities'] = top_grantscout_opportunities(run)
+    ctx['grantscout_opportunities_unverified'] = list(
+        run.opportunities.filter(source_url_check_passed=False).order_by(
+            '-priority_score', '-created_at'
+        )[:25]
+    )
     ctx['grantscout_drift'] = list(run.drift_entries.all()[:50])
     return ctx

@@ -109,9 +109,19 @@ def _normalize_opportunity(
     if not _valid_https_url(url):
         logger.warning('Skipping opportunity (invalid or non-https URL): %s', raw.get('summary', '')[:80])
         return None
-    if validate_urls and not source_url_is_reachable(url):
-        logger.warning('Skipping opportunity (URL not reachable / 404): %s', url[:120])
-        return None
+
+    url_check_passed: bool | None
+    if not validate_urls:
+        url_check_passed = None
+    elif source_url_is_reachable(url):
+        url_check_passed = True
+    else:
+        url_check_passed = False
+        logger.warning(
+            'Keeping opportunity with failed URL check (listed in report digest): %s',
+            url[:120],
+        )
+
     dedupe = hashlib.sha256(url.encode('utf-8')).hexdigest()[:64]
     deadline = raw.get('deadline')
     if deadline is not None and deadline != '':
@@ -137,6 +147,7 @@ def _normalize_opportunity(
         'source_url': url[:500],
         'priority_score': score,
         'dedupe_key': dedupe,
+        'source_url_check_passed': url_check_passed,
     }
 
 
@@ -168,10 +179,7 @@ def normalize_agent_payload(
         if norm:
             opportunities.append(norm)
     if not opportunities:
-        raise GrantScoutAgentError(
-            'Agent returned no opportunities that passed validation'
-            + (' (including URL checks).' if validate_urls else '.')
-        )
+        raise GrantScoutAgentError('Agent returned no opportunities with valid https source_url')
     return {
         'coverage_summary': summary[:8000],
         'search_queries': queries,

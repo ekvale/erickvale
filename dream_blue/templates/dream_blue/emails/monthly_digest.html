@@ -37,6 +37,7 @@
         </div>
         <p style="margin:0 0 8px 0;">{{ o.summary|linebreaksbr }}</p>
         {% if o.action_recommended %}<p style="margin:0 0 8px 0;"><em>Action:</em> {{ o.action_recommended|linebreaksbr }}</p>{% endif %}
+        {% if o.source_url_check_passed == False %}<p class="muted" style="margin:0 0 8px 0;"><em>Automated link check failed — verify URL.</em></p>{% endif %}
         <a href="{{ o.source_url }}">Source</a>
     </div>
     {% endfor %}
@@ -49,6 +50,16 @@
     <ul class="drift">
         {% for d in grantscout_drift %}
         <li><strong>{{ d.get_drift_type_display }}</strong> — {{ d.summary }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if grantscout_opportunities_unverified %}
+    <h3 style="font-size:1rem;">Links that failed automated verification</h3>
+    <p class="muted">Programs above may still be valid — search by name or agency if the link 404s.</p>
+    <ul class="drift">
+        {% for o in grantscout_opportunities_unverified %}
+        <li><a href="{{ o.source_url }}">{{ o.source_url }}</a> — {{ o.summary|truncatewords:25 }}</li>
         {% endfor %}
     </ul>
     {% endif %}

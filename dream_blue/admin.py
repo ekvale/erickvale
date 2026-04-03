@@ -12,6 +12,7 @@ class GrantScoutOpportunityInline(admin.TabularInline):
         'status',
         'deadline',
         'priority_score',
+        'source_url_check_passed',
         'summary',
         'source_url',
     )
@@ -55,6 +56,7 @@ class GrantScoutOpportunityAdmin(admin.ModelAdmin):
         'status',
         'priority_score',
         'deadline',
+        'source_url_check_passed',
     )
     list_filter = ('category', 'status', 'run')
     search_fields = ('summary', 'opportunity_type', 'source_url', 'dedupe_key')

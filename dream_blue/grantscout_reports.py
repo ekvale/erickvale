@@ -42,6 +42,8 @@ def build_compiled_report(payload: dict[str, Any]) -> str:
         if o.get('deadline'):
             lines.append(f'- **Deadline:** {o["deadline"]}')
         lines.append(f'- **Priority score:** {o.get("priority_score", 0)}')
+        if o.get('source_url_check_passed') is False:
+            lines.append('- **Link check:** automated HTTP check failed — verify this URL manually.')
         lines.append(f'- **Source:** {o.get("source_url", "")}')
         lines.append('')
         lines.append(str(o.get('summary', '')).strip())
@@ -54,5 +56,25 @@ def build_compiled_report(payload: dict[str, Any]) -> str:
             lines.append('')
         lines.append('---')
         lines.append('')
+
+    bad = [
+        o
+        for o in (payload.get('opportunities') or [])
+        if o.get('source_url_check_passed') is False
+    ]
+    if bad:
+        lines.extend(
+            [
+                '',
+                '## Links that failed automated verification',
+                '',
+                'These opportunities remain in the list above. URLs may be incorrect, moved, or blocked to automated requests—open from a browser and search the program name if needed.',
+                '',
+            ]
+        )
+        for o in bad:
+            url = o.get('source_url', '')
+            summ = str(o.get('summary', '')).strip().replace('\n', ' ')[:200]
+            lines.append(f'- {url} — _{summ}_')
 
     return '\n'.join(lines).strip()

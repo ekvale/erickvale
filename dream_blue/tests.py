@@ -106,6 +106,7 @@ class DigestContextTests(TestCase):
         self.assertEqual(ctx['grantscout_run'].id, done.id)
         self.assertNotEqual(ctx['grantscout_run'].id, draft.id)
         self.assertEqual(len(ctx['grantscout_opportunities']), 1)
+        self.assertEqual(ctx['grantscout_opportunities_unverified'], [])
 
 
 class GrantScoutHttpTests(TestCase):
@@ -164,6 +165,8 @@ class GrantScoutHttpTests(TestCase):
         self.assertEqual(data['run']['period_label'], '2099-04')
         self.assertEqual(len(data['opportunities']), 1)
         self.assertEqual(data['opportunities'][0]['priority_score'], 99)
+        self.assertIn('opportunities_unverified', data)
+        self.assertEqual(data['opportunities_unverified'], [])
 
 
 class DigestCommandSendTests(TestCase):
@@ -215,6 +218,37 @@ class GrantScoutReportBuilderTests(TestCase):
         self.assertIn('deed grants', text)
         self.assertIn('https://example.org/x', text)
 
+    def test_compiled_report_lists_unverified_links_at_bottom(self):
+        from dream_blue.grantscout_reports import build_compiled_report
+
+        text = build_compiled_report(
+            {
+                'coverage_summary': 'MN.',
+                'search_queries': [],
+                'opportunities': [
+                    {
+                        'category': 'grant',
+                        'summary': 'Good link',
+                        'source_url': 'https://example.org/ok',
+                        'priority_score': 10,
+                        'dedupe_key': 'a',
+                        'source_url_check_passed': True,
+                    },
+                    {
+                        'category': 'grant',
+                        'summary': 'Maybe moved',
+                        'source_url': 'https://example.org/maybe404',
+                        'priority_score': 5,
+                        'dedupe_key': 'b',
+                        'source_url_check_passed': False,
+                    },
+                ],
+            }
+        )
+        self.assertIn('Links that failed automated verification', text)
+        self.assertIn('https://example.org/maybe404', text)
+        self.assertIn('Good link', text)
+
 
 class GrantScoutAgentNormalizationTests(TestCase):
     @override_settings(GRANTSCOUT_VALIDATE_SOURCE_URLS=False)
@@ -259,26 +293,27 @@ class GrantScoutAgentNormalizationTests(TestCase):
 
 class GrantScoutUrlValidationTests(TestCase):
     @patch('dream_blue.grantscout_agent.source_url_is_reachable')
-    def test_drops_unreachable_urls(self, mock_reach):
+    def test_keeps_unreachable_urls_flagged(self, mock_reach):
         mock_reach.return_value = False
-        from dream_blue.grantscout_agent import GrantScoutAgentError, normalize_agent_payload
+        from dream_blue.grantscout_agent import normalize_agent_payload
 
-        with self.assertRaises(GrantScoutAgentError):
-            normalize_agent_payload(
-                {
-                    'coverage_summary': 'x',
-                    'search_queries': [],
-                    'opportunities': [
-                        {
-                            'category': 'grant',
-                            'summary': 'Test',
-                            'source_url': 'https://example.org/dead',
-                            'priority_score': 1,
-                        }
-                    ],
-                },
-                validate_urls=True,
-            )
+        data = normalize_agent_payload(
+            {
+                'coverage_summary': 'x',
+                'search_queries': [],
+                'opportunities': [
+                    {
+                        'category': 'grant',
+                        'summary': 'Test',
+                        'source_url': 'https://example.org/dead',
+                        'priority_score': 1,
+                    }
+                ],
+            },
+            validate_urls=True,
+        )
+        self.assertEqual(len(data['opportunities']), 1)
+        self.assertIs(data['opportunities'][0]['source_url_check_passed'], False)
 
     @patch('dream_blue.grantscout_agent.source_url_is_reachable')
     def test_keeps_when_reachable(self, mock_reach):
@@ -301,6 +336,7 @@ class GrantScoutUrlValidationTests(TestCase):
             validate_urls=True,
         )
         self.assertEqual(len(data['opportunities']), 1)
+        self.assertIs(data['opportunities'][0]['source_url_check_passed'], True)
 
 
 class GrantScoutRunAgentCommandTests(TestCase):
