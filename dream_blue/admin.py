@@ -82,16 +82,29 @@ class BusinessCalendarEventAdmin(admin.ModelAdmin):
         'event_type',
         'property_label',
         'amount',
+        'interest_rate_annual',
+        'account_reference_short',
         'is_active',
     )
     list_filter = ('event_type', 'is_active')
-    search_fields = ('title', 'property_label', 'notes')
+    search_fields = (
+        'title',
+        'property_label',
+        'notes',
+        'account_reference',
+        'contact_info',
+    )
     date_hierarchy = 'due_date'
     ordering = ('due_date', 'sort_order')
 
     @admin.display(description='Title')
     def title_short(self, obj):
         return (obj.title[:50] + '…') if len(obj.title) > 50 else obj.title
+
+    @admin.display(description='Acct')
+    def account_reference_short(self, obj):
+        a = obj.account_reference or ''
+        return (a[:18] + '…') if len(a) > 18 else a or '—'
 
 
 @admin.register(BusinessKPIEntry)

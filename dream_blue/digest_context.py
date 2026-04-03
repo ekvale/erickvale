@@ -67,10 +67,71 @@ def active_lease_schedule():
     )
 
 
+def active_loan_schedule():
+    """Loan lines with terms (rate, maturity) still relevant or open-ended."""
+    today = timezone.localdate()
+    return list(
+        BusinessCalendarEvent.objects.filter(
+            is_active=True,
+            event_type=BusinessCalendarEventType.LOAN,
+        )
+        .filter(Q(end_date__isnull=True) | Q(end_date__gte=today))
+        .order_by('sort_order', 'due_date', 'id')
+    )
+
+
+def active_utility_schedule():
+    return list(
+        BusinessCalendarEvent.objects.filter(
+            is_active=True,
+            event_type=BusinessCalendarEventType.UTILITY,
+        ).order_by('sort_order', 'property_label', 'title', 'id')
+    )
+
+
+def insurance_and_tax_schedule():
+    return list(
+        BusinessCalendarEvent.objects.filter(
+            is_active=True,
+            event_type__in=(
+                BusinessCalendarEventType.INSURANCE,
+                BusinessCalendarEventType.PROPERTY_TAX,
+            ),
+        ).order_by('sort_order', 'title', 'id')
+    )
+
+
+def operating_bills_schedule():
+    """Recurring bills, maintenance, licenses, misc. (excl. lease, loan, utility)."""
+    return list(
+        BusinessCalendarEvent.objects.filter(
+            is_active=True,
+            event_type__in=(
+                BusinessCalendarEventType.BILL,
+                BusinessCalendarEventType.MAINTENANCE,
+                BusinessCalendarEventType.LICENSE,
+                BusinessCalendarEventType.OTHER,
+            ),
+        ).order_by('sort_order', 'title', 'id')
+    )
+
+
+def _md_money(amount) -> str:
+    if amount is None:
+        return ''
+    if amount == int(amount):
+        return f'${amount:,.0f}'
+    return f'${amount:.2f}'
+
+
+def _md_row_escape(s: str) -> str:
+    return (s or '').replace('|', '\\|').replace('\n', ' ')
+
+
 def build_operations_calendar_markdown() -> str:
-    """Markdown appendix for GrantScout compiled_report: leases + upcoming milestones."""
+    """Markdown appendix for GrantScout compiled_report: operations + calendar window."""
     lines = [
-        '## Business calendar and leases',
+        '## Operations — leases, loans, utilities, expenses',
         '',
         '### Active leases',
         '',
@@ -84,18 +145,95 @@ def build_operations_calendar_markdown() -> str:
         for row in leases:
             start = row.due_date.isoformat() if row.due_date else ''
             lend = row.end_date.isoformat() if row.end_date else ''
-            rent = ''
-            if row.amount is not None:
-                rent = (
-                    f'${row.amount:,.0f}'
-                    if row.amount == int(row.amount)
-                    else f'${row.amount:.2f}'
-                )
-            notes = (row.notes or '').replace('|', '\\|').replace('\n', ' ')
-            tenant = (row.title or '').replace('|', '\\|')
-            prop = (row.property_label or '').replace('|', '\\|')
+            rent = _md_money(row.amount)
+            notes = _md_row_escape(row.notes)
+            tenant = _md_row_escape(row.title)
+            prop = _md_row_escape(row.property_label)
+            lines.append(f'| {prop} | {tenant} | {start} | {lend} | {rent} | {notes} |')
+
+    lines.extend(
+        [
+            '',
+            '### Loans',
+            '',
+            '| Loan | Property | Start | End | Rate % | Payment/mo | Account | Contact / notes |',
+            '| --- | --- | --- | --- | ---: | ---: | --- | --- |',
+        ]
+    )
+    loans = active_loan_schedule()
+    if not loans:
+        lines.append('_No active loans in schedule._')
+    else:
+        for row in loans:
+            st = row.due_date.isoformat() if row.due_date else ''
+            en = row.end_date.isoformat() if row.end_date else ''
+            rate = f'{row.interest_rate_annual:.2f}' if row.interest_rate_annual is not None else ''
+            pay = _md_money(row.amount)
             lines.append(
-                f'| {prop} | {tenant} | {start} | {lend} | {rent} | {notes} |'
+                f'| {_md_row_escape(row.title)} | {_md_row_escape(row.property_label)} | '
+                f'{st} | {en} | {rate} | {pay} | '
+                f'{_md_row_escape(row.account_reference)} | '
+                f'{_md_row_escape(row.contact_info)}; {_md_row_escape(row.notes)} |'
+            )
+
+    lines.extend(
+        [
+            '',
+            '### Utilities',
+            '',
+            '| Service | Property | Account | Amt/mo (est) | Contact | Notes |',
+            '| --- | --- | --- | ---: | --- | --- |',
+        ]
+    )
+    utils = active_utility_schedule()
+    if not utils:
+        lines.append('_No utility rows._')
+    else:
+        for row in utils:
+            lines.append(
+                f'| {_md_row_escape(row.title)} | {_md_row_escape(row.property_label)} | '
+                f'{_md_row_escape(row.account_reference)} | {_md_money(row.amount)} | '
+                f'{_md_row_escape(row.contact_info)} | {_md_row_escape(row.notes)} |'
+            )
+
+    lines.extend(
+        [
+            '',
+            '### Insurance & property tax',
+            '',
+            '| Item | Property | Amt/mo | Contact | Notes |',
+            '| --- | --- | ---: | --- | --- |',
+        ]
+    )
+    it = insurance_and_tax_schedule()
+    if not it:
+        lines.append('_No rows._')
+    else:
+        for row in it:
+            lines.append(
+                f'| {_md_row_escape(row.title)} | {_md_row_escape(row.property_label)} | '
+                f'{_md_money(row.amount)} | {_md_row_escape(row.contact_info)} | '
+                f'{_md_row_escape(row.notes)} |'
+            )
+
+    lines.extend(
+        [
+            '',
+            '### Other recurring (bills, maintenance)',
+            '',
+            '| Item | Type | Amt | Contact | Notes |',
+            '| --- | --- | ---: | --- | --- |',
+        ]
+    )
+    bills = operating_bills_schedule()
+    if not bills:
+        lines.append('_No rows._')
+    else:
+        for row in bills:
+            lines.append(
+                f'| {_md_row_escape(row.title)} | {row.get_event_type_display()} | '
+                f'{_md_money(row.amount)} | {_md_row_escape(row.contact_info)} | '
+                f'{_md_row_escape(row.notes)} |'
             )
 
     lines.extend(['', '### Upcoming milestones (next window)', ''])
@@ -107,13 +245,7 @@ def build_operations_calendar_markdown() -> str:
             dd = e.due_date.isoformat() if e.due_date else ''
             ed = e.end_date.isoformat() if e.end_date else ''
             rng = f'{dd}' + (f' – {ed}' if ed else '')
-            amt = ''
-            if e.amount is not None:
-                amt = (
-                    f' (${e.amount:,.0f})'
-                    if e.amount == int(e.amount)
-                    else f' (${e.amount:.2f})'
-                )
+            amt = f' ({_md_money(e.amount)})' if e.amount is not None else ''
             lines.append(
                 f'- **{rng}** · {e.get_event_type_display()} · {e.title}{amt}'
             )
@@ -148,6 +280,10 @@ def build_monthly_digest_context(*, include_grantscout: bool = True) -> dict:
         'calendar_window_end': window_end,
         'business_calendar_events': upcoming_business_calendar_events(),
         'business_lease_schedule': active_lease_schedule(),
+        'business_loan_schedule': active_loan_schedule(),
+        'business_utility_schedule': active_utility_schedule(),
+        'business_insurance_tax_schedule': insurance_and_tax_schedule(),
+        'business_operating_bills': operating_bills_schedule(),
         'business_kpis': active_business_kpis(),
         'business_report_sections': active_business_report_sections(),
         'grantscout_run': None,

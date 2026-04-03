@@ -76,6 +76,118 @@
     </table>
     {% endif %}
 
+    {% if business_loan_schedule %}
+    <h3 style="font-size:1rem;">Loans</h3>
+    <table class="cal-table">
+        <thead>
+            <tr>
+                <th>Loan</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Rate</th>
+                <th>Payment/mo</th>
+                <th>Account / contact</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for e in business_loan_schedule %}
+            <tr>
+                <td>
+                    <strong>{{ e.title }}</strong>
+                    {% if e.property_label %}<br><span class="muted">{{ e.property_label }}</span>{% endif %}
+                </td>
+                <td>{{ e.due_date|date:"M j, Y" }}</td>
+                <td>{% if e.end_date %}{{ e.end_date|date:"M j, Y" }}{% else %}—{% endif %}</td>
+                <td>{% if e.interest_rate_annual is not None %}{{ e.interest_rate_annual|floatformat:2 }}%{% else %}—{% endif %}</td>
+                <td>{% if e.amount %}${{ e.amount|floatformat:0 }}{% else %}—{% endif %}</td>
+                <td class="muted">
+                    {% if e.account_reference %}Acct {{ e.account_reference }}<br>{% endif %}
+                    {% if e.contact_info %}{{ e.contact_info|linebreaksbr }}{% endif %}
+                    {% if e.notes %}<br>{{ e.notes|linebreaksbr }}{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if business_utility_schedule %}
+    <h3 style="font-size:1rem;">Utilities</h3>
+    <table class="cal-table">
+        <thead>
+            <tr>
+                <th>Service</th>
+                <th>Property</th>
+                <th>Account</th>
+                <th>Amt/mo (est.)</th>
+                <th>Contact / notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for e in business_utility_schedule %}
+            <tr>
+                <td>{{ e.title }}</td>
+                <td>{{ e.property_label|default:"—" }}</td>
+                <td class="muted">{{ e.account_reference|default:"—" }}</td>
+                <td>{% if e.amount %}${{ e.amount|floatformat:2 }}{% else %}—{% endif %}</td>
+                <td class="muted">
+                    {% if e.contact_info %}{{ e.contact_info }}{% if e.notes %}<br>{% endif %}{% endif %}
+                    {% if e.notes %}{{ e.notes|linebreaksbr }}{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if business_insurance_tax_schedule %}
+    <h3 style="font-size:1rem;">Insurance &amp; property tax</h3>
+    <table class="cal-table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Property</th>
+                <th>Amt/mo</th>
+                <th>Contact / notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for e in business_insurance_tax_schedule %}
+            <tr>
+                <td>{{ e.title }}</td>
+                <td>{{ e.property_label|default:"—" }}</td>
+                <td>{% if e.amount %}${{ e.amount|floatformat:0 }}{% else %}—{% endif %}</td>
+                <td class="muted">{% if e.contact_info %}{{ e.contact_info }}<br>{% endif %}{{ e.notes|linebreaksbr }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if business_operating_bills %}
+    <h3 style="font-size:1rem;">Other recurring expenses</h3>
+    <table class="cal-table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Type</th>
+                <th>Amt</th>
+                <th>Contact / notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for e in business_operating_bills %}
+            <tr>
+                <td>{{ e.title }}</td>
+                <td>{{ e.get_event_type_display }}</td>
+                <td>{% if e.amount %}${{ e.amount|floatformat:2 }}{% else %}—{% endif %}</td>
+                <td class="muted">{% if e.contact_info %}{{ e.contact_info }}<br>{% endif %}{{ e.notes|linebreaksbr }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
     {% if business_calendar_events %}
     <h3 style="font-size:1rem;">Upcoming dates</h3>
     <table class="cal-table">

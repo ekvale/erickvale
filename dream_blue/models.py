@@ -185,6 +185,7 @@ class BusinessCalendarEventType(models.TextChoices):
     LICENSE = 'license', 'License / permit'
     LOAN = 'loan', 'Loan / financing'
     MAINTENANCE = 'maintenance', 'Maintenance / capex'
+    UTILITY = 'utility', 'Utility (electric, gas, etc.)'
     OTHER = 'other', 'Other'
 
 
@@ -219,6 +220,23 @@ class BusinessCalendarEvent(models.Model):
         help_text='Building, parcel, or entity label',
     )
     notes = models.TextField(blank=True)
+    interest_rate_annual = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text='Annual interest rate % for loans (e.g. 7.50 for 7.5%)',
+    )
+    account_reference = models.CharField(
+        max_length=120,
+        blank=True,
+        help_text='Utility account #, loan #, or similar',
+    )
+    contact_info = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text='Vendor / contact for this expense (phone, company name)',
+    )
     reference_url = models.URLField(max_length=500, blank=True)
     is_active = models.BooleanField(default=True, db_index=True)
     sort_order = models.IntegerField(default=0)
