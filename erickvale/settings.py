@@ -108,6 +108,15 @@ DREAM_BLUE_CAP_RATE_BENCHMARK_HIGH = config(
     'DREAM_BLUE_CAP_RATE_BENCHMARK_HIGH',
     default='10',
 )
+# Digest suggested asking rents: gross $/sf/year on above-grade SF; lower tier for storage.
+DREAM_BLUE_SUGGEST_RENT_PSF_YEAR_ABOVE = config(
+    'DREAM_BLUE_SUGGEST_RENT_PSF_YEAR_ABOVE',
+    default='9.5',
+)
+DREAM_BLUE_SUGGEST_RENT_PSF_YEAR_STORAGE = config(
+    'DREAM_BLUE_SUGGEST_RENT_PSF_YEAR_STORAGE',
+    default='2',
+)
 # Optional extra benchmark: asking/market $/sf/year (gross or NNN — say which in note below).
 DREAM_BLUE_RENT_BENCHMARK_PSF_YEAR = config(
     'DREAM_BLUE_RENT_BENCHMARK_PSF_YEAR',

@@ -15,6 +15,13 @@ from django.utils import timezone
 
 from .models import BusinessCalendarEvent, BusinessCalendarEventType
 
+def lease_row_total_sqft(ev) -> int:
+    """Above-grade + below-grade storage sf for portfolio roll-ups."""
+    a = ev.square_footage or 0
+    s = getattr(ev, 'square_footage_storage', None) or 0
+    return int(a) + int(s)
+
+
 _EXPENSE_TYPES = (
     BusinessCalendarEventType.UTILITY,
     BusinessCalendarEventType.INSURANCE,
@@ -100,18 +107,9 @@ def build_lease_economics_snapshot() -> dict:
     occupied = [e for e in leases if e.amount is not None]
     vacant = [e for e in leases if e.amount is None]
 
-    occupied_sqft = sum(
-        (e.square_footage for e in occupied if e.square_footage),
-        start=0,
-    )
-    vacant_sqft = sum(
-        (e.square_footage for e in vacant if e.square_footage),
-        start=0,
-    )
-    total_leasable_sqft = sum(
-        (e.square_footage for e in leases if e.square_footage),
-        start=0,
-    )
+    occupied_sqft = sum((lease_row_total_sqft(e) for e in occupied), start=0)
+    vacant_sqft = sum((lease_row_total_sqft(e) for e in vacant), start=0)
+    total_leasable_sqft = sum((lease_row_total_sqft(e) for e in leases), start=0)
 
     vac_pct = _vacancy_pct()
     vac_factor = (Decimal('100') - vac_pct) / Decimal('100')
@@ -130,13 +128,13 @@ def build_lease_economics_snapshot() -> dict:
     required_psf_year_portfolio = None
     if total_leasable_sqft > 0:
         required_psf_year_portfolio = (
-            (required_gross_monthly * Decimal('12')) / Decimal(total_leasable_sqft)
+            (required_gross_monthly * Decimal('12')) / Decimal(str(total_leasable_sqft))
         ).quantize(Decimal('0.01'))
 
     portfolio_occupied_psf_year = None
     if occupied_sqft > 0 and monthly_rent > 0:
         portfolio_occupied_psf_year = (
-            (monthly_rent * Decimal('12')) / Decimal(occupied_sqft)
+            (monthly_rent * Decimal('12')) / Decimal(str(occupied_sqft))
         ).quantize(Decimal('0.01'))
 
     bench_psf, bench_note = _benchmark_psf_year()
@@ -159,10 +157,10 @@ def build_lease_economics_snapshot() -> dict:
         implied_value_range_max = max(v_hi_cap, v_lo_cap)
         if total_leasable_sqft > 0:
             cap_implied_psf_low = (
-                implied_value_range_min / Decimal(total_leasable_sqft)
+                implied_value_range_min / Decimal(str(total_leasable_sqft))
             ).quantize(Decimal('0.01'))
             cap_implied_psf_high = (
-                implied_value_range_max / Decimal(total_leasable_sqft)
+                implied_value_range_max / Decimal(str(total_leasable_sqft))
             ).quantize(Decimal('0.01'))
 
     physical_occupancy_pct = None

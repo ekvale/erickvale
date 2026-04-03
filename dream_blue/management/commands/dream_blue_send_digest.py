@@ -14,7 +14,7 @@ from dream_blue.models import GrantScoutRun, GrantScoutRunStatus
 class Command(BaseCommand):
     help = (
         'Send the Dream Blue combined report (calendar, KPIs, leases, loans, utilities, '
-        'lease economics, optional lease comp + GrantScout) to '
+        'lease economics, suggested rents, optional lease comp + GrantScout) to '
         'DREAM_BLUE_REPORT_RECIPIENTS (Resend or SMTP).'
     )
 

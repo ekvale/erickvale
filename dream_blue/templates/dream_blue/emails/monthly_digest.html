@@ -142,6 +142,37 @@
                 </tr>
                 {% endfor %}
             </table>
+            {% if lease_suggestions.show_section %}
+            <h4 style="margin:18px 0 10px 0;font-size:14px;font-weight:650;color:#122436;">Suggested asking rent (illustrative)</h4>
+            <p style="margin:0 0 10px 0;font-size:12px;line-height:1.55;color:#5c6570;">Downtown Bemidji context: corner + kitchen vs inline retail vs service use; below-grade priced as storage only. {{ lease_suggestions.footnote }}</p>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e1e6ec;border-collapse:collapse;">
+                <tr>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Property</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Tenant</th>
+                    <th style="text-align:right;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Above sf</th>
+                    <th style="text-align:right;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Storage sf</th>
+                    <th style="text-align:right;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Suggested/mo</th>
+                    <th style="text-align:right;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Contract</th>
+                    <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Note</th>
+                </tr>
+                {% for r in lease_suggestions.rows %}
+                <tr>
+                    <td style="padding:11px 12px;font-size:13px;color:#24292f;border-bottom:1px solid #eef1f4;">{{ r.property_label }}</td>
+                    <td style="padding:11px 12px;font-size:13px;color:#24292f;border-bottom:1px solid #eef1f4;">{{ r.title }}</td>
+                    <td style="padding:11px 12px;font-size:13px;text-align:right;border-bottom:1px solid #eef1f4;">{% if r.above_sf %}{{ r.above_sf|floatformat:0 }}{% else %}—{% endif %}</td>
+                    <td style="padding:11px 12px;font-size:13px;text-align:right;border-bottom:1px solid #eef1f4;">{% if r.storage_sf %}{{ r.storage_sf|floatformat:0 }}{% else %}—{% endif %}</td>
+                    <td style="padding:11px 12px;font-size:13px;font-weight:700;text-align:right;color:#0d47a1;border-bottom:1px solid #eef1f4;">${{ r.suggested_monthly|floatformat:0 }}</td>
+                    <td style="padding:11px 12px;font-size:13px;text-align:right;border-bottom:1px solid #eef1f4;">{% if r.has_contract %}${{ r.contract_monthly|floatformat:0 }}<br><span style="font-size:11px;color:{% if r.delta_vs_contract > 0 %}#b71c1c{% elif r.delta_vs_contract < 0 %}#1b5e20{% else %}#5c6570{% endif %};">Δ ${{ r.delta_vs_contract|floatformat:0 }}</span>{% else %}—{% endif %}</td>
+                    <td style="padding:11px 12px;font-size:11px;color:#5c6570;border-bottom:1px solid #eef1f4;line-height:1.45;">{{ r.location_note }}</td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td colspan="4" style="padding:11px 12px;font-size:12px;font-weight:600;color:#122436;border-top:1px solid #e1e6ec;background:#fafbfc;">If all units leased at suggested ask</td>
+                    <td style="padding:11px 12px;font-size:13px;font-weight:700;text-align:right;color:#122436;border-top:1px solid #e1e6ec;background:#fafbfc;">${{ lease_suggestions.total_suggested_monthly|floatformat:0 }}</td>
+                    <td colspan="2" style="padding:11px 12px;font-size:11px;color:#5c6570;border-top:1px solid #e1e6ec;background:#fafbfc;">Not a target; compare to breakeven block below.</td>
+                </tr>
+            </table>
+            {% endif %}
         </td>
     </tr>
     {% endif %}
@@ -222,7 +253,7 @@
                 </tr>
             </table>
             {% if lease_economics.total_leasable_sqft %}
-            <p style="margin:0 0 8px 0;font-size:13px;line-height:1.5;color:#24292f;"><strong>Leasable SF (lease rows):</strong> {{ lease_economics.total_leasable_sqft|floatformat:0 }} sf total · {{ lease_economics.occupied_sqft|floatformat:0 }} sf occupied · {{ lease_economics.vacant_sqft|floatformat:0 }} sf vacant{% if lease_economics.physical_occupancy_pct %} · {{ lease_economics.physical_occupancy_pct|floatformat:1 }}% physical occupancy{% endif %}</p>
+            <p style="margin:0 0 8px 0;font-size:13px;line-height:1.5;color:#24292f;"><strong>Building SF (lease rows, above + storage):</strong> {{ lease_economics.total_leasable_sqft|floatformat:0 }} sf total · {{ lease_economics.occupied_sqft|floatformat:0 }} sf occupied · {{ lease_economics.vacant_sqft|floatformat:0 }} sf vacant{% if lease_economics.physical_occupancy_pct %} · {{ lease_economics.physical_occupancy_pct|floatformat:1 }}% physical occupancy{% endif %}</p>
             {% if lease_economics.portfolio_occupied_psf_year %}
             <p style="margin:0 0 8px 0;font-size:13px;line-height:1.5;color:#24292f;"><strong>Occupied portfolio rent:</strong> ~${{ lease_economics.portfolio_occupied_psf_year|floatformat:2 }}/sf/yr (gross rent on occupied SF only).</p>
             {% endif %}

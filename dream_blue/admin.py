@@ -96,6 +96,7 @@ class BusinessCalendarEventAdmin(admin.ModelAdmin):
         'event_type',
         'property_label',
         'square_footage',
+        'square_footage_storage',
         'amount',
         'interest_rate_annual',
         'refinance_date',

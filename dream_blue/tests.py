@@ -480,7 +480,7 @@ class LeaseEconomicsTests(TestCase):
         self.assertTrue(s['show_section'])
         self.assertGreaterEqual(s['required_gross_monthly'], s['monthly_out'])
         self.assertEqual(s['lease_unit_count'], 4)
-        self.assertEqual(s['total_leasable_sqft'], 8200)
+        self.assertEqual(s['total_leasable_sqft'], 11150)
         self.assertTrue(s['sqft_complete'])
         self.assertEqual(s['occupied_unit_count'], 3)
         self.assertEqual(s['vacant_unit_count'], 1)
@@ -507,6 +507,20 @@ class LeaseEconomicsTests(TestCase):
         v8 = (noi / Decimal('0.08')).quantize(Decimal('0'))
         self.assertEqual(s['implied_value_range_min'], min(v10, v8))
         self.assertEqual(s['implied_value_range_max'], max(v10, v8))
+
+    def test_lease_suggestions_four_units_and_total(self):
+        from dream_blue.digest_context import active_lease_schedule
+        from dream_blue.lease_suggestions import build_lease_suggestion_rows
+
+        leases = active_lease_schedule()
+        sug = build_lease_suggestion_rows(leases)
+        self.assertTrue(sug['show_section'])
+        self.assertEqual(len(sug['rows']), 4)
+        self.assertGreater(sug['total_suggested_monthly'], Decimal('0'))
+        vacant = next(r for r in sug['rows'] if r['property_label'] == '207 4th St.')
+        self.assertFalse(vacant['has_contract'])
+        self.assertEqual(vacant['above_sf'], 2150)
+        self.assertEqual(vacant['storage_sf'], 2000)
 
     @override_settings(DREAM_BLUE_RENT_BENCHMARK_PSF_YEAR='14.50')
     def test_benchmark_parsed_when_set(self):

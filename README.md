@@ -60,7 +60,7 @@ Private operational / BI surface: property intelligence, digests, and **GrantSco
 
 **Stored reports:** Each completed agent run saves **`compiled_report`** (Markdown-style text) and **`agent_snapshot`** (full JSON payload) on `GrantScoutRun`, plus rows in `GrantScoutOpportunity`. View in Django admin under the run.
 
-**Monthly HTML digest** (`dream_blue_send_digest`) includes: business **calendar** (leases, loans, utilities, taxes, maintenance, etc.), **KPI** table, **narrative report sections**, **lease roster**, **loan schedule** (with payoff/refi fields where set), **utility accounts**, optional **lease comp research** memo (latest completed run), optional **GrantScout** block (latest completed run), and **lease economics**: monthly cash out (operating + loans), rent collected, **breakeven gross potential rent** using an assumed **economic vacancy** rate, **implied value band** from trailing **NOI** and a default **8%–10% cap rate** range (configurable), optional extra **$/sf/year** benchmark. Per-unit square footage lives on lease calendar rows in admin (`square_footage`).
+**Monthly HTML digest** (`dream_blue_send_digest`) includes: business **calendar** (leases, loans, utilities, taxes, maintenance, etc.), **KPI** table, **narrative report sections**, **lease roster**, **loan schedule** (with payoff/refi fields where set), **utility accounts**, optional **lease comp research** memo (latest completed run), optional **GrantScout** block (latest completed run), and **lease economics**: monthly cash out (operating + loans), rent collected, **breakeven gross potential rent** using an assumed **economic vacancy** rate, **implied value band** from trailing **NOI** and a default **8%–10% cap rate** range (configurable), optional extra **$/sf/year** benchmark. **Suggested asking rents** per unit use above-grade + below-grade storage sf on each lease row, configurable $/sf rates, and location factors (e.g. corner + kitchen vs inline retail). Fields: `square_footage`, `square_footage_storage`.
 
 #### Make report storage live (server)
 
@@ -111,6 +111,7 @@ See `.env.example` for placeholders. Required for sending digests:
 | `GRANTSCOUT_LLM_PROVIDER=perplexity` + `PERPLEXITY_API_KEY` | Perplexity **sonar** (live web / citations) |
 | `DREAM_BLUE_LEASE_ECONOMICS_VACANCY_PCT` | Economic vacancy % for breakeven GPR in digest (default `8`) |
 | `DREAM_BLUE_CAP_RATE_BENCHMARK_LOW` / `DREAM_BLUE_CAP_RATE_BENCHMARK_HIGH` | Cap rate band (default `8` / `10`, whole percents) for implied value from trailing NOI |
+| `DREAM_BLUE_SUGGEST_RENT_PSF_YEAR_ABOVE` / `DREAM_BLUE_SUGGEST_RENT_PSF_YEAR_STORAGE` | Digest suggested asking rent: above-grade $/sf/yr and storage $/sf/yr (defaults `9.5` / `2`) |
 | `DREAM_BLUE_RENT_BENCHMARK_PSF_YEAR` | Optional extra market gross $/sf/yr vs breakeven required $/sf |
 | `DREAM_BLUE_RENT_BENCHMARK_NOTE` | Short note (gross vs NNN, source, date) for optional $/sf benchmark |
 

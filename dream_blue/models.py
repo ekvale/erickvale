@@ -258,7 +258,12 @@ class BusinessCalendarEvent(models.Model):
     square_footage = models.PositiveIntegerField(
         null=True,
         blank=True,
-        help_text='Leasable sq ft (leases) — used for $/sf economics in digest',
+        help_text='Above-grade leasable sq ft (leases) — primary rent area; digest economics',
+    )
+    square_footage_storage = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text='Below-grade / storage sq ft (leases); priced at storage $/sf in suggestions',
     )
     notes = models.TextField(blank=True)
     interest_rate_annual = models.DecimalField(
