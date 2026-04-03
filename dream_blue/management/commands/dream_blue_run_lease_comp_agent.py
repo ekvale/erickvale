@@ -3,6 +3,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from dream_blue.lease_comp_agent import GrantScoutAgentError, run_lease_comp_agent
+from dream_blue.lease_comp_report_diff import build_lease_comp_diff_summary
 from dream_blue.models import GrantScoutRunStatus, LeaseCompResearchRun
 
 
@@ -58,6 +59,11 @@ class Command(BaseCommand):
             'report_markdown': payload['report_markdown'],
             'saved_at': timezone.now().isoformat(),
         }
+        prev = (
+            LeaseCompResearchRun.objects.filter(status=GrantScoutRunStatus.COMPLETED)
+            .order_by('-created_at')
+            .first()
+        )
         with transaction.atomic():
             run = LeaseCompResearchRun.objects.create(
                 status=GrantScoutRunStatus.DRAFT,
@@ -65,9 +71,17 @@ class Command(BaseCommand):
                 search_query_log=payload['search_queries'],
                 compiled_report=payload['report_markdown'],
                 agent_snapshot=snap,
+                previous_run=prev,
             )
+            diff_summary = ''
+            if prev and (prev.compiled_report or '').strip():
+                diff_summary = build_lease_comp_diff_summary(
+                    prev.compiled_report,
+                    run.compiled_report,
+                )
+            run.report_diff_summary = diff_summary
             run.status = GrantScoutRunStatus.COMPLETED
-            run.save(update_fields=['status', 'updated_at'])
+            run.save(update_fields=['status', 'report_diff_summary', 'updated_at'])
 
         self.stdout.write(
             self.style.SUCCESS(

@@ -129,6 +129,11 @@ DREAM_BLUE_RENT_BENCHMARK_NOTE = config(
         'State gross vs NNN in this note.'
     ),
 )
+# GrantScout digest: comma-separated lowercase tags; only opportunities whose topic_tags overlap are included (empty = show all).
+GRANTSCOUT_DIGEST_TOPIC_TAGS = config(
+    'GRANTSCOUT_DIGEST_TOPIC_TAGS',
+    default='',
+).strip()
 RESEND_API_KEY = config('RESEND_API_KEY', default='')
 RESEND_FROM_EMAIL = config('RESEND_FROM_EMAIL', default='')
 RESEND_API_URL = config('RESEND_API_URL', default='https://api.resend.com/emails')

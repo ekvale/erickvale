@@ -10,6 +10,7 @@ from django.conf import settings
 
 from .lease_economics import build_lease_economics_snapshot, lease_row_total_sqft
 from .lease_suggestions import build_lease_suggestion_rows
+from .models import LeaseRentBasis
 
 
 def _fmt_dollars(d: Decimal | None) -> str:
@@ -44,6 +45,35 @@ def build_lease_rates_digest_section(lease_rows: list) -> dict:
         else:
             breakeven_share = (req / Decimal(n)).quantize(Decimal('0.01')) if n else Decimal('0')
 
+        doc_url = (getattr(ev, 'lease_document_url', None) or '').strip() or (
+            (ev.reference_url or '').strip()
+        )
+        basis = getattr(ev, 'rent_basis', None) or LeaseRentBasis.UNKNOWN
+        try:
+            basis_label = dict(LeaseRentBasis.choices).get(basis, basis)
+        except Exception:
+            basis_label = str(basis)
+
+        tsf = int(srow['above_sf'] or 0) + int(srow['storage_sf'] or 0)
+        cur_m = srow['contract_monthly']
+        sug_m = srow['suggested_monthly']
+        actual_psf_year = None
+        suggested_psf_year = None
+        if tsf > 0:
+            if srow['has_contract'] and cur_m is not None:
+                actual_psf_year = (cur_m * Decimal('12') / Decimal(tsf)).quantize(
+                    Decimal('0.01')
+                )
+            if sug_m is not None:
+                suggested_psf_year = (sug_m * Decimal('12') / Decimal(tsf)).quantize(
+                    Decimal('0.01')
+                )
+        breakeven_psf_year = None
+        if tsf > 0 and breakeven_share is not None:
+            breakeven_psf_year = (breakeven_share * Decimal('12') / Decimal(tsf)).quantize(
+                Decimal('0.01')
+            )
+
         unit_rows.append(
             {
                 'property_label': srow['property_label'],
@@ -52,12 +82,20 @@ def build_lease_rates_digest_section(lease_rows: list) -> dict:
                 'end_date': ev.end_date,
                 'above_sf': srow['above_sf'],
                 'storage_sf': srow['storage_sf'],
+                'total_sf': tsf,
                 'has_contract': srow['has_contract'],
                 'current_monthly': srow['contract_monthly'],
                 'suggested_monthly': srow['suggested_monthly'],
                 'delta_vs_contract': srow['delta_vs_contract'],
                 'breakeven_allocated_monthly': breakeven_share,
+                'breakeven_psf_year': breakeven_psf_year,
                 'location_note': srow['location_note'],
+                'rent_basis': basis,
+                'rent_basis_label': basis_label,
+                'rent_basis_note': (getattr(ev, 'rent_basis_note', None) or '').strip(),
+                'document_url': doc_url,
+                'actual_psf_year': actual_psf_year,
+                'suggested_psf_year': suggested_psf_year,
             }
         )
 
@@ -74,8 +112,10 @@ def build_lease_rates_digest_section(lease_rows: list) -> dict:
 
     logic_bullets = [
         (
-            '<strong>Current rent</strong> is the monthly amount on each active lease row in admin '
-            '(vacant units show —). This is contract gross rent as recorded, not NNN adjustments.'
+            '<strong>Current rent</strong> is the in-place monthly amount from each lease row. Use the '
+            '<strong>Rent basis</strong> column (Gross vs NNN / unknown) and notes so comparisons to '
+            '<strong>suggested</strong> (a gross-oriented ask model) are interpreted honestly. Suggested '
+            'rent is not a CAM or NNN pass-through estimate.'
         ),
         (
             '<strong>Suggested rent</strong> is an illustrative asking rate: above-grade sf × '
@@ -125,16 +165,17 @@ def lease_rates_markdown_lines(lease_rows: list) -> list[str]:
         return ['_No active leases in schedule._']
 
     lines = [
-        '| Property | Tenant | Start | End | Above sf | Storage | Current/mo | Suggested/mo | Breakeven share/mo |',
-        '| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: |',
+        '| Property | Tenant | Start | End | Basis | Above sf | Storage | Current/mo | Suggested/mo | Breakeven share/mo |',
+        '| --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: |',
     ]
     p = bundle['portfolio']
     for r in bundle['unit_rows']:
         st = r['due_date'].isoformat() if r['due_date'] else ''
         en = r['end_date'].isoformat() if r['end_date'] else ''
         cur = _fmt_dollars(r['current_monthly']) if r['has_contract'] else '—'
+        basis = _md_esc(str(r.get('rent_basis_label') or ''))
         lines.append(
-            f"| {_md_esc(r['property_label'])} | {_md_esc(r['title'])} | {st} | {en} | "
+            f"| {_md_esc(r['property_label'])} | {_md_esc(r['title'])} | {st} | {en} | {basis} | "
             f"{r['above_sf'] or '—'} | {r['storage_sf'] or '—'} | {cur} | "
             f"${int(r['suggested_monthly']):,} | {_fmt_dollars(r['breakeven_allocated_monthly'])} |"
         )

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Units &amp; occupancy — Dream Blue</title>
+    <style>
+        :root { --bg: #f4f6f8; --ink: #0f172a; --muted: #64748b; --card: #fff; --border: #e2e8f0; --accent: #0d47a1; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; background: var(--bg); color: var(--ink); line-height: 1.45; }
+        header { background: var(--card); border-bottom: 1px solid var(--border); padding: 16px 24px; }
+        header h1 { margin: 0; font-size: 1.25rem; font-weight: 650; }
+        nav { margin-top: 8px; font-size: 0.9rem; }
+        nav a { color: var(--accent); margin-right: 16px; }
+        .wrap { max-width: 1280px; margin: 0 auto; padding: 20px 24px 48px; }
+        .kpis { display: flex; flex-wrap: wrap; gap: 12px 24px; margin-bottom: 20px; font-size: 0.9rem; color: var(--muted); }
+        .kpis strong { color: var(--ink); }
+        table.grid { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; font-size: 0.82rem; }
+        table.grid th, table.grid td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+        table.grid th { background: #f8fafc; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+        table.grid td.num { text-align: right; font-variant-numeric: tabular-nums; }
+        .tag { display: inline-block; font-size: 0.7rem; padding: 2px 8px; border-radius: 999px; background: #e8f0fe; color: #174ea6; font-weight: 600; }
+        .tag.vacant { background: #fce8e6; color: #c5221f; }
+        .hint { font-size: 0.85rem; color: var(--muted); max-width: 720px; margin-bottom: 16px; }
+        a.doc { color: var(--accent); font-size: 0.78rem; word-break: break-all; }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Units &amp; occupancy</h1>
+    <nav>
+        <a href="/">Home</a>
+        <a href="{% url 'dream_blue:operations_calendar' %}">Calendar</a>
+        <a href="{% url 'dream_blue:grantscout_dashboard' %}">GrantScout</a>
+        <a href="{% url 'dream_blue:units_dashboard' %}">Units</a>
+        <a href="/admin/dream_blue/">Admin</a>
+    </nav>
+</header>
+<div class="wrap">
+    {% if lease_rates_digest.show_section %}
+    {% with p=portfolio %}
+    <p class="hint">
+        Same math as the digest: <strong>actual</strong> and <strong>suggested</strong> $/sf/yr are simple annualized rent ÷ total sf (above + storage).
+        <strong>Breakeven $/sf/yr</strong> is that unit’s share of required GPR, annualized per sf — not a lease quote.
+        {% if p.physical_occupancy_pct %}Physical unit occupancy (rows with rent): <strong>{{ p.physical_occupancy_pct|floatformat:1 }}%</strong>.{% endif %}
+    </p>
+    <div class="kpis">
+        <span><strong>{{ p.occupied_unit_count }}</strong> occupied units</span>
+        <span><strong>{{ p.vacant_unit_count }}</strong> vacant</span>
+        <span><strong>{{ p.total_leasable_sqft|floatformat:0 }}</strong> sf total (above + storage)</span>
+        <span><strong>{{ p.occupied_sqft|floatformat:0 }}</strong> sf occupied · <strong>{{ p.vacant_sqft|floatformat:0 }}</strong> sf vacant</span>
+    </div>
+    <table class="grid">
+        <thead>
+            <tr>
+                <th>Property</th>
+                <th>Tenant</th>
+                <th>Status</th>
+                <th class="num">Total sf</th>
+                <th class="num">$/sf/yr actual</th>
+                <th class="num">$/sf/yr suggested</th>
+                <th class="num">$/sf/yr breakeven share</th>
+                <th>Rent basis</th>
+                <th>Doc</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in lease_rates_digest.unit_rows %}
+            <tr>
+                <td>{{ r.property_label }}</td>
+                <td>{{ r.title }}</td>
+                <td>{% if r.has_contract %}<span class="tag">Occupied</span>{% else %}<span class="tag vacant">Vacant</span>{% endif %}</td>
+                <td class="num">{% if r.total_sf %}{{ r.total_sf }}{% else %}—{% endif %}</td>
+                <td class="num">{% if r.actual_psf_year %}${{ r.actual_psf_year|floatformat:2 }}{% else %}—{% endif %}</td>
+                <td class="num">{% if r.suggested_psf_year %}${{ r.suggested_psf_year|floatformat:2 }}{% else %}—{% endif %}</td>
+                <td class="num">{% if r.breakeven_psf_year %}${{ r.breakeven_psf_year|floatformat:2 }}{% else %}—{% endif %}</td>
+                <td>{{ r.rent_basis_label }}{% if r.rent_basis_note %}<br><small style="color:var(--muted);">{{ r.rent_basis_note|truncatechars:64 }}</small>{% endif %}</td>
+                <td>{% if r.document_url %}<a class="doc" href="{{ r.document_url }}">link</a>{% else %}—{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endwith %}
+    {% else %}
+    <p class="hint">No lease economics section (no active leases or incomplete configuration).</p>
+    {% endif %}
+</div>
+</body>
+</html>

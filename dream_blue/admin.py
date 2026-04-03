@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from .models import (
+    BusinessBooksReconciliation,
     BusinessCalendarEvent,
     BusinessKPIEntry,
     BusinessReportSection,
@@ -8,6 +9,7 @@ from .models import (
     GrantScoutOpportunity,
     GrantScoutRun,
     LeaseCompResearchRun,
+    LeaseRentRollChange,
 )
 
 
@@ -20,6 +22,7 @@ class GrantScoutOpportunityInline(admin.TabularInline):
         'status',
         'deadline',
         'priority_score',
+        'topic_tags',
         'source_url_check_passed',
         'summary',
         'source_url',
@@ -36,10 +39,17 @@ class GrantScoutDriftEntryInline(admin.TabularInline):
 
 @admin.register(LeaseCompResearchRun)
 class LeaseCompResearchRunAdmin(admin.ModelAdmin):
-    list_display = ('id', 'status', 'created_at', 'coverage_summary_preview')
+    list_display = ('id', 'status', 'created_at', 'previous_run', 'coverage_summary_preview')
     list_filter = ('status',)
-    readonly_fields = ('created_at', 'updated_at', 'compiled_report', 'agent_snapshot')
-    search_fields = ('coverage_summary', 'compiled_report', 'error_message')
+    readonly_fields = (
+        'created_at',
+        'updated_at',
+        'compiled_report',
+        'agent_snapshot',
+        'report_diff_summary',
+    )
+    raw_id_fields = ('previous_run',)
+    search_fields = ('coverage_summary', 'compiled_report', 'error_message', 'report_diff_summary')
 
     @admin.display(description='Coverage')
     def coverage_summary_preview(self, obj):
@@ -98,19 +108,23 @@ class BusinessCalendarEventAdmin(admin.ModelAdmin):
         'square_footage',
         'square_footage_storage',
         'amount',
+        'rent_basis',
+        'lease_doc_short',
         'interest_rate_annual',
         'refinance_date',
         'payoff_target_date',
         'account_reference_short',
         'is_active',
     )
-    list_filter = ('event_type', 'is_active')
+    list_filter = ('event_type', 'is_active', 'rent_basis')
     search_fields = (
         'title',
         'property_label',
         'notes',
         'account_reference',
         'contact_info',
+        'lease_document_url',
+        'reference_url',
     )
     date_hierarchy = 'due_date'
     ordering = ('due_date', 'sort_order')
@@ -123,6 +137,44 @@ class BusinessCalendarEventAdmin(admin.ModelAdmin):
     def account_reference_short(self, obj):
         a = obj.account_reference or ''
         return (a[:18] + '…') if len(a) > 18 else a or '—'
+
+    @admin.display(description='Lease doc')
+    def lease_doc_short(self, obj):
+        u = (getattr(obj, 'lease_document_url', None) or obj.reference_url or '').strip()
+        if not u:
+            return '—'
+        return (u[:28] + '…') if len(u) > 28 else u
+
+
+@admin.register(BusinessBooksReconciliation)
+class BusinessBooksReconciliationAdmin(admin.ModelAdmin):
+    list_display = (
+        'period_label',
+        'monthly_rent_income_books',
+        'monthly_operating_expense_books',
+        'is_active',
+        'sort_order',
+        'updated_at',
+    )
+    list_filter = ('is_active',)
+    search_fields = ('period_label', 'variance_notes')
+
+
+@admin.register(LeaseRentRollChange)
+class LeaseRentRollChangeAdmin(admin.ModelAdmin):
+    list_display = (
+        'recorded_at',
+        'event',
+        'amount_before',
+        'amount_after',
+        'square_footage_before',
+        'square_footage_after',
+        'source',
+    )
+    list_filter = ('source',)
+    search_fields = ('event__title', 'event__property_label')
+    raw_id_fields = ('event',)
+    readonly_fields = ('recorded_at',)
 
 
 @admin.register(BusinessKPIEntry)

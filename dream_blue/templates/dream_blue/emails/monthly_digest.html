@@ -116,6 +116,39 @@
     </tr>
     {% endif %}
 
+    {% if books_reconciliation %}
+    <tr>
+        <td style="padding:16px 28px 8px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+            <p style="margin:0 0 4px 0;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#5c6978;">Reconciliation</p>
+            <h3 style="margin:0 0 10px 0;font-size:15px;font-weight:650;color:#122436;">Books vs calendar ({{ books_reconciliation.period_label }})</h3>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e1e6ec;border-collapse:collapse;">
+                <tr>
+                    <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:600;text-transform:uppercase;color:#57606a;background:#f6f8fa;border-bottom:1px solid #e1e6ec;">Line</th>
+                    <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:600;text-transform:uppercase;color:#57606a;background:#f6f8fa;border-bottom:1px solid #e1e6ec;">Per books</th>
+                    <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:600;text-transform:uppercase;color:#57606a;background:#f6f8fa;border-bottom:1px solid #e1e6ec;">Calendar roll-up</th>
+                    <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:600;text-transform:uppercase;color:#57606a;background:#f6f8fa;border-bottom:1px solid #e1e6ec;">Variance</th>
+                </tr>
+                <tr>
+                    <td style="padding:8px 10px;font-size:12px;border-bottom:1px solid #eef1f4;">Rent income (mo)</td>
+                    <td style="padding:8px 10px;font-size:12px;text-align:right;border-bottom:1px solid #eef1f4;">{% if books_reconciliation.rent_books is not None %}${{ books_reconciliation.rent_books|floatformat:0 }}{% else %}—{% endif %}</td>
+                    <td style="padding:8px 10px;font-size:12px;text-align:right;border-bottom:1px solid #eef1f4;">${{ books_reconciliation.calendar_rent|floatformat:0 }}</td>
+                    <td style="padding:8px 10px;font-size:12px;text-align:right;font-weight:600;border-bottom:1px solid #eef1f4;{% if books_reconciliation.delta_rent > 0 %}color:#b71c1c;{% elif books_reconciliation.delta_rent < 0 %}color:#1b5e20;{% endif %}">{% if books_reconciliation.delta_rent is not None %}${{ books_reconciliation.delta_rent|floatformat:0 }}{% else %}—{% endif %}</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 10px;font-size:12px;border-bottom:1px solid #eef1f4;">Operating expense (mo)</td>
+                    <td style="padding:8px 10px;font-size:12px;text-align:right;border-bottom:1px solid #eef1f4;">{% if books_reconciliation.operating_books is not None %}${{ books_reconciliation.operating_books|floatformat:0 }}{% else %}—{% endif %}</td>
+                    <td style="padding:8px 10px;font-size:12px;text-align:right;border-bottom:1px solid #eef1f4;">${{ books_reconciliation.calendar_operating|floatformat:0 }}</td>
+                    <td style="padding:8px 10px;font-size:12px;text-align:right;font-weight:600;border-bottom:1px solid #eef1f4;{% if books_reconciliation.delta_operating > 0 %}color:#b71c1c;{% elif books_reconciliation.delta_operating < 0 %}color:#1b5e20;{% endif %}">{% if books_reconciliation.delta_operating is not None %}${{ books_reconciliation.delta_operating|floatformat:0 }}{% else %}—{% endif %}</td>
+                </tr>
+            </table>
+            {% if books_reconciliation.variance_notes %}
+            <p style="margin:10px 0 0 0;font-size:11px;line-height:1.5;color:#5c6570;">{{ books_reconciliation.variance_notes|linebreaksbr }}</p>
+            {% endif %}
+            <p style="margin:8px 0 0 0;font-size:10px;color:#7a8490;">Calendar side uses active lease amounts and operating expense rows in Dream Blue admin — not a substitute for audited financials.</p>
+        </td>
+    </tr>
+    {% endif %}
+
     <!-- Lease rates: current, suggested, breakeven share, portfolio & cap — one table -->
     {% if lease_rates_digest.show_section %}
     {% with p=lease_rates_digest.portfolio %}
@@ -132,6 +165,8 @@
                     <th style="text-align:left;padding:10px 8px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">End</th>
                     <th style="text-align:right;padding:10px 8px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Above</th>
                     <th style="text-align:right;padding:10px 8px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Stor.</th>
+                    <th style="text-align:left;padding:10px 6px;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Rent<br>basis</th>
+                    <th style="text-align:left;padding:10px 6px;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Doc</th>
                     <th style="text-align:right;padding:10px 8px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Current<br>/mo</th>
                     <th style="text-align:right;padding:10px 8px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Suggested<br>/mo</th>
                     <th style="text-align:right;padding:10px 8px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#57606a;background-color:#f6f8fa;border-bottom:1px solid #e1e6ec;">Breakeven<br>share/mo</th>
@@ -144,83 +179,85 @@
                     <td style="padding:10px 8px;font-size:12px;color:#24292f;border-bottom:1px solid #eef1f4;vertical-align:top;white-space:nowrap;">{% if r.end_date %}{{ r.end_date|date:"M j, Y" }}{% else %}—{% endif %}</td>
                     <td style="padding:10px 8px;font-size:12px;text-align:right;border-bottom:1px solid #eef1f4;vertical-align:top;">{% if r.above_sf %}{{ r.above_sf|floatformat:0 }}{% else %}—{% endif %}</td>
                     <td style="padding:10px 8px;font-size:12px;text-align:right;border-bottom:1px solid #eef1f4;vertical-align:top;">{% if r.storage_sf %}{{ r.storage_sf|floatformat:0 }}{% else %}—{% endif %}</td>
+                    <td style="padding:10px 6px;font-size:10px;color:#24292f;border-bottom:1px solid #eef1f4;vertical-align:top;line-height:1.3;">{{ r.rent_basis_label }}{% if r.rent_basis_note %}<br><span style="color:#5c6570;">{{ r.rent_basis_note|truncatechars:48 }}</span>{% endif %}</td>
+                    <td style="padding:10px 6px;font-size:10px;border-bottom:1px solid #eef1f4;vertical-align:top;">{% if r.document_url %}<a href="{{ r.document_url }}" style="color:#155dfc;">Link</a>{% else %}—{% endif %}</td>
                     <td style="padding:10px 8px;font-size:12px;font-weight:600;text-align:right;color:#122436;border-bottom:1px solid #eef1f4;vertical-align:top;">{% if r.has_contract %}${{ r.current_monthly|floatformat:0 }}<br><span style="font-size:10px;font-weight:400;color:#5c6570;">Δ sugg. ${{ r.delta_vs_contract|floatformat:0 }}</span>{% else %}—{% endif %}</td>
                     <td style="padding:10px 8px;font-size:12px;font-weight:700;text-align:right;color:#0d47a1;border-bottom:1px solid #eef1f4;vertical-align:top;">${{ r.suggested_monthly|floatformat:0 }}</td>
                     <td style="padding:10px 8px;font-size:11px;text-align:right;color:#24292f;border-bottom:1px solid #eef1f4;vertical-align:top;line-height:1.35;">${{ r.breakeven_allocated_monthly|floatformat:0 }}<br><span style="color:#5c6570;text-align:left;display:inline-block;max-width:140px;">{{ r.location_note }}</span></td>
                 </tr>
                 {% endfor %}
                 <tr>
-                    <td colspan="6" style="padding:10px 8px;font-size:11px;font-weight:600;color:#122436;border-top:2px solid #d8dee6;background:#f0f4f8;">If all units at suggested ask / mo</td>
+                    <td colspan="8" style="padding:10px 8px;font-size:11px;font-weight:600;color:#122436;border-top:2px solid #d8dee6;background:#f0f4f8;">If all units at suggested ask / mo</td>
                     <td colspan="3" style="padding:10px 8px;font-size:13px;font-weight:700;text-align:right;color:#122436;border-top:2px solid #d8dee6;background:#f0f4f8;">${{ lease_rates_digest.total_suggested_monthly|floatformat:0 }}</td>
                 </tr>
                 <tr>
-                    <td colspan="9" style="padding:10px 8px;font-size:11px;font-weight:650;color:#122436;background:#fafbfc;border-bottom:1px solid #e1e6ec;">Portfolio roll-up (whole building)</td>
+                    <td colspan="11" style="padding:10px 8px;font-size:11px;font-weight:650;color:#122436;background:#fafbfc;border-bottom:1px solid #e1e6ec;">Portfolio roll-up (whole building)</td>
                 </tr>
                 <tr>
-                    <td colspan="6" style="padding:8px 8px;font-size:12px;color:#24292f;border-bottom:1px solid #eef1f4;">Operating expenses (calendar, mo)</td>
+                    <td colspan="8" style="padding:8px 8px;font-size:12px;color:#24292f;border-bottom:1px solid #eef1f4;">Operating expenses (calendar, mo)</td>
                     <td colspan="3" style="padding:8px 8px;font-size:12px;font-weight:600;text-align:right;border-bottom:1px solid #eef1f4;">${{ p.monthly_operating|floatformat:0 }}</td>
                 </tr>
                 <tr>
-                    <td colspan="6" style="padding:8px 8px;font-size:12px;color:#24292f;border-bottom:1px solid #eef1f4;">Loan payments (mo)</td>
+                    <td colspan="8" style="padding:8px 8px;font-size:12px;color:#24292f;border-bottom:1px solid #eef1f4;">Loan payments (mo)</td>
                     <td colspan="3" style="padding:8px 8px;font-size:12px;font-weight:600;text-align:right;border-bottom:1px solid #eef1f4;">${{ p.monthly_loans|floatformat:0 }}</td>
                 </tr>
                 <tr>
-                    <td colspan="6" style="padding:8px 8px;font-size:12px;color:#122436;border-bottom:1px solid #eef1f4;"><strong>Total cash out (mo)</strong></td>
+                    <td colspan="8" style="padding:8px 8px;font-size:12px;color:#122436;border-bottom:1px solid #eef1f4;"><strong>Total cash out (mo)</strong></td>
                     <td colspan="3" style="padding:8px 8px;font-size:12px;font-weight:700;text-align:right;color:#122436;border-bottom:1px solid #eef1f4;">${{ p.monthly_out|floatformat:0 }}</td>
                 </tr>
                 <tr>
-                    <td colspan="6" style="padding:8px 8px;font-size:12px;color:#24292f;border-bottom:1px solid #eef1f4;">Rent collected — occupied (mo)</td>
+                    <td colspan="8" style="padding:8px 8px;font-size:12px;color:#24292f;border-bottom:1px solid #eef1f4;">Rent collected — occupied (mo)</td>
                     <td colspan="3" style="padding:8px 8px;font-size:12px;font-weight:600;text-align:right;border-bottom:1px solid #eef1f4;">${{ p.monthly_rent_collected|floatformat:0 }}</td>
                 </tr>
                 <tr>
-                    <td colspan="6" style="padding:8px 8px;font-size:12px;color:#122436;background:#f0f7ff;border-bottom:1px solid #eef1f4;"><strong>Required gross potential rent (mo)</strong><br><span style="font-size:10px;font-weight:400;color:#5c6570;">Cash out ÷ (1 − {{ p.vacancy_assumption_pct|floatformat:1 }}% vacancy)</span></td>
+                    <td colspan="8" style="padding:8px 8px;font-size:12px;color:#122436;background:#f0f7ff;border-bottom:1px solid #eef1f4;"><strong>Required gross potential rent (mo)</strong><br><span style="font-size:10px;font-weight:400;color:#5c6570;">Cash out ÷ (1 − {{ p.vacancy_assumption_pct|floatformat:1 }}% vacancy)</span></td>
                     <td colspan="3" style="padding:8px 8px;font-size:14px;font-weight:700;text-align:right;color:#0d47a1;background:#f0f7ff;border-bottom:1px solid #eef1f4;">${{ p.required_gross_monthly|floatformat:0 }}</td>
                 </tr>
                 <tr>
-                    <td colspan="6" style="padding:8px 8px;font-size:12px;color:#24292f;border-bottom:1px solid #eef1f4;">Gap vs required (GPR − collected, mo)</td>
+                    <td colspan="8" style="padding:8px 8px;font-size:12px;color:#24292f;border-bottom:1px solid #eef1f4;">Gap vs required (GPR − collected, mo)</td>
                     <td colspan="3" style="padding:8px 8px;font-size:12px;font-weight:600;text-align:right;border-bottom:1px solid #eef1f4;{% if p.shortfall_monthly > 0 %}color:#b71c1c;{% else %}color:#1b5e20;{% endif %}">${{ p.shortfall_monthly|floatformat:0 }}{% if p.shortfall_monthly <= 0 %} <span style="font-size:10px;color:#5c6570;">(surplus)</span>{% endif %}</td>
                 </tr>
                 {% if p.required_avg_rent_per_unit %}
                 <tr>
-                    <td colspan="6" style="padding:8px 8px;font-size:12px;color:#24292f;border-bottom:1px solid #eef1f4;">Flat rent per unit if every unit paid the same ({{ p.lease_unit_count }} units)</td>
+                    <td colspan="8" style="padding:8px 8px;font-size:12px;color:#24292f;border-bottom:1px solid #eef1f4;">Flat rent per unit if every unit paid the same ({{ p.lease_unit_count }} units)</td>
                     <td colspan="3" style="padding:8px 8px;font-size:11px;text-align:right;border-bottom:1px solid #eef1f4;">~${{ p.required_avg_rent_per_unit|floatformat:0 }}/mo each</td>
                 </tr>
                 {% endif %}
                 {% if p.total_leasable_sqft %}
                 <tr>
-                    <td colspan="6" style="padding:8px 8px;font-size:12px;color:#24292f;border-bottom:1px solid #eef1f4;">Building sf (above + storage)</td>
+                    <td colspan="8" style="padding:8px 8px;font-size:12px;color:#24292f;border-bottom:1px solid #eef1f4;">Building sf (above + storage)</td>
                     <td colspan="3" style="padding:8px 8px;font-size:11px;text-align:right;border-bottom:1px solid #eef1f4;color:#24292f;">{{ p.total_leasable_sqft|floatformat:0 }} total · {{ p.occupied_sqft|floatformat:0 }} occ. · {{ p.vacant_sqft|floatformat:0 }} vacant{% if p.physical_occupancy_pct %} · {{ p.physical_occupancy_pct|floatformat:1 }}% units occ.{% endif %}</td>
                 </tr>
                 {% if p.portfolio_occupied_psf_year %}
                 <tr>
-                    <td colspan="6" style="padding:8px 8px;font-size:12px;color:#24292f;border-bottom:1px solid #eef1f4;">Occupied gross rent (portfolio)</td>
+                    <td colspan="8" style="padding:8px 8px;font-size:12px;color:#24292f;border-bottom:1px solid #eef1f4;">Occupied gross rent (portfolio)</td>
                     <td colspan="3" style="padding:8px 8px;font-size:11px;text-align:right;border-bottom:1px solid #eef1f4;">~${{ p.portfolio_occupied_psf_year|floatformat:2 }}/sf/yr on occupied sf</td>
                 </tr>
                 {% endif %}
                 {% if p.required_psf_year_portfolio %}
                 <tr>
-                    <td colspan="6" style="padding:8px 8px;font-size:12px;color:#122436;border-bottom:1px solid #eef1f4;">Uniform breakeven (if same $/sf everywhere)</td>
+                    <td colspan="8" style="padding:8px 8px;font-size:12px;color:#122436;border-bottom:1px solid #eef1f4;">Uniform breakeven (if same $/sf everywhere)</td>
                     <td colspan="3" style="padding:8px 8px;font-size:11px;text-align:right;border-bottom:1px solid #eef1f4;">~${{ p.required_psf_year_portfolio|floatformat:2 }}/sf/yr on all leasable sf</td>
                 </tr>
                 {% endif %}
                 {% endif %}
                 <tr>
-                    <td colspan="6" style="padding:8px 8px;font-size:12px;color:#24292f;border-bottom:1px solid #eef1f4;background:#fafbfc;"><strong>Cap rate band</strong> {{ p.cap_rate_benchmark_low_pct|floatformat:1 }}%–{{ p.cap_rate_benchmark_high_pct|floatformat:1 }}% · <strong>Trailing NOI</strong> (mo / yr)</td>
+                    <td colspan="8" style="padding:8px 8px;font-size:12px;color:#24292f;border-bottom:1px solid #eef1f4;background:#fafbfc;"><strong>Cap rate band</strong> {{ p.cap_rate_benchmark_low_pct|floatformat:1 }}%–{{ p.cap_rate_benchmark_high_pct|floatformat:1 }}% · <strong>Trailing NOI</strong> (mo / yr)</td>
                     <td colspan="3" style="padding:8px 8px;font-size:11px;text-align:right;border-bottom:1px solid #eef1f4;background:#fafbfc;">${{ p.noi_monthly|floatformat:0 }} / ~${{ p.noi_annual|floatformat:0 }}<br><span style="color:#5c6570;">Rent − operating only; excludes loans</span></td>
                 </tr>
                 {% if p.show_cap_implied_value %}
                 <tr>
-                    <td colspan="6" style="padding:8px 8px;font-size:12px;color:#122436;border-bottom:1px solid #eef1f4;background:#fafbfc;"><strong>Implied value</strong> (NOI ÷ cap)</td>
+                    <td colspan="8" style="padding:8px 8px;font-size:12px;color:#122436;border-bottom:1px solid #eef1f4;background:#fafbfc;"><strong>Implied value</strong> (NOI ÷ cap)</td>
                     <td colspan="3" style="padding:8px 8px;font-size:12px;font-weight:600;text-align:right;border-bottom:1px solid #eef1f4;background:#fafbfc;">~${{ p.implied_value_range_min|floatformat:0 }} – ${{ p.implied_value_range_max|floatformat:0 }}{% if p.cap_implied_psf_low %}<br><span style="font-size:10px;font-weight:400;color:#5c6570;">~${{ p.cap_implied_psf_low|floatformat:2 }}–${{ p.cap_implied_psf_high|floatformat:2 }}/sf on {{ p.total_leasable_sqft|floatformat:0 }} sf</span>{% endif %}</td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="9" style="padding:8px 8px;font-size:11px;color:#9a6700;border-bottom:1px solid #eef1f4;background:#fffbf5;">Cap-implied value not shown: trailing NOI is zero or negative at current rent vs operating expenses.</td>
+                    <td colspan="11" style="padding:8px 8px;font-size:11px;color:#9a6700;border-bottom:1px solid #eef1f4;background:#fffbf5;">Cap-implied value not shown: trailing NOI is zero or negative at current rent vs operating expenses.</td>
                 </tr>
                 {% endif %}
                 {% if p.benchmark_configured %}
                 <tr>
-                    <td colspan="6" style="padding:8px 8px;font-size:12px;color:#24292f;border-bottom:1px solid #eef1f4;vertical-align:top;">Optional market benchmark</td>
+                    <td colspan="8" style="padding:8px 8px;font-size:12px;color:#24292f;border-bottom:1px solid #eef1f4;vertical-align:top;">Optional market benchmark</td>
                     <td colspan="3" style="padding:8px 8px;font-size:11px;text-align:right;border-bottom:1px solid #eef1f4;vertical-align:top;">${{ p.benchmark_psf_year|floatformat:2 }}/sf/yr{% if p.vs_benchmark_psf_year is not None %}<br><span style="color:#5c6570;">Breakeven required $/sf {% if p.vs_benchmark_psf_year > 0 %}above{% elif p.vs_benchmark_psf_year < 0 %}below{% else %}equal to{% endif %} benchmark by ${{ p.vs_benchmark_psf_year|floatformat:2 }}</span>{% endif %}{% if p.benchmark_note %}<br><span style="color:#5c6570;text-align:left;display:inline-block;margin-top:4px;">{{ p.benchmark_note|linebreaksbr }}</span>{% endif %}</td>
                 </tr>
                 {% endif %}
@@ -233,6 +270,16 @@
                     {% endfor %}
                 </ul>
             </div>
+            {% if lease_rent_roll_recent %}
+            <div style="margin-top:14px;padding:12px 14px;background:#fffdf7;border:1px solid #f0e6d4;border-radius:8px;">
+                <p style="margin:0 0 8px 0;font-size:12px;font-weight:650;color:#122436;">Recent rent / SF changes (audit)</p>
+                <ul style="margin:0;padding-left:18px;font-size:11px;line-height:1.5;color:#3d4f5f;">
+                    {% for ch in lease_rent_roll_recent %}
+                    <li style="margin:0 0 4px 0;">{{ ch.recorded_at|date:"M j, Y" }} — {{ ch.event.title|truncatechars:40 }}: {% if ch.amount_before is not None or ch.amount_after is not None %}rent {% if ch.amount_before is not None %}${{ ch.amount_before|floatformat:0 }}{% else %}—{% endif %} → {% if ch.amount_after is not None %}${{ ch.amount_after|floatformat:0 }}{% else %}—{% endif %}{% endif %}{% if ch.square_footage_before or ch.square_footage_after %} · sf {{ ch.square_footage_before|default:"—" }}→{{ ch.square_footage_after|default:"—" }}{% endif %}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
         </td>
     </tr>
     {% endwith %}
@@ -418,6 +465,12 @@
             {% if lease_comp_research.coverage_summary %}
             <p style="margin:0 0 14px 0;font-size:14px;line-height:1.55;color:#24292f;font-weight:500;">{{ lease_comp_research.coverage_summary|linebreaksbr }}</p>
             {% endif %}
+            {% if lease_comp_research.report_diff_summary %}
+            <div style="margin:0 0 14px 0;padding:12px 14px;background:#f6f8fa;border:1px solid #e1e6ec;border-radius:6px;">
+                <p style="margin:0 0 6px 0;font-size:12px;font-weight:650;color:#122436;">Changes vs prior lease-comp run</p>
+                <pre style="margin:0;font-size:10px;line-height:1.45;color:#24292f;white-space:pre-wrap;font-family:ui-monospace,Consolas,monospace;">{{ lease_comp_research.report_diff_summary }}</pre>
+            </div>
+            {% endif %}
             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e1e6ec;border-collapse:separate;">
                 <tr>
                     <td style="padding:18px 20px;background-color:#fafbfc;border-left:4px solid #0f766e;">
@@ -434,6 +487,9 @@
         <td style="padding:28px 28px 8px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;border-top:1px solid #eef1f4;">
             <p style="margin:0 0 4px 0;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#5c6978;">GrantScout</p>
             <h2 style="margin:0 0 10px 0;font-size:18px;font-weight:650;color:#122436;line-height:1.3;">{{ grantscout_run.period_label }}</h2>
+            {% if grantscout_digest_tags_active %}
+            <p style="margin:0 0 12px 0;font-size:11px;line-height:1.45;color:#5c6570;">Digest filter: only opportunities with topic tags matching <strong>{{ grantscout_digest_tag_filter }}</strong> (<code>GRANTSCOUT_DIGEST_TOPIC_TAGS</code>). Untagged rows are omitted when this is set.</p>
+            {% endif %}
             {% if grantscout_run.coverage_summary %}<p style="margin:0 0 18px 0;font-size:14px;line-height:1.55;color:#24292f;">{{ grantscout_run.coverage_summary|linebreaksbr }}</p>{% endif %}
         </td>
     </tr>
@@ -451,6 +507,7 @@
                             {% if o.opportunity_type %}<span style="color:#7a8490;"> · {{ o.opportunity_type }}</span>{% endif %}
                             <span style="color:#7a8490;"> · score {{ o.priority_score }}</span>
                             {% if o.deadline %}<span style="color:#7a8490;"> · deadline {{ o.deadline }}</span>{% endif %}
+                            {% if o.topic_tags %}<span style="color:#7a8490;"> · tags: {{ o.topic_tags|join:", " }}</span>{% endif %}
                         </p>
                         <p style="margin:0 0 10px 0;font-size:14px;line-height:1.55;color:#24292f;">{{ o.summary|linebreaksbr }}</p>
                         {% if o.action_recommended %}<p style="margin:0 0 10px 0;font-size:13px;line-height:1.5;color:#3d4f5f;"><em style="font-style:italic;color:#57606a;">Action:</em> {{ o.action_recommended|linebreaksbr }}</p>{% endif %}

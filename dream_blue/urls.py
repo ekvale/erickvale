@@ -16,6 +16,16 @@ urlpatterns = [
         name='operations_calendar',
     ),
     path(
+        'operations/calendar.ics',
+        views.operations_calendar_ics_feed,
+        name='operations_calendar_ics',
+    ),
+    path(
+        'operations/units/',
+        views.units_dashboard,
+        name='units_dashboard',
+    ),
+    path(
         'api/grantscout/latest.json',
         views.grantscout_latest_api,
         name='grantscout_latest_api',

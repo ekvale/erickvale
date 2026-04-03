@@ -1,6 +1,7 @@
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
 from django.views.decorators.http import require_GET
@@ -13,9 +14,12 @@ from .calendar_api import (
     serialize_events_for_json,
 )
 from .digest_context import (
+    active_lease_schedule,
     get_latest_completed_grantscout_run,
     top_grantscout_opportunities,
 )
+from .ics_feed import build_operations_calendar_ics
+from .lease_digest_bundle import build_lease_rates_digest_section
 from .models import (
     BusinessCalendarEventType,
     GrantScoutDriftEntry,
@@ -99,6 +103,7 @@ def grantscout_latest_api(request):
                     'source_url': o.source_url,
                     'priority_score': o.priority_score,
                     'source_url_check_passed': o.source_url_check_passed,
+                    'topic_tags': list(o.topic_tags or []),
                 }
                 for o in opps
             ],
@@ -184,3 +189,51 @@ def operations_expense_summary_api(request):
     """Totals of ``amount`` by event type (all active rows with amounts)."""
     _require_staff(request)
     return JsonResponse(expense_by_type_summary())
+
+
+def _calendar_ics_lookahead_days() -> int:
+    try:
+        return max(1, int(getattr(settings, 'DREAM_BLUE_CALENDAR_LOOKAHEAD_DAYS', 120)))
+    except (TypeError, ValueError):
+        return 120
+
+
+@require_GET
+@login_required
+def operations_calendar_ics_feed(request):
+    """Subscribe in Google Calendar / Outlook via URL (staff only). ``?critical=1`` limits to lease, tax, insurance."""
+    _require_staff(request)
+    critical = (request.GET.get('critical') or '').lower() in ('1', 'true', 'yes')
+    if critical:
+        types = (
+            BusinessCalendarEventType.LEASE,
+            BusinessCalendarEventType.PROPERTY_TAX,
+            BusinessCalendarEventType.INSURANCE,
+        )
+    else:
+        types = None
+    body = build_operations_calendar_ics(
+        lookahead_days=_calendar_ics_lookahead_days(),
+        event_types=types,
+    )
+    resp = HttpResponse(body, content_type='text/calendar; charset=utf-8')
+    resp['Content-Disposition'] = 'inline; filename="dream-blue-operations.ics"'
+    return resp
+
+
+@require_GET
+@login_required
+def units_dashboard(request):
+    """Staff map of lease units: occupancy, $/sf vs suggested vs breakeven share."""
+    _require_staff(request)
+    leases = active_lease_schedule()
+    bundle = build_lease_rates_digest_section(leases)
+    p = bundle.get('portfolio') if bundle.get('show_section') else {}
+    return render(
+        request,
+        'dream_blue/units_dashboard.html',
+        {
+            'lease_rates_digest': bundle,
+            'portfolio': p,
+        },
+    )

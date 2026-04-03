@@ -119,6 +119,11 @@ class GrantScoutOpportunity(models.Model):
         db_index=True,
         help_text='Stable id across runs (e.g. hash of canonical URL)',
     )
+    topic_tags = models.JSONField(
+        default=list,
+        blank=True,
+        help_text='Lowercase labels, e.g. ["bemidji","retail","energy"] — digest can filter by GRANTSCOUT_DIGEST_TOPIC_TAGS',
+    )
     source_url_check_passed = models.BooleanField(
         null=True,
         blank=True,
@@ -200,6 +205,18 @@ class LeaseCompResearchRun(models.Model):
         blank=True,
         help_text='Normalized agent payload',
     )
+    previous_run = models.ForeignKey(
+        'self',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='following_runs',
+        help_text='Prior completed run used for report diff in digest',
+    )
+    report_diff_summary = models.TextField(
+        blank=True,
+        help_text='Unified diff snippet vs previous_run (set when a new run is saved)',
+    )
     error_message = models.TextField(blank=True)
 
     class Meta:
@@ -209,6 +226,14 @@ class LeaseCompResearchRun(models.Model):
 
     def __str__(self):
         return f'Lease comp {self.created_at.date()} ({self.get_status_display()})'
+
+
+class LeaseRentBasis(models.TextChoices):
+    """How contract rent on the row should be interpreted vs suggested gross asks."""
+
+    GROSS = 'gross', 'Gross (all-in rent)'
+    NNN = 'nnn', 'NNN / net (base + pass-throughs)'
+    UNKNOWN = 'unknown', 'Unknown / mixed'
 
 
 class BusinessCalendarEventType(models.TextChoices):
@@ -249,6 +274,21 @@ class BusinessCalendarEvent(models.Model):
         null=True,
         blank=True,
         help_text='Optional amount for cash-flow context',
+    )
+    rent_basis = models.CharField(
+        max_length=16,
+        choices=LeaseRentBasis.choices,
+        default=LeaseRentBasis.UNKNOWN,
+        help_text='Lease rows: gross vs NNN for honest comparison to suggested gross asks',
+    )
+    rent_basis_note = models.TextField(
+        blank=True,
+        help_text='e.g. “NNN + CAM ~$4/sf” or “Gross incl. utilities”',
+    )
+    lease_document_url = models.URLField(
+        max_length=500,
+        blank=True,
+        help_text='Lease abstract, LOI, or PDF link (leases); audit trail',
     )
     property_label = models.CharField(
         max_length=128,
@@ -314,7 +354,11 @@ class BusinessCalendarEvent(models.Model):
         blank=True,
         help_text='Vendor / contact for this expense (phone, company name)',
     )
-    reference_url = models.URLField(max_length=500, blank=True)
+    reference_url = models.URLField(
+        max_length=500,
+        blank=True,
+        help_text='Vendor link, portal, or secondary doc (utilities, loans, etc.)',
+    )
     is_active = models.BooleanField(default=True, db_index=True)
     sort_order = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -396,3 +440,82 @@ class BusinessReportSection(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class BusinessBooksReconciliation(models.Model):
+    """Optional “per books” totals vs Dream Blue calendar roll-up (digest variance line)."""
+
+    period_label = models.CharField(
+        max_length=64,
+        help_text='e.g. Mar 2026 or FY2026-Q1',
+    )
+    monthly_rent_income_books = models.DecimalField(
+        max_digits=14,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text='Rent income per books for the period (monthly equivalent)',
+    )
+    monthly_operating_expense_books = models.DecimalField(
+        max_digits=14,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text='Operating expense per books (excl. debt principal if you separate it)',
+    )
+    variance_notes = models.TextField(
+        blank=True,
+        help_text='Explain timing, accrual, or one-offs driving variance vs calendar',
+    )
+    is_active = models.BooleanField(default=True, db_index=True)
+    sort_order = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['sort_order', '-id']
+        verbose_name = 'Books reconciliation'
+        verbose_name_plural = 'Books reconciliations'
+
+    def __str__(self):
+        return f'{self.period_label} (books)'
+
+
+class LeaseRentRollChange(models.Model):
+    """Append-only log when lease amount or sf changes (admin edits)."""
+
+    event = models.ForeignKey(
+        BusinessCalendarEvent,
+        on_delete=models.CASCADE,
+        related_name='rent_roll_changes',
+    )
+    recorded_at = models.DateTimeField(auto_now_add=True)
+    amount_before = models.DecimalField(
+        max_digits=14,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+    amount_after = models.DecimalField(
+        max_digits=14,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+    square_footage_before = models.PositiveIntegerField(null=True, blank=True)
+    square_footage_after = models.PositiveIntegerField(null=True, blank=True)
+    square_footage_storage_before = models.PositiveIntegerField(null=True, blank=True)
+    square_footage_storage_after = models.PositiveIntegerField(null=True, blank=True)
+    source = models.CharField(
+        max_length=32,
+        default='admin',
+        help_text='Where the change was captured',
+    )
+
+    class Meta:
+        ordering = ['-recorded_at', '-id']
+        verbose_name = 'Lease rent roll change'
+        verbose_name_plural = 'Lease rent roll changes'
+
+    def __str__(self):
+        return f'{self.event_id} @ {self.recorded_at.date()}'

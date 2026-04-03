@@ -124,6 +124,10 @@ Never commit real recipients or API keys; use `.env` on the server only.
 python manage.py grantscout_run_agent --dry-run   # no DB write
 python manage.py grantscout_run_agent --period 2026-04
 
+# Lease comparables memo (Bemidji-area); saves LeaseCompResearchRun with diff vs prior completed memo
+python manage.py dream_blue_run_lease_comp_agent --dry-run
+python manage.py dream_blue_run_lease_comp_agent
+
 # Preview digest recipients (no send)
 python manage.py dream_blue_send_digest --dry-run
 
@@ -158,6 +162,16 @@ mkdir -p ~/logs
 ```
 
 Adjust `GRANTSCOUT_INTERVAL_DAYS`, `GRANTSCOUT_STATE`, or `GRANTSCOUT_PYTHON` if your paths differ.
+
+**Lease comp on a schedule (monthly or quarterly):** `deploy/lease_comp_scheduled.sh` mirrors the GrantScout pattern — daily cron, but the agent runs only after `LEASE_COMP_INTERVAL_DAYS` (default **30**; use **90** for quarterly). After a successful run it can trigger `dream_blue_send_digest` (`LEASE_COMP_SEND_DIGEST=1`, default).
+
+```bash
+chmod +x deploy/lease_comp_scheduled.sh
+# 07:20 UTC daily; script skips until interval elapsed
+20 7 * * * /home/erickvale/erickvale/deploy/lease_comp_scheduled.sh >> /home/erickvale/logs/lease_comp.log 2>&1
+```
+
+**Staff tools (login + staff flag):** [Operations calendar](/apps/dream-blue/operations/calendar/), [units / $·sf dashboard](/apps/dream-blue/operations/units/), [ICS calendar feed](/apps/dream-blue/operations/calendar.ics) (add `?critical=1` for leases, property tax, and insurance only — useful for Google Calendar “subscribe by URL”).
 
 **Digest-only on another schedule** (optional — e.g. monthly reminders without re-running the agent):
 

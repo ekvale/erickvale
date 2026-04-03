@@ -20,12 +20,14 @@ from dream_blue.emailing import (
 from dream_blue.models import (
     BusinessCalendarEvent,
     BusinessCalendarEventType,
+    BusinessBooksReconciliation,
     BusinessKPIEntry,
     GrantScoutCategory,
     GrantScoutOpportunity,
     GrantScoutRun,
     GrantScoutRunStatus,
     LeaseCompResearchRun,
+    LeaseRentRollChange,
 )
 
 
@@ -261,6 +263,28 @@ class OperationsCalendarApiTests(TestCase):
         self.assertIn('amountByType', data)
         self.assertIn('countByType', data)
 
+    def test_operations_calendar_ics_staff(self):
+        from django.utils import timezone
+
+        self.client.login(username='staff_cal', password='pw')
+        d0 = timezone.localdate()
+        BusinessCalendarEvent.objects.create(
+            title='ICS test tax',
+            event_type=BusinessCalendarEventType.PROPERTY_TAX,
+            due_date=d0,
+            amount=Decimal('100.00'),
+        )
+        r = self.client.get(reverse('dream_blue:operations_calendar_ics'))
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(b'BEGIN:VCALENDAR', r.content)
+        self.assertIn(b'ICS test tax', r.content)
+
+    def test_units_dashboard_staff(self):
+        self.client.login(username='staff_cal', password='pw')
+        r = self.client.get(reverse('dream_blue:units_dashboard'))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Units')
+
 
 class GrantScoutHttpTests(TestCase):
     def setUp(self):
@@ -320,6 +344,7 @@ class GrantScoutHttpTests(TestCase):
         self.assertEqual(data['opportunities'][0]['priority_score'], 99)
         self.assertIn('opportunities_unverified', data)
         self.assertEqual(data['opportunities_unverified'], [])
+        self.assertEqual(data['opportunities'][0].get('topic_tags'), [])
 
 
 class DigestCommandSendTests(TestCase):
@@ -341,6 +366,75 @@ class DigestCommandSendTests(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn('Dream Blue report', mail.outbox[0].subject)
         self.assertIn('text/html', mail.outbox[0].alternatives[0][1])
+
+
+class DigestHtmlTemplateSnapshotTests(TestCase):
+    """Stable substrings so table refactors do not silently drop columns."""
+
+    @override_settings(DREAM_BLUE_REPORT_RECIPIENTS='x@example.com')
+    def test_monthly_digest_html_has_core_sections(self):
+        from django.template.loader import render_to_string
+
+        from dream_blue.digest_context import build_monthly_digest_context
+
+        BusinessBooksReconciliation.objects.create(
+            period_label='Test books period',
+            monthly_rent_income_books=Decimal('5000'),
+            monthly_operating_expense_books=Decimal('2000'),
+            variance_notes='Timing vs accrual.',
+        )
+        ctx = build_monthly_digest_context(include_grantscout=False)
+        html = render_to_string('dream_blue/emails/monthly_digest.html', ctx)
+        self.assertIn('Books vs calendar', html)
+        self.assertIn('Lease rates &amp; economics', html)
+        self.assertIn('Rent<br>basis', html)
+        self.assertIn('>Doc</th>', html)
+
+
+class LeaseRentRollLogTests(TestCase):
+    def test_amount_change_creates_append_only_row(self):
+        ev = BusinessCalendarEvent.objects.get(
+            event_type=BusinessCalendarEventType.LEASE,
+            property_label='211 4th St.',
+        )
+        before = LeaseRentRollChange.objects.filter(event=ev).count()
+        ev.amount = (ev.amount or Decimal('0')) + Decimal('1.00')
+        ev.save()
+        self.assertEqual(LeaseRentRollChange.objects.filter(event=ev).count(), before + 1)
+        last = LeaseRentRollChange.objects.filter(event=ev).order_by('-id').first()
+        self.assertIsNotNone(last)
+        self.assertEqual(last.source, 'admin')
+
+
+class GrantScoutDigestTopicFilterTests(TestCase):
+    @override_settings(GRANTSCOUT_DIGEST_TOPIC_TAGS='retail')
+    def test_digest_filters_opportunities_by_tag(self):
+        from dream_blue.digest_context import build_monthly_digest_context
+
+        run = GrantScoutRun.objects.create(
+            period_label='2099-zz-tags',
+            status=GrantScoutRunStatus.COMPLETED,
+        )
+        GrantScoutOpportunity.objects.create(
+            run=run,
+            category=GrantScoutCategory.GRANT,
+            summary='Has tag',
+            source_url='https://example.org/a',
+            priority_score=10,
+            topic_tags=['retail', 'bemidji'],
+        )
+        GrantScoutOpportunity.objects.create(
+            run=run,
+            category=GrantScoutCategory.GRANT,
+            summary='No tag',
+            source_url='https://example.org/b',
+            priority_score=9,
+            topic_tags=['energy'],
+        )
+        ctx = build_monthly_digest_context()
+        self.assertTrue(ctx['grantscout_digest_tags_active'])
+        self.assertEqual(len(ctx['grantscout_opportunities']), 1)
+        self.assertEqual(ctx['grantscout_opportunities'][0].summary, 'Has tag')
 
 
 class GrantScoutReportBuilderTests(TestCase):

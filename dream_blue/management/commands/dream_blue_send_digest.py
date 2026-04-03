@@ -1,3 +1,6 @@
+import logging
+import time
+
 from django.core.management.base import BaseCommand, CommandError
 from django.template.loader import render_to_string
 from django.utils import timezone
@@ -9,6 +12,8 @@ from dream_blue.emailing import (
     send_html_digest,
 )
 from dream_blue.models import GrantScoutRun, GrantScoutRunStatus
+
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -55,6 +60,7 @@ class Command(BaseCommand):
             )
             return
 
+        t0 = time.perf_counter()
         include_gs = not options['no_grantscout']
         context = build_monthly_digest_context(include_grantscout=include_gs)
 
@@ -117,12 +123,32 @@ class Command(BaseCommand):
             )
 
         html = render_to_string('dream_blue/emails/monthly_digest.html', context)
+        render_ms = (time.perf_counter() - t0) * 1000.0
 
         self.stdout.write('Recipients: ' + ', '.join(recipients))
         try:
+            t_send = time.perf_counter()
             send_html_digest(subject, html, recipients=recipients)
+            send_ms = (time.perf_counter() - t_send) * 1000.0
         except DreamBlueEmailConfigError as e:
             raise CommandError(str(e)) from e
+
+        total_ms = (time.perf_counter() - t0) * 1000.0
+        gpr = le.get('required_gross_monthly')
+        logger.info(
+            'dream_blue_send_digest completed',
+            extra={
+                'dream_blue_event': 'dream_blue_send_digest',
+                'recipient_count': len(recipients),
+                'include_grantscout': include_gs,
+                'calendar_row_count': n_cal,
+                'lease_row_count': n_lease,
+                'required_gpr_monthly': str(gpr) if gpr is not None else '',
+                'render_ms': round(render_ms, 1),
+                'send_ms': round(send_ms, 1),
+                'total_ms': round(total_ms, 1),
+            },
+        )
 
         self.stdout.write(
             self.style.SUCCESS(f'Sent digest "{subject}" to {len(recipients)} recipient(s).')

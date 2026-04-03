@@ -15,6 +15,7 @@ from .calendar_api import EVENT_TYPE_COLORS, events_overlapping_range
 from .lease_economics import build_lease_economics_snapshot
 from .lease_digest_bundle import build_lease_rates_digest_section, lease_rates_markdown_lines
 from .models import (
+    BusinessBooksReconciliation,
     BusinessCalendarEvent,
     BusinessCalendarEventType,
     BusinessKPIEntry,
@@ -22,6 +23,7 @@ from .models import (
     GrantScoutRun,
     GrantScoutRunStatus,
     LeaseCompResearchRun,
+    LeaseRentRollChange,
 )
 
 
@@ -44,6 +46,58 @@ def get_latest_completed_lease_comp_run():
 def top_grantscout_opportunities(run: GrantScoutRun, limit: int = 15):
     return list(
         run.opportunities.order_by('-priority_score', '-created_at')[:limit]
+    )
+
+
+def _grantscout_digest_tag_allowlist() -> set[str]:
+    raw = (getattr(settings, 'GRANTSCOUT_DIGEST_TOPIC_TAGS', '') or '').strip()
+    if not raw:
+        return set()
+    return {t.strip().lower() for t in raw.split(',') if t.strip()}
+
+
+def filter_grantscout_opportunities_for_digest(opportunities: list) -> list:
+    allow = _grantscout_digest_tag_allowlist()
+    if not allow:
+        return opportunities
+    out = []
+    for o in opportunities:
+        tags = {str(x).lower() for x in (o.topic_tags or [])}
+        if tags & allow:
+            out.append(o)
+    return out
+
+
+def build_books_reconciliation_digest_row():
+    """Compare optional books totals to calendar roll-up from lease economics."""
+    row = (
+        BusinessBooksReconciliation.objects.filter(is_active=True)
+        .order_by('sort_order', '-id')
+        .first()
+    )
+    if not row:
+        return None
+    eco = build_lease_economics_snapshot()
+    cal_rent = eco.get('monthly_rent_collected')
+    cal_op = eco.get('monthly_operating')
+    rb = row.monthly_rent_income_books
+    ob = row.monthly_operating_expense_books
+    return {
+        'period_label': row.period_label,
+        'rent_books': rb,
+        'operating_books': ob,
+        'variance_notes': row.variance_notes,
+        'calendar_rent': cal_rent,
+        'calendar_operating': cal_op,
+        'delta_rent': (rb - cal_rent) if rb is not None and cal_rent is not None else None,
+        'delta_operating': (ob - cal_op) if ob is not None and cal_op is not None else None,
+    }
+
+
+def recent_lease_rent_roll_changes(limit: int = 8):
+    return list(
+        LeaseRentRollChange.objects.select_related('event')
+        .order_by('-recorded_at')[:limit]
     )
 
 
@@ -486,9 +540,13 @@ def build_monthly_digest_context(*, include_grantscout: bool = True) -> dict:
         'business_kpis': active_business_kpis(),
         'business_report_sections': active_business_report_sections(),
         'lease_comp_research': get_latest_completed_lease_comp_run(),
+        'books_reconciliation': build_books_reconciliation_digest_row(),
+        'lease_rent_roll_recent': recent_lease_rent_roll_changes(),
         'grantscout_run': None,
         'grantscout_opportunities': [],
         'grantscout_drift': [],
+        'grantscout_digest_tag_filter': (getattr(settings, 'GRANTSCOUT_DIGEST_TOPIC_TAGS', '') or '').strip(),
+        'grantscout_digest_tags_active': bool(_grantscout_digest_tag_allowlist()),
     }
     if not include_grantscout:
         return ctx
@@ -496,11 +554,15 @@ def build_monthly_digest_context(*, include_grantscout: bool = True) -> dict:
     if not run:
         return ctx
     ctx['grantscout_run'] = run
-    ctx['grantscout_opportunities'] = top_grantscout_opportunities(run)
-    ctx['grantscout_opportunities_unverified'] = list(
-        run.opportunities.filter(source_url_check_passed=False).order_by(
-            '-priority_score', '-created_at'
-        )[:25]
+    ctx['grantscout_opportunities'] = filter_grantscout_opportunities_for_digest(
+        top_grantscout_opportunities(run)
+    )
+    ctx['grantscout_opportunities_unverified'] = filter_grantscout_opportunities_for_digest(
+        list(
+            run.opportunities.filter(source_url_check_passed=False).order_by(
+                '-priority_score', '-created_at'
+            )[:25]
+        )
     )
     ctx['grantscout_drift'] = list(run.drift_entries.all()[:50])
     return ctx
