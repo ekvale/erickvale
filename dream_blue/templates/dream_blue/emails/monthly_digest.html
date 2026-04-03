@@ -13,11 +13,80 @@
         .opp-meta { font-size: 0.85rem; color: #444; margin-bottom: 6px; }
         a { color: #0b57d0; }
         ul.drift { padding-left: 1.2rem; }
+        .kpi-grid { display: table; width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.95rem; }
+        .kpi-grid tr:nth-child(odd) { background: #fafbfc; }
+        .kpi-grid td { padding: 10px 8px; border-bottom: 1px solid #eee; vertical-align: top; }
+        .kpi-grid td.val { font-weight: 600; white-space: nowrap; }
+        .cal-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 12px 0; }
+        .cal-table th, .cal-table td { text-align: left; padding: 8px 6px; border-bottom: 1px solid #e8e8e8; }
+        .cal-table th { color: #444; font-weight: 600; }
     </style>
 </head>
 <body>
-    <h1>{{ title|default:"Dream Blue monthly digest" }}</h1>
+    <h1>{{ title|default:"Dream Blue report" }}</h1>
+    {% if report_subtitle %}<p class="muted" style="margin-top:-8px;">{{ report_subtitle }}</p>{% endif %}
     <p class="muted">Generated {{ generated_at|date:"N j, Y, P T" }}</p>
+
+    <h2>Operations &amp; KPIs</h2>
+    <p class="muted">Upcoming dates {{ calendar_window_start|date:"M j, Y" }} — {{ calendar_window_end|date:"M j, Y" }}</p>
+
+    {% if business_kpis %}
+    <h3 style="font-size:1rem;">Key metrics</h3>
+    <table class="kpi-grid" role="presentation">
+        {% for k in business_kpis %}
+        <tr>
+            <td>
+                <strong>{{ k.label }}</strong>
+                {% if k.period_hint %}<span class="muted"> — {{ k.period_hint }}</span>{% endif %}
+                {% if k.detail %}<br><span class="muted" style="font-size:0.88rem;">{{ k.detail|linebreaksbr }}</span>{% endif %}
+            </td>
+            <td class="val">{{ k.value_display }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p class="muted">No KPI rows yet — add them under Dream Blue → Business KPIs in admin.</p>
+    {% endif %}
+
+    {% if business_calendar_events %}
+    <h3 style="font-size:1rem;">Upcoming dates</h3>
+    <table class="cal-table">
+        <thead>
+            <tr>
+                <th>Due</th>
+                <th>Type</th>
+                <th>Item</th>
+                <th>Property / notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for e in business_calendar_events %}
+            <tr>
+                <td>{{ e.due_date|date:"M j, Y" }}{% if e.end_date %} – {{ e.end_date|date:"M j, Y" }}{% endif %}</td>
+                <td>{{ e.get_event_type_display }}</td>
+                <td>
+                    {{ e.title }}
+                    {% if e.amount %}<br><span class="muted">{{ e.amount }}</span>{% endif %}
+                    {% if e.reference_url %}<br><a href="{{ e.reference_url }}">Reference</a>{% endif %}
+                </td>
+                <td class="muted">{% if e.property_label %}{{ e.property_label }}{% endif %}{% if e.notes %}<br>{{ e.notes|linebreaksbr }}{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="muted">No calendar events in this window — add Business calendar events in admin.</p>
+    {% endif %}
+
+    {% if business_report_sections %}
+    <h3 style="font-size:1rem;">Report narrative</h3>
+    {% for s in business_report_sections %}
+    <div class="opp">
+        <div class="opp-meta">{{ s.title }}{% if s.source == 'agent' %} · <em>agent draft</em>{% endif %}</div>
+        <div style="margin:0;">{{ s.body|linebreaksbr }}</div>
+    </div>
+    {% endfor %}
+    {% endif %}
 
     {% if grantscout_run %}
     <h2>GrantScout — {{ grantscout_run.period_label }}</h2>
@@ -66,9 +135,9 @@
 
     {% else %}
     <h2>GrantScout</h2>
-    <p class="muted">No completed GrantScout run in the database yet. Complete a run in admin or add data via your research workflow.</p>
+    <p class="muted">No completed GrantScout run in the database yet. Run <code>grantscout_run_agent</code> or complete a run via your workflow.</p>
     {% endif %}
 
-    <p class="muted" style="margin-top:2rem;">Internal use only — Dream Blue.</p>
+    <p class="muted" style="margin-top:2rem;">Internal use only — Dream Blue combined report.</p>
 </body>
 </html>

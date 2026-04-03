@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
-# Run GrantScout LLM agent at most once every GRANTSCOUT_INTERVAL_DAYS (default 14).
+# Dream Blue biweekly pipeline: GrantScout agent + combined HTML report email.
+# The email includes (from DB) business calendar, KPIs, optional narrative sections,
+# and the latest GrantScout run. Maintain calendar/KPIs in Django admin under dream_blue.
+#
+# Future: add a second agent (e.g. dream_blue_kpi_agent) before send_digest; same digest command.
+#
+# Rate-limit: runs GrantScout at most once every GRANTSCOUT_INTERVAL_DAYS (default 14).
 # Install: chmod +x deploy/grantscout_agent_biweekly.sh
 #
 # Cron (check daily; script skips until interval elapsed):

@@ -1,6 +1,13 @@
 from django.contrib import admin
 
-from .models import GrantScoutDriftEntry, GrantScoutOpportunity, GrantScoutRun
+from .models import (
+    BusinessCalendarEvent,
+    BusinessKPIEntry,
+    BusinessReportSection,
+    GrantScoutDriftEntry,
+    GrantScoutOpportunity,
+    GrantScoutRun,
+)
 
 
 class GrantScoutOpportunityInline(admin.TabularInline):
@@ -65,6 +72,41 @@ class GrantScoutOpportunityAdmin(admin.ModelAdmin):
     @admin.display(description='Summary')
     def summary_short(self, obj):
         return (obj.summary[:70] + '…') if len(obj.summary) > 70 else obj.summary
+
+
+@admin.register(BusinessCalendarEvent)
+class BusinessCalendarEventAdmin(admin.ModelAdmin):
+    list_display = (
+        'due_date',
+        'title_short',
+        'event_type',
+        'property_label',
+        'amount',
+        'is_active',
+    )
+    list_filter = ('event_type', 'is_active')
+    search_fields = ('title', 'property_label', 'notes')
+    date_hierarchy = 'due_date'
+    ordering = ('due_date', 'sort_order')
+
+    @admin.display(description='Title')
+    def title_short(self, obj):
+        return (obj.title[:50] + '…') if len(obj.title) > 50 else obj.title
+
+
+@admin.register(BusinessKPIEntry)
+class BusinessKPIEntryAdmin(admin.ModelAdmin):
+    list_display = ('label', 'value_display', 'period_hint', 'is_active', 'sort_order')
+    list_filter = ('is_active',)
+    search_fields = ('label', 'detail')
+
+
+@admin.register(BusinessReportSection)
+class BusinessReportSectionAdmin(admin.ModelAdmin):
+    list_display = ('slug', 'title', 'source', 'is_active', 'sort_order', 'updated_at')
+    list_filter = ('source', 'is_active')
+    search_fields = ('slug', 'title', 'body')
+    prepopulated_fields = {'slug': ('title',)}
 
 
 @admin.register(GrantScoutDriftEntry)

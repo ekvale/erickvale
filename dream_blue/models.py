@@ -173,3 +173,131 @@ class GrantScoutDriftEntry(models.Model):
 
     def __str__(self):
         return f'{self.get_drift_type_display()}: {self.summary[:80]}'
+
+
+class BusinessCalendarEventType(models.TextChoices):
+    """High-level buckets for the operations calendar (digest + future KPI agent)."""
+
+    BILL = 'bill', 'Bill / recurring payment'
+    LEASE = 'lease', 'Lease / occupancy'
+    PROPERTY_TAX = 'property_tax', 'Property tax'
+    INSURANCE = 'insurance', 'Insurance'
+    LICENSE = 'license', 'License / permit'
+    LOAN = 'loan', 'Loan / financing'
+    MAINTENANCE = 'maintenance', 'Maintenance / capex'
+    OTHER = 'other', 'Other'
+
+
+class BusinessCalendarEvent(models.Model):
+    """User- or import-maintained dates shown on the Dream Blue biweekly report."""
+
+    title = models.CharField(max_length=200)
+    event_type = models.CharField(
+        max_length=32,
+        choices=BusinessCalendarEventType.choices,
+        default=BusinessCalendarEventType.OTHER,
+    )
+    due_date = models.DateField(
+        db_index=True,
+        help_text='Primary date (e.g. bill due, tax deadline, lease end)',
+    )
+    end_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text='Optional range end (e.g. renewal window)',
+    )
+    amount = models.DecimalField(
+        max_digits=14,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text='Optional amount for cash-flow context',
+    )
+    property_label = models.CharField(
+        max_length=128,
+        blank=True,
+        help_text='Building, parcel, or entity label',
+    )
+    notes = models.TextField(blank=True)
+    reference_url = models.URLField(max_length=500, blank=True)
+    is_active = models.BooleanField(default=True, db_index=True)
+    sort_order = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['due_date', 'sort_order', 'id']
+        verbose_name = 'Business calendar event'
+        verbose_name_plural = 'Business calendar events'
+
+    def __str__(self):
+        return f'{self.due_date}: {self.title[:50]}'
+
+
+class BusinessKPIEntry(models.Model):
+    """Key numbers shown on each report (maintain in admin; agents can sync later)."""
+
+    label = models.CharField(max_length=120)
+    value_display = models.CharField(
+        max_length=120,
+        help_text='Plain text, e.g. 12.4%, $42k, 3 units',
+    )
+    detail = models.TextField(
+        blank=True,
+        help_text='Optional short note / definition',
+    )
+    period_hint = models.CharField(
+        max_length=64,
+        blank=True,
+        help_text='e.g. YTD 2026, Q1, trailing 12 mo',
+    )
+    is_active = models.BooleanField(default=True, db_index=True)
+    sort_order = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['sort_order', 'id']
+        verbose_name = 'Business KPI'
+        verbose_name_plural = 'Business KPIs'
+
+    def __str__(self):
+        return f'{self.label}: {self.value_display}'
+
+
+class BusinessReportSectionSource(models.TextChoices):
+    MANUAL = 'manual', 'Manual / admin'
+    AGENT = 'agent', 'Generated (future agent)'
+
+
+class BusinessReportSection(models.Model):
+    """
+    Free-form narrative blocks for the combined report (manual now; LLM agent later).
+    Upsert by slug from a management command when the KPI agent exists.
+    """
+
+    slug = models.SlugField(
+        max_length=64,
+        unique=True,
+        help_text='Stable id, e.g. liquidity-summary, portfolio-outlook',
+    )
+    title = models.CharField(max_length=160)
+    body = models.TextField(
+        help_text='Plain text or light Markdown; rendered with line breaks in email',
+    )
+    source = models.CharField(
+        max_length=20,
+        choices=BusinessReportSectionSource.choices,
+        default=BusinessReportSectionSource.MANUAL,
+    )
+    is_active = models.BooleanField(default=True, db_index=True)
+    sort_order = models.IntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['sort_order', 'slug']
+        verbose_name = 'Business report section'
+        verbose_name_plural = 'Business report sections'
+
+    def __str__(self):
+        return self.title

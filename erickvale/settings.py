@@ -63,6 +63,12 @@ INSTALLED_APPS = [
 # --- Dream Blue (internal BI / digests) ---
 # Comma-separated recipient emails; no defaults — must be set in env for sends.
 DREAM_BLUE_REPORT_RECIPIENTS = config('DREAM_BLUE_REPORT_RECIPIENTS', default='')
+# How far ahead the email calendar lists active BusinessCalendarEvent rows (days from local today).
+DREAM_BLUE_CALENDAR_LOOKAHEAD_DAYS = config(
+    'DREAM_BLUE_CALENDAR_LOOKAHEAD_DAYS',
+    default=120,
+    cast=int,
+)
 RESEND_API_KEY = config('RESEND_API_KEY', default='')
 RESEND_FROM_EMAIL = config('RESEND_FROM_EMAIL', default='')
 RESEND_API_URL = config('RESEND_API_URL', default='https://api.resend.com/emails')

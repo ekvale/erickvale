@@ -14,8 +14,8 @@ from dream_blue.models import GrantScoutRun, GrantScoutRunStatus
 
 class Command(BaseCommand):
     help = (
-        'Send the Dream Blue HTML digest to DREAM_BLUE_REPORT_RECIPIENTS '
-        '(Resend or SMTP via settings).'
+        'Send the Dream Blue combined report (calendar, KPIs, optional GrantScout) '
+        'to DREAM_BLUE_REPORT_RECIPIENTS (Resend or SMTP).'
     )
 
     def add_arguments(self, parser):
@@ -33,7 +33,7 @@ class Command(BaseCommand):
             '--subject',
             type=str,
             default='',
-            help='Override email subject (default: Dream Blue digest + month/year).',
+            help='Override email subject (default: Dream Blue report + month/year).',
         )
 
     def handle(self, *args, **options):
@@ -51,6 +51,16 @@ class Command(BaseCommand):
 
         include_gs = not options['no_grantscout']
         context = build_monthly_digest_context(include_grantscout=include_gs)
+
+        n_cal = len(context.get('business_calendar_events') or [])
+        n_kpi = len(context.get('business_kpis') or [])
+        n_sec = len(context.get('business_report_sections') or [])
+        self.stdout.write(
+            self.style.SUCCESS(
+                f'Operations: {n_cal} calendar row(s), {n_kpi} KPI(s), '
+                f'{n_sec} narrative section(s)'
+            )
+        )
 
         if include_gs:
             run = context.get('grantscout_run')
@@ -79,7 +89,7 @@ class Command(BaseCommand):
         if options['subject']:
             subject = options['subject']
         else:
-            subject = f"Dream Blue digest — {datetime.now().strftime('%B %Y')}"
+            subject = f"Dream Blue report — {datetime.now().strftime('%B %Y')}"
 
         html = render_to_string('dream_blue/emails/monthly_digest.html', context)
 

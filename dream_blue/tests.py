@@ -13,6 +13,9 @@ from dream_blue.emailing import (
     send_html_digest,
 )
 from dream_blue.models import (
+    BusinessCalendarEvent,
+    BusinessCalendarEventType,
+    BusinessKPIEntry,
     GrantScoutCategory,
     GrantScoutOpportunity,
     GrantScoutRun,
@@ -108,6 +111,28 @@ class DigestContextTests(TestCase):
         self.assertEqual(len(ctx['grantscout_opportunities']), 1)
         self.assertEqual(ctx['grantscout_opportunities_unverified'], [])
 
+    def test_operations_calendar_and_kpis_in_context(self):
+        from django.utils import timezone
+
+        from dream_blue.digest_context import build_monthly_digest_context
+
+        d0 = timezone.localdate()
+        BusinessCalendarEvent.objects.create(
+            title='Property tax installment',
+            event_type=BusinessCalendarEventType.PROPERTY_TAX,
+            due_date=d0,
+            property_label='Main st',
+        )
+        BusinessKPIEntry.objects.create(
+            label='Occupancy',
+            value_display='94%',
+            period_hint='as of today',
+        )
+        ctx = build_monthly_digest_context(include_grantscout=False)
+        self.assertEqual(len(ctx['business_calendar_events']), 1)
+        self.assertEqual(len(ctx['business_kpis']), 1)
+        self.assertIn('calendar_window_end', ctx)
+
 
 class GrantScoutHttpTests(TestCase):
     def setUp(self):
@@ -186,7 +211,7 @@ class DigestCommandSendTests(TestCase):
         mail.outbox.clear()
         call_command('dream_blue_send_digest', '--no-grantscout')
         self.assertEqual(len(mail.outbox), 1)
-        self.assertIn('Dream Blue digest', mail.outbox[0].subject)
+        self.assertIn('Dream Blue report', mail.outbox[0].subject)
         self.assertIn('text/html', mail.outbox[0].alternatives[0][1])
 
 
