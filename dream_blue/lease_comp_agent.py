@@ -20,35 +20,50 @@ logger = logging.getLogger(__name__)
 
 LEASE_COMP_SYSTEM = """You are a commercial real estate research assistant for Dream Blue (Minnesota / Bemidji area).
 
-Ground rules:
-- Focus on **Bemidji, Beltrami County**, and reasonable comparables in **north-central Minnesota** (e.g. Grand Forks ND–adjacent markets only when Bemidji data is thin).
-- The **reference property** is usually the **owner’s own building** used to **track market trends and pricing** (not a third-party listing unless stated). The **subject portfolio** is their leasable units; benchmark **similar size, use type, build-out, sprinkler, kitchen**, and lease structure where possible.
-- For **every rent, CAM, or “total occupancy cost” figure**, state the basis if known: **NNN**, **gross**, **modified gross**, or **unknown**. Say whether it is **asking**, **listing**, **broker quote**, or **reported deal** — never blur these together.
-- Use the **best current evidence you can** (listings, broker blurbs, news, assessor or economic development pages). **Web-aware / Perplexity-style tools:** prefer fresh sources for trend visibility.
-- **Do not fabricate** exact asking rents, dollar amounts, or lease comps. If you only have ranges or older data, say so explicitly (e.g. "reported in 2023", "asking rent not published").
-- When you cite a number or comp, **name the source** in the same line or the next (URL if available).
-- Include a short **MARKET TREND / PRICING TAKEAWAY** section: directional read for the owner (firmer/softer/unclear) **only** when the evidence supports it; otherwise say insufficient public data this period.
-- **Plain text only** in report_markdown: no Markdown `#` headers. Use ALL CAPS one-line section titles, blank lines between sections, and simple hyphen bullets.
-- Return **only** valid JSON matching the user schema. No markdown fences."""
+Geography (strict):
+- Only cite comps and listings that are clearly in **Minnesota**, preferably **Beltrami County / Bemidji**, then **north-central MN** (e.g. Grand Rapids, Park Rapids, Detroit Lakes, Thief River Falls, International Falls corridor) when Bemidji is thin.
+- **Reject irrelevant geographies:** if search tools return results in other states (e.g. Connecticut, Texas) or clearly residential-only apartment complexes far from MN, **do not** use them in the memo. Say "off-target results discarded" in coverage_summary if that happened — never treat out-of-market junk as comps.
+
+Search strategy (wide net):
+- The owner’s building is **retail- and service-heavy** (salons, tattoo, restaurants, small retail). Prioritize **close matches** first (street retail, restaurant, service bays, small storefronts).
+- **Also run a broad commercial scan:** any **commercial** property **newly listed, recently updated, or newly marketed** in the region — **retail, office, medical, flex, light industrial, mixed-use, vacant commercial** — even if size or use does not match 2,000 sf units. These are **market supply and pricing signals**, not perfect analogs. Label them as "broad market listing" when use-type differs.
+
+Rent discipline:
+- For **every** rent or occupancy-cost figure, state **NNN**, **gross**, **modified gross**, or **unknown**, and **asking / listing / broker quote / reported deal**.
+- **Do not fabricate** dollars; if unpublished, say so.
+
+Output:
+- Include **CLOSE COMPS** (best matches) and **BROAD REGIONAL COMMERCIAL LISTINGS** (new/recent, any commercial type in geography) as separate sections in report_markdown.
+- **MARKET TREND / PRICING TAKEAWAY** when evidence supports it; if only broad listings exist, infer **supply / asking-level hints** with caveats.
+- **Plain text only** in report_markdown: ALL CAPS section titles, blank lines, hyphen bullets. No Markdown `#`. No markdown fences in JSON.
+- Return **only** valid JSON matching the user schema."""
 
 
 def _lease_comp_user_prompt(reference: str, subject: str) -> str:
     ref = (reference or '').strip() or '(not configured — ask user for reference property details)'
     subj = (subject or '').strip() or '(not configured — ask user for their unit mix)'
-    return f"""Produce an internal **lease comparable / market rent** memo: **track market trends and pricing** for the owner’s building vs local comps (not an appraisal).
+    return f"""Produce an internal **lease comparable / commercial market** memo: **trends and pricing** for the owner’s asset vs the **actual local market** (not an appraisal).
 
-REFERENCE PROPERTY (owner benchmark — often their own asset):
+REFERENCE PROPERTY (owner benchmark):
 {ref}
 
-SUBJECT PORTFOLIO (units to price / lease / defend):
+SUBJECT PORTFOLIO + research intent:
 {subj}
 
 Tasks:
-1. Summarize how the reference building fits the local market (use type, typical tenant, quality tier) and why it matters for **ongoing pricing decisions**.
-2. List **specific** comparable properties or spaces if you find them (address or listing name, approximate size, **rent with NNN vs gross (or unknown)**, **asking vs deal** if clear, source URL). If nothing close exists online, say so and broaden to typical flex / small-bay **with caveats**.
-3. Discuss implications for the subject units (including the one kitchen vs non-kitchen units) and how comps might support **target ask** in either NNN or gross terms when data allows.
-4. **MARKET TREND / PRICING TAKEAWAY:** brief directional read for the owner when evidence supports it; otherwise state that public comps are too thin this pass.
-5. Note data gaps and what a broker or market study would need next.
+1. **REFERENCE CONTEXT:** How this building fits Bemidji/Beltrami (retail & service tenants, quality tier) and what the owner is tracking.
+
+2. **CLOSE COMPS:** Specific listings or deals that resemble **retail, restaurant, salon/service, or small storefront** space in **MN / Bemidji area first**. For each: address or listing ID, size if known, rent **NNN vs gross vs unknown**, **asking vs deal**, date seen if known, URL.
+
+3. **BROAD REGIONAL COMMERCIAL SCAN (required):** Independently search for **any commercial** properties **newly listed or recently marketed** in **Bemidji, Beltrami County, and north-central MN** — include retail, office, flex, warehouse, medical, mixed-use, etc. **Do not require** a match to 2,000 sf or kitchen. Purpose: **new supply and asking levels** in the region. If a hit is a sale listing, note whether lease rate or investment context is mentioned. If **zero** credible local hits after a deliberate search, say so clearly (do not pad with out-of-state residential).
+
+4. **GEOGRAPHY QC:** If your tools returned off-market results (wrong state, residential apartments unrelated to MN CRE), **discard** them; mention briefly in coverage_summary that they were excluded.
+
+5. **IMPLICATIONS FOR SUBJECT UNITS:** Tie findings to the four units (kitchen unit vs others) only where logical; otherwise use broad scan for **overall market temperature**.
+
+6. **MARKET TREND / PRICING TAKEAWAY:** Directional read from **local** evidence; if only broad listings, comment on **volume of new listings / asking posture** with caveats.
+
+7. **DATA GAPS / NEXT STEPS**
 
 Return a JSON object with exactly these keys:
 - "coverage_summary": string (2-4 sentences: what you searched and limits)

@@ -74,16 +74,19 @@ DREAM_BLUE_DIGEST_BASE_URL = config('DREAM_BLUE_DIGEST_BASE_URL', default='').st
 
 # Lease comparables agent (dream_blue_run_lease_comp_agent) — briefs injected into digest; override via env.
 _DEFAULT_LEASE_COMP_REFERENCE = (
-    'Our building at 401 Beltrami Ave, Bemidji, MN — the owner’s benchmark asset for tracking '
-    'local market trends and pricing. ~8,000 sq ft (whole building context): fire sprinkler system, '
-    'fully remodeled, includes a kitchen (commercial / flex-style). Use comps to contextualize '
-    'asking/target rent levels over time, not as an appraisal.'
+    'Our building at 401 Beltrami Ave, Bemidji, MN — benchmark for tracking local commercial '
+    'trends and pricing. ~8,000 sq ft total, fire sprinklered, fully remodeled; divided into '
+    'four ~2,000 sq ft leasable units (one with commercial kitchen capability). Primary tenancy is '
+    'retail and service: salons, tattoo, restaurants, and similar small businesses — not only '
+    'industrial/flex. Use comps to contextualize asking/target rent over time; not an appraisal.'
 )
 _DEFAULT_LEASE_COMP_SUBJECT = (
-    'Leasable stack: four units, each approximately 2,000 sq ft (~8,000 sq ft total). One unit '
-    'has a kitchen; other units are flex / light industrial / office-style unless noted. For each '
-    'comp or market signal, calling out NNN vs gross (or modified gross) and whether figures are '
-    'asking vs deal-reported is essential. Target and asking rents in either basis are fine to discuss.'
+    'Four units ~2,000 sq ft each. In addition to close matches (retail / restaurant / service), '
+    'the owner wants a **wide scan**: any **commercial** property **newly listed or recently '
+    'marketed** (for lease or sale-as-lease context) in **Bemidji, Beltrami County, and '
+    'north-central MN** — retail, office, medical, flex, warehouse, land with commercial angle, '
+    'etc. Imperfect use-type matches are fine as market supply signals. Always label NNN vs gross '
+    '(or unknown) and asking vs deal when known.'
 )
 DREAM_BLUE_LEASE_COMP_REFERENCE = config(
     'DREAM_BLUE_LEASE_COMP_REFERENCE', default=_DEFAULT_LEASE_COMP_REFERENCE
