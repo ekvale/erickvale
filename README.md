@@ -60,7 +60,7 @@ Private operational / BI surface: property intelligence, digests, and **GrantSco
 
 **Stored reports:** Each completed agent run saves **`compiled_report`** (Markdown-style text) and **`agent_snapshot`** (full JSON payload) on `GrantScoutRun`, plus rows in `GrantScoutOpportunity`. View in Django admin under the run.
 
-**Planned later:** KPIs, upcoming bills, property tax milestones, **lease expirations**, and **maintenance schedules** in the same Dream Blue area (models + digest sections). Not implemented yet; GrantScout + email are the first slice.
+**Monthly HTML digest** (`dream_blue_send_digest`) includes: business **calendar** (leases, loans, utilities, taxes, maintenance, etc.), **KPI** table, **narrative report sections**, **lease roster**, **loan schedule** (with payoff/refi fields where set), **utility accounts**, optional **lease comp research** memo (latest completed run), optional **GrantScout** block (latest completed run), and **lease economics**: monthly cash out (operating + loans), rent collected, **breakeven gross potential rent** using an assumed **economic vacancy** rate, optional **$/sf/year** vs a **market benchmark** you configure. Per-unit square footage lives on lease calendar rows in admin (`square_footage`).
 
 #### Make report storage live (server)
 
@@ -109,6 +109,9 @@ See `.env.example` for placeholders. Required for sending digests:
 | `ANTHROPIC_API_KEY` | GrantScout agent when `GRANTSCOUT_LLM_PROVIDER=anthropic` (Claude Messages API) |
 | `GRANTSCOUT_ANTHROPIC_MODEL` | Optional; default `claude-sonnet-4-6`. Old ids (e.g. `claude-3-5-sonnet-*`) may 404 — check [Anthropic models](https://docs.anthropic.com/en/docs/about-claude/models/overview). |
 | `GRANTSCOUT_LLM_PROVIDER=perplexity` + `PERPLEXITY_API_KEY` | Perplexity **sonar** (live web / citations) |
+| `DREAM_BLUE_LEASE_ECONOMICS_VACANCY_PCT` | Economic vacancy % for breakeven GPR in digest (default `8`) |
+| `DREAM_BLUE_RENT_BENCHMARK_PSF_YEAR` | Optional market gross $/sf/yr to compare breakeven to |
+| `DREAM_BLUE_RENT_BENCHMARK_NOTE` | Short note (gross vs NNN, source, date) shown in the digest |
 
 Never commit real recipients or API keys; use `.env` on the server only.
 
@@ -160,7 +163,7 @@ Adjust `GRANTSCOUT_INTERVAL_DAYS`, `GRANTSCOUT_STATE`, or `GRANTSCOUT_PYTHON` if
 30 7 1 * * cd /home/erickvale/erickvale && ./venv/bin/python manage.py dream_blue_send_digest >> /home/erickvale/logs/dream_blue_digest.log 2>&1
 ```
 
-The digest template uses the latest **completed** GrantScout run; future sections can add KPIs, leases, taxes, and maintenance from the database once those models exist.
+The digest pulls calendar events, KPIs, leases, loans, utilities, and lease economics from the database; GrantScout and lease-comp sections use the latest **completed** runs for each.
 
 ## Apps
 
