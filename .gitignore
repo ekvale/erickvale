@@ -113,5 +113,10 @@ ENV/
 env/
 .venv
 
-
+# Local-only deploy notes / prompts / uploads (keep out of repo)
+DEPLOYMENT_SUMMARY.md
+HUMAN_RIGHTS_ARCHIVE_APP_PROMPT.md
+deploy/ALLMINNESOTA_DEPLOY.md
+deploy/FRAUD_DETECTION_QUICK_DEPLOY.md
+card_maker/kvale_set/uploaded_images/
 
