@@ -56,7 +56,7 @@ erickvale/
 
 ## Dream Blue (internal)
 
-Private operational / BI surface: property intelligence, digests, and **GrantScout** (grants, incentives, regulatory signals — Bemidji / Beltrami / MN-oriented research you record in the database).
+Private operational / BI surface: property intelligence, digests, and **GrantScout** (grants, incentives, regulatory signals — Bemidji / Beltrami / MN focus). You can **fill runs by hand in admin** or run the **LLM agent** (`grantscout_run_agent`) using `OPENAI_API_KEY` or `PERPLEXITY_API_KEY` (see `.env.example`).
 
 ### URLs (staff only)
 
@@ -73,18 +73,26 @@ See `.env.example` for placeholders. Required for sending digests:
 | `DREAM_BLUE_REPORT_RECIPIENTS` | Comma-separated To: addresses |
 | `RESEND_API_KEY` + `RESEND_FROM_EMAIL` | Send via Resend |
 | *or* `EMAIL_HOST` + `DEFAULT_FROM_EMAIL` (+ SMTP fields) | Send via SMTP |
+| `OPENAI_API_KEY` | GrantScout agent (default provider: OpenAI JSON mode) |
+| `GRANTSCOUT_LLM_PROVIDER=perplexity` + `PERPLEXITY_API_KEY` | Agent uses Perplexity **sonar** (better for live web/citations) |
 
 Never commit real recipients or API keys; use `.env` on the server only.
 
 ### Management commands
 
 ```bash
-# Preview recipients (no send)
+# GrantScout: call LLM, save a completed run + opportunities (and drift vs previous run)
+python manage.py grantscout_run_agent --dry-run   # no DB write
+python manage.py grantscout_run_agent --period 2026-04
+
+# Preview digest recipients (no send)
 python manage.py dream_blue_send_digest --dry-run
 
 # Send monthly HTML digest (includes GrantScout section if a completed run exists)
 python manage.py dream_blue_send_digest
 ```
+
+The agent only keeps opportunities with **valid https** `source_url` values. **Perplexity** is usually better than raw OpenAI for up-to-date program links; still verify critical deadlines in primary sources.
 
 ### Deployment (DigitalOcean Ubuntu, user `erickvale`, project under `~`)
 
@@ -98,13 +106,14 @@ python manage.py collectstatic --noinput   # if you serve static via whitenoise/
 sudo systemctl restart gunicorn            # or your unit name for uwsgi/gunicorn
 ```
 
-**Example cron** (first day of month, 07:00 server time — adjust paths):
+**Example cron** (first day of month — adjust paths; run agent before digest if you want fresh opportunities in the email):
 
 ```cron
-0 7 1 * * cd /home/erickvale/erickvale && /home/erickvale/venv/bin/python manage.py dream_blue_send_digest >> /home/erickvale/logs/dream_blue_digest.log 2>&1
+15 7 1 * * cd /home/erickvale/erickvale && /home/erickvale/erickvale/venv/bin/python manage.py grantscout_run_agent >> /home/erickvale/logs/grantscout.log 2>&1
+30 7 1 * * cd /home/erickvale/erickvale && /home/erickvale/erickvale/venv/bin/python manage.py dream_blue_send_digest >> /home/erickvale/logs/dream_blue_digest.log 2>&1
 ```
 
-GrantScout rows are created in admin (or a future importer/agent); the digest template pulls the latest **completed** run.
+The digest uses the latest **completed** GrantScout run (from the agent or admin).
 
 ## Apps
 

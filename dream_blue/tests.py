@@ -185,3 +185,69 @@ class DigestCommandSendTests(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn('Dream Blue digest', mail.outbox[0].subject)
         self.assertIn('text/html', mail.outbox[0].alternatives[0][1])
+
+
+class GrantScoutAgentNormalizationTests(TestCase):
+    def test_normalize_payload(self):
+        from dream_blue.grantscout_agent import normalize_agent_payload
+
+        data = normalize_agent_payload(
+            {
+                'coverage_summary': 'Test coverage',
+                'search_queries': ['mn grants'],
+                'opportunities': [
+                    {
+                        'category': 'grant',
+                        'opportunity_type': 'Demo',
+                        'eligibility': 'Small biz',
+                        'deadline': '2099-12-31',
+                        'summary': 'Summary text',
+                        'action_recommended': 'Apply',
+                        'source_url': 'https://example.org/program',
+                        'priority_score': 50,
+                    }
+                ],
+            }
+        )
+        self.assertEqual(len(data['opportunities']), 1)
+        self.assertEqual(len(data['opportunities'][0]['dedupe_key']), 64)
+
+    def test_normalize_rejects_when_no_valid_urls(self):
+        from dream_blue.grantscout_agent import GrantScoutAgentError, normalize_agent_payload
+
+        with self.assertRaises(GrantScoutAgentError):
+            normalize_agent_payload(
+                {
+                    'coverage_summary': 'x',
+                    'search_queries': [],
+                    'opportunities': [
+                        {'summary': 'bad', 'source_url': 'http://insecure.example/'},
+                    ],
+                }
+            )
+
+
+class GrantScoutRunAgentCommandTests(TestCase):
+    @patch('dream_blue.management.commands.grantscout_run_agent.run_grantscout_agent')
+    def test_command_creates_completed_run(self, mock_agent):
+        mock_agent.return_value = {
+            'coverage_summary': 'Cov',
+            'search_queries': ['a'],
+            'opportunities': [
+                {
+                    'category': GrantScoutCategory.GRANT,
+                    'opportunity_type': 't',
+                    'eligibility': 'e',
+                    'deadline': None,
+                    'summary': 'S',
+                    'action_recommended': 'Act',
+                    'source_url': 'https://example.gov/x',
+                    'priority_score': 10,
+                    'dedupe_key': 'a' * 64,
+                }
+            ],
+        }
+        call_command('grantscout_run_agent', '--period=2099-05', '--no-drift')
+        run = GrantScoutRun.objects.get(period_label='2099-05')
+        self.assertEqual(run.status, GrantScoutRunStatus.COMPLETED)
+        self.assertEqual(run.opportunities.count(), 1)

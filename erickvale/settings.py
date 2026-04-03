@@ -67,6 +67,21 @@ RESEND_API_KEY = config('RESEND_API_KEY', default='')
 RESEND_FROM_EMAIL = config('RESEND_FROM_EMAIL', default='')
 RESEND_API_URL = config('RESEND_API_URL', default='https://api.resend.com/emails')
 
+# GrantScout LLM agent (grantscout_run_agent). Use one provider; keys only via env.
+GRANTSCOUT_LLM_PROVIDER = config('GRANTSCOUT_LLM_PROVIDER', default='openai').strip().lower()
+OPENAI_API_KEY = config('OPENAI_API_KEY', default='')
+OPENAI_CHAT_COMPLETIONS_URL = config(
+    'OPENAI_CHAT_COMPLETIONS_URL',
+    default='https://api.openai.com/v1/chat/completions',
+)
+GRANTSCOUT_OPENAI_MODEL = config('GRANTSCOUT_OPENAI_MODEL', default='gpt-4o-mini')
+PERPLEXITY_API_KEY = config('PERPLEXITY_API_KEY', default='')
+PERPLEXITY_API_URL = config(
+    'PERPLEXITY_API_URL',
+    default='https://api.perplexity.ai/chat/completions',
+)
+GRANTSCOUT_PERPLEXITY_MODEL = config('GRANTSCOUT_PERPLEXITY_MODEL', default='sonar')
+
 # Optional SMTP (same variables as Django; defaults match Django when unset).
 EMAIL_HOST = config('EMAIL_HOST', default='')
 EMAIL_PORT = config('EMAIL_PORT', default=25, cast=int)
