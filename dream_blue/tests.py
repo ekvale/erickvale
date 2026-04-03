@@ -291,6 +291,52 @@ class GrantScoutAgentNormalizationTests(TestCase):
             )
 
 
+class GrantScoutUrlBodyHeuristicTests(TestCase):
+    def test_commerce_style_moved_page(self):
+        from dream_blue.url_check import url_body_suggests_page_moved
+
+        html = """
+        Minnesota Department of Commerce logo
+        Menu help: you can navigate through the menu using your arrow keys
+        The page you are looking for has moved!
+        We have a new website. Please update your bookmarks.
+        You can either search for the page or go to the homepage.
+        """
+        self.assertTrue(url_body_suggests_page_moved(html))
+
+    def test_normal_page_not_flagged(self):
+        from dream_blue.url_check import url_body_suggests_page_moved
+
+        html = (
+            '<html><body><h1>Rural Energy for America Program</h1>'
+            '<p>Apply for grants supporting renewable energy.</p></body></html>'
+        )
+        self.assertFalse(url_body_suggests_page_moved(html))
+
+    def test_short_snippet_not_flagged(self):
+        from dream_blue.url_check import url_body_suggests_page_moved
+
+        self.assertFalse(url_body_suggests_page_moved('moved'))
+
+    @patch('dream_blue.url_check.requests.get')
+    def test_http_200_placeholder_counts_as_unreachable(self, mock_get):
+        from dream_blue.url_check import source_url_is_reachable
+
+        body = (
+            b'<!DOCTYPE html><html><body><p>The page you are looking for has moved!</p>'
+            b'<p>Please update your bookmarks.</p></body></html>'
+        )
+        resp = MagicMock()
+        resp.status_code = 200
+        resp.iter_content.side_effect = lambda **kwargs: [body]
+        ctx = MagicMock()
+        ctx.__enter__.return_value = resp
+        ctx.__exit__.return_value = False
+        mock_get.return_value = ctx
+
+        self.assertFalse(source_url_is_reachable('https://commerce.state.mn.us/old'))
+
+
 class GrantScoutUrlValidationTests(TestCase):
     @patch('dream_blue.grantscout_agent.source_url_is_reachable')
     def test_keeps_unreachable_urls_flagged(self, mock_reach):
