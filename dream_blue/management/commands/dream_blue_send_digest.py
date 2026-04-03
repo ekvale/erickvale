@@ -1,7 +1,6 @@
-from datetime import datetime
-
 from django.core.management.base import BaseCommand, CommandError
 from django.template.loader import render_to_string
+from django.utils import timezone
 
 from dream_blue.digest_context import build_monthly_digest_context
 from dream_blue.emailing import (
@@ -33,7 +32,10 @@ class Command(BaseCommand):
             '--subject',
             type=str,
             default='',
-            help='Override email subject (default: Dream Blue report + month/year).',
+            help=(
+                'Override email subject (default: month/year + send timestamp so Gmail '
+                'does not hide repeats in one thread).'
+            ),
         )
 
     def handle(self, *args, **options):
@@ -45,7 +47,10 @@ class Command(BaseCommand):
 
         if options['dry_run']:
             self.stdout.write(
-                self.style.SUCCESS(f'Dry run: would send to {len(recipients)} recipient(s).')
+                self.style.SUCCESS(
+                    f'Dry run: would send to {len(recipients)} recipient(s): '
+                    + ', '.join(recipients)
+                )
             )
             return
 
@@ -90,13 +95,19 @@ class Command(BaseCommand):
                     )
                 )
 
+        now = timezone.now()
         if options['subject']:
             subject = options['subject']
         else:
-            subject = f"Dream Blue report — {datetime.now().strftime('%B %Y')}"
+            # Unique subject per send — same subject every time hides new mail inside one Gmail thread.
+            subject = (
+                f"Dream Blue report — {now.strftime('%B %Y')} "
+                f"· sent {now.strftime('%Y-%m-%d %H:%M')}"
+            )
 
         html = render_to_string('dream_blue/emails/monthly_digest.html', context)
 
+        self.stdout.write('Recipients: ' + ', '.join(recipients))
         try:
             send_html_digest(subject, html, recipients=recipients)
         except DreamBlueEmailConfigError as e:
