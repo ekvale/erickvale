@@ -480,7 +480,7 @@ class LeaseEconomicsTests(TestCase):
         self.assertTrue(s['show_section'])
         self.assertGreaterEqual(s['required_gross_monthly'], s['monthly_out'])
         self.assertEqual(s['lease_unit_count'], 4)
-        self.assertEqual(s['total_leasable_sqft'], 11000)
+        self.assertEqual(s['total_leasable_sqft'], 12000)
         self.assertTrue(s['sqft_complete'])
         self.assertEqual(s['occupied_unit_count'], 3)
         self.assertEqual(s['vacant_unit_count'], 1)
@@ -525,6 +525,8 @@ class LeaseEconomicsTests(TestCase):
         hearts = next(r for r in sug['rows'] if r['property_label'] == '401 B Beltrami Ave.')
         self.assertEqual(tara['above_sf'], 2000)
         self.assertEqual(hearts['above_sf'], 2000)
+        self.assertEqual(tara['storage_sf'], 500)
+        self.assertEqual(hearts['storage_sf'], 500)
 
     @override_settings(DREAM_BLUE_RENT_BENCHMARK_PSF_YEAR='14.50')
     def test_benchmark_parsed_when_set(self):
