@@ -9,6 +9,7 @@
 #   GRANTSCOUT_STATE=$HOME/.cache/dream_blue_grantscout_last_run
 #   GRANTSCOUT_INTERVAL_DAYS=14
 #   GRANTSCOUT_PYTHON=/home/erickvale/erickvale/venv/bin/python
+#   GRANTSCOUT_SEND_DIGEST=1   # set to 0 to skip dream_blue_send_digest after a successful agent run
 
 set -euo pipefail
 
@@ -18,6 +19,7 @@ cd "$ROOT"
 STATE="${GRANTSCOUT_STATE:-$HOME/.cache/dream_blue_grantscout_last_run}"
 DAYS="${GRANTSCOUT_INTERVAL_DAYS:-14}"
 PYTHON="${GRANTSCOUT_PYTHON:-$ROOT/venv/bin/python}"
+SEND_DIGEST="${GRANTSCOUT_SEND_DIGEST:-1}"
 
 export PATH="/usr/bin:/bin:$PATH"
 
@@ -39,3 +41,10 @@ fi
 "$PYTHON" manage.py grantscout_run_agent
 touch "$STATE"
 echo "$(date -Iseconds) grantscout: completed grantscout_run_agent"
+
+if [[ "$SEND_DIGEST" == "1" || "$SEND_DIGEST" == "true" || "$SEND_DIGEST" == "yes" ]]; then
+  "$PYTHON" manage.py dream_blue_send_digest
+  echo "$(date -Iseconds) grantscout: completed dream_blue_send_digest"
+else
+  echo "$(date -Iseconds) grantscout: skipped dream_blue_send_digest (GRANTSCOUT_SEND_DIGEST=$SEND_DIGEST)"
+fi

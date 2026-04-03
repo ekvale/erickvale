@@ -58,6 +58,8 @@ erickvale/
 
 Private operational / BI surface: property intelligence, digests, and **GrantScout** (grants, incentives, regulatory signals — Bemidji / Beltrami / MN focus). You can **fill runs by hand in admin** or run the **LLM agent** (`grantscout_run_agent`) with `OPENAI_API_KEY`, **`ANTHROPIC_API_KEY` (Claude)**, or `PERPLEXITY_API_KEY` — set `GRANTSCOUT_LLM_PROVIDER` accordingly (see `.env.example`).
 
+**Planned later:** KPIs, upcoming bills, property tax milestones, **lease expirations**, and **maintenance schedules** in the same Dream Blue area (models + digest sections). Not implemented yet; GrantScout + email are the first slice.
+
 ### URLs (staff only)
 
 - Dashboard: `/apps/dream-blue/grantscout/`
@@ -108,7 +110,7 @@ python manage.py collectstatic --noinput   # if you serve static via whitenoise/
 sudo systemctl restart gunicorn            # or your unit name for uwsgi/gunicorn
 ```
 
-**GrantScout every two weeks:** use `deploy/grantscout_agent_biweekly.sh` — it runs daily from cron but **skips** until `GRANTSCOUT_INTERVAL_DAYS` (default **14**) have passed since the last successful run (tracked by a small state file under `~/.cache`).
+**GrantScout every two weeks + digest email:** `deploy/grantscout_agent_biweekly.sh` runs daily from cron but **skips** the agent until `GRANTSCOUT_INTERVAL_DAYS` (default **14**) have passed since the last successful run (state file under `~/.cache`). After each successful `grantscout_run_agent`, it runs **`dream_blue_send_digest`** so recipients get the HTML email (override with `GRANTSCOUT_SEND_DIGEST=0` if needed).
 
 ```bash
 chmod +x deploy/grantscout_agent_biweekly.sh
@@ -122,13 +124,13 @@ mkdir -p ~/logs
 
 Adjust `GRANTSCOUT_INTERVAL_DAYS`, `GRANTSCOUT_STATE`, or `GRANTSCOUT_PYTHON` if your paths differ.
 
-**Monthly digest email** (example — run after agent if you want the email to pick up the newest run):
+**Digest-only on another schedule** (optional — e.g. monthly reminders without re-running the agent):
 
 ```cron
 30 7 1 * * cd /home/erickvale/erickvale && ./venv/bin/python manage.py dream_blue_send_digest >> /home/erickvale/logs/dream_blue_digest.log 2>&1
 ```
 
-The digest uses the latest **completed** GrantScout run (from the agent or admin).
+The digest template uses the latest **completed** GrantScout run; future sections can add KPIs, leases, taxes, and maintenance from the database once those models exist.
 
 ## Apps
 
