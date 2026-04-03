@@ -19,12 +19,21 @@ from .models import (
     BusinessReportSection,
     GrantScoutRun,
     GrantScoutRunStatus,
+    LeaseCompResearchRun,
 )
 
 
 def get_latest_completed_grantscout_run():
     return (
         GrantScoutRun.objects.filter(status=GrantScoutRunStatus.COMPLETED)
+        .order_by('-created_at')
+        .first()
+    )
+
+
+def get_latest_completed_lease_comp_run():
+    return (
+        LeaseCompResearchRun.objects.filter(status=GrantScoutRunStatus.COMPLETED)
         .order_by('-created_at')
         .first()
     )
@@ -443,7 +452,7 @@ def build_monthly_digest_context(*, include_grantscout: bool = True) -> dict:
     ctx = {
         'generated_at': now,
         'title': 'Dream Blue report',
-        'report_subtitle': 'Operations, KPIs, and GrantScout',
+        'report_subtitle': 'Operations, KPIs, lease comps, and GrantScout',
         'calendar_window_start': today,
         'calendar_window_end': window_end,
         'digest_base_url_configured': bool(
@@ -461,6 +470,7 @@ def build_monthly_digest_context(*, include_grantscout: bool = True) -> dict:
         'business_operating_bills': operating_bills_schedule(),
         'business_kpis': active_business_kpis(),
         'business_report_sections': active_business_report_sections(),
+        'lease_comp_research': get_latest_completed_lease_comp_run(),
         'grantscout_run': None,
         'grantscout_opportunities': [],
         'grantscout_drift': [],

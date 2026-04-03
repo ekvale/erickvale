@@ -175,6 +175,42 @@ class GrantScoutDriftEntry(models.Model):
         return f'{self.get_drift_type_display()}: {self.summary[:80]}'
 
 
+class LeaseCompResearchRun(models.Model):
+    """LLM-generated lease / flex comparable memo (Bemidji-focused digest section)."""
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    status = models.CharField(
+        max_length=20,
+        choices=GrantScoutRunStatus.choices,
+        default=GrantScoutRunStatus.DRAFT,
+    )
+    coverage_summary = models.TextField(blank=True)
+    search_query_log = models.JSONField(
+        default=list,
+        blank=True,
+        help_text='Queries or topics the agent used',
+    )
+    compiled_report = models.TextField(
+        blank=True,
+        help_text='Plain-text memo for email and review',
+    )
+    agent_snapshot = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text='Normalized agent payload',
+    )
+    error_message = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Lease comp research run'
+        verbose_name_plural = 'Lease comp research runs'
+
+    def __str__(self):
+        return f'Lease comp {self.created_at.date()} ({self.get_status_display()})'
+
+
 class BusinessCalendarEventType(models.TextChoices):
     """High-level buckets for the operations calendar (digest + future KPI agent)."""
 

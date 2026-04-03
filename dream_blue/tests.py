@@ -24,6 +24,7 @@ from dream_blue.models import (
     GrantScoutOpportunity,
     GrantScoutRun,
     GrantScoutRunStatus,
+    LeaseCompResearchRun,
 )
 
 
@@ -440,6 +441,48 @@ class GrantScoutAgentNormalizationTests(TestCase):
                     ],
                 }
             )
+
+
+class LeaseCompAgentTests(TestCase):
+    def test_normalize_lease_comp_payload(self):
+        from dream_blue.lease_comp_agent import normalize_lease_comp_payload
+
+        out = normalize_lease_comp_payload(
+            {
+                'coverage_summary': 'Searched Bemidji-area flex and small-bay listings.',
+                'search_queries': ['bemidji mn commercial lease'],
+                'report_markdown': 'x' * 120,
+            }
+        )
+        self.assertEqual(len(out['report_markdown']), 120)
+        self.assertEqual(out['search_queries'], ['bemidji mn commercial lease'])
+
+    def test_normalize_rejects_short_report(self):
+        from dream_blue.grantscout_agent import GrantScoutAgentError
+        from dream_blue.lease_comp_agent import normalize_lease_comp_payload
+
+        with self.assertRaises(GrantScoutAgentError):
+            normalize_lease_comp_payload(
+                {
+                    'coverage_summary': 'a',
+                    'search_queries': [],
+                    'report_markdown': 'too short',
+                }
+            )
+
+
+class DigestLeaseCompContextTests(TestCase):
+    def test_lease_comp_in_digest_when_latest_completed(self):
+        from dream_blue.digest_context import build_monthly_digest_context
+
+        LeaseCompResearchRun.objects.create(
+            status=GrantScoutRunStatus.COMPLETED,
+            coverage_summary='Limited public comps.',
+            compiled_report='EXAMPLE COMP\n- 123 Main St — ask shown only on broker site (verify).',
+        )
+        ctx = build_monthly_digest_context(include_grantscout=False)
+        self.assertIsNotNone(ctx['lease_comp_research'])
+        self.assertIn('123 Main', ctx['lease_comp_research'].compiled_report)
 
 
 class GrantScoutUrlBodyHeuristicTests(TestCase):

@@ -71,6 +71,22 @@ DREAM_BLUE_CALENDAR_LOOKAHEAD_DAYS = config(
 )
 # Absolute origin for digest links (no trailing slash), e.g. https://your.domain.org — required for working Prev/Next month links in email.
 DREAM_BLUE_DIGEST_BASE_URL = config('DREAM_BLUE_DIGEST_BASE_URL', default='').strip()
+
+# Lease comparables agent (dream_blue_run_lease_comp_agent) — briefs injected into digest; override via env for your portfolio.
+_DEFAULT_LEASE_COMP_REFERENCE = (
+    '401 Beltrami Ave, Bemidji, MN — reference ~8,000 sq ft building: fire sprinkler system, '
+    'fully remodeled, includes a kitchen (commercial / flex-style).'
+)
+_DEFAULT_LEASE_COMP_SUBJECT = (
+    'Subject portfolio: four units, each approximately 2,000 sq ft (~8,000 sq ft total). '
+    'One unit has a kitchen; other units are flex / light industrial / office-style unless noted.'
+)
+DREAM_BLUE_LEASE_COMP_REFERENCE = config(
+    'DREAM_BLUE_LEASE_COMP_REFERENCE', default=_DEFAULT_LEASE_COMP_REFERENCE
+)
+DREAM_BLUE_LEASE_COMP_SUBJECT = config(
+    'DREAM_BLUE_LEASE_COMP_SUBJECT', default=_DEFAULT_LEASE_COMP_SUBJECT
+)
 RESEND_API_KEY = config('RESEND_API_KEY', default='')
 RESEND_FROM_EMAIL = config('RESEND_FROM_EMAIL', default='')
 RESEND_API_URL = config('RESEND_API_URL', default='https://api.resend.com/emails')

@@ -7,6 +7,7 @@ from .models import (
     GrantScoutDriftEntry,
     GrantScoutOpportunity,
     GrantScoutRun,
+    LeaseCompResearchRun,
 )
 
 
@@ -31,6 +32,19 @@ class GrantScoutDriftEntryInline(admin.TabularInline):
     extra = 0
     fk_name = 'run'
     fields = ('drift_type', 'opportunity', 'previous_opportunity', 'summary')
+
+
+@admin.register(LeaseCompResearchRun)
+class LeaseCompResearchRunAdmin(admin.ModelAdmin):
+    list_display = ('id', 'status', 'created_at', 'coverage_summary_preview')
+    list_filter = ('status',)
+    readonly_fields = ('created_at', 'updated_at', 'compiled_report', 'agent_snapshot')
+    search_fields = ('coverage_summary', 'compiled_report', 'error_message')
+
+    @admin.display(description='Coverage')
+    def coverage_summary_preview(self, obj):
+        t = (obj.coverage_summary or '')[:80]
+        return t + ('…' if len(obj.coverage_summary or '') > 80 else '')
 
 
 @admin.register(GrantScoutRun)
