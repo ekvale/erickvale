@@ -510,6 +510,7 @@ class LeaseEconomicsTests(TestCase):
 
     def test_lease_suggestions_four_units_and_total(self):
         from dream_blue.digest_context import active_lease_schedule
+        from dream_blue.lease_digest_bundle import build_lease_rates_digest_section
         from dream_blue.lease_suggestions import build_lease_suggestion_rows
 
         leases = active_lease_schedule()
@@ -527,6 +528,15 @@ class LeaseEconomicsTests(TestCase):
         self.assertEqual(hearts['above_sf'], 2000)
         self.assertEqual(tara['storage_sf'], 500)
         self.assertEqual(hearts['storage_sf'], 500)
+
+        bundle = build_lease_rates_digest_section(leases)
+        self.assertTrue(bundle['show_section'])
+        by_prop = {r['property_label']: r['suggested_monthly'] for r in bundle['unit_rows']}
+        tara_s = by_prop['401 A Beltrami Ave.']
+        self.assertTrue(all(tara_s >= v for v in by_prop.values()))
+        alloc_sum = sum(r['breakeven_allocated_monthly'] for r in bundle['unit_rows'])
+        req = bundle['portfolio']['required_gross_monthly']
+        self.assertLessEqual(abs(alloc_sum - req), Decimal('0.05'))
 
     @override_settings(DREAM_BLUE_RENT_BENCHMARK_PSF_YEAR='14.50')
     def test_benchmark_parsed_when_set(self):

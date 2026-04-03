@@ -13,7 +13,7 @@ from django.utils import timezone
 
 from .calendar_api import EVENT_TYPE_COLORS, events_overlapping_range
 from .lease_economics import build_lease_economics_snapshot
-from .lease_suggestions import build_lease_suggestion_rows
+from .lease_digest_bundle import build_lease_rates_digest_section, lease_rates_markdown_lines
 from .models import (
     BusinessCalendarEvent,
     BusinessCalendarEventType,
@@ -320,48 +320,11 @@ def build_operations_calendar_markdown() -> str:
     lines = [
         '## Operations — leases, loans, utilities, expenses',
         '',
-        '### Active leases',
+        '### Lease rates & economics',
         '',
-        '| Property | Tenant | Start | End | Rent/mo | Deposits / notes |',
-        '| --- | --- | --- | --- | ---: | --- |',
     ]
     leases = active_lease_schedule()
-    if not leases:
-        lines.append('_No active leases in schedule._')
-    else:
-        for row in leases:
-            start = row.due_date.isoformat() if row.due_date else ''
-            lend = row.end_date.isoformat() if row.end_date else ''
-            rent = _md_money(row.amount)
-            notes = _md_row_escape(row.notes)
-            tenant = _md_row_escape(row.title)
-            prop = _md_row_escape(row.property_label)
-            lines.append(f'| {prop} | {tenant} | {start} | {lend} | {rent} | {notes} |')
-
-    sug = build_lease_suggestion_rows(leases)
-    if sug['show_section']:
-        lines.extend(
-            [
-                '',
-                '### Suggested asking rent (illustrative)',
-                '',
-                _md_row_escape(sug['footnote']),
-                '',
-                '| Property | Tenant | Above sf | Storage sf | Suggested/mo | Contract | Note |',
-                '| --- | --- | ---: | ---: | ---: | ---: | --- |',
-            ]
-        )
-        for r in sug['rows']:
-            cm = _md_money(r['contract_monthly']) if r['has_contract'] else '—'
-            lines.append(
-                f"| {_md_row_escape(r['property_label'])} | {_md_row_escape(r['title'])} | "
-                f"{r['above_sf'] or '—'} | {r['storage_sf'] or '—'} | "
-                f"${int(r['suggested_monthly']):,} | {cm} | {_md_row_escape(r['location_note'])} |"
-            )
-        lines.append(
-            f"| **Portfolio at suggested ask** | | | | **${int(sug['total_suggested_monthly']):,}** | | |"
-        )
-
+    lines.extend(lease_rates_markdown_lines(leases))
     lines.extend(
         [
             '',
@@ -500,8 +463,8 @@ def build_monthly_digest_context(*, include_grantscout: bool = True) -> dict:
         'generated_at': now,
         'title': 'Dream Blue report',
         'report_subtitle': (
-            'Calendar, KPIs, leases (above + storage sf), illustrated asking rents per unit, '
-            'breakeven rent & 8–10% cap band, loans & utilities, lease comps, GrantScout'
+            'Calendar, KPIs, unified lease rates & economics table (current, suggested, breakeven share, '
+            'cap band), loans & utilities, lease comps, GrantScout'
         ),
         'calendar_window_start': today,
         'calendar_window_end': window_end,
@@ -514,7 +477,7 @@ def build_monthly_digest_context(*, include_grantscout: bool = True) -> dict:
         ),
         'business_calendar_events': upcoming_business_calendar_events(),
         'business_lease_schedule': lease_rows,
-        'lease_suggestions': build_lease_suggestion_rows(lease_rows),
+        'lease_rates_digest': build_lease_rates_digest_section(lease_rows),
         'lease_economics': build_lease_economics_snapshot(),
         'business_loan_schedule': active_loan_schedule(),
         'business_utility_schedule': active_utility_schedule(),

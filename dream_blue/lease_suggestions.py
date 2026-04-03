@@ -14,8 +14,8 @@ from django.conf import settings
 # property_label → multiplier on above-grade rent only (storage uses flat $/sf).
 _LOCATION = {
     '401 A Beltrami Ave.': (
-        Decimal('1.24'),
-        'Corner; premium visibility; commercial kitchen.',
+        Decimal('1.52'),
+        'Prime corner; commercial kitchen; owner-funded buildout for tenant — highest suggested rate.',
     ),
     '401 B Beltrami Ave.': (
         Decimal('1.18'),
