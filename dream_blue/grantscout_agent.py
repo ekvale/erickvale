@@ -19,6 +19,7 @@ from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
 
 from .models import GrantScoutCategory
+from .url_check import pause_between_checks, source_url_is_reachable
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,8 @@ especially Beltrami County, Bemidji, and nearby tribal nations when applicable.
 
 Rules:
 - Prefer official sources: .gov, state agencies (e.g. MN DEED, Commerce, MPCA), federal (grants.gov, DOE, USDA), utilities, and established nonprofits.
-- Each opportunity MUST include a real https source_url you are confident exists. If you cannot cite a stable URL, omit that item.
+- source_url must be a link you know resolves: use the exact path from the agency site (no guessed /program/foo slugs). If unsure of a deep link, use a stable hub page (e.g. agency grants or programs index) that lists the program.
+- Do not invent URLs, path segments, or query strings. If you cannot cite a working page, omit that opportunity.
 - Do not invent program names or deadlines; use null for unknown deadline.
 - Return ONLY valid JSON matching the user schema. No markdown fences."""
 
@@ -50,10 +52,11 @@ Return a JSON object with exactly these keys:
   - "deadline": string "YYYY-MM-DD" or null
   - "summary": string (1-3 sentences)
   - "action_recommended": string (concrete next step)
-  - "source_url": string (https URL to official page)
+  - "source_url": string (https URL — must be the real page URL, not a plausible-looking path you did not verify)
   - "priority_score": integer 0-100 (higher = more important for this org)
 
-Prioritize items actionable for a Minnesota property / small-business operator in the Bemidji / north-central MN region."""
+Prioritize items actionable for a Minnesota property / small-business operator in the Bemidji / north-central MN region.
+Hub or index pages are acceptable when a specific program subpage cannot be confirmed."""
 
 
 def _extract_json_object(text: str) -> dict[str, Any]:
@@ -97,10 +100,17 @@ def _normalize_category(raw: str) -> str:
     return mapping.get(key, GrantScoutCategory.OTHER)
 
 
-def _normalize_opportunity(raw: dict[str, Any]) -> dict[str, Any] | None:
+def _normalize_opportunity(
+    raw: dict[str, Any],
+    *,
+    validate_urls: bool,
+) -> dict[str, Any] | None:
     url = raw.get('source_url') or ''
     if not _valid_https_url(url):
         logger.warning('Skipping opportunity (invalid or non-https URL): %s', raw.get('summary', '')[:80])
+        return None
+    if validate_urls and not source_url_is_reachable(url):
+        logger.warning('Skipping opportunity (URL not reachable / 404): %s', url[:120])
         return None
     dedupe = hashlib.sha256(url.encode('utf-8')).hexdigest()[:64]
     deadline = raw.get('deadline')
@@ -130,8 +140,14 @@ def _normalize_opportunity(raw: dict[str, Any]) -> dict[str, Any] | None:
     }
 
 
-def normalize_agent_payload(data: dict[str, Any]) -> dict[str, Any]:
-    """Validate top-level keys and opportunity list."""
+def normalize_agent_payload(
+    data: dict[str, Any],
+    *,
+    validate_urls: bool | None = None,
+) -> dict[str, Any]:
+    """Validate top-level keys and opportunity list; optionally require live URLs."""
+    if validate_urls is None:
+        validate_urls = bool(getattr(settings, 'GRANTSCOUT_VALIDATE_SOURCE_URLS', True))
     if not isinstance(data, dict):
         raise GrantScoutAgentError('Agent returned non-object JSON')
     summary = str(data.get('coverage_summary', '')).strip()
@@ -143,14 +159,19 @@ def normalize_agent_payload(data: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(raw_opps, list):
         raw_opps = []
     opportunities = []
-    for item in raw_opps:
+    for i, item in enumerate(raw_opps):
         if not isinstance(item, dict):
             continue
-        norm = _normalize_opportunity(item)
+        if validate_urls and i > 0:
+            pause_between_checks()
+        norm = _normalize_opportunity(item, validate_urls=validate_urls)
         if norm:
             opportunities.append(norm)
     if not opportunities:
-        raise GrantScoutAgentError('Agent returned no opportunities with valid https source_url')
+        raise GrantScoutAgentError(
+            'Agent returned no opportunities that passed validation'
+            + (' (including URL checks).' if validate_urls else '.')
+        )
     return {
         'coverage_summary': summary[:8000],
         'search_queries': queries,
@@ -236,11 +257,14 @@ def _anthropic_messages(api_key: str, model: str, timeout: int = 180) -> str:
     return ''.join(texts)
 
 
-def run_grantscout_agent() -> dict[str, Any]:
+def run_grantscout_agent(*, validate_urls: bool | None = None) -> dict[str, Any]:
     """
     Call configured LLM provider and return normalized payload:
     coverage_summary, search_queries, opportunities (list of dicts).
     """
+    if validate_urls is None:
+        validate_urls = bool(getattr(settings, 'GRANTSCOUT_VALIDATE_SOURCE_URLS', True))
+
     provider = (getattr(settings, 'GRANTSCOUT_LLM_PROVIDER', 'openai') or 'openai').strip().lower()
 
     if provider == 'anthropic':
@@ -276,4 +300,4 @@ def run_grantscout_agent() -> dict[str, Any]:
         data = _extract_json_object(content)
     except (json.JSONDecodeError, ValueError) as e:
         raise GrantScoutAgentError(f'Invalid JSON from LLM: {e}') from e
-    return normalize_agent_payload(data)
+    return normalize_agent_payload(data, validate_urls=validate_urls)

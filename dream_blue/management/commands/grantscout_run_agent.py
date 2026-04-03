@@ -37,14 +37,20 @@ class Command(BaseCommand):
             action='store_true',
             help='Do not create GrantScoutDriftEntry rows vs previous run.',
         )
+        parser.add_argument(
+            '--skip-url-check',
+            action='store_true',
+            help='Keep opportunities without HTTP GET checks (faster; may include 404 links).',
+        )
 
     def handle(self, *args, **options):
         period = (options['period'] or '').strip()
         if not period:
             period = timezone.now().strftime('%Y-%m')
 
+        validate_urls = not options['skip_url_check']
         try:
-            payload = run_grantscout_agent()
+            payload = run_grantscout_agent(validate_urls=validate_urls)
         except GrantScoutAgentError as e:
             raise CommandError(str(e)) from e
 

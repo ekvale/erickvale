@@ -217,6 +217,7 @@ class GrantScoutReportBuilderTests(TestCase):
 
 
 class GrantScoutAgentNormalizationTests(TestCase):
+    @override_settings(GRANTSCOUT_VALIDATE_SOURCE_URLS=False)
     def test_normalize_payload(self):
         from dream_blue.grantscout_agent import normalize_agent_payload
 
@@ -254,6 +255,52 @@ class GrantScoutAgentNormalizationTests(TestCase):
                     ],
                 }
             )
+
+
+class GrantScoutUrlValidationTests(TestCase):
+    @patch('dream_blue.grantscout_agent.source_url_is_reachable')
+    def test_drops_unreachable_urls(self, mock_reach):
+        mock_reach.return_value = False
+        from dream_blue.grantscout_agent import GrantScoutAgentError, normalize_agent_payload
+
+        with self.assertRaises(GrantScoutAgentError):
+            normalize_agent_payload(
+                {
+                    'coverage_summary': 'x',
+                    'search_queries': [],
+                    'opportunities': [
+                        {
+                            'category': 'grant',
+                            'summary': 'Test',
+                            'source_url': 'https://example.org/dead',
+                            'priority_score': 1,
+                        }
+                    ],
+                },
+                validate_urls=True,
+            )
+
+    @patch('dream_blue.grantscout_agent.source_url_is_reachable')
+    def test_keeps_when_reachable(self, mock_reach):
+        mock_reach.return_value = True
+        from dream_blue.grantscout_agent import normalize_agent_payload
+
+        data = normalize_agent_payload(
+            {
+                'coverage_summary': 'x',
+                'search_queries': [],
+                'opportunities': [
+                    {
+                        'category': 'grant',
+                        'summary': 'Test',
+                        'source_url': 'https://example.org/ok',
+                        'priority_score': 1,
+                    }
+                ],
+            },
+            validate_urls=True,
+        )
+        self.assertEqual(len(data['opportunities']), 1)
 
 
 class GrantScoutRunAgentCommandTests(TestCase):

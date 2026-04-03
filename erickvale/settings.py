@@ -98,6 +98,21 @@ GRANTSCOUT_ANTHROPIC_MAX_TOKENS = config(
     default=8192,
     cast=int,
 )
+# GrantScout: drop opportunities whose source_url returns 404/5xx (GET, browser-like UA).
+GRANTSCOUT_VALIDATE_SOURCE_URLS = config(
+    'GRANTSCOUT_VALIDATE_SOURCE_URLS',
+    default='True',
+) == 'True'
+GRANTSCOUT_URL_CHECK_TIMEOUT = config(
+    'GRANTSCOUT_URL_CHECK_TIMEOUT',
+    default=15,
+    cast=int,
+)
+GRANTSCOUT_URL_CHECK_DELAY_SEC = config(
+    'GRANTSCOUT_URL_CHECK_DELAY_SEC',
+    default=0.25,
+    cast=float,
+)
 
 # Optional SMTP (same variables as Django; defaults match Django when unset).
 EMAIL_HOST = config('EMAIL_HOST', default='')

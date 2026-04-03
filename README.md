@@ -126,7 +126,7 @@ python manage.py dream_blue_send_digest --dry-run
 python manage.py dream_blue_send_digest
 ```
 
-The agent only keeps opportunities with **valid https** `source_url` values. **Perplexity** is usually best for live web + citations. **Claude** and **OpenAI** use training knowledge and must follow the prompt to use real URLs—always verify deadlines on official pages.
+The agent keeps opportunities whose **`source_url` passes a quick HTTP check** (GET with a browser-like `User-Agent`, follow redirects; **404/5xx are dropped**). Tuning: `GRANTSCOUT_URL_CHECK_TIMEOUT`, `GRANTSCOUT_URL_CHECK_DELAY_SEC`, or `GRANTSCOUT_VALIDATE_SOURCE_URLS=False` / `python manage.py grantscout_run_agent --skip-url-check` to skip checks (faster; more bad links). **Perplexity** is usually best for live web + citations. **Claude**/**OpenAI** should prefer **hub/index** URLs when a deep link is uncertain—always spot-check deadlines on official pages.
 
 ### Deployment (DigitalOcean Ubuntu, user `erickvale`, project under `~`)
 
