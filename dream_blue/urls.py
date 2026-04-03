@@ -11,8 +11,23 @@ urlpatterns = [
         name='grantscout_dashboard',
     ),
     path(
+        'operations/calendar/',
+        views.operations_calendar,
+        name='operations_calendar',
+    ),
+    path(
         'api/grantscout/latest.json',
         views.grantscout_latest_api,
         name='grantscout_latest_api',
+    ),
+    path(
+        'api/operations/calendar-events.json',
+        views.operations_calendar_events_api,
+        name='operations_calendar_events_api',
+    ),
+    path(
+        'api/operations/expense-summary.json',
+        views.operations_expense_summary_api,
+        name='operations_expense_summary_api',
     ),
 ]

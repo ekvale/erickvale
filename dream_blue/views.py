@@ -2,13 +2,25 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.utils import timezone
 from django.views.decorators.http import require_GET
 
+from .calendar_api import (
+    EVENT_TYPE_COLORS,
+    expense_by_type_summary,
+    events_overlapping_range,
+    parse_range_from_request,
+    serialize_events_for_json,
+)
 from .digest_context import (
     get_latest_completed_grantscout_run,
     top_grantscout_opportunities,
 )
-from .models import GrantScoutDriftEntry, GrantScoutRun
+from .models import (
+    BusinessCalendarEventType,
+    GrantScoutDriftEntry,
+    GrantScoutRun,
+)
 
 
 def _require_staff(request):
@@ -112,3 +124,63 @@ def grantscout_latest_api(request):
             ],
         }
     )
+
+
+@require_GET
+@login_required
+def operations_calendar(request):
+    _require_staff(request)
+    today = timezone.localdate()
+    try:
+        y = max(2000, min(2100, int(request.GET.get('year', today.year))))
+    except (TypeError, ValueError):
+        y = today.year
+    try:
+        m = max(1, min(12, int(request.GET.get('month', today.month))))
+    except (TypeError, ValueError):
+        m = today.month
+    mode = (request.GET.get('view') or 'month').strip().lower()
+    if mode not in ('month', 'year'):
+        mode = 'month'
+    return render(
+        request,
+        'dream_blue/operations_calendar.html',
+        {
+            'initial_year': y,
+            'initial_month': m,
+            'view_mode': mode,
+            'legend': [
+                (code, label, EVENT_TYPE_COLORS.get(code, '#455a64'))
+                for code, label in BusinessCalendarEventType.choices
+            ],
+        },
+    )
+
+
+@require_GET
+@login_required
+def operations_calendar_events_api(request):
+    _require_staff(request)
+    parsed = parse_range_from_request(request)
+    if not parsed:
+        return JsonResponse(
+            {'error': 'Provide start and end as ISO dates (YYYY-MM-DD).'},
+            status=400,
+        )
+    start, end = parsed
+    evs = events_overlapping_range(start, end)
+    return JsonResponse(
+        {
+            'start': start.isoformat(),
+            'end': end.isoformat(),
+            'events': serialize_events_for_json(evs),
+        }
+    )
+
+
+@require_GET
+@login_required
+def operations_expense_summary_api(request):
+    """Totals of ``amount`` by event type (all active rows with amounts)."""
+    _require_staff(request)
+    return JsonResponse(expense_by_type_summary())

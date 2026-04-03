@@ -156,6 +156,54 @@ class DigestContextTests(TestCase):
         self.assertIn('calendar_window_end', ctx)
 
 
+class OperationsCalendarApiTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.staff = User.objects.create_user(
+            username='staff_cal',
+            password='pw',
+            is_staff=True,
+        )
+        self.user = User.objects.create_user(
+            username='user_cal',
+            password='pw',
+            is_staff=False,
+        )
+
+    def test_calendar_page_staff(self):
+        self.client.login(username='staff_cal', password='pw')
+        r = self.client.get(reverse('dream_blue:operations_calendar'))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Operations calendar')
+
+    def test_calendar_events_api_requires_staff(self):
+        self.client.login(username='user_cal', password='pw')
+        r = self.client.get(
+            reverse('dream_blue:operations_calendar_events_api'),
+            {'start': '2026-01-01', 'end': '2026-02-01'},
+        )
+        self.assertEqual(r.status_code, 403)
+
+    def test_calendar_events_api_returns_json(self):
+        self.client.login(username='staff_cal', password='pw')
+        r = self.client.get(
+            reverse('dream_blue:operations_calendar_events_api'),
+            {'start': '2026-01-01', 'end': '2026-02-01'},
+        )
+        self.assertEqual(r.status_code, 200)
+        data = r.json()
+        self.assertIn('events', data)
+        self.assertIsInstance(data['events'], list)
+
+    def test_expense_summary_api(self):
+        self.client.login(username='staff_cal', password='pw')
+        r = self.client.get(reverse('dream_blue:operations_expense_summary_api'))
+        self.assertEqual(r.status_code, 200)
+        data = r.json()
+        self.assertIn('amountByType', data)
+        self.assertIn('countByType', data)
+
+
 class GrantScoutHttpTests(TestCase):
     def setUp(self):
         self.client = Client()
