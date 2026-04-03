@@ -9,6 +9,7 @@ from dream_blue.emailing import (
     get_digest_recipients,
     send_html_digest,
 )
+from dream_blue.models import GrantScoutRun, GrantScoutRunStatus
 
 
 class Command(BaseCommand):
@@ -50,6 +51,31 @@ class Command(BaseCommand):
 
         include_gs = not options['no_grantscout']
         context = build_monthly_digest_context(include_grantscout=include_gs)
+
+        if include_gs:
+            run = context.get('grantscout_run')
+            if run is None:
+                n_done = GrantScoutRun.objects.filter(
+                    status=GrantScoutRunStatus.COMPLETED
+                ).count()
+                n_any = GrantScoutRun.objects.count()
+                self.stdout.write(
+                    self.style.WARNING(
+                        'GrantScout section will be empty: no completed run found '
+                        f'(completed={n_done}, total_runs={n_any}). '
+                        'Run from the same host/db as grantscout_run_agent, '
+                        'or run: python manage.py grantscout_run_agent'
+                    )
+                )
+            else:
+                n_op = len(context.get('grantscout_opportunities') or [])
+                self.stdout.write(
+                    self.style.SUCCESS(
+                        f'GrantScout: using run id={run.id} period={run.period_label} '
+                        f'({n_op} opportunity rows in email)'
+                    )
+                )
+
         if options['subject']:
             subject = options['subject']
         else:

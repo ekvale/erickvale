@@ -82,6 +82,14 @@ python manage.py grantscout_run_agent --period "$(date +%Y-%m)"
 
 In **Admin → GrantScout runs →** open the new run: confirm **Stored report** shows **compiled_report** and **agent_snapshot**, and **Opportunities** inline matches. Old runs created before this migration have empty `compiled_report` / `agent_snapshot` until you re-run the agent or leave them as-is.
 
+**Digest shows “No completed GrantScout run” but you ran the agent:** The email only includes runs with **Status = Completed**. The digest command must use the **same database** as `grantscout_run_agent` (same `manage.py` on the server, project directory so `.env` / `DB_*` match). From `~/erickvale` after `source venv/bin/activate`, check:
+
+```bash
+python manage.py shell -c "from dream_blue.models import GrantScoutRun; from dream_blue.digest_context import get_latest_completed_grantscout_run; print('runs', list(GrantScoutRun.objects.values_list('id','period_label','status'))); print('latest_completed', get_latest_completed_grantscout_run())"
+```
+
+If you see runs but `latest_completed` is `None`, open the run in **Admin** and set status to **Completed**, or re-run `grantscout_run_agent`. When you send the digest, the command prints whether it found a run (`GrantScout: using run id=…`) or a warning with counts.
+
 ### URLs (staff only)
 
 - Dashboard: `/apps/dream-blue/grantscout/`
