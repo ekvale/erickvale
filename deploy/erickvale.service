@@ -6,8 +6,9 @@ After=network.target
 User=erickvale
 Group=erickvale
 WorkingDirectory=/home/erickvale/erickvale
-Environment="PATH=/home/erickvale/venv/bin"
-ExecStart=/home/erickvale/venv/bin/gunicorn \
+# venv lives next to manage.py on this host (not /home/erickvale/venv)
+Environment="PATH=/home/erickvale/erickvale/venv/bin"
+ExecStart=/home/erickvale/erickvale/venv/bin/gunicorn \
     --config /home/erickvale/erickvale/deploy/gunicorn_config.py \
     erickvale.wsgi:application
 
