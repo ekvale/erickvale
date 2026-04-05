@@ -67,6 +67,8 @@
     <h1>Brain dump</h1>
     <nav>
         <a href="{% url 'homepage' %}">Site home</a>
+        <a href="{% url 'braindump:calendar' %}">Calendar</a>
+        <a href="{% url 'braindump:contact_list' %}">Contacts</a>
         <a href="{% url 'logout' %}">Log out</a>
     </nav>
 </header>
@@ -203,8 +205,7 @@
     </ul>
 
     <h2>Calendar (hard dates)</h2>
-    <p class="section-note">Time-specific commitments only (Allen: do not put generic next actions on the calendar).</p>
-    <p class="section-note">Recurring <strong>MDH office</strong> blocks (Tue–Wed–Thu / Tue–Wed alternating weeks, 8am–5pm, excluding US federal holidays) appear here automatically — not tasks. AI uses them when flagging scheduling conflicts.</p>
+    <p class="section-note">Time-specific commitments only (Allen: do not put generic next actions on the calendar). <strong>MDH office</strong> availability blocks are <strong>not</strong> listed here — open the <a href="{% url 'braindump:calendar' %}" style="color:var(--accent);">month calendar</a> to see them on the grid.</p>
     {% if not gtd.calendar_hard %}
     <p style="color:var(--muted);">None.</p>
     {% endif %}

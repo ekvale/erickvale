@@ -142,6 +142,37 @@ class BraindumpOwnerTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'Clarify queue')
 
+    def test_calendar_month_shows_mdh_office_chip(self):
+        c = Client()
+        c.login(username='owner1', password='pw')
+        r = c.get(reverse('braindump:calendar_month', args=[2026, 4]))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'MDH office')
+
+    def test_contacts_list_and_create(self):
+        c = Client()
+        c.login(username='owner1', password='pw')
+        r = c.get(reverse('braindump:contact_list'))
+        self.assertEqual(r.status_code, 200)
+        r2 = c.post(
+            reverse('braindump:contact_create'),
+            {
+                'display_name': 'Abby Test',
+                'first_name': 'Abby',
+                'relationship_kind': 'work',
+                'email': 'abby@example.com',
+                'notes': 'Colleague',
+            },
+        )
+        self.assertEqual(r2.status_code, 302)
+        from braindump.models import PersonalContact
+
+        ct = PersonalContact.objects.get(display_name='Abby Test', user=self.owner)
+        self.assertEqual(ct.email, 'abby@example.com')
+        r3 = c.get(reverse('braindump:contact_detail', args=[ct.pk]))
+        self.assertEqual(r3.status_code, 200)
+        self.assertContains(r3, 'Abby Test')
+
     def test_morning_digest_email_uses_stream_and_priority_colors(self):
         CaptureItem.objects.create(
             user=self.owner,

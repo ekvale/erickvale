@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Calendar · Brain dump</title>
+    <style>
+        :root { --bg: #0f1419; --card: #1a2332; --ink: #e6edf3; --muted: #8b949e; --accent: #58a6ff; --hold: #1d4ed8; --hold-bg: #1e3a5f; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; background: var(--bg); color: var(--ink); min-height: 100vh; }
+        header { padding: 16px 20px; border-bottom: 1px solid #30363d; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+        header a { color: var(--accent); text-decoration: none; margin-right: 16px; font-size: 0.9rem; }
+        h1 { margin: 0; font-size: 1.35rem; font-weight: 650; }
+        .wrap { max-width: 1000px; margin: 0 auto; padding: 24px 16px 48px; }
+        .nav-month { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+        .nav-month a { color: var(--accent); text-decoration: none; font-weight: 600; }
+        .nav-month a:hover { text-decoration: underline; }
+        .section-note { font-size: 0.85rem; color: var(--muted); margin: 0 0 16px; line-height: 1.45; }
+        table.cal { width: 100%; border-collapse: collapse; font-size: 0.82rem; table-layout: fixed; }
+        table.cal th { padding: 8px 4px; color: var(--muted); border: 1px solid #30363d; font-weight: 600; }
+        table.cal td { border: 1px solid #30363d; vertical-align: top; padding: 6px 4px 8px; min-height: 72px; width: 14.28%; }
+        table.cal td.out { background: #121820; color: #484f58; }
+        table.cal .daynum { font-weight: 700; margin-bottom: 6px; color: var(--ink); }
+        .cal-chip { display: block; margin-top: 4px; padding: 4px 5px; border-radius: 4px; font-size: 0.72rem; line-height: 1.3; text-decoration: none; color: #c9d1d9; background: #21262d; border: 1px solid #30363d; word-break: break-word; }
+        .cal-chip:hover { border-color: var(--accent); color: var(--ink); }
+        .cal-chip.done { opacity: 0.75; border-style: dashed; }
+        .cal-chip-hold { background: var(--hold-bg); border-color: var(--hold); color: #bfdbfe; font-weight: 600; font-size: 0.68rem; }
+        .cal-chip-hold span { display: block; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; color: #93c5fd; margin-bottom: 2px; }
+        .list-below { margin-top: 28px; }
+        .list-below h2 { font-size: 0.95rem; color: var(--muted); margin: 20px 0 8px; }
+        .list-below ul { margin: 0; padding-left: 1.1rem; color: #c9d1d9; font-size: 0.88rem; }
+        .list-below li { margin-bottom: 6px; }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Calendar</h1>
+    <nav>
+        <a href="{% url 'braindump:dashboard' %}">Brain dump</a>
+        <a href="{% url 'braindump:contact_list' %}">Contacts</a>
+        <a href="{% url 'homepage' %}">Site home</a>
+        <a href="{% url 'logout' %}">Log out</a>
+    </nav>
+</header>
+<div class="wrap">
+    <div class="nav-month">
+        <a href="{% url 'braindump:calendar_month' prev_year prev_month %}">← {{ prev_month }}/{{ prev_year }}</a>
+        <strong style="font-size:1.1rem;">{{ month_cal.month_name }} {{ month_cal.year }}</strong>
+        <a href="{% url 'braindump:calendar_month' next_year next_month %}">{{ next_month }}/{{ next_year }} →</a>
+    </div>
+    <p class="section-note">Hard dates appear in the grid. <strong class="cal-chip-hold" style="display:inline;padding:2px 6px;">MDH office</strong> chips are standing availability (not tasks). Capture links jump to the item on the brain dump page.</p>
+
+    <table class="cal" role="grid">
+        <thead>
+            <tr>
+                <th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for week in month_cal.weeks %}
+            <tr>
+                {% for cell in week %}
+                <td class="{% if not cell.in_month %}out{% endif %}">
+                    {% if cell.in_month %}
+                    <div class="daynum">{{ cell.day }}</div>
+                    {% for it in cell.items %}
+                        {% if it.synthetic_office_hold %}
+                        <div class="cal-chip cal-chip-hold"><span>MDH office</span>{{ it.title|truncatechars:52 }}</div>
+                        {% else %}
+                        <a class="cal-chip{% if it.status == 'done' %} done{% endif %}" href="{% url 'braindump:dashboard' %}#capture-{{ it.pk }}">
+                            {% if it.status == 'done' %}✓ {% endif %}{{ it.title|default:it.body|truncatechars:48 }}
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if month_cal.soft_dated %}
+    <div class="list-below">
+        <h2>Soft-dated this month (not on grid)</h2>
+        <ul>
+            {% for it in month_cal.soft_dated %}
+            <li>{% if it.calendar_date %}<span style="color:var(--muted);">{{ it.calendar_date }}</span> · {% endif %}<a href="{% url 'braindump:dashboard' %}#capture-{{ it.pk }}" style="color:var(--accent);">{{ it.title|default:it.body|truncatechars:80 }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {% if month_cal.unscheduled %}
+    <div class="list-below">
+        <h2>Captured this month (no calendar day)</h2>
+        <ul>
+            {% for it in month_cal.unscheduled %}
+            <li><a href="{% url 'braindump:dashboard' %}#capture-{{ it.pk }}" style="color:var(--accent);">{{ it.title|default:it.body|truncatechars:80 }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+</body>
+</html>

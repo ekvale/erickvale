@@ -1,7 +1,12 @@
 from django.contrib import admin, messages
 
 from .ai_categorize import categorize_capture_item
-from .models import CaptureItem, RecurringCaptureRule
+from .models import (
+    CaptureItem,
+    PersonalContact,
+    PersonalContactAttachment,
+    RecurringCaptureRule,
+)
 
 
 def _recategorize_captures_ai(modeladmin, request, queryset):
@@ -93,6 +98,27 @@ class CaptureItemAdmin(admin.ModelAdmin):
         ('AI', {'fields': ('ai_payload', 'ai_error')}),
         ('Timestamps', {'fields': ('created_at', 'updated_at')}),
     )
+
+
+class PersonalContactAttachmentInline(admin.TabularInline):
+    model = PersonalContactAttachment
+    extra = 0
+
+
+@admin.register(PersonalContact)
+class PersonalContactAdmin(admin.ModelAdmin):
+    list_display = (
+        'display_name',
+        'user',
+        'relationship_kind',
+        'email',
+        'company',
+        'birth_date',
+    )
+    list_filter = ('relationship_kind',)
+    search_fields = ('display_name', 'email', 'notes', 'company', 'first_name', 'last_name')
+    raw_id_fields = ('user',)
+    inlines = (PersonalContactAttachmentInline,)
 
 
 @admin.register(RecurringCaptureRule)

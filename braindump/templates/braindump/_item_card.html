@@ -1,4 +1,4 @@
-<li class="item {% if it.status == 'done' %}done{% endif %}">
+<li class="item {% if it.status == 'done' %}done{% endif %}"{% if it.pk %} id="capture-{{ it.pk }}"{% endif %}>
     <div class="title">{{ it.title|default:"(untitled)" }}</div>
     <div class="meta">
         {% if it.is_actionable is None %}<span class="tag-unclear">Needs clarify</span> · {% endif %}

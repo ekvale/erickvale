@@ -1,3 +1,5 @@
+import os
+
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
@@ -261,3 +263,73 @@ class RecurringCaptureRule(models.Model):
                 errs['interval_weeks'] = 'Interval must be at least 1 week.'
         if errs:
             raise ValidationError(errs)
+
+
+class ContactRelationshipKind(models.TextChoices):
+    WORK = 'work', 'Work'
+    PERSONAL = 'personal', 'Personal'
+    BOTH = 'both', 'Work & personal'
+
+
+class PersonalContact(models.Model):
+    """Owner-only address book (work + personal)."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='braindump_contacts',
+    )
+    display_name = models.CharField(max_length=200)
+    first_name = models.CharField(max_length=120, blank=True)
+    last_name = models.CharField(max_length=120, blank=True)
+    email = models.EmailField(blank=True)
+    phone = models.CharField(max_length=64, blank=True)
+    phone_secondary = models.CharField(max_length=64, blank=True)
+    company = models.CharField(max_length=200, blank=True)
+    job_title = models.CharField(max_length=200, blank=True)
+    website = models.URLField(blank=True)
+    linkedin_url = models.URLField(blank=True)
+    address_line1 = models.CharField(max_length=255, blank=True)
+    city = models.CharField(max_length=120, blank=True)
+    state = models.CharField(max_length=64, blank=True)
+    postal_code = models.CharField(max_length=32, blank=True)
+    country = models.CharField(max_length=120, blank=True)
+    birth_date = models.DateField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+    relationship_kind = models.CharField(
+        max_length=16,
+        choices=ContactRelationshipKind.choices,
+        default=ContactRelationshipKind.BOTH,
+        db_index=True,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['display_name', 'pk']
+
+    def __str__(self):
+        return self.display_name
+
+
+def contact_attachment_upload_to(instance, filename: str) -> str:
+    return f'braindump_contacts/{instance.contact_id}/{filename}'
+
+
+class PersonalContactAttachment(models.Model):
+    contact = models.ForeignKey(
+        PersonalContact,
+        on_delete=models.CASCADE,
+        related_name='attachments',
+    )
+    file = models.FileField(upload_to=contact_attachment_upload_to)
+    description = models.CharField(max_length=255, blank=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-uploaded_at', 'pk']
+
+    def display_label(self) -> str:
+        if self.description:
+            return self.description
+        return os.path.basename(self.file.name)

@@ -1,10 +1,12 @@
+import calendar as cal_mod
 from datetime import date, datetime as dt
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from django.db.models import Q
 from django.http import HttpResponseRedirect, QueryDict
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_http_methods
@@ -16,11 +18,8 @@ from .dashboard_filters import (
     filter_query_has_params,
     work_type_filter_choices,
 )
+from .calendar_build import build_month_calendar_context
 from .gtd_partition import partition_active_items
-from .office_mdh_schedule import (
-    calendar_date_range_for_merges,
-    merge_office_holds_with_capture_calendar,
-)
 from .models import (
     CaptureItem,
     CaptureStatus,
@@ -92,9 +91,53 @@ def _sort_by_priority_then_created(items: list[CaptureItem]) -> list[CaptureItem
     )
 
 
-def _calendar_hard_with_mdh_holds(captures: list, today: date) -> list:
-    d0, d1 = calendar_date_range_for_merges(captures, today)
-    return merge_office_holds_with_capture_calendar(captures, d0, d1)
+def _month_bounds(y: int, m: int) -> tuple[int, int]:
+    if m < 1:
+        return y - 1, 12
+    if m > 12:
+        return y + 1, 1
+    return y, m
+
+
+@login_required
+@require_GET
+def calendar_redirect(request):
+    _require_owner(request)
+    t = timezone.localdate()
+    return redirect('braindump:calendar_month', year=t.year, month=t.month)
+
+
+@login_required
+@require_GET
+def calendar_month(request, year: int, month: int):
+    _require_owner(request)
+    if not (1 <= month <= 12) or not (2020 <= year <= 2040):
+        t = timezone.localdate()
+        return redirect('braindump:calendar_month', year=t.year, month=t.month)
+
+    qs = CaptureItem.objects.filter(user=request.user).filter(
+        Q(calendar_date__year=year, calendar_date__month=month)
+        | Q(
+            calendar_date__isnull=True,
+            created_at__year=year,
+            created_at__month=month,
+        )
+    )
+    month_cal = build_month_calendar_context(year=year, month=month, qs=qs)
+    month_cal['month_name'] = cal_mod.month_name[month]
+    py, pm = _month_bounds(year, month - 1)
+    ny, nm = _month_bounds(year, month + 1)
+    return render(
+        request,
+        'braindump/calendar.html',
+        {
+            'month_cal': month_cal,
+            'prev_year': py,
+            'prev_month': pm,
+            'next_year': ny,
+            'next_month': nm,
+        },
+    )
 
 
 @login_required
@@ -118,15 +161,12 @@ def dashboard(request):
     active_qs = apply_dashboard_filters(active_qs, filter_get)
     active = list(active_qs)
     parts = partition_active_items(active)
-    today = timezone.localdate()
     gtd = {
         'unclear': _sort_by_priority_then_created(parts['unclear']),
         'trash_list': _sort_by_priority_then_created(parts['trash_list']),
         'reference': _sort_by_priority_then_created(parts['reference']),
         'someday': _sort_by_priority_then_created(parts['someday']),
-        'calendar_hard': _calendar_hard_with_mdh_holds(
-            parts['calendar_hard'], today
-        ),
+        'calendar_hard': _sort_calendar(parts['calendar_hard']),
         'waiting': _sort_by_priority_then_created(parts['waiting']),
         'projects': _sort_by_priority_then_created(parts['projects']),
         'next_actions': _sort_by_priority_then_created(parts['next_actions']),

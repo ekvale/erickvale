@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Contacts · Brain dump</title>
+    <style>
+        :root { --bg: #0f1419; --card: #1a2332; --ink: #e6edf3; --muted: #8b949e; --accent: #58a6ff; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; background: var(--bg); color: var(--ink); min-height: 100vh; }
+        header { padding: 16px 20px; border-bottom: 1px solid #30363d; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+        header a { color: var(--accent); text-decoration: none; margin-right: 16px; font-size: 0.9rem; }
+        h1 { margin: 0; font-size: 1.35rem; font-weight: 650; }
+        .wrap { max-width: 720px; margin: 0 auto; padding: 24px 20px 48px; }
+        .toolbar { margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+        a.btn { display: inline-block; padding: 10px 18px; border-radius: 8px; background: var(--accent); color: #0d1117; font-weight: 600; text-decoration: none; }
+        a.btn:hover { filter: brightness(1.08); }
+        form.filter { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; }
+        form.filter input, form.filter select { padding: 8px 10px; border-radius: 6px; border: 1px solid #30363d; background: #0d1117; color: var(--ink); }
+        button.filter { padding: 8px 14px; border-radius: 6px; border: 1px solid #30363d; background: #21262d; color: var(--ink); cursor: pointer; }
+        ul.contacts { list-style: none; padding: 0; margin: 0; }
+        li.contact { background: var(--card); border: 1px solid #30363d; border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; }
+        li.contact a { color: var(--accent); font-weight: 650; text-decoration: none; }
+        li.contact a:hover { text-decoration: underline; }
+        .meta { font-size: 0.8rem; color: var(--muted); margin-top: 6px; }
+        .tag { display: inline-block; font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; background: #21262d; margin-right: 6px; }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Contacts</h1>
+    <nav>
+        <a href="{% url 'braindump:dashboard' %}">Brain dump</a>
+        <a href="{% url 'braindump:calendar' %}">Calendar</a>
+        <a href="{% url 'homepage' %}">Site home</a>
+        <a href="{% url 'logout' %}">Log out</a>
+    </nav>
+</header>
+<div class="wrap">
+    {% if messages %}
+    <ul style="list-style:none;padding:0;margin:0 0 16px;">
+        {% for message in messages %}
+        <li style="padding:10px 14px;border-radius:8px;margin-bottom:8px;font-size:0.9rem;" class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    <div class="toolbar">
+        <a class="btn" href="{% url 'braindump:contact_create' %}">Add contact</a>
+    </div>
+    <form class="filter" method="get" action="">
+        <input type="search" name="q" value="{{ search_q }}" placeholder="Search name, email, notes…" style="min-width:200px;">
+        <select name="kind">
+            <option value="">All kinds</option>
+            <option value="work" {% if filter_kind == 'work' %}selected{% endif %}>Work</option>
+            <option value="personal" {% if filter_kind == 'personal' %}selected{% endif %}>Personal</option>
+            <option value="both" {% if filter_kind == 'both' %}selected{% endif %}>Work &amp; personal</option>
+        </select>
+        <button type="submit" class="filter">Filter</button>
+    </form>
+    {% if not contacts %}
+    <p style="color:var(--muted);">No contacts yet. Add one to store emails, phones, birthdays, notes, and files.</p>
+    {% else %}
+    <ul class="contacts">
+        {% for c in contacts %}
+        <li class="contact">
+            <a href="{% url 'braindump:contact_detail' c.pk %}">{{ c.display_name }}</a>
+            <span class="tag">{{ c.get_relationship_kind_display }}</span>
+            <div class="meta">
+                {% if c.email %}{{ c.email }}{% endif %}
+                {% if c.phone %} · {{ c.phone }}{% endif %}
+                {% if c.company %} · {{ c.company }}{% endif %}
+                {% if c.birth_date %} · 🎂 {{ c.birth_date|date:"M j" }}{% endif %}
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</div>
+</body>
+</html>
