@@ -48,8 +48,8 @@ def _recipients_for(owner) -> list[str]:
 
 class Command(BaseCommand):
     help = (
-        'Email the brain dump owner an HTML monthly calendar of captures '
-        '(done items show as completed on their calendar day).'
+        'Email the brain dump owner an HTML monthly calendar: hard (time-specific) '
+        'dates on the grid; soft-dated and undated captures for that month in lists below.'
     )
 
     def add_arguments(self, parser):

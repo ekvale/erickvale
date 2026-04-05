@@ -1,4 +1,4 @@
-"""Build month grid + unscheduled items for the monthly email."""
+"""Build month grid + items not on the hard-date grid for the monthly email."""
 
 from __future__ import annotations
 
@@ -7,6 +7,7 @@ from collections import defaultdict
 from datetime import date
 
 from django.db.models import QuerySet
+from django.utils import timezone
 
 from .models import CaptureItem
 
@@ -17,14 +18,20 @@ def build_month_calendar_context(
     month: int,
     qs: QuerySet[CaptureItem],
 ) -> dict:
-    """``qs`` should already be filtered to the owning user."""
+    """``qs`` should already be filtered to the owning user and target month scope."""
     by_day: dict[date, list[CaptureItem]] = defaultdict(list)
     unscheduled: list[CaptureItem] = []
+    soft_dated: list[CaptureItem] = []
+
     for item in qs:
-        if item.calendar_date:
-            if item.calendar_date.year == year and item.calendar_date.month == month:
+        if item.calendar_date and item.calendar_date.year == year and item.calendar_date.month == month:
+            if item.calendar_is_hard_date:
                 by_day[item.calendar_date].append(item)
-        else:
+            else:
+                soft_dated.append(item)
+            continue
+        created = timezone.localtime(item.created_at).date()
+        if created.year == year and created.month == month:
             unscheduled.append(item)
 
     cal = calendar.Calendar(firstweekday=6)
@@ -50,4 +57,5 @@ def build_month_calendar_context(
         'month': month,
         'weeks': weeks,
         'unscheduled': unscheduled,
+        'soft_dated': soft_dated,
     }

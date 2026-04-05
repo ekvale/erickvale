@@ -1,0 +1,60 @@
+<li class="item {% if it.status == 'done' %}done{% endif %}">
+    <div class="title">{{ it.title|default:"(untitled)" }}</div>
+    <div class="meta">
+        {% if it.is_actionable is None %}<span class="tag-unclear">Needs clarify</span> · {% endif %}
+        {% if it.is_actionable == False %}{{ it.get_non_actionable_disposition_display }} · {% endif %}
+        {{ it.get_gtd_bucket_display }}{% if it.category_label %} · {{ it.category_label }}{% endif %}
+        {% if it.is_actionable != False %}
+        · Calendar: {% if it.calendar_date %}{{ it.calendar_date }}{% if it.calendar_is_hard_date %} (on landscape){% else %} (soft){% endif %}{% else %}—{% endif %}
+        · <span class="status-{{ it.status }}">{{ it.get_status_display }}</span>
+        {% if it.waiting_for %} · Waiting: {{ it.waiting_for }}{% endif %}
+        {% if it.next_action %} · Next: {{ it.next_action|truncatechars:120 }}{% endif %}
+        {% if it.engagement %} · {{ it.get_engagement_display }}{% endif %}
+        {% if it.two_minute_rule_suggested %} · <span class="tag-2min">~2 min?</span>{% endif %}
+        {% endif %}
+    </div>
+    {% if it.body %}<div class="body">{{ it.body }}</div>{% endif %}
+    {% if it.ai_error %}<div class="meta" style="color:#f85149;">{{ it.ai_error }}</div>{% endif %}
+    <div class="row">
+        {% if show_trash_archive %}
+        <form class="inline" method="post" action="{% url 'braindump:item_archive' it.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="sm danger">Archive (remove)</button>
+        </form>
+        {% else %}
+        <form class="inline" method="post" action="{% url 'braindump:item_status' it.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="status" value="open">
+            <button type="submit" class="sm">Still to do</button>
+        </form>
+        <form class="inline" method="post" action="{% url 'braindump:item_status' it.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="status" value="waiting">
+            <button type="submit" class="sm">Waiting</button>
+        </form>
+        <form class="inline" method="post" action="{% url 'braindump:item_status' it.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="status" value="done">
+            <button type="submit" class="sm">Done</button>
+        </form>
+        <form class="inline" method="post" action="{% url 'braindump:item_calendar_date' it.pk %}">
+            {% csrf_token %}
+            <input class="date" type="date" name="calendar_date" value="{{ it.calendar_date|date:'Y-m-d' }}">
+            <label class="chk"><input type="checkbox" name="calendar_is_hard_date" value="1" {% if it.calendar_is_hard_date %}checked{% endif %}> Hard date (landscape)</label>
+            <button type="submit" class="sm">Set date</button>
+        </form>
+        <form class="inline" method="post" action="{% url 'braindump:recategorize' it.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="sm">Re-run AI</button>
+        </form>
+        {% endif %}
+    </div>
+    {% if it.status == 'waiting' and not show_trash_archive %}
+    <form method="post" action="{% url 'braindump:item_status' it.pk %}" style="margin-top:8px;">
+        {% csrf_token %}
+        <input type="hidden" name="status" value="waiting">
+        <input type="text" name="waiting_for" value="{{ it.waiting_for }}" placeholder="Waiting on…" style="width:min(100%,360px);padding:6px 10px;border-radius:6px;border:1px solid #30363d;background:#0d1117;color:var(--ink);">
+        <button type="submit" class="sm">Update waiting</button>
+    </form>
+    {% endif %}
+</li>

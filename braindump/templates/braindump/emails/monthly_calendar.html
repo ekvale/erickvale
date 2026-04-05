@@ -16,7 +16,7 @@
 </tr>
 <tr>
     <td style="padding:16px 18px;font-size:12px;color:#57606a;line-height:1.5;">
-        <strong>Done</strong> items stay on their calendar day with a checkmark. <strong>Waiting</strong> and <strong>open</strong> show as-is.
+        <strong>Hard dates</strong> (time-specific) appear in the grid. <strong>Done</strong> items keep their day with a checkmark. Other captures may appear in the lists below.
     </td>
 </tr>
 <tr>
@@ -39,7 +39,7 @@
                     <div style="font-weight:700;font-size:12px;margin-bottom:4px;color:#122436;">{{ cell.day }}</div>
                     {% for it in cell.items %}
                     <div style="margin-top:4px;padding:4px 5px;border-radius:4px;background:{% if it.status == 'done' %}#e8f5e9{% elif it.status == 'waiting' %}#fff8e1{% else %}#e3f2fd{% endif %};font-size:10px;line-height:1.35;color:#24292f;">
-                        {% if it.status == 'done %}<span style="color:#1b5e20;font-weight:700;">✓</span> {% endif %}{{ it.title|default:"(untitled)" }}
+                        {% if it.status == 'done' %}<span style="color:#1b5e20;font-weight:700;">✓</span> {% endif %}{{ it.title|default:"(untitled)" }}
                         {% if it.status == 'waiting' %}<span style="color:#9a6700;"> (waiting)</span>{% endif %}
                     </div>
                     {% endfor %}
@@ -51,10 +51,22 @@
         </table>
     </td>
 </tr>
+{% if soft_dated %}
+<tr>
+    <td style="padding:0 18px 12px;font-size:12px;color:#24292f;">
+        <p style="margin:0 0 8px;font-weight:650;color:#57606a;">This month (soft date — not on landscape grid)</p>
+        <ul style="margin:0;padding-left:18px;">
+            {% for it in soft_dated %}
+            <li style="margin-bottom:4px;">{% if it.status == 'done' %}✓ {% endif %}{% if it.calendar_date %}<span style="color:#57606a;">{{ it.calendar_date }} · </span>{% endif %}{% if it.title %}{{ it.title|truncatechars:80 }}{% else %}{{ it.body|truncatechars:80 }}{% endif %}</li>
+            {% endfor %}
+        </ul>
+    </td>
+</tr>
+{% endif %}
 {% if unscheduled %}
 <tr>
     <td style="padding:0 18px 20px;font-size:12px;color:#24292f;">
-        <p style="margin:0 0 8px;font-weight:650;color:#57606a;">Captured this month (no calendar day yet)</p>
+        <p style="margin:0 0 8px;font-weight:650;color:#57606a;">Captured this month (no calendar day)</p>
         <ul style="margin:0;padding-left:18px;">
             {% for it in unscheduled %}
             <li style="margin-bottom:4px;">{% if it.status == 'done' %}✓ {% endif %}{% if it.title %}{{ it.title|truncatechars:80 }}{% else %}{{ it.body|truncatechars:80 }}{% endif %}</li>

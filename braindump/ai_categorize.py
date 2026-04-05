@@ -14,19 +14,39 @@ import requests
 from django.conf import settings
 from django.utils import timezone
 
-from .models import CaptureItem, CaptureStatus, GTDBucket
+from .models import (
+    CaptureItem,
+    CaptureStatus,
+    EngagementChoice,
+    GTDBucket,
+    NonActionableDisposition,
+)
 
 logger = logging.getLogger(__name__)
 
 _SYSTEM = (
-    'You classify a personal GTD-style inbox capture. Reply with ONE JSON object only, no markdown fences. '
-    'Keys: title (string <=120 chars), category (short area like Work or Home), '
-    'gtd_bucket one of: next_action, project, waiting, someday, reference, calendar, '
-    'initial_status one of: open, waiting, '
-    'calendar_date (ISO date YYYY-MM-DD for when this should appear on a monthly calendar — '
-    'use a sensible day this month or next for deadlines mentioned; else use today), '
-    'waiting_for (string, only if waiting). '
-    'If the text implies blocked on someone, use initial_status waiting and waiting_for.'
+    'You classify a personal inbox capture using Getting Things Done (GTD). '
+    'Reply with ONE JSON object only, no markdown fences.\n'
+    'Keys:\n'
+    '- title (string <=120 chars)\n'
+    '- category (short area like Work or Home)\n'
+    '- is_actionable (boolean): true if something must be done; false for pure reference, '
+    'ideas for someday, noise to discard, or FYI with no action.\n'
+    '- non_actionable_disposition (only if is_actionable is false): one of trash, someday, reference.\n'
+    '- gtd_bucket (only if actionable): next_action, project, waiting, someday, reference, calendar — '
+    'use calendar only for time-specific items (appointment/deadline at a specific day).\n'
+    '- is_project (boolean): true if multi-step outcome; else false.\n'
+    '- next_action (string): one concrete physical next step if actionable; else empty.\n'
+    '- engagement: do_now | defer | delegate — do_now if it fits the 2-minute rule or should be done '
+    'immediately; delegate if blocked on someone; defer for next-action list.\n'
+    '- two_minute_candidate (boolean): true only if likely completable in under 2 minutes.\n'
+    '- initial_status: open or waiting (waiting if blocked on someone).\n'
+    '- waiting_for (string, only if waiting).\n'
+    '- time_specific_calendar (boolean): true only for a real appointment, meeting, or hard deadline on a '
+    'specific day. Do NOT use true for vague "this week" tasks — those belong on next-action lists, not the calendar.\n'
+    '- calendar_date (ISO YYYY-MM-DD): include ONLY when time_specific_calendar is true; pick the actual day '
+    'mentioned or a sensible deadline day; omit this key entirely if not time-specific.\n'
+    'GTD rule: generic to-dos do not get calendar_date. If blocked on someone, use initial_status waiting and waiting_for.'
 )
 
 _BUCKET_MAP = {
@@ -44,6 +64,18 @@ _STATUS_MAP = {
     'done': CaptureStatus.DONE,
 }
 
+_ENGAGEMENT_MAP = {
+    'do_now': EngagementChoice.DO_NOW,
+    'defer': EngagementChoice.DEFER,
+    'delegate': EngagementChoice.DELEGATE,
+}
+
+_DISPOSITION_MAP = {
+    'trash': NonActionableDisposition.TRASH,
+    'someday': NonActionableDisposition.SOMEDAY,
+    'reference': NonActionableDisposition.REFERENCE,
+}
+
 
 def _parse_json_object(raw: str) -> dict:
     raw = (raw or '').strip()
@@ -59,6 +91,18 @@ def _parse_json_object(raw: str) -> dict:
             except json.JSONDecodeError:
                 pass
     return {}
+
+
+def _coerce_bool(v) -> bool | None:
+    if v is True or v is False:
+        return v
+    if isinstance(v, str):
+        s = v.strip().lower()
+        if s in ('true', '1', 'yes'):
+            return True
+        if s in ('false', '0', 'no'):
+            return False
+    return None
 
 
 def _anthropic_model() -> str:
@@ -134,7 +178,7 @@ def _call_perplexity(system: str, user_block: str, timeout: int = 60) -> str:
         json={
             'model': model,
             'temperature': 0.3,
-            'max_tokens': 400,
+            'max_tokens': 900,
             'messages': [
                 {'role': 'system', 'content': system},
                 {'role': 'user', 'content': user_block},
@@ -165,13 +209,32 @@ def _provider_order() -> list[str]:
     return [raw, other]
 
 
+def _infer_actionable_from_bucket(bkey: str) -> bool | None:
+    if bkey in ('reference', 'someday'):
+        return False
+    if bkey in ('next_action', 'project', 'waiting', 'calendar'):
+        return True
+    return None
+
+
+def _disposition_from_bucket(bkey: str) -> str:
+    if bkey == 'reference':
+        return NonActionableDisposition.REFERENCE
+    if bkey == 'someday':
+        return NonActionableDisposition.SOMEDAY
+    return NonActionableDisposition.SOMEDAY
+
+
 def _parsed_ok(parsed: dict) -> bool:
-    return bool(parsed) and (
-        parsed.get('title')
-        or parsed.get('gtd_bucket')
-        or parsed.get('calendar_date')
-        or parsed.get('initial_status')
-    )
+    if not parsed:
+        return False
+    if parsed.get('title') or parsed.get('gtd_bucket') or parsed.get('initial_status'):
+        return True
+    if 'is_actionable' in parsed:
+        return True
+    if parsed.get('next_action'):
+        return True
+    return False
 
 
 def _apply_parsed_to_item(item: CaptureItem, parsed: dict, today: date) -> None:
@@ -185,21 +248,83 @@ def _apply_parsed_to_item(item: CaptureItem, parsed: dict, today: date) -> None:
     bkey = (parsed.get('gtd_bucket') or 'next_action').strip().lower()
     item.gtd_bucket = _BUCKET_MAP.get(bkey, GTDBucket.NEXT_ACTION)
 
-    st = (parsed.get('initial_status') or 'open').strip().lower()
-    item.status = _STATUS_MAP.get(st, CaptureStatus.OPEN)
+    actionable = _coerce_bool(parsed.get('is_actionable'))
+    if actionable is None:
+        actionable = _infer_actionable_from_bucket(bkey)
+    if actionable is None:
+        actionable = True
+    item.is_actionable = actionable
 
-    wf = (parsed.get('waiting_for') or '').strip()
-    if item.status == CaptureStatus.WAITING:
-        item.waiting_for = wf[:255]
-    else:
+    if not actionable:
+        disp = (parsed.get('non_actionable_disposition') or '').strip().lower()
+        item.non_actionable_disposition = _DISPOSITION_MAP.get(
+            disp, _disposition_from_bucket(bkey)
+        )
+        item.is_project = False
+        item.next_action = ''
+        item.engagement = ''
+        item.two_minute_rule_suggested = False
+        item.status = CaptureStatus.OPEN
         item.waiting_for = ''
+        item.calendar_date = None
+        item.calendar_is_hard_date = False
+    else:
+        item.non_actionable_disposition = NonActionableDisposition.NONE
+        item.is_project = bool(_coerce_bool(parsed.get('is_project'))) or (
+            item.gtd_bucket == GTDBucket.PROJECT
+        )
+        item.next_action = (parsed.get('next_action') or '').strip()[:2000]
+        eng = (parsed.get('engagement') or 'defer').strip().lower()
+        item.engagement = _ENGAGEMENT_MAP.get(eng, EngagementChoice.DEFER)
+        t2 = _coerce_bool(parsed.get('two_minute_candidate'))
+        item.two_minute_rule_suggested = bool(t2) if t2 is not None else False
 
-    cds = (parsed.get('calendar_date') or '').strip()
-    try:
-        y, m_, d = [int(x) for x in cds.split('-')[:3]]
-        item.calendar_date = date(y, m_, d)
-    except (ValueError, TypeError, AttributeError):
-        item.calendar_date = today
+        st = (parsed.get('initial_status') or 'open').strip().lower()
+        item.status = _STATUS_MAP.get(st, CaptureStatus.OPEN)
+        wf = (parsed.get('waiting_for') or '').strip()
+        if item.status == CaptureStatus.WAITING:
+            item.waiting_for = wf[:255]
+        else:
+            item.waiting_for = ''
+
+        ts_in_payload = 'time_specific_calendar' in parsed
+        ts_cal = (
+            _coerce_bool(parsed.get('time_specific_calendar'))
+            if ts_in_payload
+            else None
+        )
+        cal_in_payload = 'calendar_date' in parsed
+
+        if cal_in_payload:
+            cds = parsed.get('calendar_date')
+            if cds is None or (isinstance(cds, str) and not str(cds).strip()):
+                item.calendar_date = None
+                item.calendar_is_hard_date = False
+            else:
+                cds = str(cds).strip()
+                try:
+                    y, m_, d = [int(x) for x in cds.split('-')[:3]]
+                    item.calendar_date = date(y, m_, d)
+                except (ValueError, TypeError, AttributeError):
+                    item.calendar_date = None
+                    item.calendar_is_hard_date = False
+                else:
+                    if ts_cal is True:
+                        item.calendar_is_hard_date = True
+                    elif ts_cal is False:
+                        item.calendar_is_hard_date = False
+                    else:
+                        item.calendar_is_hard_date = item.calendar_date is not None and (
+                            item.gtd_bucket == GTDBucket.CALENDAR
+                        )
+        elif ts_in_payload:
+            if ts_cal is True and item.calendar_date:
+                item.calendar_is_hard_date = True
+            elif ts_cal is False:
+                item.calendar_is_hard_date = False
+
+        if item.gtd_bucket == GTDBucket.CALENDAR and item.calendar_date:
+            item.calendar_is_hard_date = True
 
     item.save(
         update_fields=[
@@ -209,6 +334,13 @@ def _apply_parsed_to_item(item: CaptureItem, parsed: dict, today: date) -> None:
             'status',
             'waiting_for',
             'calendar_date',
+            'calendar_is_hard_date',
+            'is_actionable',
+            'non_actionable_disposition',
+            'is_project',
+            'next_action',
+            'engagement',
+            'two_minute_rule_suggested',
             'ai_payload',
             'ai_error',
             'updated_at',
@@ -216,14 +348,12 @@ def _apply_parsed_to_item(item: CaptureItem, parsed: dict, today: date) -> None:
     )
 
 
-def _fallback_defaults(item: CaptureItem, today: date, error_note: str) -> None:
+def _fallback_defaults(item: CaptureItem, error_note: str) -> None:
     item.title = (item.body or '')[:200] or 'Capture'
-    item.calendar_date = item.calendar_date or today
     item.ai_error = error_note[:2000]
     item.save(
         update_fields=[
             'title',
-            'calendar_date',
             'ai_error',
             'updated_at',
         ]
@@ -232,7 +362,7 @@ def _fallback_defaults(item: CaptureItem, today: date, error_note: str) -> None:
 
 def categorize_capture_item(item: CaptureItem) -> None:
     """
-    Fills title, category_label, gtd_bucket, calendar_date, status, waiting_for on ``item``.
+    Fills GTD clarify/organize fields on ``item``.
     Tries BRAINDUMP_LLM_PROVIDER first (anthropic or perplexity), then the other if it fails.
     """
     today = timezone.localdate()
@@ -244,7 +374,6 @@ def categorize_capture_item(item: CaptureItem) -> None:
     if not anthropic_key and not perplexity_key:
         _fallback_defaults(
             item,
-            today,
             'Set ANTHROPIC_API_KEY and/or PERPLEXITY_API_KEY; using defaults.',
         )
         return
@@ -272,4 +401,4 @@ def categorize_capture_item(item: CaptureItem) -> None:
             logger.warning('braindump %s categorize failed: %s', provider, e)
             errors.append(f'{provider}: {e}')
 
-    _fallback_defaults(item, today, ' | '.join(errors) or 'All providers failed.')
+    _fallback_defaults(item, ' | '.join(errors) or 'All providers failed.')

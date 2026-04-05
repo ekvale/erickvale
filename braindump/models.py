@@ -20,8 +20,25 @@ class CaptureStatus(models.TextChoices):
     DONE = 'done', 'Done'
 
 
+class NonActionableDisposition(models.TextChoices):
+    """Allen clarify step: if not actionable — trash, someday/maybe, or reference."""
+
+    NONE = '', '—'
+    TRASH = 'trash', 'Trash'
+    SOMEDAY = 'someday', 'Someday / maybe'
+    REFERENCE = 'reference', 'Reference'
+
+
+class EngagementChoice(models.TextChoices):
+    """Clarify: do now (incl. 2-min), defer to lists, or delegate (waiting)."""
+
+    DO_NOW = 'do_now', 'Do now'
+    DEFER = 'defer', 'Defer (next action list)'
+    DELEGATE = 'delegate', 'Delegate / waiting'
+
+
 class CaptureItem(models.Model):
-    """One brain-dump line; AI fills title, bucket, calendar date; owner updates status."""
+    """One capture; AI clarifies (actionable?, next action, project?, calendar vs lists)."""
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -55,7 +72,46 @@ class CaptureItem(models.Model):
         null=True,
         blank=True,
         db_index=True,
-        help_text='Day on the monthly calendar email',
+        help_text=(
+            'GTD: use only for time-specific actions (hard appointment/deadline). '
+            'Generic next actions stay off the calendar.'
+        ),
+    )
+    calendar_is_hard_date = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text='True = belongs on calendar landscape; False = next-action list only',
+    )
+    is_actionable = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text='Clarify: is this actionable? null = not yet processed',
+    )
+    non_actionable_disposition = models.CharField(
+        max_length=16,
+        choices=NonActionableDisposition.choices,
+        blank=True,
+        default='',
+        help_text='If not actionable: trash, someday, or reference',
+    )
+    is_project = models.BooleanField(
+        default=False,
+        help_text='True if multi-step outcome (project list)',
+    )
+    next_action = models.TextField(
+        blank=True,
+        help_text='Concrete next physical step (Allen)',
+    )
+    engagement = models.CharField(
+        max_length=16,
+        choices=EngagementChoice.choices,
+        blank=True,
+        default='',
+        help_text='Do now, defer, or delegate',
+    )
+    two_minute_rule_suggested = models.BooleanField(
+        default=False,
+        help_text='AI thinks this may be a under-two-minute action',
     )
     archived = models.BooleanField(
         default=False,

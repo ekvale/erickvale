@@ -1,8 +1,11 @@
+from datetime import date
+
 from django.contrib.auth.models import User
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-from braindump.models import CaptureItem, CaptureStatus
+from braindump.gtd_partition import partition_active_items
+from braindump.models import CaptureItem, CaptureStatus, NonActionableDisposition
 
 
 @override_settings(
@@ -44,3 +47,52 @@ class BraindumpOwnerTests(TestCase):
         self.assertEqual(it.status, CaptureStatus.DONE)
         self.assertTrue(it.archived)
         self.assertIsNotNone(it.completed_at)
+
+    def test_item_archive(self):
+        c = Client()
+        c.login(username='owner1', password='pw')
+        it = CaptureItem.objects.create(user=self.owner, body='noise', title='t')
+        c.post(reverse('braindump:item_archive', args=[it.pk]), {})
+        it.refresh_from_db()
+        self.assertTrue(it.archived)
+
+    def test_dashboard_gtd_sections(self):
+        c = Client()
+        c.login(username='owner1', password='pw')
+        CaptureItem.objects.create(
+            user=self.owner,
+            body='clarify me',
+            title='u',
+            is_actionable=None,
+        )
+        r = c.get(reverse('braindump:dashboard'))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Clarify queue')
+
+
+class GtdPartitionTests(TestCase):
+    def setUp(self):
+        self.owner = User.objects.create_user('part', password='pw')
+
+    def test_partition_unclear_trash_calendar_next(self):
+        u = self.owner
+        unclear = CaptureItem(user=u, body='a', is_actionable=None)
+        trash = CaptureItem(
+            user=u,
+            body='b',
+            is_actionable=False,
+            non_actionable_disposition=NonActionableDisposition.TRASH,
+        )
+        cal = CaptureItem(
+            user=u,
+            body='c',
+            is_actionable=True,
+            calendar_date=date(2026, 6, 15),
+            calendar_is_hard_date=True,
+        )
+        nxt = CaptureItem(user=u, body='d', is_actionable=True, title='n')
+        parts = partition_active_items([unclear, trash, cal, nxt])
+        self.assertEqual(parts['unclear'], [unclear])
+        self.assertEqual(parts['trash_list'], [trash])
+        self.assertEqual(parts['calendar_hard'], [cal])
+        self.assertEqual(parts['next_actions'], [nxt])
