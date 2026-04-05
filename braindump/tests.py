@@ -14,6 +14,8 @@ from braindump.work_category import (
     CATEGORY_DREAM_BLUE,
     CATEGORY_MDH,
     CATEGORY_SIOUX_CHEF,
+    canonical_work_stream_label,
+    resolve_work_category,
     work_category_from_body,
 )
 from braindump.models import (
@@ -249,6 +251,25 @@ class WorkCategoryRulesTests(TestCase):
 
     def test_sioux_chef_phrase(self):
         self.assertEqual(work_category_from_body('Sioux Chef catering order'), CATEGORY_SIOUX_CHEF)
+
+
+class ResolveWorkCategoryTests(TestCase):
+    def test_ai_upgrades_default_mdh_to_dream_blue(self):
+        self.assertEqual(
+            resolve_work_category('Buy toner for office', 'Dream Blue'),
+            CATEGORY_DREAM_BLUE,
+        )
+
+    def test_keyword_sioux_beats_ai_mdh(self):
+        self.assertEqual(
+            resolve_work_category('NOMOAR launch checklist', 'MDH'),
+            CATEGORY_SIOUX_CHEF,
+        )
+
+    def test_canonical_stream_labels(self):
+        self.assertEqual(canonical_work_stream_label('  Sioux Chef '), CATEGORY_SIOUX_CHEF)
+        self.assertEqual(canonical_work_stream_label('dream-blue'), CATEGORY_DREAM_BLUE)
+        self.assertIsNone(canonical_work_stream_label('Side project'))
 
 
 class GtdPartitionTests(TestCase):

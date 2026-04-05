@@ -22,7 +22,7 @@ from .models import (
     NonActionableDisposition,
     TaskPriority,
 )
-from .work_category import work_category_from_body
+from .work_category import resolve_work_category
 
 logger = logging.getLogger(__name__)
 
@@ -31,10 +31,11 @@ _SYSTEM = (
     'Reply with ONE JSON object only, no markdown fences.\n'
     'Keys:\n'
     '- title (string <=120 chars)\n'
-    '- category (string, optional): the app assigns work stream automatically from the capture text — '
-    'you may omit this key. Rules: default and MDH team (Abby, Hannah, Analise, Tim, Angela, Mike) → "MDH"; '
-    'Wendy or property/real-estate context → "Dream Blue"; Sean, Sioux Chef, or NOMOAR → "Sioux Chef". '
-    'Sioux Chef wins over Dream Blue if both apply.\n'
+    '- category (string, optional): work stream — use EXACTLY one of: "MDH", "Dream Blue", "Sioux Chef", '
+    'or omit. The app merges this with keyword rules (Sioux Chef > Dream Blue > MDH team/default). '
+    'MDH: default; colleagues Abby, Hannah, Analise, Tim, Angela, Mike. '
+    'Dream Blue: Wendy; property/real estate (lease, tenant, vacancy, unit, portfolio, etc.). '
+    'Sioux Chef: Sean; "Sioux Chef"; NOMOAR / nomoar. When unsure, omit category.\n'
     '- priority: urgent | high | normal | low — urgent = today/ASAP/hard deadline or critical; '
     'high = this week or high impact; normal = default; low = backlog, someday-soon, or no time pressure.\n'
     '- is_actionable (boolean): true if something must be done; false for pure reference, '
@@ -362,7 +363,12 @@ def _apply_parsed_to_item(item: CaptureItem, parsed: dict, today: date) -> None:
 
         _apply_priority_field(item, parsed, actionable=True)
 
-    item.category_label = work_category_from_body(item.body)[:120]
+    ai_cat = parsed.get('category')
+    if isinstance(ai_cat, str):
+        ai_cat = ai_cat.strip() or None
+    else:
+        ai_cat = None
+    item.category_label = resolve_work_category(item.body, ai_cat)[:120]
 
     item.save(
         update_fields=[

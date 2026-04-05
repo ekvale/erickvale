@@ -1,6 +1,28 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 
+from .ai_categorize import categorize_capture_item
 from .models import CaptureItem, RecurringCaptureRule
+
+
+def _recategorize_captures_ai(modeladmin, request, queryset):
+    """Re-run full AI pipeline (bounded batch)."""
+    items = list(queryset.order_by('pk')[:40])
+    if queryset.count() > len(items):
+        modeladmin.message_user(
+            request,
+            f'Only the first {len(items)} selected items were processed (batch cap).',
+            level=messages.WARNING,
+        )
+    for item in items:
+        categorize_capture_item(item)
+    modeladmin.message_user(
+        request,
+        f'Recategorized {len(items)} capture(s) with AI.',
+        level=messages.SUCCESS,
+    )
+
+
+_recategorize_captures_ai.short_description = 'Recategorize selected captures with AI'
 
 
 @admin.register(CaptureItem)
@@ -37,6 +59,7 @@ class CaptureItemAdmin(admin.ModelAdmin):
         'spawned_from_recurring',
     )
     date_hierarchy = 'created_at'
+    actions = (_recategorize_captures_ai,)
     fieldsets = (
         (None, {'fields': ('user', 'body', 'title', 'category_label', 'priority')}),
         (
