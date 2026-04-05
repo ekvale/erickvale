@@ -1,0 +1,53 @@
+"""Build month grid + unscheduled items for the monthly email."""
+
+from __future__ import annotations
+
+import calendar
+from collections import defaultdict
+from datetime import date
+
+from django.db.models import QuerySet
+
+from .models import CaptureItem
+
+
+def build_month_calendar_context(
+    *,
+    year: int,
+    month: int,
+    qs: QuerySet[CaptureItem],
+) -> dict:
+    """``qs`` should already be filtered to the owning user."""
+    by_day: dict[date, list[CaptureItem]] = defaultdict(list)
+    unscheduled: list[CaptureItem] = []
+    for item in qs:
+        if item.calendar_date:
+            if item.calendar_date.year == year and item.calendar_date.month == month:
+                by_day[item.calendar_date].append(item)
+        else:
+            unscheduled.append(item)
+
+    cal = calendar.Calendar(firstweekday=6)
+    weeks = []
+    for week in cal.monthdatescalendar(year, month):
+        row = []
+        for d in week:
+            if d.month != month:
+                row.append({'in_month': False, 'day': None, 'date': None, 'items': []})
+            else:
+                row.append(
+                    {
+                        'in_month': True,
+                        'day': d.day,
+                        'date': d,
+                        'items': by_day.get(d, []),
+                    }
+                )
+        weeks.append(row)
+
+    return {
+        'year': year,
+        'month': month,
+        'weeks': weeks,
+        'unscheduled': unscheduled,
+    }

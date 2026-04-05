@@ -58,7 +58,19 @@ INSTALLED_APPS = [
     'chess_trainer',
     'nomoar',
     'dream_blue',
+    'braindump',
 ]
+
+# --- Brain dump (personal GTD capture; owner-only) ---
+# Set username OR numeric user id of the single account that may use /apps/braindump/.
+BRAINDUMP_OWNER_USERNAME = config('BRAINDUMP_OWNER_USERNAME', default='').strip()
+BRAINDUMP_OWNER_USER_ID = config('BRAINDUMP_OWNER_USER_ID', default='').strip()
+BRAINDUMP_OPENAI_MODEL = config('BRAINDUMP_OPENAI_MODEL', default='gpt-4o-mini').strip()
+# Optional comma-separated override; default is the owner account's email.
+BRAINDUMP_CALENDAR_EMAIL_RECIPIENTS = config(
+    'BRAINDUMP_CALENDAR_EMAIL_RECIPIENTS',
+    default='',
+).strip()
 
 # --- Dream Blue (internal BI / digests) ---
 # Comma-separated recipient emails; no defaults — must be set in env for sends.

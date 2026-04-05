@@ -3,11 +3,20 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from datetime import datetime
+
+from braindump.authz import braindump_configured, is_braindump_owner
+
 from .models import FeaturedApp
 
 
 def homepage(request):
     """Homepage view showcasing monthly apps."""
+    if (
+        request.user.is_authenticated
+        and braindump_configured()
+        and is_braindump_owner(request.user)
+    ):
+        return redirect('braindump:dashboard')
     current_date = datetime.now()
     current_month = current_date.strftime('%B %Y')
     
@@ -67,16 +76,23 @@ def about(request):
 def login_view(request):
     """User login view."""
     if request.user.is_authenticated:
+        if braindump_configured() and is_braindump_owner(request.user):
+            return redirect('braindump:dashboard')
         return redirect('homepage')
-    
+
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
             login(request, user)
             messages.success(request, f'Welcome back, {user.username}!')
-            # Redirect to next page or homepage
             next_url = request.GET.get('next', 'homepage')
+            if (
+                braindump_configured()
+                and is_braindump_owner(user)
+                and next_url == 'homepage'
+            ):
+                return redirect('braindump:dashboard')
             return redirect(next_url)
     else:
         form = AuthenticationForm()

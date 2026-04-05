@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Brain dump</title>
+    <style>
+        :root { --bg: #0f1419; --card: #1a2332; --ink: #e6edf3; --muted: #8b949e; --accent: #58a6ff; --ok: #3fb950; --wait: #d29922; --done: #6e7681; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; background: var(--bg); color: var(--ink); min-height: 100vh; }
+        header { padding: 16px 20px; border-bottom: 1px solid #30363d; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+        header a { color: var(--accent); text-decoration: none; margin-right: 16px; font-size: 0.9rem; }
+        h1 { margin: 0; font-size: 1.35rem; font-weight: 650; }
+        .wrap { max-width: 880px; margin: 0 auto; padding: 24px 20px 48px; }
+        label.dump { display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; }
+        textarea#id_body { width: 100%; min-height: 140px; padding: 14px 16px; font-size: 1.05rem; line-height: 1.5; border-radius: 10px; border: 1px solid #30363d; background: var(--card); color: var(--ink); resize: vertical; }
+        textarea#id_body:focus { outline: 2px solid var(--accent); border-color: transparent; }
+        .actions { margin-top: 12px; }
+        button.primary { font: inherit; font-weight: 600; padding: 12px 22px; border-radius: 8px; border: none; background: var(--accent); color: #0d1117; cursor: pointer; }
+        button.primary:hover { filter: brightness(1.08); }
+        h2 { font-size: 1rem; margin: 32px 0 14px; color: var(--muted); font-weight: 600; }
+        ul.items { list-style: none; padding: 0; margin: 0; }
+        li.item { background: var(--card); border: 1px solid #30363d; border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; }
+        li.item.done { opacity: 0.75; border-style: dashed; }
+        li.item .title { font-weight: 650; margin-bottom: 6px; }
+        li.item .meta { font-size: 0.8rem; color: var(--muted); margin-bottom: 8px; }
+        li.item .body { font-size: 0.88rem; color: #c9d1d9; white-space: pre-wrap; }
+        .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+        form.inline { display: inline; }
+        button.sm, .row button { font: inherit; font-size: 0.8rem; padding: 6px 12px; border-radius: 6px; border: 1px solid #30363d; background: #21262d; color: var(--ink); cursor: pointer; }
+        button.sm:hover { background: #30363d; }
+        button.danger { border-color: #f85149; color: #f85149; }
+        input.date { font: inherit; padding: 5px 8px; border-radius: 6px; border: 1px solid #30363d; background: #0d1117; color: var(--ink); }
+        .status-open { color: var(--accent); }
+        .status-waiting { color: var(--wait); }
+        .status-done { color: var(--ok); text-decoration: line-through; }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Brain dump</h1>
+    <nav>
+        <a href="{% url 'homepage' %}">Site home</a>
+        <a href="{% url 'logout' %}">Log out</a>
+    </nav>
+</header>
+<div class="wrap">
+    <form method="post" action="{% url 'braindump:capture_create' %}">
+        {% csrf_token %}
+        <label class="dump" for="id_body">Dump your thoughts (saved to your private inbox)</label>
+        <textarea id="id_body" name="body" placeholder="Anything on your mind — one or many lines. AI will suggest a title, bucket, and calendar day." autofocus></textarea>
+        <div class="actions">
+            <button type="submit" class="primary">Save &amp; categorize</button>
+        </div>
+    </form>
+
+    <h2>Active</h2>
+    {% if not active_items %}
+    <p style="color:var(--muted);">Inbox empty.</p>
+    {% endif %}
+    <ul class="items">
+        {% for it in active_items %}
+        <li class="item {% if it.status == 'done' %}done{% endif %}">
+            <div class="title">{{ it.title|default:"(untitled)" }}</div>
+            <div class="meta">
+                {{ it.get_gtd_bucket_display }}{% if it.category_label %} · {{ it.category_label }}{% endif %}
+                · Calendar: {% if it.calendar_date %}{{ it.calendar_date }}{% else %}—{% endif %}
+                · <span class="status-{{ it.status }}">{{ it.get_status_display }}</span>
+                {% if it.waiting_for %} · Waiting: {{ it.waiting_for }}{% endif %}
+            </div>
+            {% if it.body %}<div class="body">{{ it.body }}</div>{% endif %}
+            {% if it.ai_error %}<div class="meta" style="color:#f85149;">{{ it.ai_error }}</div>{% endif %}
+            <div class="row">
+                <form class="inline" method="post" action="{% url 'braindump:item_status' it.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="open">
+                    <button type="submit" class="sm">Still to do</button>
+                </form>
+                <form class="inline" method="post" action="{% url 'braindump:item_status' it.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="waiting">
+                    <button type="submit" class="sm">Waiting</button>
+                </form>
+                <form class="inline" method="post" action="{% url 'braindump:item_status' it.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="done">
+                    <button type="submit" class="sm">Done</button>
+                </form>
+                <form class="inline" method="post" action="{% url 'braindump:item_calendar_date' it.pk %}">
+                    {% csrf_token %}
+                    <input class="date" type="date" name="calendar_date" value="{{ it.calendar_date|date:'Y-m-d' }}">
+                    <button type="submit" class="sm">Set date</button>
+                </form>
+                <form class="inline" method="post" action="{% url 'braindump:recategorize' it.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="sm">Re-run AI</button>
+                </form>
+            </div>
+            {% if it.status == 'waiting' %}
+            <form method="post" action="{% url 'braindump:item_status' it.pk %}" style="margin-top:8px;">
+                {% csrf_token %}
+                <input type="hidden" name="status" value="waiting">
+                <input type="text" name="waiting_for" value="{{ it.waiting_for }}" placeholder="Waiting on…" style="width:min(100%,360px);padding:6px 10px;border-radius:6px;border:1px solid #30363d;background:#0d1117;color:var(--ink);">
+                <button type="submit" class="sm">Update waiting</button>
+            </form>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+
+    <h2>Recently completed (archived)</h2>
+    <ul class="items">
+        {% for it in done_recent %}
+        <li class="item done">
+            <div class="title status-done">✓ {{ it.title|default:"(untitled)" }}</div>
+            <div class="meta">Done {{ it.completed_at|date:"M j, Y" }}{% if it.calendar_date %} · was on {{ it.calendar_date }}{% endif %}</div>
+        </li>
+        {% empty %}
+        <li style="color:var(--muted);list-style:none;">None yet.</li>
+        {% endfor %}
+    </ul>
+</div>
+</body>
+</html>

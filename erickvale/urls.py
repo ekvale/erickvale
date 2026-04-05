@@ -36,6 +36,7 @@ urlpatterns = [
     path('chess/', include('chess_trainer.urls')),
     path('apps/nomoar/', include('nomoar.urls')),
     path('apps/dream-blue/', include('dream_blue.urls')),
+    path('apps/braindump/', include('braindump.urls')),
     path('ckeditor/', include('ckeditor_uploader.urls')),
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
