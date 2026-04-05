@@ -185,7 +185,7 @@ The digest pulls calendar events, KPIs, leases, loans, utilities, and lease econ
 ## Apps
 
 ### Brain dump (personal GTD capture)
-Private inbox at `/apps/braindump/` for the configured owner only (`BRAINDUMP_OWNER_USERNAME` or `BRAINDUMP_OWNER_USER_ID`). Large capture box, OpenAI categorization (`OPENAI_API_KEY`), statuses (to do / waiting / done with auto-archive), manual calendar day edits, and `python manage.py send_braindump_monthly_calendar` for an HTML month grid (uses Resend/SMTP like Dream Blue). When configured, the owner is sent to the brain dump after login and from `/` instead of the public homepage.
+Private inbox at `/apps/braindump/` for the configured owner only (`BRAINDUMP_OWNER_USERNAME` or `BRAINDUMP_OWNER_USER_ID`). Large capture box, **Anthropic or Perplexity** categorization (`BRAINDUMP_LLM_PROVIDER`, `ANTHROPIC_API_KEY` / `PERPLEXITY_API_KEY` — tries the other provider if the first fails), statuses (to do / waiting / done with auto-archive), manual calendar day edits, and `python manage.py send_braindump_monthly_calendar` for an HTML month grid (uses Resend/SMTP like Dream Blue). When configured, the owner is sent to the brain dump after login and from `/` instead of the public homepage.
 
 ### Emergency Preparedness (December 2025)
 Spatial risk analysis and Point of Distribution (POD) location optimization for emergency planning in Minnesota.

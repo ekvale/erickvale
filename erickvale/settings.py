@@ -65,7 +65,10 @@ INSTALLED_APPS = [
 # Set username OR numeric user id of the single account that may use /apps/braindump/.
 BRAINDUMP_OWNER_USERNAME = config('BRAINDUMP_OWNER_USERNAME', default='').strip()
 BRAINDUMP_OWNER_USER_ID = config('BRAINDUMP_OWNER_USER_ID', default='').strip()
-BRAINDUMP_OPENAI_MODEL = config('BRAINDUMP_OPENAI_MODEL', default='gpt-4o-mini').strip()
+# braindump categorization: anthropic or perplexity (try the other if the first fails).
+BRAINDUMP_LLM_PROVIDER = config('BRAINDUMP_LLM_PROVIDER', default='anthropic').strip().lower()
+BRAINDUMP_ANTHROPIC_MODEL = config('BRAINDUMP_ANTHROPIC_MODEL', default='').strip()
+BRAINDUMP_PERPLEXITY_MODEL = config('BRAINDUMP_PERPLEXITY_MODEL', default='').strip()
 # Optional comma-separated override; default is the owner account's email.
 BRAINDUMP_CALENDAR_EMAIL_RECIPIENTS = config(
     'BRAINDUMP_CALENDAR_EMAIL_RECIPIENTS',
