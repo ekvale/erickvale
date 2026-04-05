@@ -75,6 +75,8 @@ BRAINDUMP_CALENDAR_EMAIL_RECIPIENTS = config(
     'BRAINDUMP_CALENDAR_EMAIL_RECIPIENTS',
     default='',
 ).strip()
+# Optional site origin for links in morning digest (https://your.domain). Falls back to DREAM_BLUE_DIGEST_BASE_URL.
+BRAINDUMP_DIGEST_BASE_URL = config('BRAINDUMP_DIGEST_BASE_URL', default='').strip()
 
 # --- Dream Blue (internal BI / digests) ---
 # Comma-separated recipient emails; no defaults — must be set in env for sends.

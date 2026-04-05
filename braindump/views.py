@@ -1,5 +1,6 @@
 from datetime import date
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect
@@ -11,6 +12,7 @@ from .ai_categorize import categorize_capture_item
 from .authz import braindump_configured, is_braindump_owner
 from .gtd_partition import partition_active_items
 from .models import CaptureItem, CaptureStatus, TaskPriority
+from .morning_digest import run_morning_digest_send
 
 # Avoid huge pastes firing hundreds of LLM calls in one request.
 _MAX_CAPTURE_PARTS = 100
@@ -93,6 +95,18 @@ def dashboard(request):
             'max_capture_parts': _MAX_CAPTURE_PARTS,
         },
     )
+
+
+@login_required
+@require_http_methods(['POST'])
+def morning_digest_send_now(request):
+    _require_owner(request)
+    result = run_morning_digest_send()
+    if result['ok']:
+        messages.success(request, result['message'])
+    else:
+        messages.error(request, result['message'])
+    return HttpResponseRedirect(reverse('braindump:dashboard'))
 
 
 @login_required

@@ -43,6 +43,13 @@
         .status-open { color: var(--accent); }
         .status-waiting { color: var(--wait); }
         .status-done { color: var(--ok); text-decoration: line-through; }
+        ul.flash { list-style: none; padding: 0; margin: 0 0 16px; }
+        ul.flash li { padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; font-size: 0.9rem; }
+        ul.flash li.success { background: #23863633; border: 1px solid #3fb950; color: #3fb950; }
+        ul.flash li.error { background: #f8514922; border: 1px solid #f85149; color: #f85149; }
+        .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 20px; padding: 12px 0; border-bottom: 1px solid #30363d; }
+        button.secondary { font: inherit; font-weight: 600; padding: 10px 18px; border-radius: 8px; border: 1px solid var(--accent); background: transparent; color: var(--accent); cursor: pointer; }
+        button.secondary:hover { background: #58a6ff22; }
     </style>
 </head>
 <body>
@@ -54,6 +61,20 @@
     </nav>
 </header>
 <div class="wrap">
+    {% if messages %}
+    <ul class="flash">
+        {% for message in messages %}
+        <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    <div class="toolbar">
+        <form method="post" action="{% url 'braindump:morning_digest_send_now' %}" style="margin:0;">
+            {% csrf_token %}
+            <button type="submit" class="secondary">Email morning digest now</button>
+        </form>
+        <span class="section-note" style="margin:0;">Same email as the daily 5:30 AM job (Resend/SMTP must be configured).</span>
+    </div>
     <form method="post" action="{% url 'braindump:capture_create' %}">
         {% csrf_token %}
         <label class="dump" for="id_body">Capture (GTD step 1)</label>

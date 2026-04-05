@@ -1,10 +1,12 @@
 from datetime import date
+from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from braindump.gtd_partition import partition_active_items
+from braindump.morning_digest import run_morning_digest_send
 from braindump.models import (
     CaptureItem,
     CaptureStatus,
@@ -27,6 +29,21 @@ class BraindumpOwnerTests(TestCase):
         c.login(username='other', password='pw')
         r = c.get(reverse('braindump:dashboard'))
         self.assertEqual(r.status_code, 403)
+
+    def test_non_owner_morning_digest_forbidden(self):
+        c = Client()
+        c.login(username='other', password='pw')
+        r = c.post(reverse('braindump:morning_digest_send_now'))
+        self.assertEqual(r.status_code, 403)
+
+    @patch('braindump.views.run_morning_digest_send')
+    def test_morning_digest_send_now(self, mock_run):
+        mock_run.return_value = {'ok': True, 'message': 'Sent test digest.'}
+        c = Client()
+        c.login(username='owner1', password='pw')
+        r = c.post(reverse('braindump:morning_digest_send_now'))
+        self.assertEqual(r.status_code, 302)
+        mock_run.assert_called_once_with()
 
     def test_capture_and_list(self):
         c = Client()
@@ -106,6 +123,20 @@ class BraindumpOwnerTests(TestCase):
         r = c.get(reverse('braindump:dashboard'))
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'Clarify queue')
+
+
+@override_settings(
+    BRAINDUMP_OWNER_USERNAME='owner1',
+    BRAINDUMP_OWNER_USER_ID='',
+)
+class MorningDigestTests(TestCase):
+    def setUp(self):
+        User.objects.create_user('owner1', password='pw')
+
+    def test_morning_digest_dry_run(self):
+        r = run_morning_digest_send(dry_run=True)
+        self.assertTrue(r['ok'])
+        self.assertIn('Dry run', r['message'])
 
 
 class GtdPartitionTests(TestCase):

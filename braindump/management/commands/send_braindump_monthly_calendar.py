@@ -2,7 +2,6 @@ import calendar
 import logging
 from pathlib import Path
 
-from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
 from django.template.loader import render_to_string
@@ -10,41 +9,14 @@ from django.utils import timezone
 
 from braindump.authz import braindump_configured
 from braindump.calendar_build import build_month_calendar_context
+from braindump.email_common import get_braindump_owner, get_braindump_recipients
 from braindump.models import CaptureItem
 from dream_blue.emailing import (
     DreamBlueEmailConfigError,
-    parse_recipient_list,
     send_html_digest,
 )
 
 logger = logging.getLogger(__name__)
-
-
-def _owner_user():
-    from django.conf import settings
-
-    User = get_user_model()
-    raw_id = getattr(settings, 'BRAINDUMP_OWNER_USER_ID', None)
-    if raw_id is not None and str(raw_id).strip() != '':
-        try:
-            return User.objects.get(pk=int(str(raw_id).strip()))
-        except (User.DoesNotExist, ValueError, TypeError):
-            return None
-    name = (getattr(settings, 'BRAINDUMP_OWNER_USERNAME', '') or '').strip()
-    if name:
-        return User.objects.filter(username=name).first()
-    return None
-
-
-def _recipients_for(owner) -> list[str]:
-    from django.conf import settings
-
-    raw = (getattr(settings, 'BRAINDUMP_CALENDAR_EMAIL_RECIPIENTS', '') or '').strip()
-    if raw:
-        return parse_recipient_list(raw)
-    if owner.email:
-        return [owner.email.strip()]
-    return []
 
 
 class Command(BaseCommand):
@@ -72,7 +44,7 @@ class Command(BaseCommand):
             raise CommandError(
                 'Set BRAINDUMP_OWNER_USERNAME or BRAINDUMP_OWNER_USER_ID in settings / env.'
             )
-        owner = _owner_user()
+        owner = get_braindump_owner()
         if not owner:
             raise CommandError('Brain dump owner user not found in database.')
 
@@ -95,7 +67,7 @@ class Command(BaseCommand):
         ctx['month_name'] = calendar.month_name[m]
         html = render_to_string('braindump/emails/monthly_calendar.html', ctx)
 
-        recipients = _recipients_for(owner)
+        recipients = get_braindump_recipients(owner)
         subject = f'Brain dump calendar — {calendar.month_name[m]} {y}'
 
         out_path = (options.get('output_html') or '').strip()

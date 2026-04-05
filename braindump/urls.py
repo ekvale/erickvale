@@ -6,6 +6,11 @@ app_name = 'braindump'
 
 urlpatterns = [
     path('', views.dashboard, name='dashboard'),
+    path(
+        'morning-digest/send/',
+        views.morning_digest_send_now,
+        name='morning_digest_send_now',
+    ),
     path('capture/', views.capture_create, name='capture_create'),
     path('item/<int:pk>/status/', views.item_status, name='item_status'),
     path('item/<int:pk>/calendar/', views.item_calendar_date, name='item_calendar_date'),
