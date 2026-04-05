@@ -78,10 +78,11 @@ BRAINDUMP_CALENDAR_EMAIL_RECIPIENTS = config(
 # Optional site origin for links in morning digest (https://your.domain). Falls back to DREAM_BLUE_DIGEST_BASE_URL.
 BRAINDUMP_DIGEST_BASE_URL = config('BRAINDUMP_DIGEST_BASE_URL', default='').strip()
 # Recurring MDH "in office" blocks (not tasks): Tue–Wed–Thu / Tue–Wed alternating weeks, 8–5 local, skip US federal holidays.
-BRAINDUMP_MDH_OFFICE_ENABLED = config(
-    'BRAINDUMP_MDH_OFFICE_ENABLED',
-    default='true',
-).strip().lower() in ('1', 'true', 'yes', 'on')
+_mdh_office_raw = config('BRAINDUMP_MDH_OFFICE_ENABLED', default='true').strip().lower()
+# Treat empty as default-on (blank .env line would otherwise disable the feature).
+BRAINDUMP_MDH_OFFICE_ENABLED = (
+    not _mdh_office_raw or _mdh_office_raw in ('1', 'true', 'yes', 'on')
+)
 # ISO date (YYYY-MM-DD) of a Monday that begins a *long* week (Tue+Wed+Thu in office). Default: week of Jan 5, 2026.
 BRAINDUMP_MDH_OFFICE_LONG_WEEK_ANCHOR = config(
     'BRAINDUMP_MDH_OFFICE_LONG_WEEK_ANCHOR',

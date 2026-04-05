@@ -95,4 +95,10 @@ def digest_calendar_chip(it):
     """Small chip inside month grid cells."""
     stream = _stream_for_label(getattr(it, 'category_label', None))
     pri = _priority_for_value(getattr(it, 'priority', None))
-    return {'it': it, 'stream': stream, 'pri': pri}
+    is_hold = bool(getattr(it, 'synthetic_office_hold', False))
+    return {
+        'it': it,
+        'stream': stream,
+        'pri': pri,
+        'is_mdh_office_hold': is_hold,
+    }
