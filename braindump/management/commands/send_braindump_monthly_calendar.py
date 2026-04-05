@@ -1,5 +1,6 @@
 import calendar
 import logging
+from pathlib import Path
 
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
@@ -60,6 +61,11 @@ class Command(BaseCommand):
             action='store_true',
             help='Print recipient and counts; do not send.',
         )
+        parser.add_argument(
+            '--output-html',
+            metavar='PATH',
+            help='Write rendered HTML to this file and exit (no email).',
+        )
 
     def handle(self, *args, **options):
         if not braindump_configured():
@@ -91,6 +97,17 @@ class Command(BaseCommand):
 
         recipients = _recipients_for(owner)
         subject = f'Brain dump calendar — {calendar.month_name[m]} {y}'
+
+        out_path = (options.get('output_html') or '').strip()
+        if out_path:
+            path = Path(out_path)
+            path.write_text(html, encoding='utf-8')
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f'Wrote HTML ({len(html)} bytes) to {path.resolve()}'
+                )
+            )
+            return
 
         if options['dry_run']:
             self.stdout.write(
