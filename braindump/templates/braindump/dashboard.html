@@ -50,6 +50,16 @@
         .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 20px; padding: 12px 0; border-bottom: 1px solid #30363d; }
         button.secondary { font: inherit; font-weight: 600; padding: 10px 18px; border-radius: 8px; border: 1px solid var(--accent); background: transparent; color: var(--accent); cursor: pointer; }
         button.secondary:hover { background: #58a6ff22; }
+        .filters-panel { background: var(--card); border: 1px solid #30363d; border-radius: 10px; padding: 16px; margin-bottom: 20px; }
+        .filters-panel h2 { margin: 0 0 12px; font-size: 0.95rem; color: var(--ink); }
+        .filters-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px 16px; align-items: end; }
+        .filters-grid label { display: flex; flex-direction: column; gap: 4px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+        .filters-grid input[type="text"], .filters-grid input[type="date"], .filters-grid select { font: inherit; font-size: 0.88rem; padding: 8px 10px; border-radius: 6px; border: 1px solid #30363d; background: #0d1117; color: var(--ink); }
+        .filters-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 14px; padding-top: 12px; border-top: 1px solid #30363d; }
+        .filters-actions button.primary { padding: 10px 18px; }
+        .filters-actions a.reset { color: var(--muted); font-size: 0.88rem; }
+        .filters-actions a.reset:hover { color: var(--accent); }
+        .filter-active-hint { font-size: 0.82rem; color: var(--wait); margin: 0 0 10px; }
     </style>
 </head>
 <body>
@@ -68,6 +78,99 @@
         {% endfor %}
     </ul>
     {% endif %}
+
+    <div class="filters-panel">
+        <h2>Filters</h2>
+        {% if filters_active %}
+        <p class="filter-active-hint">Filters are applied. <a href="?__reset=1" class="reset">Reset all</a></p>
+        {% endif %}
+        <form method="get" action="">
+            <div class="filters-grid">
+                <label>Person / search
+                    <input type="text" name="person" value="{{ filter_get.person|default:'' }}" placeholder="Name or keyword in title, notes…" maxlength="200">
+                </label>
+                <label>Work type
+                    <select name="work_type">
+                        {% for val, label in work_type_choices %}
+                        <option value="{{ val }}" {% if filter_get.work_type == val %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label>GTD type
+                    <select name="gtd_bucket">
+                        <option value="">— Any —</option>
+                        {% for val, label in gtd_bucket_choices %}
+                        <option value="{{ val }}" {% if filter_get.gtd_bucket == val %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label>Priority
+                    <select name="priority">
+                        <option value="">— Any —</option>
+                        {% for val, label in task_priority_choices %}
+                        <option value="{{ val }}" {% if filter_get.priority == val %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label>Status
+                    <select name="status">
+                        <option value="">— Any —</option>
+                        {% for val, label in status_choices %}
+                        <option value="{{ val }}" {% if filter_get.status == val %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label>Engagement
+                    <select name="engagement">
+                        <option value="">— Any —</option>
+                        {% for val, label in engagement_choices %}
+                        <option value="{{ val }}" {% if filter_get.engagement == val %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label>Actionable
+                    <select name="is_actionable">
+                        <option value="">— Any —</option>
+                        <option value="yes" {% if filter_get.is_actionable == 'yes' %}selected{% endif %}>Yes</option>
+                        <option value="no" {% if filter_get.is_actionable == 'no' %}selected{% endif %}>No</option>
+                        <option value="unclear" {% if filter_get.is_actionable == 'unclear' %}selected{% endif %}>Not yet (clarify queue)</option>
+                    </select>
+                </label>
+                <label>Project
+                    <select name="is_project">
+                        <option value="">— Any —</option>
+                        <option value="1" {% if filter_get.is_project == '1' %}selected{% endif %}>Project</option>
+                        <option value="0" {% if filter_get.is_project == '0' %}selected{% endif %}>Not a project</option>
+                    </select>
+                </label>
+                <label>Due from
+                    <input type="date" name="due_from" value="{{ filter_get.due_from|default:'' }}">
+                </label>
+                <label>Due to
+                    <input type="date" name="due_to" value="{{ filter_get.due_to|default:'' }}">
+                </label>
+                <label>Created from
+                    <input type="date" name="created_from" value="{{ filter_get.created_from|default:'' }}">
+                </label>
+                <label>Created to
+                    <input type="date" name="created_to" value="{{ filter_get.created_to|default:'' }}">
+                </label>
+            </div>
+            <label class="chk" style="margin-top:12px;display:inline-flex;">
+                <input type="checkbox" name="include_undated" value="1" {% if filter_get.include_undated %}checked{% endif %}>
+                Include items with no due date when filtering by due range
+            </label>
+            <label class="chk" style="margin-left:16px;display:inline-flex;">
+                <input type="checkbox" name="recurring_spawn" value="1" {% if filter_get.recurring_spawn %}checked{% endif %}>
+                Only recurring spawns
+            </label>
+            <div class="filters-actions">
+                <button type="submit" class="primary">Apply filters</button>
+                <a class="reset" href="?__reset=1">Clear filters</a>
+            </div>
+        </form>
+    </div>
+
     <div class="toolbar">
         <form method="post" action="{% url 'braindump:morning_digest_send_now' %}" style="margin:0;">
             {% csrf_token %}

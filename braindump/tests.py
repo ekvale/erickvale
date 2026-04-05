@@ -2,9 +2,11 @@ from datetime import date
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
+from django.http import QueryDict
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
+from braindump.dashboard_filters import apply_dashboard_filters, filter_query_has_params
 from braindump.gtd_partition import partition_active_items
 from braindump.morning_digest import run_morning_digest_send
 from braindump.recurrence_logic import advance_after_spawn, last_weekday_of_month
@@ -17,6 +19,7 @@ from braindump.work_category import (
 from braindump.models import (
     CaptureItem,
     CaptureStatus,
+    GTDBucket,
     NonActionableDisposition,
     TaskPriority,
 )
@@ -130,6 +133,68 @@ class BraindumpOwnerTests(TestCase):
         r = c.get(reverse('braindump:dashboard'))
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'Clarify queue')
+
+    def test_dashboard_filter_by_person(self):
+        c = Client()
+        c.login(username='owner1', password='pw')
+        CaptureItem.objects.create(user=self.owner, body='x', title='Call Alice soon')
+        CaptureItem.objects.create(user=self.owner, body='y', title='Other task')
+        r = c.get(reverse('braindump:dashboard'), {'person': 'Alice'})
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Call Alice')
+        self.assertNotContains(r, 'Other task')
+
+    def test_dashboard_reset_clears_session_filters(self):
+        c = Client()
+        c.login(username='owner1', password='pw')
+        c.get(reverse('braindump:dashboard'), {'person': 'Zoe'})
+        self.assertEqual(c.session.get('braindump_filter_query'), 'person=Zoe')
+        r = c.get(reverse('braindump:dashboard'), {'__reset': '1'})
+        self.assertEqual(r.status_code, 302)
+        self.assertNotIn('person=', r['Location'])
+        self.assertNotIn('braindump_filter_query', c.session)
+
+    def test_post_redirect_preserves_session_filters(self):
+        c = Client()
+        c.login(username='owner1', password='pw')
+        s = c.session
+        s['braindump_filter_query'] = 'person=Pat'
+        s.save()
+        it = CaptureItem.objects.create(user=self.owner, body='b', title='t')
+        r = c.post(reverse('braindump:item_status', args=[it.pk]), {'status': 'done'})
+        self.assertEqual(r.status_code, 302)
+        self.assertIn('person=Pat', r['Location'])
+
+
+class DashboardFiltersUnitTests(TestCase):
+    def setUp(self):
+        self.owner = User.objects.create_user('fu', password='pw')
+
+    def test_filter_work_type_and_gtd_bucket(self):
+        a = CaptureItem.objects.create(
+            user=self.owner,
+            body='a',
+            category_label=CATEGORY_MDH,
+            gtd_bucket=GTDBucket.NEXT_ACTION,
+            is_actionable=True,
+        )
+        CaptureItem.objects.create(
+            user=self.owner,
+            body='b',
+            category_label=CATEGORY_DREAM_BLUE,
+            gtd_bucket=GTDBucket.PROJECT,
+            is_actionable=True,
+            is_project=True,
+        )
+        qs = CaptureItem.objects.filter(user=self.owner)
+        q1 = apply_dashboard_filters(qs, QueryDict(f'work_type={CATEGORY_MDH}'))
+        self.assertEqual(list(q1), [a])
+        q2 = apply_dashboard_filters(qs, QueryDict(f'gtd_bucket={GTDBucket.PROJECT.value}'))
+        self.assertEqual(q2.count(), 1)
+
+    def test_filter_query_has_params(self):
+        self.assertTrue(filter_query_has_params(QueryDict('person=x')))
+        self.assertFalse(filter_query_has_params(QueryDict('__reset=1')))
 
 
 @override_settings(

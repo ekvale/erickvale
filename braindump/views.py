@@ -3,7 +3,7 @@ from datetime import date, datetime as dt
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, QueryDict
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils import timezone
@@ -11,15 +11,38 @@ from django.views.decorators.http import require_GET, require_http_methods
 
 from .ai_categorize import categorize_capture_item
 from .authz import braindump_configured, is_braindump_owner
+from .dashboard_filters import (
+    apply_dashboard_filters,
+    filter_query_has_params,
+    work_type_filter_choices,
+)
 from .gtd_partition import partition_active_items
-from .models import CaptureItem, CaptureStatus, RecurrencePattern, RecurringCaptureRule, TaskPriority
+from .models import (
+    CaptureItem,
+    CaptureStatus,
+    EngagementChoice,
+    GTDBucket,
+    RecurrencePattern,
+    RecurringCaptureRule,
+    TaskPriority,
+)
 from .morning_digest import run_morning_digest_send
 from .recurrence_logic import first_run_on_or_after
 
 # Avoid huge pastes firing hundreds of LLM calls in one request.
 _MAX_CAPTURE_PARTS = 100
 
+_BRAIN_DUMP_FILTER_SESSION = 'braindump_filter_query'
+
 _WEEKDAY_CHOICES = list(enumerate(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']))
+
+
+def _dashboard_redirect(request) -> HttpResponseRedirect:
+    q = request.session.get(_BRAIN_DUMP_FILTER_SESSION, '')
+    base = reverse('braindump:dashboard')
+    if q:
+        return HttpResponseRedirect(f'{base}?{q}')
+    return HttpResponseRedirect(base)
 
 
 def _split_capture_body(raw: str) -> list[str]:
@@ -69,9 +92,22 @@ def _sort_by_priority_then_created(items: list[CaptureItem]) -> list[CaptureItem
 @require_GET
 def dashboard(request):
     _require_owner(request)
-    active = list(
-        CaptureItem.objects.filter(user=request.user, archived=False).order_by('-created_at')
-    )
+    if request.GET.get('__reset'):
+        request.session.pop(_BRAIN_DUMP_FILTER_SESSION, None)
+        return HttpResponseRedirect(reverse('braindump:dashboard'))
+
+    if filter_query_has_params(request.GET):
+        request.session[_BRAIN_DUMP_FILTER_SESSION] = request.GET.urlencode()
+        filter_get = request.GET
+    else:
+        raw = request.session.get(_BRAIN_DUMP_FILTER_SESSION, '')
+        filter_get = QueryDict(raw) if raw else QueryDict()
+
+    active_qs = CaptureItem.objects.filter(
+        user=request.user, archived=False
+    ).order_by('-created_at')
+    active_qs = apply_dashboard_filters(active_qs, filter_get)
+    active = list(active_qs)
     parts = partition_active_items(active)
     gtd = {
         'unclear': _sort_by_priority_then_created(parts['unclear']),
@@ -83,11 +119,12 @@ def dashboard(request):
         'projects': _sort_by_priority_then_created(parts['projects']),
         'next_actions': _sort_by_priority_then_created(parts['next_actions']),
     }
-    done_recent = list(
-        CaptureItem.objects.filter(user=request.user, archived=True).order_by(
-            '-completed_at'
-        )[:40]
+    done_qs = CaptureItem.objects.filter(user=request.user, archived=True).order_by(
+        '-completed_at'
     )
+    done_qs = apply_dashboard_filters(done_qs, filter_get)
+    done_limit = 80 if filter_query_has_params(filter_get) else 40
+    done_recent = list(done_qs[:done_limit])
     recurring_rules = list(
         RecurringCaptureRule.objects.filter(user=request.user).order_by(
             'next_run_date', 'pk'
@@ -101,10 +138,15 @@ def dashboard(request):
             'done_recent': done_recent,
             'status_choices': CaptureStatus.choices,
             'task_priority_choices': TaskPriority.choices,
+            'gtd_bucket_choices': GTDBucket.choices,
+            'engagement_choices': EngagementChoice.choices,
             'max_capture_parts': _MAX_CAPTURE_PARTS,
             'recurring_rules': recurring_rules,
             'recurrence_pattern_choices': RecurrencePattern.choices,
             'weekday_choices': _WEEKDAY_CHOICES,
+            'filter_get': filter_get,
+            'work_type_choices': work_type_filter_choices(request.user),
+            'filters_active': filter_query_has_params(filter_get),
         },
     )
 
@@ -116,13 +158,13 @@ def recurring_create(request):
     body = (request.POST.get('recurring_body') or '').strip()
     if not body:
         messages.error(request, 'Add text for the recurring capture.')
-        return HttpResponseRedirect(reverse('braindump:dashboard'))
+        return _dashboard_redirect(request)
     title = (request.POST.get('recurring_title') or '').strip()[:200]
     pattern = (request.POST.get('recurring_pattern') or '').strip()
     valid_p = {c.value for c in RecurrencePattern}
     if pattern not in valid_p:
         messages.error(request, 'Pick a valid recurrence pattern.')
-        return HttpResponseRedirect(reverse('braindump:dashboard'))
+        return _dashboard_redirect(request)
     raw_anchor = (request.POST.get('recurring_anchor') or '').strip()
     try:
         anchor = dt.strptime(raw_anchor, '%Y-%m-%d').date()
@@ -172,7 +214,7 @@ def recurring_create(request):
         )
     except ValueError as e:
         messages.error(request, str(e))
-        return HttpResponseRedirect(reverse('braindump:dashboard'))
+        return _dashboard_redirect(request)
 
     rule = RecurringCaptureRule(
         user=request.user,
@@ -194,7 +236,7 @@ def recurring_create(request):
         messages.success(request, f'Recurring rule saved. Next run: {next_d}.')
     except ValidationError as e:
         messages.error(request, ' '.join(e.messages) or 'Invalid recurring rule.')
-    return HttpResponseRedirect(reverse('braindump:dashboard'))
+    return _dashboard_redirect(request)
 
 
 @login_required
@@ -208,7 +250,7 @@ def recurring_toggle(request, pk: int):
         request,
         'Recurring rule paused.' if not rule.is_active else 'Recurring rule active again.',
     )
-    return HttpResponseRedirect(reverse('braindump:dashboard'))
+    return _dashboard_redirect(request)
 
 
 @login_required
@@ -218,7 +260,7 @@ def recurring_delete(request, pk: int):
     rule = get_object_or_404(RecurringCaptureRule, pk=pk, user=request.user)
     rule.delete()
     messages.success(request, 'Recurring rule removed.')
-    return HttpResponseRedirect(reverse('braindump:dashboard'))
+    return _dashboard_redirect(request)
 
 
 @login_required
@@ -230,7 +272,7 @@ def morning_digest_send_now(request):
         messages.success(request, result['message'])
     else:
         messages.error(request, result['message'])
-    return HttpResponseRedirect(reverse('braindump:dashboard'))
+    return _dashboard_redirect(request)
 
 
 @login_required
@@ -240,11 +282,11 @@ def capture_create(request):
     body = (request.POST.get('body') or '').strip()
     segments = _split_capture_body(body)
     if not segments:
-        return HttpResponseRedirect(reverse('braindump:dashboard'))
+        return _dashboard_redirect(request)
     for chunk in segments:
         item = CaptureItem.objects.create(user=request.user, body=chunk)
         categorize_capture_item(item)
-    return HttpResponseRedirect(reverse('braindump:dashboard'))
+    return _dashboard_redirect(request)
 
 
 @login_required
@@ -259,7 +301,7 @@ def item_status(request, pk: int):
         item.mark_waiting(request.POST.get('waiting_for', ''))
     elif st == CaptureStatus.OPEN:
         item.mark_open()
-    return HttpResponseRedirect(reverse('braindump:dashboard'))
+    return _dashboard_redirect(request)
 
 
 @login_required
@@ -286,7 +328,7 @@ def item_calendar_date(request, pk: int):
     item.save(
         update_fields=['calendar_date', 'calendar_is_hard_date', 'updated_at']
     )
-    return HttpResponseRedirect(reverse('braindump:dashboard'))
+    return _dashboard_redirect(request)
 
 
 @login_required
@@ -301,7 +343,7 @@ def item_update_meta(request, pk: int):
     if pr in valid:
         item.priority = pr
     item.save(update_fields=['category_label', 'priority', 'updated_at'])
-    return HttpResponseRedirect(reverse('braindump:dashboard'))
+    return _dashboard_redirect(request)
 
 
 @login_required
@@ -311,7 +353,7 @@ def item_archive(request, pk: int):
     item = get_object_or_404(CaptureItem, pk=pk, user=request.user)
     item.archived = True
     item.save(update_fields=['archived', 'updated_at'])
-    return HttpResponseRedirect(reverse('braindump:dashboard'))
+    return _dashboard_redirect(request)
 
 
 @login_required
@@ -320,4 +362,4 @@ def recategorize(request, pk: int):
     _require_owner(request)
     item = get_object_or_404(CaptureItem, pk=pk, user=request.user)
     categorize_capture_item(item)
-    return HttpResponseRedirect(reverse('braindump:dashboard'))
+    return _dashboard_redirect(request)
