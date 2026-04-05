@@ -22,6 +22,7 @@ from .models import (
     NonActionableDisposition,
     TaskPriority,
 )
+from .work_category import work_category_from_body
 
 logger = logging.getLogger(__name__)
 
@@ -30,10 +31,10 @@ _SYSTEM = (
     'Reply with ONE JSON object only, no markdown fences.\n'
     'Keys:\n'
     '- title (string <=120 chars)\n'
-    '- category (string): one primary life/work area — pick the best fit, stay consistent across similar tasks. '
-    'Examples: Work, Home, Health, Family, Finance, Errands, Admin, Learning, Creative, Personal, '
-    'Dream Blue (when clearly about that business), Shine Your Light (when clearly about that). '
-    'Use a short proper-noun label when the task is obviously about a named project or person.\n'
+    '- category (string, optional): the app assigns work stream automatically from the capture text — '
+    'you may omit this key. Rules: default and MDH team (Abby, Hannah, Analise, Tim, Angela, Mike) → "MDH"; '
+    'Wendy or property/real-estate context → "Dream Blue"; Sean, Sioux Chef, or NOMOAR → "Sioux Chef". '
+    'Sioux Chef wins over Dream Blue if both apply.\n'
     '- priority: urgent | high | normal | low — urgent = today/ASAP/hard deadline or critical; '
     'high = this week or high impact; normal = default; low = backlog, someday-soon, or no time pressure.\n'
     '- is_actionable (boolean): true if something must be done; false for pure reference, '
@@ -241,12 +242,6 @@ def _disposition_from_bucket(bkey: str) -> str:
     return NonActionableDisposition.SOMEDAY
 
 
-def _apply_category_field(item: CaptureItem, parsed: dict) -> None:
-    if 'category' not in parsed:
-        return
-    item.category_label = (parsed.get('category') or '').strip()[:120]
-
-
 def _apply_priority_field(item: CaptureItem, parsed: dict, actionable: bool) -> None:
     if 'priority' in parsed:
         raw = (parsed.get('priority') or '').strip().lower()
@@ -282,7 +277,6 @@ def _apply_parsed_to_item(item: CaptureItem, parsed: dict, today: date) -> None:
 
     title = (parsed.get('title') or '').strip() or (item.body or '')[:120]
     item.title = title[:200]
-    _apply_category_field(item, parsed)
 
     bkey = (parsed.get('gtd_bucket') or 'next_action').strip().lower()
     item.gtd_bucket = _BUCKET_MAP.get(bkey, GTDBucket.NEXT_ACTION)
@@ -367,6 +361,8 @@ def _apply_parsed_to_item(item: CaptureItem, parsed: dict, today: date) -> None:
             item.calendar_is_hard_date = True
 
         _apply_priority_field(item, parsed, actionable=True)
+
+    item.category_label = work_category_from_body(item.body)[:120]
 
     item.save(
         update_fields=[

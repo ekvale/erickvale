@@ -7,6 +7,12 @@ from django.urls import reverse
 
 from braindump.gtd_partition import partition_active_items
 from braindump.morning_digest import run_morning_digest_send
+from braindump.work_category import (
+    CATEGORY_DREAM_BLUE,
+    CATEGORY_MDH,
+    CATEGORY_SIOUX_CHEF,
+    work_category_from_body,
+)
 from braindump.models import (
     CaptureItem,
     CaptureStatus,
@@ -137,6 +143,33 @@ class MorningDigestTests(TestCase):
         r = run_morning_digest_send(dry_run=True)
         self.assertTrue(r['ok'])
         self.assertIn('Dry run', r['message'])
+
+
+class WorkCategoryRulesTests(TestCase):
+    def test_default_mdh(self):
+        self.assertEqual(work_category_from_body('Buy toner'), CATEGORY_MDH)
+
+    def test_mdh_names(self):
+        self.assertEqual(work_category_from_body('Email Abby about report'), CATEGORY_MDH)
+        self.assertEqual(work_category_from_body('Call Tim'), CATEGORY_MDH)
+
+    def test_dream_blue_wendy(self):
+        self.assertEqual(work_category_from_body('Talk to Wendy about lease'), CATEGORY_DREAM_BLUE)
+
+    def test_dream_blue_property(self):
+        self.assertEqual(work_category_from_body('Fix vacancy in unit 3'), CATEGORY_DREAM_BLUE)
+
+    def test_sioux_chef_priority_over_dream_blue_terms(self):
+        self.assertEqual(
+            work_category_from_body('NOMOAR launch and property page'),
+            CATEGORY_SIOUX_CHEF,
+        )
+
+    def test_sioux_chef_sean(self):
+        self.assertEqual(work_category_from_body('Sean feedback on menu'), CATEGORY_SIOUX_CHEF)
+
+    def test_sioux_chef_phrase(self):
+        self.assertEqual(work_category_from_body('Sioux Chef catering order'), CATEGORY_SIOUX_CHEF)
 
 
 class GtdPartitionTests(TestCase):

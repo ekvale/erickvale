@@ -59,7 +59,7 @@ class CaptureItem(models.Model):
     category_label = models.CharField(
         max_length=120,
         blank=True,
-        help_text='Life/work area (AI + editable), e.g. Work, Health, Dream Blue',
+        help_text='Work stream: MDH, Dream Blue, or Sioux Chef (auto from text on AI; editable)',
     )
     priority = models.CharField(
         max_length=16,
