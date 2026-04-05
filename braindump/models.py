@@ -37,6 +37,15 @@ class EngagementChoice(models.TextChoices):
     DELEGATE = 'delegate', 'Delegate / waiting'
 
 
+class TaskPriority(models.TextChoices):
+    """AI + manual; lists sort urgent → high → normal → low."""
+
+    URGENT = 'urgent', 'Urgent'
+    HIGH = 'high', 'High'
+    NORMAL = 'normal', 'Normal'
+    LOW = 'low', 'Low'
+
+
 class CaptureItem(models.Model):
     """One capture; AI clarifies (actionable?, next action, project?, calendar vs lists)."""
 
@@ -50,7 +59,14 @@ class CaptureItem(models.Model):
     category_label = models.CharField(
         max_length=120,
         blank=True,
-        help_text='Free-form area, e.g. Home, Work',
+        help_text='Life/work area (AI + editable), e.g. Work, Health, Dream Blue',
+    )
+    priority = models.CharField(
+        max_length=16,
+        choices=TaskPriority.choices,
+        default=TaskPriority.NORMAL,
+        db_index=True,
+        help_text='Relative importance / time pressure (AI + editable)',
     )
     gtd_bucket = models.CharField(
         max_length=32,

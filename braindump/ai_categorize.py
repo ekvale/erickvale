@@ -20,6 +20,7 @@ from .models import (
     EngagementChoice,
     GTDBucket,
     NonActionableDisposition,
+    TaskPriority,
 )
 
 logger = logging.getLogger(__name__)
@@ -29,7 +30,12 @@ _SYSTEM = (
     'Reply with ONE JSON object only, no markdown fences.\n'
     'Keys:\n'
     '- title (string <=120 chars)\n'
-    '- category (short area like Work or Home)\n'
+    '- category (string): one primary life/work area — pick the best fit, stay consistent across similar tasks. '
+    'Examples: Work, Home, Health, Family, Finance, Errands, Admin, Learning, Creative, Personal, '
+    'Dream Blue (when clearly about that business), Shine Your Light (when clearly about that). '
+    'Use a short proper-noun label when the task is obviously about a named project or person.\n'
+    '- priority: urgent | high | normal | low — urgent = today/ASAP/hard deadline or critical; '
+    'high = this week or high impact; normal = default; low = backlog, someday-soon, or no time pressure.\n'
     '- is_actionable (boolean): true if something must be done; false for pure reference, '
     'ideas for someday, noise to discard, or FYI with no action.\n'
     '- non_actionable_disposition (only if is_actionable is false): one of trash, someday, reference.\n'
@@ -74,6 +80,16 @@ _DISPOSITION_MAP = {
     'trash': NonActionableDisposition.TRASH,
     'someday': NonActionableDisposition.SOMEDAY,
     'reference': NonActionableDisposition.REFERENCE,
+}
+
+_PRIORITY_MAP = {
+    'urgent': TaskPriority.URGENT,
+    'asap': TaskPriority.URGENT,
+    'high': TaskPriority.HIGH,
+    'normal': TaskPriority.NORMAL,
+    'medium': TaskPriority.NORMAL,
+    'med': TaskPriority.NORMAL,
+    'low': TaskPriority.LOW,
 }
 
 
@@ -225,6 +241,25 @@ def _disposition_from_bucket(bkey: str) -> str:
     return NonActionableDisposition.SOMEDAY
 
 
+def _apply_category_field(item: CaptureItem, parsed: dict) -> None:
+    if 'category' not in parsed:
+        return
+    item.category_label = (parsed.get('category') or '').strip()[:120]
+
+
+def _apply_priority_field(item: CaptureItem, parsed: dict, actionable: bool) -> None:
+    if 'priority' in parsed:
+        raw = (parsed.get('priority') or '').strip().lower()
+        if not raw:
+            item.priority = TaskPriority.NORMAL
+        else:
+            item.priority = _PRIORITY_MAP.get(
+                raw, TaskPriority.NORMAL if actionable else TaskPriority.LOW
+            )
+    elif not actionable:
+        item.priority = TaskPriority.LOW
+
+
 def _parsed_ok(parsed: dict) -> bool:
     if not parsed:
         return False
@@ -233,6 +268,10 @@ def _parsed_ok(parsed: dict) -> bool:
     if 'is_actionable' in parsed:
         return True
     if parsed.get('next_action'):
+        return True
+    if parsed.get('priority'):
+        return True
+    if parsed.get('category'):
         return True
     return False
 
@@ -243,7 +282,7 @@ def _apply_parsed_to_item(item: CaptureItem, parsed: dict, today: date) -> None:
 
     title = (parsed.get('title') or '').strip() or (item.body or '')[:120]
     item.title = title[:200]
-    item.category_label = (parsed.get('category') or '')[:120]
+    _apply_category_field(item, parsed)
 
     bkey = (parsed.get('gtd_bucket') or 'next_action').strip().lower()
     item.gtd_bucket = _BUCKET_MAP.get(bkey, GTDBucket.NEXT_ACTION)
@@ -268,6 +307,7 @@ def _apply_parsed_to_item(item: CaptureItem, parsed: dict, today: date) -> None:
         item.waiting_for = ''
         item.calendar_date = None
         item.calendar_is_hard_date = False
+        _apply_priority_field(item, parsed, actionable=False)
     else:
         item.non_actionable_disposition = NonActionableDisposition.NONE
         item.is_project = bool(_coerce_bool(parsed.get('is_project'))) or (
@@ -326,10 +366,13 @@ def _apply_parsed_to_item(item: CaptureItem, parsed: dict, today: date) -> None:
         if item.gtd_bucket == GTDBucket.CALENDAR and item.calendar_date:
             item.calendar_is_hard_date = True
 
+        _apply_priority_field(item, parsed, actionable=True)
+
     item.save(
         update_fields=[
             'title',
             'category_label',
+            'priority',
             'gtd_bucket',
             'status',
             'waiting_for',

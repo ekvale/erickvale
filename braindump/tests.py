@@ -5,7 +5,12 @@ from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from braindump.gtd_partition import partition_active_items
-from braindump.models import CaptureItem, CaptureStatus, NonActionableDisposition
+from braindump.models import (
+    CaptureItem,
+    CaptureStatus,
+    NonActionableDisposition,
+    TaskPriority,
+)
 
 
 @override_settings(
@@ -70,6 +75,24 @@ class BraindumpOwnerTests(TestCase):
         c.post(reverse('braindump:item_archive', args=[it.pk]), {})
         it.refresh_from_db()
         self.assertTrue(it.archived)
+
+    def test_item_update_meta(self):
+        c = Client()
+        c.login(username='owner1', password='pw')
+        it = CaptureItem.objects.create(
+            user=self.owner,
+            body='x',
+            title='t',
+            category_label='Old',
+            priority=TaskPriority.NORMAL,
+        )
+        c.post(
+            reverse('braindump:item_update_meta', args=[it.pk]),
+            {'category_label': 'Health', 'priority': TaskPriority.URGENT},
+        )
+        it.refresh_from_db()
+        self.assertEqual(it.category_label, 'Health')
+        self.assertEqual(it.priority, TaskPriority.URGENT)
 
     def test_dashboard_gtd_sections(self):
         c = Client()

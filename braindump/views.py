@@ -10,7 +10,7 @@ from django.views.decorators.http import require_GET, require_http_methods
 from .ai_categorize import categorize_capture_item
 from .authz import braindump_configured, is_braindump_owner
 from .gtd_partition import partition_active_items
-from .models import CaptureItem, CaptureStatus
+from .models import CaptureItem, CaptureStatus, TaskPriority
 
 # Avoid huge pastes firing hundreds of LLM calls in one request.
 _MAX_CAPTURE_PARTS = 100
@@ -29,15 +29,34 @@ def _require_owner(request):
         raise PermissionDenied()
 
 
+_PRIORITY_ORDER = {
+    TaskPriority.URGENT: 0,
+    TaskPriority.HIGH: 1,
+    TaskPriority.NORMAL: 2,
+    TaskPriority.LOW: 3,
+}
+
+
+def _prio_rank(x: CaptureItem) -> int:
+    return _PRIORITY_ORDER.get(x.priority, 2)
+
+
 def _sort_calendar(items: list[CaptureItem]) -> list[CaptureItem]:
     return sorted(
         items,
-        key=lambda x: (x.calendar_date or date.max, -x.created_at.timestamp()),
+        key=lambda x: (
+            x.calendar_date or date.max,
+            _prio_rank(x),
+            -x.created_at.timestamp(),
+        ),
     )
 
 
-def _sort_created_desc(items: list[CaptureItem]) -> list[CaptureItem]:
-    return sorted(items, key=lambda x: x.created_at, reverse=True)
+def _sort_by_priority_then_created(items: list[CaptureItem]) -> list[CaptureItem]:
+    return sorted(
+        items,
+        key=lambda x: (_prio_rank(x), -x.created_at.timestamp()),
+    )
 
 
 @login_required
@@ -49,14 +68,14 @@ def dashboard(request):
     )
     parts = partition_active_items(active)
     gtd = {
-        'unclear': _sort_created_desc(parts['unclear']),
-        'trash_list': _sort_created_desc(parts['trash_list']),
-        'reference': _sort_created_desc(parts['reference']),
-        'someday': _sort_created_desc(parts['someday']),
+        'unclear': _sort_by_priority_then_created(parts['unclear']),
+        'trash_list': _sort_by_priority_then_created(parts['trash_list']),
+        'reference': _sort_by_priority_then_created(parts['reference']),
+        'someday': _sort_by_priority_then_created(parts['someday']),
         'calendar_hard': _sort_calendar(parts['calendar_hard']),
-        'waiting': _sort_created_desc(parts['waiting']),
-        'projects': _sort_created_desc(parts['projects']),
-        'next_actions': _sort_created_desc(parts['next_actions']),
+        'waiting': _sort_by_priority_then_created(parts['waiting']),
+        'projects': _sort_by_priority_then_created(parts['projects']),
+        'next_actions': _sort_by_priority_then_created(parts['next_actions']),
     }
     done_recent = list(
         CaptureItem.objects.filter(user=request.user, archived=True).order_by(
@@ -70,6 +89,7 @@ def dashboard(request):
             'gtd': gtd,
             'done_recent': done_recent,
             'status_choices': CaptureStatus.choices,
+            'task_priority_choices': TaskPriority.choices,
             'max_capture_parts': _MAX_CAPTURE_PARTS,
         },
     )
@@ -128,6 +148,21 @@ def item_calendar_date(request, pk: int):
     item.save(
         update_fields=['calendar_date', 'calendar_is_hard_date', 'updated_at']
     )
+    return HttpResponseRedirect(reverse('braindump:dashboard'))
+
+
+@login_required
+@require_http_methods(['POST'])
+def item_update_meta(request, pk: int):
+    _require_owner(request)
+    item = get_object_or_404(CaptureItem, pk=pk, user=request.user)
+    cat = (request.POST.get('category_label') or '').strip()[:120]
+    item.category_label = cat
+    pr = (request.POST.get('priority') or '').strip()
+    valid = {c.value for c in TaskPriority}
+    if pr in valid:
+        item.priority = pr
+    item.save(update_fields=['category_label', 'priority', 'updated_at'])
     return HttpResponseRedirect(reverse('braindump:dashboard'))
 
 

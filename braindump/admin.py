@@ -8,6 +8,8 @@ class CaptureItemAdmin(admin.ModelAdmin):
     list_display = (
         'title',
         'user',
+        'priority',
+        'category_label',
         'is_actionable',
         'status',
         'gtd_bucket',
@@ -19,6 +21,7 @@ class CaptureItemAdmin(admin.ModelAdmin):
     list_filter = (
         'status',
         'gtd_bucket',
+        'priority',
         'archived',
         'is_actionable',
         'calendar_is_hard_date',
@@ -29,7 +32,7 @@ class CaptureItemAdmin(admin.ModelAdmin):
     readonly_fields = ('created_at', 'updated_at', 'ai_payload', 'ai_error')
     date_hierarchy = 'created_at'
     fieldsets = (
-        (None, {'fields': ('user', 'body', 'title', 'category_label')}),
+        (None, {'fields': ('user', 'body', 'title', 'category_label', 'priority')}),
         (
             'GTD clarify',
             {

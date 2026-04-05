@@ -3,7 +3,8 @@
     <div class="meta">
         {% if it.is_actionable is None %}<span class="tag-unclear">Needs clarify</span> · {% endif %}
         {% if it.is_actionable == False %}{{ it.get_non_actionable_disposition_display }} · {% endif %}
-        {{ it.get_gtd_bucket_display }}{% if it.category_label %} · {{ it.category_label }}{% endif %}
+        {{ it.get_gtd_bucket_display }}{% if it.category_label %} · <span class="tag-cat">{{ it.category_label }}</span>{% endif %}
+        · <span class="tag-pri pri-{{ it.priority }}">{{ it.get_priority_display }}</span>
         {% if it.is_actionable != False %}
         · Calendar: {% if it.calendar_date %}{{ it.calendar_date }}{% if it.calendar_is_hard_date %} (on landscape){% else %} (soft){% endif %}{% else %}—{% endif %}
         · <span class="status-{{ it.status }}">{{ it.get_status_display }}</span>
@@ -49,6 +50,19 @@
         </form>
         {% endif %}
     </div>
+    {% if not show_trash_archive %}
+    <form method="post" action="{% url 'braindump:item_update_meta' it.pk %}" class="meta-edit" style="margin-top:10px;padding-top:10px;border-top:1px solid #30363d;">
+        {% csrf_token %}
+        <span style="font-size:0.75rem;color:var(--muted);margin-right:8px;">Adjust if AI missed:</span>
+        <input type="text" name="category_label" value="{{ it.category_label }}" placeholder="Category" maxlength="120" style="width:min(100%,200px);padding:6px 10px;border-radius:6px;border:1px solid #30363d;background:#0d1117;color:var(--ink);font-size:0.85rem;">
+        <select name="priority" style="padding:6px 10px;border-radius:6px;border:1px solid #30363d;background:#0d1117;color:var(--ink);font-size:0.85rem;">
+            {% for val, label in task_priority_choices %}
+            <option value="{{ val }}" {% if it.priority == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="sm">Save category &amp; priority</button>
+    </form>
+    {% endif %}
     {% if it.status == 'waiting' and not show_trash_archive %}
     <form method="post" action="{% url 'braindump:item_status' it.pk %}" style="margin-top:8px;">
         {% csrf_token %}
