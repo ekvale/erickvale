@@ -12,6 +12,15 @@ from .authz import braindump_configured, is_braindump_owner
 from .gtd_partition import partition_active_items
 from .models import CaptureItem, CaptureStatus
 
+# Avoid huge pastes firing hundreds of LLM calls in one request.
+_MAX_CAPTURE_PARTS = 100
+
+
+def _split_capture_body(raw: str) -> list[str]:
+    """One item per semicolon-separated segment (GTD batch capture)."""
+    parts = [p.strip() for p in raw.split(';')]
+    return [p for p in parts if p][: _MAX_CAPTURE_PARTS]
+
 
 def _require_owner(request):
     if not braindump_configured():
@@ -61,6 +70,7 @@ def dashboard(request):
             'gtd': gtd,
             'done_recent': done_recent,
             'status_choices': CaptureStatus.choices,
+            'max_capture_parts': _MAX_CAPTURE_PARTS,
         },
     )
 
@@ -70,10 +80,12 @@ def dashboard(request):
 def capture_create(request):
     _require_owner(request)
     body = (request.POST.get('body') or '').strip()
-    if not body:
+    segments = _split_capture_body(body)
+    if not segments:
         return HttpResponseRedirect(reverse('braindump:dashboard'))
-    item = CaptureItem.objects.create(user=request.user, body=body)
-    categorize_capture_item(item)
+    for chunk in segments:
+        item = CaptureItem.objects.create(user=request.user, body=chunk)
+        categorize_capture_item(item)
     return HttpResponseRedirect(reverse('braindump:dashboard'))
 
 

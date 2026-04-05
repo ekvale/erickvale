@@ -38,6 +38,21 @@ class BraindumpOwnerTests(TestCase):
         self.assertEqual(r2.status_code, 200)
         self.assertContains(r2, 'Buy milk')
 
+    def test_capture_splits_on_semicolon(self):
+        c = Client()
+        c.login(username='owner1', password='pw')
+        r = c.post(
+            reverse('braindump:capture_create'),
+            {'body': 'Buy tickets; do laundry;  ; empty fridge'},
+        )
+        self.assertEqual(r.status_code, 302)
+        qs = CaptureItem.objects.filter(user=self.owner).order_by('pk')
+        self.assertEqual(qs.count(), 3)
+        self.assertEqual(
+            list(qs.values_list('body', flat=True)),
+            ['Buy tickets', 'do laundry', 'empty fridge'],
+        )
+
     def test_mark_done_archives(self):
         c = Client()
         c.login(username='owner1', password='pw')

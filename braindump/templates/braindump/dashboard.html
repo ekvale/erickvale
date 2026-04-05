@@ -52,7 +52,8 @@
     <form method="post" action="{% url 'braindump:capture_create' %}">
         {% csrf_token %}
         <label class="dump" for="id_body">Capture (GTD step 1)</label>
-        <textarea id="id_body" name="body" placeholder="Everything out of your head — tasks, ideas, maybes. AI will help clarify (step 2)." autofocus></textarea>
+        <textarea id="id_body" name="body" placeholder="Tasks and ideas — or several items separated by semicolons. AI clarifies each one." autofocus></textarea>
+        <p class="section-note" style="margin-top:8px;">Separate multiple todos with <strong>semicolons</strong> (;) — each becomes its own item (max {{ max_capture_parts }} per save).</p>
         <div class="actions">
             <button type="submit" class="primary">Save &amp; clarify</button>
         </div>
