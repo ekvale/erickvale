@@ -17,6 +17,7 @@ from .calendar_build import build_month_calendar_context
 from .email_common import get_braindump_owner, get_braindump_recipients
 from .gtd_partition import partition_active_items
 from .models import CaptureItem, TaskPriority
+from .office_mdh_schedule import is_mdh_office_day, make_office_hold_entry
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +54,10 @@ def build_morning_digest_context(owner, today: date | None = None) -> dict:
     cal_hard = parts['calendar_hard']
     cal_today = [i for i in cal_hard if i.calendar_date == today]
     cal_tomorrow = [i for i in cal_hard if i.calendar_date == tomorrow]
+    if is_mdh_office_day(today):
+        cal_today = [make_office_hold_entry(today)] + cal_today
+    if is_mdh_office_day(tomorrow):
+        cal_tomorrow = [make_office_hold_entry(tomorrow)] + cal_tomorrow
 
     soft_today = [
         i

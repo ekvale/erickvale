@@ -17,6 +17,10 @@ from .dashboard_filters import (
     work_type_filter_choices,
 )
 from .gtd_partition import partition_active_items
+from .office_mdh_schedule import (
+    calendar_date_range_for_merges,
+    merge_office_holds_with_capture_calendar,
+)
 from .models import (
     CaptureItem,
     CaptureStatus,
@@ -88,6 +92,11 @@ def _sort_by_priority_then_created(items: list[CaptureItem]) -> list[CaptureItem
     )
 
 
+def _calendar_hard_with_mdh_holds(captures: list, today: date) -> list:
+    d0, d1 = calendar_date_range_for_merges(captures, today)
+    return merge_office_holds_with_capture_calendar(captures, d0, d1)
+
+
 @login_required
 @require_GET
 def dashboard(request):
@@ -109,12 +118,15 @@ def dashboard(request):
     active_qs = apply_dashboard_filters(active_qs, filter_get)
     active = list(active_qs)
     parts = partition_active_items(active)
+    today = timezone.localdate()
     gtd = {
         'unclear': _sort_by_priority_then_created(parts['unclear']),
         'trash_list': _sort_by_priority_then_created(parts['trash_list']),
         'reference': _sort_by_priority_then_created(parts['reference']),
         'someday': _sort_by_priority_then_created(parts['someday']),
-        'calendar_hard': _sort_calendar(parts['calendar_hard']),
+        'calendar_hard': _calendar_hard_with_mdh_holds(
+            parts['calendar_hard'], today
+        ),
         'waiting': _sort_by_priority_then_created(parts['waiting']),
         'projects': _sort_by_priority_then_created(parts['projects']),
         'next_actions': _sort_by_priority_then_created(parts['next_actions']),

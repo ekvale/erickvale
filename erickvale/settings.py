@@ -77,6 +77,18 @@ BRAINDUMP_CALENDAR_EMAIL_RECIPIENTS = config(
 ).strip()
 # Optional site origin for links in morning digest (https://your.domain). Falls back to DREAM_BLUE_DIGEST_BASE_URL.
 BRAINDUMP_DIGEST_BASE_URL = config('BRAINDUMP_DIGEST_BASE_URL', default='').strip()
+# Recurring MDH "in office" blocks (not tasks): Tue–Wed–Thu / Tue–Wed alternating weeks, 8–5 local, skip US federal holidays.
+BRAINDUMP_MDH_OFFICE_ENABLED = config(
+    'BRAINDUMP_MDH_OFFICE_ENABLED',
+    default='true',
+).strip().lower() in ('1', 'true', 'yes', 'on')
+# ISO date (YYYY-MM-DD) of a Monday that begins a *long* week (Tue+Wed+Thu in office). Default: week of Jan 5, 2026.
+BRAINDUMP_MDH_OFFICE_LONG_WEEK_ANCHOR = config(
+    'BRAINDUMP_MDH_OFFICE_LONG_WEEK_ANCHOR',
+    default='2026-01-05',
+).strip()
+BRAINDUMP_MDH_OFFICE_START = config('BRAINDUMP_MDH_OFFICE_START', default='08:00').strip()
+BRAINDUMP_MDH_OFFICE_END = config('BRAINDUMP_MDH_OFFICE_END', default='17:00').strip()
 
 # --- Dream Blue (internal BI / digests) ---
 # Comma-separated recipient emails; no defaults — must be set in env for sends.

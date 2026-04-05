@@ -15,7 +15,9 @@
         {% endif %}
     </div>
     {% if it.body %}<div class="body">{{ it.body }}</div>{% endif %}
+    {% if it.ai_payload.scheduling_note %}<div class="meta" style="color:#d29922;">{{ it.ai_payload.scheduling_note }}</div>{% endif %}
     {% if it.ai_error %}<div class="meta" style="color:#f85149;">{{ it.ai_error }}</div>{% endif %}
+    {% if it.pk %}
     <div class="row">
         {% if show_trash_archive %}
         <form class="inline" method="post" action="{% url 'braindump:item_archive' it.pk %}">
@@ -50,7 +52,7 @@
         </form>
         {% endif %}
     </div>
-    {% if not show_trash_archive %}
+    {% if not show_trash_archive and it.pk %}
     <form method="post" action="{% url 'braindump:item_update_meta' it.pk %}" class="meta-edit" style="margin-top:10px;padding-top:10px;border-top:1px solid #30363d;">
         {% csrf_token %}
         <span style="font-size:0.75rem;color:var(--muted);margin-right:8px;">Adjust if AI missed:</span>
@@ -63,12 +65,15 @@
         <button type="submit" class="sm">Save category &amp; priority</button>
     </form>
     {% endif %}
-    {% if it.status == 'waiting' and not show_trash_archive %}
+    {% if it.status == 'waiting' and not show_trash_archive and it.pk %}
     <form method="post" action="{% url 'braindump:item_status' it.pk %}" style="margin-top:8px;">
         {% csrf_token %}
         <input type="hidden" name="status" value="waiting">
         <input type="text" name="waiting_for" value="{{ it.waiting_for }}" placeholder="Waiting on…" style="width:min(100%,360px);padding:6px 10px;border-radius:6px;border:1px solid #30363d;background:#0d1117;color:var(--ink);">
         <button type="submit" class="sm">Update waiting</button>
     </form>
+    {% endif %}
+    {% else %}
+    <p class="meta" style="margin-top:8px;">Standing calendar hold (not stored as a capture).</p>
     {% endif %}
 </li>

@@ -10,6 +10,7 @@ from django.db.models import QuerySet
 from django.utils import timezone
 
 from .models import CaptureItem
+from .office_mdh_schedule import merge_mdh_holds_into_by_day
 
 
 def build_month_calendar_context(
@@ -33,6 +34,12 @@ def build_month_calendar_context(
         created = timezone.localtime(item.created_at).date()
         if created.year == year and created.month == month:
             unscheduled.append(item)
+
+    merge_mdh_holds_into_by_day(by_day, year, month)
+    for _d, lst in by_day.items():
+        lst.sort(
+            key=lambda x: (0 if getattr(x, 'synthetic_office_hold', False) else 1)
+        )
 
     cal = calendar.Calendar(firstweekday=6)
     weeks = []

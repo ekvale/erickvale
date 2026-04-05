@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 import logging
 import re
-from datetime import date
+from datetime import date, timedelta
 
 import requests
 from django.conf import settings
@@ -22,7 +22,19 @@ from .models import (
     NonActionableDisposition,
     TaskPriority,
 )
+from .office_mdh_schedule import (
+    format_mdh_availability_for_ai,
+    is_mdh_office_day,
+    mdh_office_time_window_label,
+)
 from .work_category import resolve_work_category
+
+_DAYTIME_COMMITMENT = re.compile(
+    r'meeting|meet with|call with|zoom|teams meet|flight|fly to|dentist|doctor|'
+    r'physician|appointment|interview|conference|off-?site|travel to|drive to|'
+    r'pickup|drop off|surgery|procedure',
+    re.IGNORECASE,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +66,9 @@ _SYSTEM = (
     'specific day. Do NOT use true for vague "this week" tasks — those belong on next-action lists, not the calendar.\n'
     '- calendar_date (ISO YYYY-MM-DD): include ONLY when time_specific_calendar is true; pick the actual day '
     'mentioned or a sensible deadline day; omit this key entirely if not time-specific.\n'
+    '- scheduling_note (string, optional): If the capture implies a meeting, appointment, travel, medical visit, '
+    'or other daytime obligation that conflicts with the owner\'s recurring MDH office blocks listed below '
+    '(same calendar day, typical work hours), set a short warning. Omit if no conflict or not applicable.\n'
     'GTD rule: generic to-dos do not get calendar_date. If blocked on someone, use initial_status waiting and waiting_for.'
 )
 
@@ -370,6 +385,8 @@ def _apply_parsed_to_item(item: CaptureItem, parsed: dict, today: date) -> None:
         ai_cat = None
     item.category_label = resolve_work_category(item.body, ai_cat)[:120]
 
+    _merge_mdh_scheduling_notes(item, parsed)
+
     item.save(
         update_fields=[
             'title',
@@ -393,6 +410,39 @@ def _apply_parsed_to_item(item: CaptureItem, parsed: dict, today: date) -> None:
     )
 
 
+def _merge_mdh_scheduling_notes(item: CaptureItem, parsed: dict) -> None:
+    """Keep LLM scheduling_note and add a heuristic warning for MDH office overlap."""
+    if not getattr(settings, 'BRAINDUMP_MDH_OFFICE_ENABLED', True):
+        return
+    notes: list[str] = []
+    sn = (parsed.get('scheduling_note') or '').strip()
+    if sn:
+        notes.append(sn)
+    cd = item.calendar_date
+    ts = _coerce_bool(parsed.get('time_specific_calendar'))
+    if (
+        cd
+        and is_mdh_office_day(cd)
+        and ts is True
+        and item.is_actionable
+        and item.calendar_is_hard_date
+    ):
+        blob = f'{item.body}\n{parsed.get("title") or ""}'
+        if _DAYTIME_COMMITMENT.search(blob):
+            win = mdh_office_time_window_label()
+            msg = (
+                f'Possible conflict: MDH office block on {cd.isoformat()} ({win}). '
+                'Confirm this commitment fits your schedule.'
+            )
+            if msg not in notes:
+                notes.append(msg)
+    if not notes:
+        return
+    pl = dict(parsed) if isinstance(parsed, dict) else {}
+    pl['scheduling_note'] = ' | '.join(notes)
+    item.ai_payload = pl
+
+
 def _fallback_defaults(item: CaptureItem, error_note: str) -> None:
     item.title = (item.body or '')[:200] or 'Capture'
     item.ai_error = error_note[:2000]
@@ -412,6 +462,9 @@ def categorize_capture_item(item: CaptureItem) -> None:
     """
     today = timezone.localdate()
     user_block = f'Today is {today.isoformat()}.\n\nCapture:\n{item.body}'
+    avail = format_mdh_availability_for_ai(today, today + timedelta(days=21))
+    if avail:
+        user_block = f'{user_block}\n\n{avail}'
 
     anthropic_key = (getattr(settings, 'ANTHROPIC_API_KEY', '') or '').strip()
     perplexity_key = (getattr(settings, 'PERPLEXITY_API_KEY', '') or '').strip()

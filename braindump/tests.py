@@ -9,6 +9,12 @@ from django.urls import reverse
 from braindump.dashboard_filters import apply_dashboard_filters, filter_query_has_params
 from braindump.gtd_partition import partition_active_items
 from braindump.morning_digest import render_morning_digest_html, run_morning_digest_send
+from braindump.office_mdh_schedule import (
+    is_long_mdh_office_week,
+    is_mdh_office_day,
+    is_us_federal_holiday,
+    mdh_office_long_week_anchor,
+)
 from braindump.recurrence_logic import advance_after_spawn, last_weekday_of_month
 from braindump.work_category import (
     CATEGORY_DREAM_BLUE,
@@ -285,6 +291,29 @@ class ResolveWorkCategoryTests(TestCase):
         self.assertEqual(canonical_work_stream_label('  Sioux Chef '), CATEGORY_SIOUX_CHEF)
         self.assertEqual(canonical_work_stream_label('dream-blue'), CATEGORY_DREAM_BLUE)
         self.assertIsNone(canonical_work_stream_label('Side project'))
+
+
+@override_settings(
+    BRAINDUMP_MDH_OFFICE_ENABLED=True,
+    BRAINDUMP_MDH_OFFICE_LONG_WEEK_ANCHOR='2026-01-05',
+)
+class MdhOfficeScheduleTests(TestCase):
+    def test_anchor_monday_normalizes(self):
+        self.assertEqual(mdh_office_long_week_anchor(), date(2026, 1, 5))
+
+    def test_long_week_includes_thursday(self):
+        self.assertTrue(is_long_mdh_office_week(date(2026, 1, 5)))
+        self.assertTrue(is_mdh_office_day(date(2026, 1, 8)))
+
+    def test_short_week_no_thursday(self):
+        self.assertFalse(is_long_mdh_office_week(date(2026, 1, 12)))
+        self.assertTrue(is_mdh_office_day(date(2026, 1, 13)))
+        self.assertTrue(is_mdh_office_day(date(2026, 1, 14)))
+        self.assertFalse(is_mdh_office_day(date(2026, 1, 15)))
+
+    def test_federal_holiday_skips_office(self):
+        self.assertTrue(is_us_federal_holiday(date(2025, 11, 11)))
+        self.assertFalse(is_mdh_office_day(date(2025, 11, 11)))
 
 
 class GtdPartitionTests(TestCase):
