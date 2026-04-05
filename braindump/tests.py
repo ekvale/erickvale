@@ -8,7 +8,7 @@ from django.urls import reverse
 
 from braindump.dashboard_filters import apply_dashboard_filters, filter_query_has_params
 from braindump.gtd_partition import partition_active_items
-from braindump.morning_digest import run_morning_digest_send
+from braindump.morning_digest import render_morning_digest_html, run_morning_digest_send
 from braindump.recurrence_logic import advance_after_spawn, last_weekday_of_month
 from braindump.work_category import (
     CATEGORY_DREAM_BLUE,
@@ -135,6 +135,21 @@ class BraindumpOwnerTests(TestCase):
         r = c.get(reverse('braindump:dashboard'))
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'Clarify queue')
+
+    def test_morning_digest_email_uses_stream_and_priority_colors(self):
+        CaptureItem.objects.create(
+            user=self.owner,
+            body='Lease renewal',
+            title='Urgent lease',
+            priority=TaskPriority.URGENT,
+            category_label=CATEGORY_DREAM_BLUE,
+            is_actionable=True,
+            gtd_bucket='next_action',
+        )
+        _subject, html = render_morning_digest_html(self.owner)
+        self.assertIn('#ecfeff', html)
+        self.assertIn('#dc2626', html)
+        self.assertIn('Dream Blue', html)
 
     def test_dashboard_filter_by_person(self):
         c = Client()

@@ -1,4 +1,5 @@
 {# Expects: weeks, year, month_name, soft_dated, unscheduled, compact (optional bool) #}
+{% load braindump_email_tags %}
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;font-size:{% if compact %}10px{% else %}11px{% endif %};">
     <tr>
         <th style="padding:6px 2px;color:#57606a;border-bottom:1px solid #e1e6ec;">Sun</th>
@@ -16,10 +17,7 @@
             {% if cell.in_month %}
             <div style="font-weight:700;font-size:{% if compact %}11px{% else %}12px{% endif %};margin-bottom:4px;color:#122436;">{{ cell.day }}</div>
             {% for it in cell.items %}
-            <div style="margin-top:4px;padding:3px 4px;border-radius:4px;background:{% if it.status == 'done' %}#e8f5e9{% elif it.status == 'waiting' %}#fff8e1{% else %}#e3f2fd{% endif %};font-size:{% if compact %}9px{% else %}10px{% endif %};line-height:1.35;color:#24292f;">
-                {% if it.status == 'done' %}<span style="color:#1b5e20;font-weight:700;">✓</span> {% endif %}{{ it.title|default:"(untitled)" }}
-                {% if it.status == 'waiting' %}<span style="color:#9a6700;"> (w)</span>{% endif %}
-            </div>
+            {% digest_calendar_chip it %}
             {% endfor %}
             {% else %}&nbsp;{% endif %}
         </td>
@@ -30,20 +28,20 @@
 {% if soft_dated %}
 <div style="padding:{% if compact %}8px 0 4px{% else %}12px 0 8px{% endif %};font-size:{% if compact %}11px{% else %}12px{% endif %};color:#24292f;">
     <p style="margin:0 0 6px;font-weight:650;color:#57606a;">Soft-dated this month (not on grid)</p>
-    <ul style="margin:0;padding-left:18px;">
+    <div style="margin:0;">
         {% for it in soft_dated %}
-        <li style="margin-bottom:4px;">{% if it.calendar_date %}<span style="color:#57606a;">{{ it.calendar_date }} · </span>{% endif %}{% if it.title %}{{ it.title|truncatechars:72 }}{% else %}{{ it.body|truncatechars:72 }}{% endif %}</li>
+        <div style="margin-bottom:2px;">{% if it.calendar_date %}<span style="display:block;font-size:10px;color:#57606a;margin-bottom:2px;">{{ it.calendar_date }}</span>{% endif %}{% digest_item_card it show_next=False %}</div>
         {% endfor %}
-    </ul>
+    </div>
 </div>
 {% endif %}
 {% if unscheduled %}
 <div style="padding:{% if compact %}0 0 8px{% else %}0 0 16px{% endif %};font-size:{% if compact %}11px{% else %}12px{% endif %};color:#24292f;">
     <p style="margin:0 0 6px;font-weight:650;color:#57606a;">Captured this month (no calendar day)</p>
-    <ul style="margin:0;padding-left:18px;">
+    <div style="margin:0;">
         {% for it in unscheduled %}
-        <li style="margin-bottom:4px;">{% if it.title %}{{ it.title|truncatechars:72 }}{% else %}{{ it.body|truncatechars:72 }}{% endif %}</li>
+        {% digest_item_card it show_next=False %}
         {% endfor %}
-    </ul>
+    </div>
 </div>
 {% endif %}

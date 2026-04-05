@@ -5,6 +5,7 @@
     <title>Morning digest</title>
 </head>
 <body style="margin:0;padding:0;background:#f4f6f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+{% load braindump_email_tags %}
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f4f6f8;padding:24px 12px;">
 <tr><td align="center">
 <table role="presentation" width="640" cellspacing="0" cellpadding="0" border="0" style="max-width:640px;background:#fff;border-radius:10px;border:1px solid #e1e6ec;">
@@ -36,23 +37,18 @@
 {% if calendar_today or soft_today %}
 <tr><td style="padding:8px 18px 4px;">
     <p style="margin:0;font-size:14px;font-weight:650;color:#122436;">Today — hard dates</p>
-    <ul style="margin:8px 0 0;padding-left:18px;font-size:12px;color:#24292f;">
+    <div style="margin:8px 0 0;">
         {% for it in calendar_today %}
-        <li style="margin-bottom:6px;">
-            {% if it.status == 'done' %}<span style="color:#1a7f37;">✓</span> {% endif %}
-            <strong>{{ it.title|default:"(untitled)" }}</strong>
-            {% if it.category_label %}<span style="color:#57606a;"> · {{ it.category_label }}</span>{% endif %}
-            {% if it.get_priority_display %}<span style="color:#9a6700;"> · {{ it.get_priority_display }}</span>{% endif %}
-        </li>
+        {% digest_item_card it show_next=False %}
         {% endfor %}
-    </ul>
+    </div>
     {% if soft_today %}
     <p style="margin:12px 0 4px;font-size:12px;font-weight:650;color:#57606a;">Today — soft date</p>
-    <ul style="margin:4px 0 0;padding-left:18px;font-size:12px;color:#24292f;">
+    <div style="margin:4px 0 0;">
         {% for it in soft_today %}
-        <li style="margin-bottom:6px;">{% if it.title %}{{ it.title }}{% else %}{{ it.body|truncatechars:100 }}{% endif %}</li>
+        {% digest_item_card it show_next=False %}
         {% endfor %}
-    </ul>
+    </div>
     {% endif %}
 </td></tr>
 {% endif %}
@@ -60,17 +56,17 @@
 {% if calendar_tomorrow or soft_tomorrow %}
 <tr><td style="padding:8px 18px 4px;">
     <p style="margin:0;font-size:14px;font-weight:650;color:#122436;">Tomorrow ({{ tomorrow_label }})</p>
-    <ul style="margin:8px 0 0;padding-left:18px;font-size:12px;color:#24292f;">
+    <div style="margin:8px 0 0;">
         {% for it in calendar_tomorrow %}
-        <li style="margin-bottom:6px;"><strong>{{ it.title|default:"(untitled)" }}</strong>{% if it.category_label %} · {{ it.category_label }}{% endif %}</li>
+        {% digest_item_card it show_next=False %}
         {% endfor %}
-    </ul>
+    </div>
     {% if soft_tomorrow %}
-    <ul style="margin:4px 0 0;padding-left:18px;font-size:12px;color:#24292f;">
+    <div style="margin:4px 0 0;">
         {% for it in soft_tomorrow %}
-        <li style="margin-bottom:6px;">{% if it.title %}{{ it.title }}{% else %}{{ it.body|truncatechars:100 }}{% endif %}</li>
+        {% digest_item_card it show_next=False %}
         {% endfor %}
-    </ul>
+    </div>
     {% endif %}
 </td></tr>
 {% endif %}
@@ -78,49 +74,44 @@
 {% if unclear %}
 <tr><td style="padding:12px 18px 4px;">
     <p style="margin:0;font-size:14px;font-weight:650;color:#9a6700;">Clarify queue</p>
-    <ul style="margin:8px 0 0;padding-left:18px;font-size:12px;color:#24292f;">
+    <div style="margin:8px 0 0;">
         {% for it in unclear %}
-        <li style="margin-bottom:6px;">{% if it.title %}{{ it.title }}{% else %}{{ it.body|truncatechars:90 }}{% endif %}</li>
+        {% digest_item_card it show_next=False %}
         {% endfor %}
-    </ul>
+    </div>
 </td></tr>
 {% endif %}
 
 {% if next_actions %}
 <tr><td style="padding:12px 18px 4px;">
     <p style="margin:0;font-size:14px;font-weight:650;color:#122436;">Next actions</p>
-    <ul style="margin:8px 0 0;padding-left:18px;font-size:12px;color:#24292f;">
+    <div style="margin:8px 0 0;">
         {% for it in next_actions %}
-        <li style="margin-bottom:8px;">
-            <strong>{{ it.title|default:"(untitled)" }}</strong>
-            <span style="color:#57606a;"> · {{ it.get_priority_display }}</span>
-            {% if it.category_label %}<span style="color:#8250df;"> · {{ it.category_label }}</span>{% endif %}
-            {% if it.next_action %}<br><span style="color:#57606a;font-size:11px;">Next: {{ it.next_action|truncatechars:120 }}</span>{% endif %}
-        </li>
+        {% digest_item_card it show_next=True %}
         {% endfor %}
-    </ul>
+    </div>
 </td></tr>
 {% endif %}
 
 {% if waiting %}
 <tr><td style="padding:12px 18px 4px;">
     <p style="margin:0;font-size:14px;font-weight:650;color:#9a6700;">Waiting for</p>
-    <ul style="margin:8px 0 0;padding-left:18px;font-size:12px;color:#24292f;">
+    <div style="margin:8px 0 0;">
         {% for it in waiting %}
-        <li style="margin-bottom:6px;">{{ it.title|default:"(untitled)" }}{% if it.waiting_for %} — <em>{{ it.waiting_for|truncatechars:80 }}</em>{% endif %}</li>
+        {% digest_item_card it show_next=False %}
         {% endfor %}
-    </ul>
+    </div>
 </td></tr>
 {% endif %}
 
 {% if projects %}
 <tr><td style="padding:12px 18px 4px;">
     <p style="margin:0;font-size:14px;font-weight:650;color:#122436;">Projects</p>
-    <ul style="margin:8px 0 0;padding-left:18px;font-size:12px;color:#24292f;">
+    <div style="margin:8px 0 0;">
         {% for it in projects %}
-        <li style="margin-bottom:6px;">{{ it.title|default:"(untitled)" }}{% if it.next_action %} — <span style="color:#57606a;">{{ it.next_action|truncatechars:100 }}</span>{% endif %}</li>
+        {% digest_item_card it show_next=True %}
         {% endfor %}
-    </ul>
+    </div>
 </td></tr>
 {% endif %}
 
@@ -130,6 +121,9 @@
 </td></tr>
 {% endif %}
 
+<tr><td style="padding:0 18px 8px;font-size:10px;color:#8c959f;line-height:1.45;">
+    <strong>Cards:</strong> background tint = work stream (MDH, Dream Blue, Sioux Chef, or other). Left border = urgency (red urgent → orange high → blue normal → gray low).
+</td></tr>
 <tr><td style="padding:0 18px 22px;font-size:11px;color:#8c959f;">
     Daily digest · GTD organize lists
 </td></tr>
