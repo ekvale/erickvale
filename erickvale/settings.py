@@ -63,7 +63,8 @@ INSTALLED_APPS = [
 
 # --- Brain dump (personal GTD capture; owner-only) ---
 # Set username OR numeric user id of the single account that may use /apps/braindump/.
-BRAINDUMP_OWNER_USERNAME = config('BRAINDUMP_OWNER_USERNAME', default='').strip()
+# Default owner username is eric; override with BRAINDUMP_OWNER_USERNAME in .env if needed.
+BRAINDUMP_OWNER_USERNAME = config('BRAINDUMP_OWNER_USERNAME', default='eric').strip()
 BRAINDUMP_OWNER_USER_ID = config('BRAINDUMP_OWNER_USER_ID', default='').strip()
 # braindump categorization: anthropic or perplexity (try the other if the first fails).
 BRAINDUMP_LLM_PROVIDER = config('BRAINDUMP_LLM_PROVIDER', default='anthropic').strip().lower()
