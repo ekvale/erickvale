@@ -24,7 +24,12 @@
         ul.files a { color: var(--accent); }
         form.attach { margin-top: 12px; padding: 14px; background: var(--card); border-radius: 10px; border: 1px solid #30363d; }
         form.attach input[type="file"] { color: var(--ink); margin: 8px 0; }
+        form.emailblk { margin-top: 24px; padding: 16px; background: var(--card); border-radius: 10px; border: 1px solid #30363d; }
+        form.emailblk label { display: block; font-size: 0.72rem; color: var(--muted); margin-top: 10px; }
+        form.emailblk input[type="text"], form.emailblk textarea { width: 100%; max-width: 100%; box-sizing: border-box; margin-top: 4px; padding: 8px; border-radius: 6px; border: 1px solid #30363d; background: #0d1117; color: var(--ink); font: inherit; font-size: 0.88rem; }
+        form.emailblk input[type="datetime-local"] { margin-top: 4px; padding: 8px; border-radius: 6px; border: 1px solid #30363d; background: #0d1117; color: var(--ink); font: inherit; }
         button.sm { font: inherit; font-size: 0.8rem; padding: 6px 12px; border-radius: 6px; border: 1px solid #30363d; background: #21262d; color: var(--ink); cursor: pointer; }
+        button.primary { background: #238636; border-color: #3fb950; color: #fff; }
         button.danger { border-color: #f85149; color: #f85149; }
         ul.flash { list-style: none; padding: 0; margin: 0 0 16px; }
         ul.flash li { padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; font-size: 0.9rem; }
@@ -36,6 +41,7 @@
 <header>
     <a href="{% url 'braindump:contact_list' %}">← All contacts</a>
     <a href="{% url 'braindump:contact_edit' contact.pk %}">Edit</a>
+    <a href="{% url 'braindump:contact_scheduled_emails' %}">Scheduled emails</a>
     <a href="{% url 'braindump:dashboard' %}">Brain dump</a>
 </header>
 <div class="wrap">
@@ -70,6 +76,38 @@
     <div class="section">
         <h2>Notes</h2>
         <div class="notes">{{ contact.notes }}</div>
+    </div>
+    {% endif %}
+
+    {% if contact.email %}
+    <div class="section">
+        <h2>Email this contact</h2>
+        <p style="font-size:0.85rem;color:var(--muted);margin:0 0 12px;line-height:1.45;">Uses the same Resend/SMTP settings as brain dump digests. Scheduled messages run with the morning digest or <code style="font-size:0.78rem;">manage.py process_contact_scheduled_emails</code>.</p>
+        <form class="emailblk" method="post" action="{% url 'braindump:contact_email_send' contact.pk %}">
+            {% csrf_token %}
+            <strong style="font-size:0.85rem;">Send now</strong>
+            <label for="{{ email_form.subject.id_for_label }}">Subject</label>
+            {{ email_form.subject }}
+            <label for="{{ email_form.body.id_for_label }}">Message</label>
+            {{ email_form.body }}
+            <button type="submit" class="sm primary" style="margin-top:14px;">Send now</button>
+        </form>
+        <form class="emailblk" method="post" action="{% url 'braindump:contact_email_schedule' contact.pk %}" style="margin-top:16px;">
+            {% csrf_token %}
+            <strong style="font-size:0.85rem;">Schedule send</strong>
+            <label for="{{ schedule_form.subject.id_for_label }}">Subject</label>
+            {{ schedule_form.subject }}
+            <label for="{{ schedule_form.body.id_for_label }}">Message</label>
+            {{ schedule_form.body }}
+            <label for="{{ schedule_form.scheduled_for.id_for_label }}">Send at (your local time)</label>
+            {{ schedule_form.scheduled_for }}
+            <button type="submit" class="sm" style="margin-top:14px;">Schedule</button>
+        </form>
+    </div>
+    {% else %}
+    <div class="section">
+        <h2>Email this contact</h2>
+        <p style="font-size:0.85rem;color:var(--muted);">Add an email address on the edit screen to send or schedule messages.</p>
     </div>
     {% endif %}
 

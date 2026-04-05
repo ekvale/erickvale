@@ -333,3 +333,42 @@ class PersonalContactAttachment(models.Model):
         if self.description:
             return self.description
         return os.path.basename(self.file.name)
+
+
+class ContactScheduledEmail(models.Model):
+    """Outbound message to a contact's email, queued for a future time or processed by cron/digest."""
+
+    class Status(models.TextChoices):
+        PENDING = 'pending', 'Pending'
+        SENT = 'sent', 'Sent'
+        FAILED = 'failed', 'Failed'
+        CANCELLED = 'cancelled', 'Cancelled'
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='contact_scheduled_emails',
+    )
+    contact = models.ForeignKey(
+        PersonalContact,
+        on_delete=models.CASCADE,
+        related_name='scheduled_emails',
+    )
+    subject = models.CharField(max_length=200)
+    body = models.TextField()
+    scheduled_for = models.DateTimeField(db_index=True)
+    status = models.CharField(
+        max_length=16,
+        choices=Status.choices,
+        default=Status.PENDING,
+        db_index=True,
+    )
+    sent_at = models.DateTimeField(null=True, blank=True)
+    last_error = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.subject[:40]} → {self.contact_id} ({self.status})'

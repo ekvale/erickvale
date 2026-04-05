@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Calendar · Brain dump</title>
     <style>
-        :root { --bg: #0f1419; --card: #1a2332; --ink: #e6edf3; --muted: #8b949e; --accent: #58a6ff; --hold: #1d4ed8; --hold-bg: #1e3a5f; }
+        :root { --bg: #0f1419; --card: #1a2332; --ink: #e6edf3; --muted: #8b949e; --accent: #58a6ff; --hold: #1d4ed8; --hold-bg: #1e3a5f; --bday: #c026d3; --bday-bg: #3d1f47; }
         * { box-sizing: border-box; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; background: var(--bg); color: var(--ink); min-height: 100vh; }
         header { padding: 16px 20px; border-bottom: 1px solid #30363d; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
@@ -26,6 +26,8 @@
         .cal-chip.done { opacity: 0.75; border-style: dashed; }
         .cal-chip-hold { background: var(--hold-bg); border-color: var(--hold); color: #bfdbfe; font-weight: 600; font-size: 0.68rem; }
         .cal-chip-hold span { display: block; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; color: #93c5fd; margin-bottom: 2px; }
+        .cal-chip-bday { background: var(--bday-bg); border-color: var(--bday); color: #f5d0fe; font-weight: 600; font-size: 0.68rem; cursor: default; }
+        .cal-chip-bday span { display: block; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; color: #e879f9; margin-bottom: 2px; }
         .list-below { margin-top: 28px; }
         .list-below h2 { font-size: 0.95rem; color: var(--muted); margin: 20px 0 8px; }
         .list-below ul { margin: 0; padding-left: 1.1rem; color: #c9d1d9; font-size: 0.88rem; }
@@ -66,6 +68,8 @@
                     {% for it in cell.items %}
                         {% if it.synthetic_office_hold %}
                         <div class="cal-chip cal-chip-hold"><span>MDH office</span>{{ it.title|truncatechars:52 }}</div>
+                        {% elif it.synthetic_contact_birthday %}
+                        <div class="cal-chip cal-chip-bday"><span>Birthday</span>{{ it.title|truncatechars:52 }}</div>
                         {% else %}
                         <a class="cal-chip{% if it.status == 'done' %} done{% endif %}" href="{% url 'braindump:dashboard' %}#capture-{{ it.pk }}">
                             {% if it.status == 'done' %}✓ {% endif %}{{ it.title|default:it.body|truncatechars:48 }}

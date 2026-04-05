@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Scheduled emails · Contacts</title>
+    <style>
+        :root { --bg: #0f1419; --card: #1a2332; --ink: #e6edf3; --muted: #8b949e; --accent: #58a6ff; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; background: var(--bg); color: var(--ink); min-height: 100vh; }
+        header { padding: 16px 20px; border-bottom: 1px solid #30363d; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+        header a { color: var(--accent); margin-right: 12px; font-size: 0.9rem; }
+        .wrap { max-width: 720px; margin: 0 auto; padding: 24px 20px 48px; }
+        h1 { margin: 0 0 8px; font-size: 1.35rem; }
+        .note { font-size: 0.85rem; color: var(--muted); margin: 0 0 24px; line-height: 1.45; }
+        h2 { font-size: 0.95rem; color: var(--muted); margin: 28px 0 12px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #30363d; vertical-align: top; }
+        th { color: var(--muted); font-weight: 600; }
+        button.sm { font: inherit; font-size: 0.78rem; padding: 6px 10px; border-radius: 6px; border: 1px solid #30363d; background: #21262d; color: var(--ink); cursor: pointer; }
+        .status-sent { color: #3fb950; }
+        .status-fail { color: #f85149; }
+        .status-can { color: var(--muted); }
+        ul.flash { list-style: none; padding: 0; margin: 0 0 16px; }
+        ul.flash li { padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; font-size: 0.9rem; }
+        ul.flash li.success { background: #23863633; border: 1px solid #3fb950; color: #3fb950; }
+    </style>
+</head>
+<body>
+<header>
+    <a href="{% url 'braindump:contact_list' %}">← All contacts</a>
+    <a href="{% url 'braindump:dashboard' %}">Brain dump</a>
+</header>
+<div class="wrap">
+    {% if messages %}
+    <ul class="flash">
+        {% for message in messages %}
+        <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    <h1>Scheduled contact emails</h1>
+    <p class="note">Pending messages are sent when you run the morning digest or the <code style="font-size:0.8rem;">process_contact_scheduled_emails</code> management command (uses the same outbound email settings as digests).</p>
+
+    <h2>Pending</h2>
+    {% if pending %}
+    <table>
+        <thead>
+            <tr>
+                <th>When</th>
+                <th>To</th>
+                <th>Subject</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in pending %}
+            <tr>
+                <td>{{ row.scheduled_for|date:"Y-m-d H:i" }}</td>
+                <td><a href="{% url 'braindump:contact_detail' row.contact_id %}" style="color:var(--accent);">{{ row.contact.display_name }}</a></td>
+                <td>{{ row.subject|truncatechars:48 }}</td>
+                <td>
+                    <form method="post" action="{% url 'braindump:contact_scheduled_email_cancel' row.pk %}" style="margin:0;">
+                        {% csrf_token %}
+                        <button type="submit" class="sm">Cancel</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color:var(--muted);font-size:0.9rem;">No pending scheduled emails.</p>
+    {% endif %}
+
+    <h2>Recent (sent / failed / cancelled)</h2>
+    {% if recent %}
+    <table>
+        <thead>
+            <tr>
+                <th>Status</th>
+                <th>To</th>
+                <th>Subject</th>
+                <th>Sent / created</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in recent %}
+            <tr>
+                <td>
+                    {% if row.status == 'sent' %}<span class="status-sent">Sent</span>
+                    {% elif row.status == 'failed' %}<span class="status-fail">Failed</span>
+                    {% else %}<span class="status-can">{{ row.get_status_display }}</span>{% endif %}
+                </td>
+                <td><a href="{% url 'braindump:contact_detail' row.contact_id %}" style="color:var(--accent);">{{ row.contact.display_name }}</a></td>
+                <td>{{ row.subject|truncatechars:40 }}{% if row.last_error %}<br><span style="font-size:0.75rem;color:#f85149;">{{ row.last_error|truncatechars:80 }}</span>{% endif %}</td>
+                <td>{% if row.sent_at %}{{ row.sent_at|date:"Y-m-d H:i" }}{% else %}—{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color:var(--muted);font-size:0.9rem;">No history yet.</p>
+    {% endif %}
+</div>
+</body>
+</html>

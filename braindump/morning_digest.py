@@ -14,6 +14,7 @@ from django.utils import timezone
 from dream_blue.emailing import DreamBlueEmailConfigError, send_html_digest
 
 from .calendar_build import build_month_calendar_context
+from .contact_calendar import birthday_entries_for_date
 from .email_common import get_braindump_owner, get_braindump_recipients
 from .gtd_partition import partition_active_items
 from .models import CaptureItem, TaskPriority
@@ -54,10 +55,17 @@ def build_morning_digest_context(owner, today: date | None = None) -> dict:
     cal_hard = parts['calendar_hard']
     cal_today = [i for i in cal_hard if i.calendar_date == today]
     cal_tomorrow = [i for i in cal_hard if i.calendar_date == tomorrow]
+    prefix_today = []
     if is_mdh_office_day(today):
-        cal_today = [make_office_hold_entry(today)] + cal_today
+        prefix_today.append(make_office_hold_entry(today))
+    prefix_today.extend(birthday_entries_for_date(owner, today))
+    cal_today = prefix_today + _sort_pri_created(cal_today)
+
+    prefix_tomorrow = []
     if is_mdh_office_day(tomorrow):
-        cal_tomorrow = [make_office_hold_entry(tomorrow)] + cal_tomorrow
+        prefix_tomorrow.append(make_office_hold_entry(tomorrow))
+    prefix_tomorrow.extend(birthday_entries_for_date(owner, tomorrow))
+    cal_tomorrow = prefix_tomorrow + _sort_pri_created(cal_tomorrow)
 
     soft_today = [
         i
@@ -90,7 +98,10 @@ def build_morning_digest_context(owner, today: date | None = None) -> dict:
         )
     )
     month_cal = build_month_calendar_context(
-        year=today.year, month=today.month, qs=qs_month
+        year=today.year,
+        month=today.month,
+        qs=qs_month,
+        calendar_user=owner,
     )
     month_cal['month_name'] = cal_mod.month_name[today.month]
 
@@ -168,12 +179,21 @@ def run_morning_digest_send(
         }
 
     if not dry_run and not output_html_path:
+        from .contact_outbound import process_due_scheduled_contact_emails
         from .recurring_spawn import process_recurring_captures_for_owner
 
         eff = today if today is not None else timezone.localdate()
         nspawn = process_recurring_captures_for_owner(owner, eff)
         if nspawn:
             logger.info('braindump recurring: spawned %s capture(s)', nspawn)
+
+        ce = process_due_scheduled_contact_emails(user=owner, limit=40)
+        if ce['sent'] or ce['failed']:
+            logger.info(
+                'braindump contact email queue: sent=%s failed=%s',
+                ce['sent'],
+                ce['failed'],
+            )
 
     subject, html = render_morning_digest_html(owner, today=today)
     recipients = get_braindump_recipients(owner)

@@ -9,8 +9,27 @@ from datetime import date
 from django.db.models import QuerySet
 from django.utils import timezone
 
-from .models import CaptureItem
+from .contact_calendar import merge_contact_birthdays_into_by_day
+from .models import CaptureItem, TaskPriority
 from .office_mdh_schedule import merge_mdh_holds_into_by_day
+
+_PRIO_RANK = {
+    TaskPriority.URGENT: 0,
+    TaskPriority.HIGH: 1,
+    TaskPriority.NORMAL: 2,
+    TaskPriority.LOW: 3,
+}
+
+
+def _cal_sort_key(x):
+    if getattr(x, 'synthetic_office_hold', False):
+        return (0, 0, 0.0)
+    if getattr(x, 'synthetic_contact_birthday', False):
+        created = getattr(x, 'created_at', None)
+        return (1, 0, -(created.timestamp() if created else 0.0))
+    pr = _PRIO_RANK.get(getattr(x, 'priority', TaskPriority.NORMAL), 2)
+    created = getattr(x, 'created_at', None)
+    return (2, pr, -(created.timestamp() if created else 0.0))
 
 
 def build_month_calendar_context(
@@ -18,6 +37,7 @@ def build_month_calendar_context(
     year: int,
     month: int,
     qs: QuerySet[CaptureItem],
+    calendar_user=None,
 ) -> dict:
     """``qs`` should already be filtered to the owning user and target month scope."""
     by_day: dict[date, list[CaptureItem]] = defaultdict(list)
@@ -36,10 +56,10 @@ def build_month_calendar_context(
             unscheduled.append(item)
 
     merge_mdh_holds_into_by_day(by_day, year, month)
+    if calendar_user is not None:
+        merge_contact_birthdays_into_by_day(by_day, year, month, calendar_user)
     for _d, lst in by_day.items():
-        lst.sort(
-            key=lambda x: (0 if getattr(x, 'synthetic_office_hold', False) else 1)
-        )
+        lst.sort(key=_cal_sort_key)
 
     cal = calendar.Calendar(firstweekday=6)
     weeks = []

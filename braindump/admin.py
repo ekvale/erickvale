@@ -3,6 +3,7 @@ from django.contrib import admin, messages
 from .ai_categorize import categorize_capture_item
 from .models import (
     CaptureItem,
+    ContactScheduledEmail,
     PersonalContact,
     PersonalContactAttachment,
     RecurringCaptureRule,
@@ -103,6 +104,23 @@ class CaptureItemAdmin(admin.ModelAdmin):
 class PersonalContactAttachmentInline(admin.TabularInline):
     model = PersonalContactAttachment
     extra = 0
+
+
+@admin.register(ContactScheduledEmail)
+class ContactScheduledEmailAdmin(admin.ModelAdmin):
+    list_display = (
+        'subject',
+        'user',
+        'contact',
+        'status',
+        'scheduled_for',
+        'sent_at',
+        'created_at',
+    )
+    list_filter = ('status',)
+    search_fields = ('subject', 'body', 'last_error')
+    raw_id_fields = ('user', 'contact')
+    readonly_fields = ('created_at', 'sent_at', 'last_error')
 
 
 @admin.register(PersonalContact)

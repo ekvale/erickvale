@@ -96,9 +96,11 @@ def digest_calendar_chip(it):
     stream = _stream_for_label(getattr(it, 'category_label', None))
     pri = _priority_for_value(getattr(it, 'priority', None))
     is_hold = bool(getattr(it, 'synthetic_office_hold', False))
+    is_bday = bool(getattr(it, 'synthetic_contact_birthday', False))
     return {
         'it': it,
         'stream': stream,
         'pri': pri,
         'is_mdh_office_hold': is_hold,
+        'is_contact_birthday': is_bday,
     }

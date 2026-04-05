@@ -14,7 +14,27 @@ urlpatterns = [
     ),
     path('contacts/', contact_views.contact_list, name='contact_list'),
     path('contacts/new/', contact_views.contact_create, name='contact_create'),
+    path(
+        'contacts/email/scheduled/',
+        contact_views.contact_scheduled_email_list,
+        name='contact_scheduled_emails',
+    ),
+    path(
+        'contacts/email/scheduled/<int:sched_pk>/cancel/',
+        contact_views.contact_scheduled_email_cancel,
+        name='contact_scheduled_email_cancel',
+    ),
     path('contacts/<int:pk>/', contact_views.contact_detail, name='contact_detail'),
+    path(
+        'contacts/<int:pk>/email/send/',
+        contact_views.contact_email_send_now,
+        name='contact_email_send',
+    ),
+    path(
+        'contacts/<int:pk>/email/schedule/',
+        contact_views.contact_email_schedule,
+        name='contact_email_schedule',
+    ),
     path('contacts/<int:pk>/edit/', contact_views.contact_edit, name='contact_edit'),
     path('contacts/<int:pk>/delete/', contact_views.contact_delete, name='contact_delete'),
     path(

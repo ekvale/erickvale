@@ -1,7 +1,12 @@
-{# it, stream, pri, is_mdh_office_hold #}
+{# it, stream, pri, is_mdh_office_hold, is_contact_birthday #}
 {% if is_mdh_office_hold %}
 <div style="margin-top:5px;padding:5px 6px;border-radius:4px;border-left:4px solid #1d4ed8;background:#bfdbfe;border:1px solid #2563eb;font-size:11px;line-height:1.35;color:#1e3a8a;font-weight:650;">
     <span style="text-transform:uppercase;letter-spacing:0.04em;font-size:9px;color:#1e40af;">MDH office</span><br>
+    {% firstof it.title it.body|truncatechars:56 "(untitled)" %}
+</div>
+{% elif is_contact_birthday %}
+<div style="margin-top:5px;padding:5px 6px;border-radius:4px;border-left:4px solid #a21caf;background:#fae8ff;border:1px solid #c026d3;font-size:11px;line-height:1.35;color:#701a75;font-weight:650;">
+    <span style="text-transform:uppercase;letter-spacing:0.04em;font-size:9px;color:#86198f;">Birthday</span><br>
     {% firstof it.title it.body|truncatechars:56 "(untitled)" %}
 </div>
 {% else %}

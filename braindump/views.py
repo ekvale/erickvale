@@ -123,7 +123,9 @@ def calendar_month(request, year: int, month: int):
             created_at__month=month,
         )
     )
-    month_cal = build_month_calendar_context(year=year, month=month, qs=qs)
+    month_cal = build_month_calendar_context(
+        year=year, month=month, qs=qs, calendar_user=request.user
+    )
     month_cal['month_name'] = cal_mod.month_name[month]
     py, pm = _month_bounds(year, month - 1)
     ny, nm = _month_bounds(year, month + 1)

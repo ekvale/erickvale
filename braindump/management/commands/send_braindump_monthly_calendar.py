@@ -63,7 +63,9 @@ class Command(BaseCommand):
             )
         )
 
-        ctx = build_month_calendar_context(year=y, month=m, qs=qs)
+        ctx = build_month_calendar_context(
+            year=y, month=m, qs=qs, calendar_user=owner
+        )
         ctx['month_name'] = calendar.month_name[m]
         html = render_to_string('braindump/emails/monthly_calendar.html', ctx)
 

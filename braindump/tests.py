@@ -2,9 +2,11 @@ from datetime import date
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
+from django.db.models import Q
 from django.http import QueryDict
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
+from django.utils import timezone
 
 from braindump.dashboard_filters import apply_dashboard_filters, filter_query_has_params
 from braindump.gtd_partition import partition_active_items
@@ -27,8 +29,10 @@ from braindump.work_category import (
 from braindump.models import (
     CaptureItem,
     CaptureStatus,
+    ContactScheduledEmail,
     GTDBucket,
     NonActionableDisposition,
+    PersonalContact,
     TaskPriority,
 )
 
@@ -149,6 +153,93 @@ class BraindumpOwnerTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'MDH office')
 
+    def test_calendar_month_shows_contact_birthday(self):
+        PersonalContact.objects.create(
+            user=self.owner,
+            display_name='Birthday Person',
+            birth_date=date(1990, 4, 15),
+        )
+        c = Client()
+        c.login(username='owner1', password='pw')
+        r = c.get(reverse('braindump:calendar_month', args=[2026, 4]))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Birthday Person')
+
+    def test_build_month_calendar_sorts_birthday_before_capture(self):
+        from braindump.calendar_build import build_month_calendar_context
+
+        PersonalContact.objects.create(
+            user=self.owner,
+            display_name='B-Day',
+            birth_date=date(1985, 6, 10),
+        )
+        CaptureItem.objects.create(
+            user=self.owner,
+            body='meet',
+            title='Meeting',
+            calendar_date=date(2026, 6, 10),
+            calendar_is_hard_date=True,
+            is_actionable=True,
+        )
+        qs = CaptureItem.objects.filter(user=self.owner).filter(
+            Q(calendar_date__year=2026, calendar_date__month=6)
+            | Q(
+                calendar_date__isnull=True,
+                created_at__year=2026,
+                created_at__month=6,
+            )
+        )
+        ctx = build_month_calendar_context(
+            year=2026, month=6, qs=qs, calendar_user=self.owner
+        )
+        target = date(2026, 6, 10)
+        cell_items = None
+        for week in ctx['weeks']:
+            for cell in week:
+                if cell.get('date') == target:
+                    cell_items = cell['items']
+        self.assertIsNotNone(cell_items)
+        kinds = [
+            (
+                'hold'
+                if getattr(x, 'synthetic_office_hold', False)
+                else (
+                    'bday'
+                    if getattr(x, 'synthetic_contact_birthday', False)
+                    else 'cap'
+                )
+            )
+            for x in cell_items
+        ]
+        self.assertIn('bday', kinds)
+        self.assertIn('cap', kinds)
+        self.assertLess(kinds.index('bday'), kinds.index('cap'))
+
+    @patch('braindump.contact_outbound.send_html_digest')
+    def test_process_due_scheduled_contact_email_sends(self, mock_send):
+        from datetime import timedelta
+
+        from braindump.contact_outbound import process_due_scheduled_contact_emails
+
+        ct = PersonalContact.objects.create(
+            user=self.owner,
+            display_name='Eve',
+            email='eve@example.com',
+        )
+        row = ContactScheduledEmail.objects.create(
+            user=self.owner,
+            contact=ct,
+            subject='Hi',
+            body='Hello',
+            scheduled_for=timezone.now() - timedelta(minutes=5),
+        )
+        out = process_due_scheduled_contact_emails(user=self.owner, limit=10)
+        self.assertEqual(out['sent'], 1)
+        self.assertEqual(out['failed'], 0)
+        mock_send.assert_called_once()
+        row.refresh_from_db()
+        self.assertEqual(row.status, ContactScheduledEmail.Status.SENT)
+
     def test_contacts_list_and_create(self):
         c = Client()
         c.login(username='owner1', password='pw')
@@ -165,8 +256,6 @@ class BraindumpOwnerTests(TestCase):
             },
         )
         self.assertEqual(r2.status_code, 302)
-        from braindump.models import PersonalContact
-
         ct = PersonalContact.objects.get(display_name='Abby Test', user=self.owner)
         self.assertEqual(ct.email, 'abby@example.com')
         r3 = c.get(reverse('braindump:contact_detail', args=[ct.pk]))
@@ -345,6 +434,19 @@ class MdhOfficeScheduleTests(TestCase):
     def test_federal_holiday_skips_office(self):
         self.assertTrue(is_us_federal_holiday(date(2025, 11, 11)))
         self.assertFalse(is_mdh_office_day(date(2025, 11, 11)))
+
+
+class ContactCalendarHelpersTests(TestCase):
+    def test_feb29_observed_feb28_nonleap(self):
+        from braindump.contact_calendar import (
+            birthday_falls_on_date,
+            birthday_on_calendar_date,
+        )
+
+        bd = date(2000, 2, 29)
+        self.assertEqual(birthday_on_calendar_date(bd, 2023, 2), date(2023, 2, 28))
+        self.assertTrue(birthday_falls_on_date(bd, date(2023, 2, 28)))
+        self.assertFalse(birthday_falls_on_date(bd, date(2023, 2, 27)))
 
 
 class GtdPartitionTests(TestCase):
