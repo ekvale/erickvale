@@ -171,6 +171,50 @@
         {% endfor %}
     </ul>
 
+    <h2>Recurring captures</h2>
+    <p class="section-note">New items appear on each <strong>next run</strong> date (soft calendar). Processing runs when you send the morning digest and when <code>process_braindump_recurring</code> runs on the server.</p>
+    {% if recurring_rules %}
+    <ul class="items" style="margin-bottom:20px;">
+        {% for r in recurring_rules %}
+        <li class="item">
+            <div class="title">{{ r.title|default:r.body|truncatechars:70 }}</div>
+            <div class="meta">{{ r.get_pattern_display }} · next {{ r.next_run_date }}{% if not r.is_active %} · <strong>paused</strong>{% endif %}</div>
+            <div class="row">
+                <form class="inline" method="post" action="{% url 'braindump:recurring_toggle' r.pk %}">{% csrf_token %}<button type="submit" class="sm">{% if r.is_active %}Pause{% else %}Resume{% endif %}</button></form>
+                <form class="inline" method="post" action="{% url 'braindump:recurring_delete' r.pk %}" onsubmit="return confirm('Delete this recurring rule?');">{% csrf_token %}<button type="submit" class="sm danger">Delete</button></form>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    <form method="post" action="{% url 'braindump:recurring_create' %}" style="background:var(--card);border:1px solid #30363d;border-radius:10px;padding:16px;margin-bottom:28px;">
+        {% csrf_token %}
+        <p style="margin:0 0 10px;font-weight:650;">New recurring rule</p>
+        <input type="text" name="recurring_title" placeholder="Short title (optional)" style="width:100%;max-width:440px;padding:8px 10px;border-radius:6px;border:1px solid #30363d;background:#0d1117;color:var(--ink);margin-bottom:8px;">
+        <textarea name="recurring_body" placeholder="Task text (AI clarifies each spawn)" rows="2" style="width:100%;min-height:56px;padding:8px 10px;border-radius:6px;border:1px solid #30363d;background:#0d1117;color:var(--ink);margin-bottom:8px;"></textarea>
+        <div class="row" style="margin-top:0;">
+            <select name="recurring_pattern" style="padding:6px 10px;border-radius:6px;border:1px solid #30363d;background:#0d1117;color:var(--ink);">
+                {% for val, label in recurrence_pattern_choices %}
+                <option value="{{ val }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+            <label class="chk">Weekday
+            <select name="recurring_weekday" style="padding:6px 10px;border-radius:6px;border:1px solid #30363d;background:#0d1117;color:var(--ink);">
+                <option value="">—</option>
+                {% for num, lab in weekday_choices %}
+                <option value="{{ num }}">{{ lab }}</option>
+                {% endfor %}
+            </select>
+            </label>
+            <label class="chk">N weeks<input type="number" name="recurring_interval_weeks" value="2" min="1" max="52" style="width:56px;padding:6px;border-radius:6px;border:1px solid #30363d;background:#0d1117;color:var(--ink);"></label>
+            <label class="chk">Nth<input type="number" name="recurring_nth" min="1" max="4" placeholder="1-4" style="width:52px;padding:6px;border-radius:6px;border:1px solid #30363d;background:#0d1117;color:var(--ink);"></label>
+            <label class="chk">DOM<input type="number" name="recurring_day_of_month" min="1" max="31" placeholder="1-31" style="width:52px;padding:6px;border-radius:6px;border:1px solid #30363d;background:#0d1117;color:var(--ink);"></label>
+            <label class="chk">Anchor<input type="date" name="recurring_anchor" style="padding:6px;border-radius:6px;border:1px solid #30363d;background:#0d1117;color:var(--ink);"></label>
+        </div>
+        <p class="section-note" style="margin:8px 0 10px;">Examples: <strong>Every 2 weeks</strong> → every N weeks + weekday + anchor on a due date. <strong>Last Monday of month</strong> → last weekday of month + weekday. <strong>2nd Tuesday</strong> → nth + weekday. <strong>15th monthly</strong> → day of month only. Leave anchor empty for today.</p>
+        <button type="submit" class="primary" style="margin-top:8px;">Save recurring rule</button>
+    </form>
+
     <h2>Recently completed (archived)</h2>
     <ul class="items">
         {% for it in done_recent %}

@@ -175,3 +175,89 @@ class CaptureItem(models.Model):
         self.archived = False
         self.completed_at = None
         self.save(update_fields=['status', 'archived', 'completed_at', 'updated_at'])
+
+    spawned_from_recurring = models.ForeignKey(
+        'RecurringCaptureRule',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='spawned_items',
+    )
+
+
+class RecurrencePattern(models.TextChoices):
+    WEEKLY = 'weekly', 'Every week (same weekday)'
+    EVERY_N_WEEKS = 'every_n_weeks', 'Every N weeks from anchor date'
+    MONTHLY_LAST_WEEKDAY = 'monthly_last', 'Last Mon/Tue/… of each month'
+    MONTHLY_NTH_WEEKDAY = 'monthly_nth', 'Nth weekday of month (1st–4th)'
+    MONTHLY_DAY = 'monthly_day', 'Same calendar day each month'
+
+
+class RecurringCaptureRule(models.Model):
+    """Template that materializes a CaptureItem on each ``next_run_date`` (cron or morning digest)."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='braindump_recurring_rules',
+    )
+    title = models.CharField(max_length=200, blank=True)
+    body = models.TextField(help_text='Text for each spawned capture (AI clarifies)')
+    is_active = models.BooleanField(default=True, db_index=True)
+    pattern = models.CharField(max_length=32, choices=RecurrencePattern.choices)
+    weekday = models.SmallIntegerField(
+        null=True,
+        blank=True,
+        help_text='0=Monday … 6=Sunday (required for weekly / N-weeks / monthly weekday patterns)',
+    )
+    interval_weeks = models.PositiveSmallIntegerField(
+        default=2,
+        help_text='For “every N weeks” only (e.g. 2 = biweekly)',
+    )
+    nth_of_month = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        help_text='1–4 for “nth weekday” (e.g. 2 = second Tuesday)',
+    )
+    day_of_month = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        help_text='1–31 for “same day each month”',
+    )
+    anchor_date = models.DateField(
+        help_text='Anchor: first due intent; every-N-weeks counts from here',
+    )
+    next_run_date = models.DateField(db_index=True)
+    last_spawned_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['next_run_date', 'pk']
+
+    def __str__(self):
+        return (self.title or self.body)[:50]
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+
+        errs = {}
+        wk_patterns = (
+            RecurrencePattern.WEEKLY,
+            RecurrencePattern.EVERY_N_WEEKS,
+            RecurrencePattern.MONTHLY_LAST_WEEKDAY,
+            RecurrencePattern.MONTHLY_NTH_WEEKDAY,
+        )
+        if self.pattern in wk_patterns and self.weekday is None:
+            errs['weekday'] = 'Pick a weekday for this pattern.'
+        if self.pattern == RecurrencePattern.MONTHLY_NTH_WEEKDAY:
+            if self.nth_of_month is None or not (1 <= self.nth_of_month <= 4):
+                errs['nth_of_month'] = 'Use 1–4 (e.g. 1 = first, 2 = second).'
+        if self.pattern == RecurrencePattern.MONTHLY_DAY:
+            if self.day_of_month is None or not (1 <= self.day_of_month <= 31):
+                errs['day_of_month'] = 'Use a day 1–31.'
+        if self.pattern == RecurrencePattern.EVERY_N_WEEKS:
+            if not self.interval_weeks or self.interval_weeks < 1:
+                errs['interval_weeks'] = 'Interval must be at least 1 week.'
+        if errs:
+            raise ValidationError(errs)

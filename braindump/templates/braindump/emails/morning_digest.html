@@ -24,6 +24,14 @@
         {% endif %}
     </td>
 </tr>
+{% if month_cal %}
+<tr>
+    <td style="padding:8px 12px 12px;">
+        <p style="margin:0 0 8px 6px;font-size:14px;font-weight:650;color:#122436;">This month ({{ month_cal.month_name }} {{ month_cal.year }})</p>
+        {% include "braindump/emails/_calendar_month_block.html" with weeks=month_cal.weeks year=month_cal.year month_name=month_cal.month_name soft_dated=month_cal.soft_dated unscheduled=month_cal.unscheduled compact=True %}
+    </td>
+</tr>
+{% endif %}
 
 {% if calendar_today or soft_today %}
 <tr><td style="padding:8px 18px 4px;">

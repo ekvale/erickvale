@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import CaptureItem
+from .models import CaptureItem, RecurringCaptureRule
 
 
 @admin.register(CaptureItem)
@@ -29,7 +29,13 @@ class CaptureItemAdmin(admin.ModelAdmin):
     )
     search_fields = ('title', 'body', 'category_label', 'waiting_for', 'next_action')
     raw_id_fields = ('user',)
-    readonly_fields = ('created_at', 'updated_at', 'ai_payload', 'ai_error')
+    readonly_fields = (
+        'created_at',
+        'updated_at',
+        'ai_payload',
+        'ai_error',
+        'spawned_from_recurring',
+    )
     date_hierarchy = 'created_at'
     fieldsets = (
         (None, {'fields': ('user', 'body', 'title', 'category_label', 'priority')}),
@@ -55,6 +61,7 @@ class CaptureItemAdmin(admin.ModelAdmin):
                     'waiting_for',
                     'calendar_date',
                     'calendar_is_hard_date',
+                    'spawned_from_recurring',
                     'archived',
                     'completed_at',
                 )
@@ -63,3 +70,20 @@ class CaptureItemAdmin(admin.ModelAdmin):
         ('AI', {'fields': ('ai_payload', 'ai_error')}),
         ('Timestamps', {'fields': ('created_at', 'updated_at')}),
     )
+
+
+@admin.register(RecurringCaptureRule)
+class RecurringCaptureRuleAdmin(admin.ModelAdmin):
+    list_display = (
+        'title',
+        'user',
+        'pattern',
+        'next_run_date',
+        'is_active',
+        'last_spawned_at',
+    )
+    list_filter = ('is_active', 'pattern')
+    search_fields = ('title', 'body')
+    raw_id_fields = ('user',)
+    readonly_fields = ('last_spawned_at', 'created_at', 'updated_at')
+    date_hierarchy = 'next_run_date'

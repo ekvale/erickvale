@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime as dt
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -6,16 +6,20 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.http import require_GET, require_http_methods
 
 from .ai_categorize import categorize_capture_item
 from .authz import braindump_configured, is_braindump_owner
 from .gtd_partition import partition_active_items
-from .models import CaptureItem, CaptureStatus, TaskPriority
+from .models import CaptureItem, CaptureStatus, RecurrencePattern, RecurringCaptureRule, TaskPriority
 from .morning_digest import run_morning_digest_send
+from .recurrence_logic import first_run_on_or_after
 
 # Avoid huge pastes firing hundreds of LLM calls in one request.
 _MAX_CAPTURE_PARTS = 100
+
+_WEEKDAY_CHOICES = list(enumerate(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']))
 
 
 def _split_capture_body(raw: str) -> list[str]:
@@ -84,6 +88,11 @@ def dashboard(request):
             '-completed_at'
         )[:40]
     )
+    recurring_rules = list(
+        RecurringCaptureRule.objects.filter(user=request.user).order_by(
+            'next_run_date', 'pk'
+        )[:50]
+    )
     return render(
         request,
         'braindump/dashboard.html',
@@ -93,8 +102,123 @@ def dashboard(request):
             'status_choices': CaptureStatus.choices,
             'task_priority_choices': TaskPriority.choices,
             'max_capture_parts': _MAX_CAPTURE_PARTS,
+            'recurring_rules': recurring_rules,
+            'recurrence_pattern_choices': RecurrencePattern.choices,
+            'weekday_choices': _WEEKDAY_CHOICES,
         },
     )
+
+
+@login_required
+@require_http_methods(['POST'])
+def recurring_create(request):
+    _require_owner(request)
+    body = (request.POST.get('recurring_body') or '').strip()
+    if not body:
+        messages.error(request, 'Add text for the recurring capture.')
+        return HttpResponseRedirect(reverse('braindump:dashboard'))
+    title = (request.POST.get('recurring_title') or '').strip()[:200]
+    pattern = (request.POST.get('recurring_pattern') or '').strip()
+    valid_p = {c.value for c in RecurrencePattern}
+    if pattern not in valid_p:
+        messages.error(request, 'Pick a valid recurrence pattern.')
+        return HttpResponseRedirect(reverse('braindump:dashboard'))
+    raw_anchor = (request.POST.get('recurring_anchor') or '').strip()
+    try:
+        anchor = dt.strptime(raw_anchor, '%Y-%m-%d').date()
+    except (ValueError, TypeError):
+        anchor = timezone.localdate()
+
+    wd_raw = (request.POST.get('recurring_weekday') or '').strip()
+    weekday = None
+    if wd_raw != '':
+        try:
+            w = int(wd_raw)
+            if 0 <= w <= 6:
+                weekday = w
+        except ValueError:
+            pass
+
+    try:
+        interval = max(1, int(request.POST.get('recurring_interval_weeks') or 2))
+    except ValueError:
+        interval = 2
+
+    nth_val = None
+    raw_nth = (request.POST.get('recurring_nth') or '').strip()
+    if raw_nth:
+        try:
+            nth_val = int(raw_nth)
+        except ValueError:
+            pass
+
+    dom_val = None
+    raw_dom = (request.POST.get('recurring_day_of_month') or '').strip()
+    if raw_dom:
+        try:
+            dom_val = int(raw_dom)
+        except ValueError:
+            pass
+
+    try:
+        next_d = first_run_on_or_after(
+            pattern,
+            anchor,
+            anchor,
+            weekday=weekday if weekday is not None else 0,
+            interval_weeks=interval,
+            nth_of_month=nth_val or 1,
+            day_of_month=dom_val or anchor.day,
+        )
+    except ValueError as e:
+        messages.error(request, str(e))
+        return HttpResponseRedirect(reverse('braindump:dashboard'))
+
+    rule = RecurringCaptureRule(
+        user=request.user,
+        title=title,
+        body=body,
+        pattern=pattern,
+        weekday=weekday,
+        interval_weeks=interval,
+        nth_of_month=nth_val,
+        day_of_month=dom_val,
+        anchor_date=anchor,
+        next_run_date=next_d,
+    )
+    from django.core.exceptions import ValidationError
+
+    try:
+        rule.full_clean()
+        rule.save()
+        messages.success(request, f'Recurring rule saved. Next run: {next_d}.')
+    except ValidationError as e:
+        messages.error(request, ' '.join(e.messages) or 'Invalid recurring rule.')
+    return HttpResponseRedirect(reverse('braindump:dashboard'))
+
+
+@login_required
+@require_http_methods(['POST'])
+def recurring_toggle(request, pk: int):
+    _require_owner(request)
+    rule = get_object_or_404(RecurringCaptureRule, pk=pk, user=request.user)
+    rule.is_active = not rule.is_active
+    rule.save(update_fields=['is_active', 'updated_at'])
+    messages.success(
+        request,
+        'Recurring rule paused.' if not rule.is_active else 'Recurring rule active again.',
+    )
+    return HttpResponseRedirect(reverse('braindump:dashboard'))
+
+
+@login_required
+@require_http_methods(['POST'])
+def recurring_delete(request, pk: int):
+    _require_owner(request)
+    rule = get_object_or_404(RecurringCaptureRule, pk=pk, user=request.user)
+    rule.delete()
+    messages.success(request, 'Recurring rule removed.')
+    return HttpResponseRedirect(reverse('braindump:dashboard'))
 
 
 @login_required

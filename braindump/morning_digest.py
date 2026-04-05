@@ -2,15 +2,18 @@
 
 from __future__ import annotations
 
+import calendar as cal_mod
 import logging
 from datetime import date, timedelta
 from pathlib import Path
 
+from django.db.models import Q
 from django.template.loader import render_to_string
 from django.utils import timezone
 
 from dream_blue.emailing import DreamBlueEmailConfigError, send_html_digest
 
+from .calendar_build import build_month_calendar_context
 from .email_common import get_braindump_owner, get_braindump_recipients
 from .gtd_partition import partition_active_items
 from .models import CaptureItem, TaskPriority
@@ -73,9 +76,23 @@ def build_morning_digest_context(owner, today: date | None = None) -> dict:
 
     someday_n = len(parts['someday'])
 
+    qs_month = CaptureItem.objects.filter(user=owner).filter(
+        Q(calendar_date__year=today.year, calendar_date__month=today.month)
+        | Q(
+            calendar_date__isnull=True,
+            created_at__year=today.year,
+            created_at__month=today.month,
+        )
+    )
+    month_cal = build_month_calendar_context(
+        year=today.year, month=today.month, qs=qs_month
+    )
+    month_cal['month_name'] = cal_mod.month_name[today.month]
+
     return {
         'today': today,
         'tomorrow': tomorrow,
+        'month_cal': month_cal,
         'calendar_today': _sort_pri_created(cal_today),
         'calendar_tomorrow': _sort_pri_created(cal_tomorrow),
         'soft_today': _sort_pri_created(soft_today),
@@ -145,6 +162,14 @@ def run_morning_digest_send(
             'item_count': 0,
         }
 
+    if not dry_run and not output_html_path:
+        from .recurring_spawn import process_recurring_captures_for_owner
+
+        eff = today if today is not None else timezone.localdate()
+        nspawn = process_recurring_captures_for_owner(owner, eff)
+        if nspawn:
+            logger.info('braindump recurring: spawned %s capture(s)', nspawn)
+
     subject, html = render_morning_digest_html(owner, today=today)
     recipients = get_braindump_recipients(owner)
     item_count = CaptureItem.objects.filter(user=owner, archived=False).count()
@@ -160,7 +185,7 @@ def run_morning_digest_send(
         }
 
     if dry_run:
-        rec_msg = ', '.join(recipients) if recipients else '(none — configure email)'
+        rec_msg = ', '.join(recipients) if recipients else '(none - configure email)'
         return {
             'ok': True,
             'message': f'Dry run: {subject!r} -> {rec_msg}; {item_count} active item(s).',

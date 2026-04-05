@@ -7,6 +7,7 @@ from django.urls import reverse
 
 from braindump.gtd_partition import partition_active_items
 from braindump.morning_digest import run_morning_digest_send
+from braindump.recurrence_logic import advance_after_spawn, last_weekday_of_month
 from braindump.work_category import (
     CATEGORY_DREAM_BLUE,
     CATEGORY_MDH,
@@ -143,6 +144,19 @@ class MorningDigestTests(TestCase):
         r = run_morning_digest_send(dry_run=True)
         self.assertTrue(r['ok'])
         self.assertIn('Dry run', r['message'])
+
+
+class RecurrenceLogicTests(TestCase):
+    def test_last_monday_jan_2026(self):
+        d = last_weekday_of_month(2026, 1, 0)
+        self.assertEqual(d.weekday(), 0)
+        self.assertEqual(d.month, 1)
+        self.assertEqual(d.day, 26)
+
+    def test_advance_weekly(self):
+        d = date(2026, 4, 6)
+        nxt = advance_after_spawn('weekly', d, weekday=0)
+        self.assertEqual(nxt, date(2026, 4, 13))
 
 
 class WorkCategoryRulesTests(TestCase):
