@@ -5,7 +5,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
-from django.http import HttpResponseRedirect, QueryDict
+from django.http import HttpResponseRedirect, JsonResponse, QueryDict
+from django.template.loader import render_to_string
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -25,6 +26,7 @@ from .models import (
     CaptureStatus,
     EngagementChoice,
     GTDBucket,
+    NonActionableDisposition,
     RecurrencePattern,
     RecurringCaptureRule,
     TaskPriority,
@@ -73,7 +75,8 @@ def _prio_rank(x: CaptureItem) -> int:
     return _PRIORITY_ORDER.get(x.priority, 2)
 
 
-def _sort_calendar(items: list[CaptureItem]) -> list[CaptureItem]:
+def _sort_date_then_priority(items: list[CaptureItem]) -> list[CaptureItem]:
+    """Soonest calendar date first; undated last; then urgency; then newest created."""
     return sorted(
         items,
         key=lambda x: (
@@ -84,10 +87,80 @@ def _sort_calendar(items: list[CaptureItem]) -> list[CaptureItem]:
     )
 
 
-def _sort_by_priority_then_created(items: list[CaptureItem]) -> list[CaptureItem]:
-    return sorted(
-        items,
-        key=lambda x: (_prio_rank(x), -x.created_at.timestamp()),
+def _accepts_json(request) -> bool:
+    if request.POST.get('format') == 'json':
+        return True
+    accept = request.headers.get('Accept', '')
+    return 'application/json' in accept
+
+
+def _show_trash_archive_item(item: CaptureItem) -> bool:
+    return (
+        item.is_actionable is False
+        and item.non_actionable_disposition == NonActionableDisposition.TRASH
+    )
+
+
+def _active_list_id(item: CaptureItem) -> str | None:
+    if item.archived:
+        return None
+    parts = partition_active_items([item])
+    for name, lst in parts.items():
+        if lst:
+            return name
+    return None
+
+
+def _item_card_html(request, item: CaptureItem, list_id: str = '') -> str:
+    item.refresh_from_db()
+    lid = list_id or _active_list_id(item) or ''
+    return render_to_string(
+        'braindump/_item_card.html',
+        {
+            'it': item,
+            'show_trash_archive': _show_trash_archive_item(item),
+            'task_priority_choices': TaskPriority.choices,
+            'list_id': lid,
+        },
+        request=request,
+    )
+
+
+def _json_capture_response(
+    request,
+    item: CaptureItem,
+    *,
+    removed: bool = False,
+) -> JsonResponse | None:
+    if not _accepts_json(request):
+        return None
+    pk = item.pk
+    if removed or item.archived:
+        return JsonResponse({'ok': True, 'removed': True, 'pk': pk})
+    item.refresh_from_db()
+    if item.archived:
+        return JsonResponse({'ok': True, 'removed': True, 'pk': pk})
+    src = (request.POST.get('source_list') or '').strip()
+    bucket = _active_list_id(item)
+    bucket_changed = bool(src and bucket and src != bucket)
+    if bucket_changed:
+        return JsonResponse(
+            {
+                'ok': True,
+                'removed': True,
+                'pk': pk,
+                'bucket_changed': True,
+                'message': 'Saved. Refresh the page to see this item in its new section.',
+            }
+        )
+    lid = src or bucket or ''
+    return JsonResponse(
+        {
+            'ok': True,
+            'removed': False,
+            'pk': pk,
+            'html': _item_card_html(request, item, list_id=lid),
+        }
     )
 
 
@@ -164,14 +237,14 @@ def dashboard(request):
     active = list(active_qs)
     parts = partition_active_items(active)
     gtd = {
-        'unclear': _sort_by_priority_then_created(parts['unclear']),
-        'trash_list': _sort_by_priority_then_created(parts['trash_list']),
-        'reference': _sort_by_priority_then_created(parts['reference']),
-        'someday': _sort_by_priority_then_created(parts['someday']),
-        'calendar_hard': _sort_calendar(parts['calendar_hard']),
-        'waiting': _sort_by_priority_then_created(parts['waiting']),
-        'projects': _sort_by_priority_then_created(parts['projects']),
-        'next_actions': _sort_by_priority_then_created(parts['next_actions']),
+        'unclear': _sort_date_then_priority(parts['unclear']),
+        'trash_list': _sort_date_then_priority(parts['trash_list']),
+        'reference': _sort_date_then_priority(parts['reference']),
+        'someday': _sort_date_then_priority(parts['someday']),
+        'calendar_hard': _sort_date_then_priority(parts['calendar_hard']),
+        'waiting': _sort_date_then_priority(parts['waiting']),
+        'projects': _sort_date_then_priority(parts['projects']),
+        'next_actions': _sort_date_then_priority(parts['next_actions']),
     }
     done_qs = CaptureItem.objects.filter(user=request.user, archived=True).order_by(
         '-completed_at'
@@ -349,12 +422,17 @@ def item_status(request, pk: int):
     _require_owner(request)
     item = get_object_or_404(CaptureItem, pk=pk, user=request.user)
     st = (request.POST.get('status') or '').strip()
+    removed = False
     if st == CaptureStatus.DONE:
         item.mark_done()
+        removed = True
     elif st == CaptureStatus.WAITING:
         item.mark_waiting(request.POST.get('waiting_for', ''))
     elif st == CaptureStatus.OPEN:
         item.mark_open()
+    jr = _json_capture_response(request, item, removed=removed)
+    if jr:
+        return jr
     return _dashboard_redirect(request)
 
 
@@ -396,7 +474,17 @@ def item_update_meta(request, pk: int):
     valid = {c.value for c in TaskPriority}
     if pr in valid:
         item.priority = pr
-    item.save(update_fields=['category_label', 'priority', 'updated_at'])
+    update_fields = ['category_label', 'priority', 'updated_at']
+    if 'title' in request.POST:
+        item.title = (request.POST.get('title') or '').strip()[:200]
+        update_fields.append('title')
+    if 'body' in request.POST:
+        item.body = (request.POST.get('body') or '').strip()
+        update_fields.append('body')
+    item.save(update_fields=update_fields)
+    jr = _json_capture_response(request, item, removed=False)
+    if jr:
+        return jr
     return _dashboard_redirect(request)
 
 
@@ -407,6 +495,8 @@ def item_archive(request, pk: int):
     item = get_object_or_404(CaptureItem, pk=pk, user=request.user)
     item.archived = True
     item.save(update_fields=['archived', 'updated_at'])
+    if _accepts_json(request):
+        return JsonResponse({'ok': True, 'removed': True, 'pk': item.pk})
     return _dashboard_redirect(request)
 
 
@@ -416,4 +506,7 @@ def recategorize(request, pk: int):
     _require_owner(request)
     item = get_object_or_404(CaptureItem, pk=pk, user=request.user)
     categorize_capture_item(item)
+    jr = _json_capture_response(request, item, removed=False)
+    if jr:
+        return jr
     return _dashboard_redirect(request)

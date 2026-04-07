@@ -60,6 +60,16 @@
         .filters-actions a.reset { color: var(--muted); font-size: 0.88rem; }
         .filters-actions a.reset:hover { color: var(--accent); }
         .filter-active-hint { font-size: 0.82rem; color: var(--wait); margin: 0 0 10px; }
+        #bd-toast {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 1000;
+            max-width: min(92vw, 420px); padding: 12px 18px; border-radius: 10px; font-size: 0.88rem;
+            background: var(--card); border: 1px solid #30363d; color: var(--ink);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4); display: none;
+        }
+        #bd-toast.show { display: block; }
+        #bd-toast.warn { border-color: var(--wait); color: var(--wait); }
+        #bd-toast.err { border-color: #f85149; color: #f85149; }
+        form.bd-ajax button.sm:disabled { opacity: 0.55; cursor: wait; }
     </style>
 </head>
 <body>
@@ -191,7 +201,7 @@
     </form>
 
     <h2>Weekly review</h2>
-    <p class="section-note">Step 4: skim every list below, update next actions and calendar, and re-run AI on anything stale. Keep your mind off remembering.</p>
+    <p class="section-note">Step 4: skim every list below, update next actions and calendar, and re-run AI on anything stale. Keep your mind off remembering. Within each list, items are sorted by <strong>due date</strong> (soonest first; undated at the end), then by <strong>urgency</strong>. Status, date, and “Save updates” apply <strong>without a full page reload</strong> (if something moves to another GTD section, you’ll get a short note to refresh).</p>
 
     <h2>Clarify queue</h2>
     <p class="section-note">Not yet classified as actionable or not — run AI or decide yourself.</p>
@@ -200,7 +210,7 @@
     {% endif %}
     <ul class="items">
         {% for it in gtd.unclear %}
-        {% include "braindump/_item_card.html" with show_trash_archive=False %}
+        {% include "braindump/_item_card.html" with show_trash_archive=False list_id="unclear" %}
         {% endfor %}
     </ul>
 
@@ -211,7 +221,7 @@
     {% endif %}
     <ul class="items">
         {% for it in gtd.calendar_hard %}
-        {% include "braindump/_item_card.html" with show_trash_archive=False %}
+        {% include "braindump/_item_card.html" with show_trash_archive=False list_id="calendar_hard" %}
         {% endfor %}
     </ul>
 
@@ -221,7 +231,7 @@
     {% endif %}
     <ul class="items">
         {% for it in gtd.next_actions %}
-        {% include "braindump/_item_card.html" with show_trash_archive=False %}
+        {% include "braindump/_item_card.html" with show_trash_archive=False list_id="next_actions" %}
         {% endfor %}
     </ul>
 
@@ -231,7 +241,7 @@
     {% endif %}
     <ul class="items">
         {% for it in gtd.projects %}
-        {% include "braindump/_item_card.html" with show_trash_archive=False %}
+        {% include "braindump/_item_card.html" with show_trash_archive=False list_id="projects" %}
         {% endfor %}
     </ul>
 
@@ -241,7 +251,7 @@
     {% endif %}
     <ul class="items">
         {% for it in gtd.waiting %}
-        {% include "braindump/_item_card.html" with show_trash_archive=False %}
+        {% include "braindump/_item_card.html" with show_trash_archive=False list_id="waiting" %}
         {% endfor %}
     </ul>
 
@@ -251,7 +261,7 @@
     {% endif %}
     <ul class="items">
         {% for it in gtd.someday %}
-        {% include "braindump/_item_card.html" with show_trash_archive=False %}
+        {% include "braindump/_item_card.html" with show_trash_archive=False list_id="someday" %}
         {% endfor %}
     </ul>
 
@@ -261,7 +271,7 @@
     {% endif %}
     <ul class="items">
         {% for it in gtd.reference %}
-        {% include "braindump/_item_card.html" with show_trash_archive=False %}
+        {% include "braindump/_item_card.html" with show_trash_archive=False list_id="reference" %}
         {% endfor %}
     </ul>
 
@@ -272,7 +282,7 @@
     {% endif %}
     <ul class="items">
         {% for it in gtd.trash_list %}
-        {% include "braindump/_item_card.html" with show_trash_archive=True %}
+        {% include "braindump/_item_card.html" with show_trash_archive=True list_id="trash_list" %}
         {% endfor %}
     </ul>
 
@@ -332,5 +342,121 @@
         {% endfor %}
     </ul>
 </div>
+<div id="bd-toast" role="status" aria-live="polite"></div>
+<script>
+(function () {
+  function getCookie(name) {
+    var v = null;
+    if (document.cookie && document.cookie !== '') {
+      document.cookie.split(';').forEach(function (c) {
+        c = c.trim();
+        if (c.indexOf(name + '=') === 0) {
+          v = decodeURIComponent(c.slice(name.length + 1));
+        }
+      });
+    }
+    return v;
+  }
+  var toastEl = document.getElementById('bd-toast');
+  var toastTimer = null;
+  function showToast(msg, cls) {
+    if (!toastEl) return;
+    toastEl.className = 'show' + (cls ? ' ' + cls : '');
+    toastEl.textContent = msg;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+      toastEl.className = '';
+      toastEl.textContent = '';
+    }, 6000);
+  }
+  function reorderCaptureCard(li) {
+    var ul = li.parentElement;
+    if (!ul || ul.className.indexOf('items') === -1) return;
+    var rows = Array.prototype.slice.call(ul.querySelectorAll(':scope > li.item'));
+    rows.sort(function (a, b) {
+      var da = a.getAttribute('data-sort-date') || '9999-12-31';
+      var db = b.getAttribute('data-sort-date') || '9999-12-31';
+      if (da !== db) return da < db ? -1 : 1;
+      var pa = parseInt(a.getAttribute('data-sort-prio'), 10);
+      var pb = parseInt(b.getAttribute('data-sort-prio'), 10);
+      if (isNaN(pa)) pa = 2;
+      if (isNaN(pb)) pb = 2;
+      if (pa !== pb) return pa - pb;
+      var ca = parseInt(a.getAttribute('data-sort-created'), 10) || 0;
+      var cb = parseInt(b.getAttribute('data-sort-created'), 10) || 0;
+      return cb - ca;
+    });
+    rows.forEach(function (el) { ul.appendChild(el); });
+  }
+  var wrap = document.querySelector('.wrap');
+  if (!wrap) return;
+  wrap.addEventListener('submit', function (ev) {
+    var form = ev.target;
+    if (!(form instanceof HTMLFormElement) || form.method.toLowerCase() !== 'post') return;
+    if (!form.classList.contains('bd-ajax')) return;
+    ev.preventDefault();
+    var token = getCookie('csrftoken');
+    if (!token) {
+      var hid = form.querySelector('[name=csrfmiddlewaretoken]');
+      token = hid ? hid.value : '';
+    }
+    if (!token) return;
+    var btn = form.querySelector('button[type="submit"]');
+    var prevText = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = '…'; }
+    var fd = new FormData(form);
+    fetch(form.action, {
+      method: 'POST',
+      body: fd,
+      headers: {
+        'X-CSRFToken': token,
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      credentials: 'same-origin'
+    }).then(function (r) {
+      var ct = r.headers.get('content-type') || '';
+      if (ct.indexOf('application/json') === -1) {
+        window.location.reload();
+        return null;
+      }
+      return r.json();
+    }).then(function (data) {
+      if (!data) return;
+      if (!data.ok) {
+        showToast('Something went wrong.', 'err');
+        return;
+      }
+      if (data.removed) {
+        if (data.bucket_changed) {
+          window.location.reload();
+          return;
+        }
+        var li = document.getElementById('capture-' + data.pk);
+        if (li) li.remove();
+        showToast('Updated.');
+        return;
+      }
+      if (data.html) {
+        var oldLi = document.getElementById('capture-' + data.pk);
+        if (oldLi) {
+          var tpl = document.createElement('template');
+          tpl.innerHTML = data.html.trim();
+          var newLi = tpl.content.firstElementChild;
+          if (newLi) {
+            oldLi.replaceWith(newLi);
+            reorderCaptureCard(newLi);
+          }
+        }
+        showToast('Saved.');
+      }
+    }).catch(function () {
+      showToast('Network error — try again.', 'err');
+    }).finally(function () {
+      if (btn) { btn.disabled = false; btn.textContent = prevText; }
+    });
+  });
+})();
+</script>
 </body>
 </html>

@@ -1,4 +1,5 @@
-<li class="item {% if it.status == 'done' %}done{% endif %}"{% if it.pk %} id="capture-{{ it.pk }}"{% endif %}>
+{% load braindump_item_tags %}
+<li class="item {% if it.status == 'done' %}done{% endif %}"{% if it.pk %} id="capture-{{ it.pk }}" data-sort-date="{% if it.calendar_date %}{{ it.calendar_date|date:'Y-m-d' }}{% else %}9999-12-31{% endif %}" data-sort-prio="{{ it.priority|priority_rank }}" data-sort-created="{{ it.created_at|date:'U' }}"{% endif %}>
     <div class="title">{{ it.title|default:"(untitled)" }}</div>
     <div class="meta">
         {% if it.is_actionable is None %}<span class="tag-unclear">Needs clarify</span> · {% endif %}
@@ -20,54 +21,67 @@
     {% if it.pk %}
     <div class="row">
         {% if show_trash_archive %}
-        <form class="inline" method="post" action="{% url 'braindump:item_archive' it.pk %}">
+        <form class="inline bd-ajax" method="post" action="{% url 'braindump:item_archive' it.pk %}">
             {% csrf_token %}
+            <input type="hidden" name="source_list" value="{{ list_id }}">
             <button type="submit" class="sm danger">Archive (remove)</button>
         </form>
         {% else %}
-        <form class="inline" method="post" action="{% url 'braindump:item_status' it.pk %}">
+        <form class="inline bd-ajax" method="post" action="{% url 'braindump:item_status' it.pk %}">
             {% csrf_token %}
+            <input type="hidden" name="source_list" value="{{ list_id }}">
             <input type="hidden" name="status" value="open">
             <button type="submit" class="sm">Still to do</button>
         </form>
-        <form class="inline" method="post" action="{% url 'braindump:item_status' it.pk %}">
+        <form class="inline bd-ajax" method="post" action="{% url 'braindump:item_status' it.pk %}">
             {% csrf_token %}
+            <input type="hidden" name="source_list" value="{{ list_id }}">
             <input type="hidden" name="status" value="waiting">
             <button type="submit" class="sm">Waiting</button>
         </form>
-        <form class="inline" method="post" action="{% url 'braindump:item_status' it.pk %}">
+        <form class="inline bd-ajax" method="post" action="{% url 'braindump:item_status' it.pk %}">
             {% csrf_token %}
+            <input type="hidden" name="source_list" value="{{ list_id }}">
             <input type="hidden" name="status" value="done">
             <button type="submit" class="sm">Done</button>
         </form>
-        <form class="inline" method="post" action="{% url 'braindump:item_calendar_date' it.pk %}">
+        <form class="inline bd-ajax" method="post" action="{% url 'braindump:item_calendar_date' it.pk %}">
             {% csrf_token %}
+            <input type="hidden" name="source_list" value="{{ list_id }}">
             <input class="date" type="date" name="calendar_date" value="{{ it.calendar_date|date:'Y-m-d' }}">
             <label class="chk"><input type="checkbox" name="calendar_is_hard_date" value="1" {% if it.calendar_is_hard_date %}checked{% endif %}> Hard date (landscape)</label>
             <button type="submit" class="sm">Set date</button>
         </form>
-        <form class="inline" method="post" action="{% url 'braindump:recategorize' it.pk %}">
+        <form class="inline bd-ajax" method="post" action="{% url 'braindump:recategorize' it.pk %}">
             {% csrf_token %}
+            <input type="hidden" name="source_list" value="{{ list_id }}">
             <button type="submit" class="sm">Re-run AI</button>
         </form>
         {% endif %}
     </div>
     {% if not show_trash_archive and it.pk %}
-    <form method="post" action="{% url 'braindump:item_update_meta' it.pk %}" class="meta-edit" style="margin-top:10px;padding-top:10px;border-top:1px solid #30363d;">
+    <form method="post" action="{% url 'braindump:item_update_meta' it.pk %}" class="meta-edit bd-ajax" style="margin-top:10px;padding-top:10px;border-top:1px solid #30363d;">
         {% csrf_token %}
-        <span style="font-size:0.75rem;color:var(--muted);margin-right:8px;">Adjust if AI missed:</span>
+        <input type="hidden" name="source_list" value="{{ list_id }}">
+        <span style="font-size:0.75rem;color:var(--muted);display:block;margin-bottom:8px;">Update item (saved without reloading the page):</span>
+        <label style="font-size:0.72rem;color:var(--muted);display:block;margin-bottom:4px;">Title</label>
+        <input type="text" name="title" value="{{ it.title }}" placeholder="Short title" maxlength="200" style="width:100%;max-width:100%;padding:8px 10px;border-radius:6px;border:1px solid #30363d;background:#0d1117;color:var(--ink);font-size:0.88rem;margin-bottom:8px;">
+        <label style="font-size:0.72rem;color:var(--muted);display:block;margin-bottom:4px;">Details / capture text</label>
+        <textarea name="body" rows="3" placeholder="Full text" style="width:100%;max-width:100%;padding:8px 10px;border-radius:6px;border:1px solid #30363d;background:#0d1117;color:var(--ink);font-size:0.88rem;resize:vertical;margin-bottom:8px;">{{ it.body }}</textarea>
+        <span style="font-size:0.75rem;color:var(--muted);margin-right:8px;">Work stream &amp; urgency:</span>
         <input type="text" name="category_label" value="{{ it.category_label }}" placeholder="Category" maxlength="120" style="width:min(100%,200px);padding:6px 10px;border-radius:6px;border:1px solid #30363d;background:#0d1117;color:var(--ink);font-size:0.85rem;">
         <select name="priority" style="padding:6px 10px;border-radius:6px;border:1px solid #30363d;background:#0d1117;color:var(--ink);font-size:0.85rem;">
             {% for val, label in task_priority_choices %}
             <option value="{{ val }}" {% if it.priority == val %}selected{% endif %}>{{ label }}</option>
             {% endfor %}
         </select>
-        <button type="submit" class="sm">Save category &amp; priority</button>
+        <button type="submit" class="sm">Save updates</button>
     </form>
     {% endif %}
     {% if it.status == 'waiting' and not show_trash_archive and it.pk %}
-    <form method="post" action="{% url 'braindump:item_status' it.pk %}" style="margin-top:8px;">
+    <form class="bd-ajax" method="post" action="{% url 'braindump:item_status' it.pk %}" style="margin-top:8px;">
         {% csrf_token %}
+        <input type="hidden" name="source_list" value="{{ list_id }}">
         <input type="hidden" name="status" value="waiting">
         <input type="text" name="waiting_for" value="{{ it.waiting_for }}" placeholder="Waiting on…" style="width:min(100%,360px);padding:6px 10px;border-radius:6px;border:1px solid #30363d;background:#0d1117;color:var(--ink);">
         <button type="submit" class="sm">Update waiting</button>

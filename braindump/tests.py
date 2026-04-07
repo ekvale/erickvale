@@ -133,6 +133,77 @@ class BraindumpOwnerTests(TestCase):
         self.assertEqual(it.category_label, 'Health')
         self.assertEqual(it.priority, TaskPriority.URGENT)
 
+    def test_item_update_meta_json_returns_html_fragment(self):
+        c = Client()
+        c.login(username='owner1', password='pw')
+        it = CaptureItem.objects.create(
+            user=self.owner,
+            body='x',
+            title='t',
+            category_label='Old',
+            priority=TaskPriority.NORMAL,
+            is_actionable=True,
+            gtd_bucket=GTDBucket.NEXT_ACTION,
+        )
+        r = c.post(
+            reverse('braindump:item_update_meta', args=[it.pk]),
+            {
+                'category_label': 'Health',
+                'priority': TaskPriority.URGENT,
+                'title': 'New t',
+                'body': 'y',
+                'source_list': 'next_actions',
+            },
+            HTTP_ACCEPT='application/json',
+        )
+        self.assertEqual(r.status_code, 200)
+        data = r.json()
+        self.assertTrue(data['ok'])
+        self.assertIn('html', data)
+        self.assertIn('New t', data['html'])
+        it.refresh_from_db()
+        self.assertEqual(it.title, 'New t')
+        self.assertEqual(it.body, 'y')
+
+    def test_dashboard_next_actions_sorted_date_then_priority(self):
+        c = Client()
+        c.login(username='owner1', password='pw')
+        CaptureItem.objects.create(
+            user=self.owner,
+            body='b',
+            title='SortUniqueLater',
+            is_actionable=True,
+            gtd_bucket=GTDBucket.NEXT_ACTION,
+            calendar_date=date(2026, 6, 20),
+            priority=TaskPriority.URGENT,
+        )
+        CaptureItem.objects.create(
+            user=self.owner,
+            body='a',
+            title='SortUniqueEarlier',
+            is_actionable=True,
+            gtd_bucket=GTDBucket.NEXT_ACTION,
+            calendar_date=date(2026, 6, 10),
+            priority=TaskPriority.LOW,
+        )
+        CaptureItem.objects.create(
+            user=self.owner,
+            body='c',
+            title='SortUniqueUndated',
+            is_actionable=True,
+            gtd_bucket=GTDBucket.NEXT_ACTION,
+            priority=TaskPriority.URGENT,
+        )
+        r = c.get(reverse('braindump:dashboard'))
+        self.assertEqual(r.status_code, 200)
+        content = r.content.decode()
+        pos_early = content.find('SortUniqueEarlier')
+        pos_late = content.find('SortUniqueLater')
+        pos_undated = content.find('SortUniqueUndated')
+        self.assertGreater(pos_early, 0)
+        self.assertLess(pos_early, pos_late)
+        self.assertLess(pos_late, pos_undated)
+
     def test_dashboard_gtd_sections(self):
         c = Client()
         c.login(username='owner1', password='pw')
