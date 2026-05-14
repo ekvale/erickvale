@@ -1,20 +1,21 @@
 {% extends "base_site.html" %}
-{% block title %}Eric Kvale — HTAC, OMOP & health data utility{% endblock %}
+{% block title %}Eric Kvale — Population health data infrastructure{% endblock %}
 {% block main_inner %}
   <section class="hero-dark w-full py-20 sm:py-28">
     <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-      <p class="eyebrow">Population health · Federated analytics</p>
+      <p class="eyebrow">Population health data infrastructure · Minneapolis, Minnesota</p>
       <h1 class="mt-4 max-w-3xl font-display text-white">
-        HTAC, OMOP CDM, and health data utility (HDU)
+        Building the systems that make underserved populations visible in health data.
       </h1>
       <p class="mt-6 max-w-2xl text-xl font-light leading-relaxed text-white/[0.85]">
-        This site demonstrates how standardized clinical data, privacy-preserving linkage, and governance-aware
-        publishing work together: from multi-site OMOP cohorts through small-cell suppression to governed outputs and
-        materials that program and policy staff can act on — without moving raw records off contributor systems.
+        Public health agencies, health system research consortia, and community organizations work with us to build the technical infrastructure needed to generate timely, accurate health estimates for people experiencing homelessness, incarceration, and housing instability — populations that existing surveillance systems routinely miss.
+      </p>
+      <p class="mt-4 max-w-2xl text-base font-light leading-relaxed text-white/70">
+        This site includes a working implementation of the federated OMOP pipeline used by the Minnesota Electronic Health Record Consortium — here as evidence of what we build, not as the primary message.
       </p>
       <div class="mt-10 flex flex-wrap gap-4">
-        <a href="{% url 'htac_public_about' %}" class="btn-hero-primary">HTAC overview</a>
-        <a href="{% url 'htac_pipeline_step1' %}" class="btn-hero-secondary">Pipeline walkthrough</a>
+        <a href="{% url 'services' %}" class="btn-hero-primary">View Services</a>
+        <a href="{% url 'htac_pipeline_step1' %}" class="btn-hero-secondary">Explore the Pipeline</a>
       </div>
       <div class="mt-14 hidden flex-col gap-8 border-t border-white/[0.12] pt-10 sm:flex sm:flex-row sm:items-stretch sm:justify-between sm:gap-0">
         <div class="flex flex-1 flex-col sm:border-r sm:border-white/[0.15] sm:pr-8">
@@ -47,6 +48,20 @@
     </div>
   </section>
 
+  <section class="border-y border-parchment-300 bg-parchment-100 py-16 sm:py-20" aria-labelledby="data-gap-heading">
+    <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      <h2 id="data-gap-heading" class="font-display text-navy-800">The data gap this work addresses</h2>
+      <div class="mt-6 max-w-3xl space-y-4 text-sm leading-relaxed text-slate-600 sm:text-base">
+        <p>
+          Health condition prevalence data in the United States is primarily derived from survey methods that carry a 2–3 year lag and lack the geographic resolution needed by local health departments. More critically, these systems systematically exclude the populations carrying the highest health burdens — people who have recently experienced homelessness or incarceration are largely absent from the national data infrastructure that drives resource allocation and policy.
+        </p>
+        <p>
+          Electronic health records, linked to administrative data from homeless services systems, corrections agencies, Medicaid enrollment files, and immunization registries, offer a path toward timely, geographically granular estimates for these groups. Building that path requires federated data infrastructure — common data models, privacy-preserving record linkage, validated condition codesets, and governed output layers — that most public health agencies and community organizations cannot build independently. That infrastructure is what this practice designs and implements.
+        </p>
+      </div>
+    </div>
+  </section>
+
   <section class="section-grid relative overflow-hidden py-20 sm:py-24" aria-labelledby="services-teaser-heading">
     <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
       <span class="bg-label">01</span>
@@ -61,6 +76,9 @@
           We work with public health agencies, health systems, and research organizations to build the data infrastructure needed to study and serve populations that are routinely underrepresented in existing health data systems — including people experiencing homelessness, incarceration, and housing instability.
         </p>
       </div>
+      <p class="mt-8 max-w-3xl text-base leading-relaxed text-slate-600 sm:text-lg">
+        Work spans the full implementation stack — from initial OMOP CDM configuration and governance design through federated query execution, administrative data linkage, and publication of suppressed, stratified prevalence estimates to data products that program and policy staff can use.
+      </p>
       <div class="mt-12 grid max-w-6xl gap-6 sm:grid-cols-3">
         <div class="card service-card rounded-md border border-parchment-300 bg-white shadow-sm">
           <h3 class="text-lg font-medium text-navy-800">OMOP Data Engineering</h3>
@@ -147,78 +165,51 @@
     </div>
   </section>
 
-  <section class="relative overflow-hidden bg-parchment-100 py-20 sm:py-24" aria-labelledby="pillars-heading">
+  <section class="relative overflow-hidden bg-parchment-100 py-20 sm:py-24" aria-labelledby="technical-foundation-heading">
     <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
       <span class="bg-label">02</span>
     </div>
     <div class="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-      <h2 id="pillars-heading" class="font-display text-navy-800">What you can build on this stack</h2>
+      <h2 id="technical-foundation-heading" class="font-display text-navy-800">The technical foundation</h2>
       <div class="mt-4 max-w-3xl space-y-4 text-sm leading-relaxed text-slate-600 sm:text-base [&>p:first-of-type]:text-lg [&>p:first-of-type]:font-light">
         <p>
-          The HTAC narrative and demo pipeline on this domain are aligned with OHDSI’s OMOP CDM and federated patterns.
-          Resources under the HTAC app (including OHDSI links and population-health references) inform the framing below.
-          <a href="{% url 'htac_pipeline_demo' %}" class="mt-3 inline-block font-semibold text-teal-600 underline-offset-4 hover:text-navy-800 hover:underline">Run a live federated pipeline demonstration →</a>
+          This practice is built on the OMOP common data model and the federated architecture developed by the Minnesota Electronic Health Record Consortium — a statewide collaboration covering 94% of Minnesota's population across 11 health systems. Using open, internationally adopted standards means implementations are auditable, replicable across jurisdictions, and not dependent on proprietary vendor infrastructure.
         </p>
       </div>
       <div class="mt-12 grid max-w-6xl gap-6 lg:grid-cols-3">
         <article class="overflow-hidden rounded-md border border-parchment-300 bg-white shadow-sm">
           <div class="h-1 bg-teal-600" aria-hidden="true"></div>
           <div class="p-6">
-            <p class="eyebrow text-xs">HTAC</p>
-            <h3 class="mt-2 text-lg font-medium text-navy-800">Health Trends Across Communities</h3>
+            <h3 class="text-lg font-medium text-navy-800">OMOP Common Data Model</h3>
             <p class="mt-3 text-sm leading-relaxed text-slate-600">
-              Privacy-preserving record linkage, enrichment, stratification, and suppression so prevalence and trend
-              estimates can move between sites without exposing identifiable microdata.
+              The shared data standard that allows clinical data from different EHR platforms to be queried consistently across sites. Each contributing health system maintains its own OMOP instance — no patient data leaves the site.
             </p>
-            <ul class="mt-4 list-disc space-y-1 pl-5 text-sm text-slate-600">
-              <li>Step-by-step pipeline pages with field-level notes</li>
-              <li>Governance-oriented language for DUAs and oversight</li>
-              <li>Sandbox-style illustration, not an official reporting system</li>
-            </ul>
-            <p class="mt-4 text-sm leading-relaxed text-slate-600">
-              The pipeline is live on this site. Step through it to see every architectural decision, from OMOP domain tables through token generation, deduplication, and suppression.
+            <p class="mt-4">
+              <a href="{% url 'htac_public_about' %}#omop" class="text-sm font-semibold text-teal-600 underline-offset-4 transition hover:text-navy-800 hover:underline">About OMOP →</a>
             </p>
           </div>
         </article>
         <article class="overflow-hidden rounded-md border border-parchment-300 bg-white shadow-sm">
           <div class="h-1 bg-navy-800" aria-hidden="true"></div>
           <div class="p-6">
-            <p class="eyebrow text-xs">OMOP CDM</p>
-            <h3 class="mt-2 text-lg font-medium text-navy-800">Common data model &amp; cohort logic</h3>
+            <h3 class="text-lg font-medium text-navy-800">Federated Pipeline</h3>
             <p class="mt-3 text-sm leading-relaxed text-slate-600">
-              Clinical data stay with contributors in OMOP; cohort definitions and federated execution patterns keep
-              analytics portable across jurisdictions and vendors.
+              Privacy-preserving record linkage, administrative data enrichment, federated cohort queries, and small-cell suppression are the core technical layers. Together they implement the full architecture from OMOP instances at contributing sites to governed aggregate outputs.
             </p>
-            <ul class="mt-4 list-disc space-y-1 pl-5 text-sm text-slate-600">
-              <li>Shared vocabulary and tables for consistent measures</li>
-              <li>OHDSI tooling and community practices as the backbone</li>
-              <li>Interoperability between operational systems and published aggregates</li>
-            </ul>
-            <p class="mt-4 text-sm leading-relaxed text-slate-600">
-              Each of the 11 MNEHRC health systems maintains its own OMOP instance. The shared vocabulary layer is what makes federated queries produce comparable results across different EHR platforms.
-            </p>
-            <p class="mt-4 text-xs text-slate-500">
-              See also: <a href="https://www.ohdsi.org/" class="font-medium text-navy-800 underline-offset-2 hover:underline">ohdsi.org</a>
-              and the HTAC about page for how OMOP fits the HTAC workflow.
+            <p class="mt-4">
+              <a href="{% url 'htac_pipeline_step1' %}" class="text-sm font-semibold text-teal-600 underline-offset-4 transition hover:text-navy-800 hover:underline">Step through the pipeline →</a>
             </p>
           </div>
         </article>
         <article class="overflow-hidden rounded-md border border-parchment-300 bg-white shadow-sm">
           <div class="h-1 bg-amber-600" aria-hidden="true"></div>
           <div class="p-6">
-            <p class="eyebrow text-xs">HDU</p>
-            <h3 class="mt-2 text-lg font-medium text-navy-800">Health data utility</h3>
+            <h3 class="text-lg font-medium text-navy-800">Governed Data Products</h3>
             <p class="mt-3 text-sm leading-relaxed text-slate-600">
-              Turning standardized models and governed aggregates into documented, accessible outputs: HTTPS APIs,
-              reproducible tables for leadership, and handoff materials so technical and program teams share one picture.
+              Suppressed, stratified prevalence estimates are published through dashboards, structured file extracts, and documented APIs. They are designed for use by program staff and oversight bodies, not just analysts.
             </p>
-            <ul class="mt-4 list-disc space-y-1 pl-5 text-sm text-slate-600">
-              <li>Documented read-only HTTPS interface for integration testing</li>
-              <li>Clear separation between contributor-held data and published outputs</li>
-              <li>Structured to pair analytic outputs with narrative documentation for oversight bodies and program decision-makers</li>
-            </ul>
-            <p class="mt-4 text-sm leading-relaxed text-slate-600">
-              The governed output layer is where infrastructure becomes actionable. Without it, even a well-built pipeline produces results that cannot safely move from analysts to decision-makers.
+            <p class="mt-4">
+              <a href="{% url 'htac_pipeline_demo' %}" class="text-sm font-semibold text-teal-600 underline-offset-4 transition hover:text-navy-800 hover:underline">Run a live demonstration →</a>
             </p>
           </div>
         </article>
@@ -254,25 +245,11 @@
     </div>
   </section>
 
-  <section class="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8 lg:py-24">
-    <h2 class="font-display text-navy-800">How to use this site</h2>
-    <div class="mt-4 max-w-3xl space-y-4 text-sm leading-relaxed text-slate-600 sm:text-base [&>p:first-of-type]:text-lg [&>p:first-of-type]:font-light">
-      <p>
-        Start with <strong class="font-medium text-navy-800">HTAC overview</strong> for the narrative, then step through the
-        <strong class="font-medium text-navy-800">pipeline</strong> for field-level detail. The walkthrough is backed by the same
-        Django application patterns that power a governed data product layer for stakeholders. Other applications on this
-        domain remain at their URLs; this home page stays the entry point for the HTAC / OMOP / HDU story.
-      </p>
-    </div>
-  </section>
-
   <section class="border-t-2 border-teal-600 bg-parchment-100 py-16 sm:py-20">
     <div class="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
-      <h2 class="font-display text-2xl text-navy-800 sm:text-3xl">Ready to discuss your data infrastructure needs?</h2>
+      <h2 class="font-display text-2xl text-navy-800 sm:text-3xl">Start a conversation</h2>
       <p class="mt-4 text-sm leading-relaxed text-slate-600 sm:text-base">
-        Whether you are a public health agency, a health system research team, or an organization preparing a grant
-        application — use the contact form to start a conversation about what this kind of infrastructure could do for
-        your work.
+        Whether you are a public health agency assessing a community health needs assessment data gap, a research consortium evaluating OMOP infrastructure, or an organization preparing a grant application with a data infrastructure component — use the contact form to discuss the specifics.
       </p>
       <div class="mt-8">
         <a href="{% url 'contact' %}" class="btn-primary focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 focus:ring-offset-parchment-100">
