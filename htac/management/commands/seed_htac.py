@@ -215,7 +215,7 @@ TRIBAL_NATIONS = [
     ("Leech Lake Band Health & Human Services",          "LEECH_LAKE_TRIBAL"),
     ("Lower Sioux Indian Community Health",              "LOWER_SIOUX_TRIBAL"),
     ("Mille Lacs Band Health & Human Services",          "MILLE_LACS_TRIBAL"),
-    ("Prairie Island Indian Community Health",           "PRAIRIE_ISLAND_TRIBAL"),
+    ("Prairie Island Indian Community Health",           "PRAIRIE_ISL_TRIBAL"),
     ("Red Lake Nation Health Services",                  "RED_LAKE_TRIBAL"),
     ("Shakopee Mdewakanton Sioux Health Program",        "SHAKOPEE_TRIBAL"),
     ("Upper Sioux Community Health (Pezihutazizi Oyate)","UPPER_SIOUX_TRIBAL"),
@@ -224,7 +224,7 @@ TRIBAL_NATIONS = [
 
 FQHC_INSTITUTIONS = [
     ("NorthPoint Health & Wellness Center",              "NORTHPOINT_FQHC"),
-    ("Community Care Collaborative",                     "MN_COMMUNITY_CARE_FQHC"),
+    ("Community Care Collaborative",                     "MN_COMMCARE_FQHC"),
     ("Open Door Health Center",                          "OPEN_DOOR_FQHC"),
     ("Virginia Community Health Center",                 "VIRGINIA_CHC_FQHC"),
     ("Native American Community Clinic",                 "NACC_FQHC"),
