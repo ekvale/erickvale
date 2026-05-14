@@ -14,6 +14,11 @@ def about(request):
     return render(request, 'erickvale/about.html')
 
 
+def services(request):
+    """Professional services page."""
+    return render(request, 'erickvale/services.html')
+
+
 def login_view(request):
     """User login view."""
     if request.user.is_authenticated:

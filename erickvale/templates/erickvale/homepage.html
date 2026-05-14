@@ -27,6 +27,41 @@
     </div>
   </section>
 
+  <section class="mt-14 rounded-2xl border border-slate-200 bg-white px-6 py-10 shadow-sm sm:px-10" aria-labelledby="services-teaser-heading">
+    <p class="text-xs font-semibold uppercase tracking-wide text-htac-teal">What We Do</p>
+    <h2 id="services-teaser-heading" class="mt-2 text-lg font-semibold text-slate-900">
+      Technical Services for Population Health Data Infrastructure
+    </h2>
+    <p class="mt-4 max-w-3xl text-sm leading-relaxed text-slate-600 sm:text-base">
+      We work with public health agencies, health systems, and research organizations to build the data infrastructure needed to study and serve populations that are routinely underrepresented in existing health data systems — including people experiencing homelessness, incarceration, and housing instability.
+    </p>
+    <div class="mt-8 grid gap-4 sm:grid-cols-3">
+      <div class="rounded-xl border border-slate-200 bg-slate-50 p-5">
+        <h3 class="text-sm font-semibold text-slate-900">OMOP Data Engineering</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-600">
+          Codeset development, ETL pipelines, and data quality processes for health systems operating on the OMOP common data model.
+        </p>
+      </div>
+      <div class="rounded-xl border border-slate-200 bg-slate-50 p-5">
+        <h3 class="text-sm font-semibold text-slate-900">Federated Network Support</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-600">
+          Governance frameworks and analytic infrastructure for distributed health data networks where patient-level data stays on-site.
+        </p>
+      </div>
+      <div class="rounded-xl border border-slate-200 bg-slate-50 p-5">
+        <h3 class="text-sm font-semibold text-slate-900">Administrative Data Linkage</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-600">
+          Privacy-preserving pipelines connecting EHR data to HMIS, corrections, Medicaid, and immunization records.
+        </p>
+      </div>
+    </div>
+    <p class="mt-8">
+      <a href="{% url 'services' %}" class="text-sm font-semibold text-htac-teal underline-offset-4 transition hover:text-htac-navy hover:underline">
+        View all services →
+      </a>
+    </p>
+  </section>
+
   <section class="mt-14" aria-labelledby="pillars-heading">
     <h2 id="pillars-heading" class="text-lg font-semibold text-slate-900">What you can build on this stack</h2>
     <p class="mt-2 max-w-3xl text-sm leading-relaxed text-slate-600">
