@@ -355,7 +355,8 @@ HTAC_PPRL_SALT = config(
     default='htac-dev-pprl-salt-change-in-production',
 ).strip()
 
-# REST Framework settings
+# Optional POST secret for /htac/demo/reset/ (if empty, staff login required)
+HTAC_PIPELINE_DEMO_RESET_SECRET = config('HTAC_PIPELINE_DEMO_RESET_SECRET', default='').strip()
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',

@@ -22,7 +22,14 @@
         </a>
       {% endif %}
       <a href="{% url 'htac_public_about' %}" class="hover:text-htac-navy transition-colors">HTAC</a>
-      <a href="{% url 'htac_pipeline_step1' %}" class="pl-2 hover:text-htac-navy transition-colors sm:border-l sm:border-slate-200 sm:pl-4">Pipeline</a>
+      <a href="{% url 'htac_pipeline_demo' %}" class="group inline-flex items-center gap-1.5 pl-2 hover:text-htac-navy transition-colors sm:border-l sm:border-slate-200 sm:pl-4">
+        <span class="relative flex h-2 w-2">
+          <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-40"></span>
+          <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" title="Live demo"></span>
+        </span>
+        Live Demo
+      </a>
+      <a href="{% url 'htac_pipeline_step1' %}" class="hover:text-htac-navy transition-colors">Pipeline</a>
       <a href="{% url 'about' %}" class="hover:text-htac-navy transition-colors">About</a>
       <a href="{% url 'contact' %}" class="hover:text-htac-navy transition-colors">Contact</a>
       {% if user.is_authenticated %}

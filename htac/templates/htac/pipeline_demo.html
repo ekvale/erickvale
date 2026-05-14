@@ -1,0 +1,397 @@
+{% extends "htac/base.html" %}
+{% load humanize %}
+
+{% block title %}Federated Pipeline Demonstration — HTAC{% endblock %}
+
+{% block extra_head %}
+<style>
+  .demo-zone { margin-bottom: 2rem; }
+  .demo-step-card {
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #cbd5e1;
+    border-radius: 0.5rem;
+    background: #fff;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+  .demo-step-card.is-running {
+    border-left-color: #008EAA;
+    box-shadow: 0 0 0 1px rgba(0, 142, 170, 0.12);
+  }
+  .demo-step-card.is-complete { border-left-color: #059669; }
+  .demo-step-card.is-failed { border-left-color: #dc2626; }
+  .demo-step-inner { padding: 1rem 1.25rem; }
+  .demo-pulse {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: #008EAA;
+    animation: demo-pulse 1.2s ease-in-out infinite;
+    margin-right: 0.35rem;
+    vertical-align: middle;
+  }
+  @keyframes demo-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.45; transform: scale(0.85); }
+  }
+  .demo-metric { font-size: 1.75rem; font-weight: 700; color: #003865; line-height: 1.2; }
+  .demo-metric-label { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; }
+  details.demo-tech > summary { cursor: pointer; font-weight: 600; color: #008EAA; font-size: 0.9rem; margin-top: 0.75rem; }
+  details.demo-tech pre {
+    margin-top: 0.5rem;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: #334155;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.375rem;
+    padding: 0.75rem 1rem;
+  }
+  .demo-site-table { width: 100%; font-size: 0.82rem; border-collapse: collapse; margin-top: 0.75rem; }
+  .demo-site-table th, .demo-site-table td { padding: 0.4rem 0.5rem; text-align: left; border-bottom: 1px solid #f1f5f9; }
+  .demo-site-table th { color: #64748b; font-weight: 600; }
+  #zone-c { display: none; }
+  #zone-c.is-visible { display: block; }
+  #demo-error { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="demo-zone">
+  <p class="text-xs font-semibold uppercase tracking-wide text-htac-teal">HTAC · Live demonstration</p>
+  <h1 class="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Federated Pipeline Demonstration</h1>
+  <p class="mt-4 max-w-3xl text-base leading-relaxed text-slate-600">
+    A live run of the HTAC data pipeline using synthetic patient records distributed across the 11 Minnesota Electronic Health Record Consortium health systems.
+    Each step executes in sequence — clinical data loading, privacy-preserving tokenization, cross-site deduplication, administrative data enrichment,
+    federated cohort queries, stratification and suppression, and published results.
+  </p>
+  <p class="mt-3 max-w-3xl text-sm text-slate-500">
+    <span class="font-medium text-slate-600">For program and policy staff:</span> watch what happens to patient data at each step and why.
+  </p>
+  <p class="mt-1 max-w-3xl text-sm text-slate-500">
+    <span class="font-medium text-slate-600">For technical implementers:</span> the step detail panels show the architectural decisions behind each phase.
+  </p>
+
+  <div class="mt-8 flex flex-wrap items-center gap-4">
+    <button type="button" id="btn-run-pipeline"
+      class="inline-flex items-center justify-center rounded-lg bg-htac-navy px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-htac-teal disabled:cursor-not-allowed disabled:opacity-60">
+      {% if run and run.status == 'complete' %}Run Again{% else %}Run the Pipeline{% endif %}
+    </button>
+    <span id="btn-spinner" class="hidden items-center gap-2 text-sm text-slate-600">
+      <svg class="h-5 w-5 animate-spin text-htac-teal" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      Running pipeline…
+    </span>
+  </div>
+  {% if run and run.status == 'complete' %}
+  <p class="mt-3 text-sm text-amber-800">Running again will clear the previous demonstration data and replace it with a new synthetic run.</p>
+  {% endif %}
+  <p class="mt-6 max-w-3xl text-xs text-slate-500">
+    All records are synthetic. No real patient data is used in this demonstration. Health system names reflect actual MNEHRC consortium members;
+    patient data is algorithmically generated for demonstration purposes only.
+  </p>
+</div>
+
+<div id="demo-error" class="mb-6 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900" role="alert"></div>
+
+<div id="zone-b" class="demo-zone">
+  <h2 class="mb-4 text-lg font-semibold text-slate-900">Pipeline steps</h2>
+  <div id="step-cards">
+    {% for st in steps_display %}
+    <div class="demo-step-card is-{{ st.status }}" data-step="{{ st.step_number }}" id="card-step-{{ st.step_number }}">
+      <div class="demo-step-inner">
+        <div class="flex flex-wrap items-baseline justify-between gap-2">
+          <div>
+            <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-700">{{ st.step_number }}</span>
+            <span class="ml-2 font-semibold text-slate-900">{{ st.step_name }}</span>
+            {% if st.status == 'running' %}<span class="ml-2 text-sm text-htac-teal"><span class="demo-pulse" aria-hidden="true"></span>Processing…</span>{% endif %}
+            {% if st.status == 'complete' %}
+            <span class="ml-2 text-sm font-medium text-emerald-700">✓ Complete{% if st.display_duration %} · {{ st.display_duration }}s{% endif %}</span>
+            {% endif %}
+            {% if st.status == 'failed' %}<span class="ml-2 text-sm font-medium text-rose-700">Failed</span>{% endif %}
+          </div>
+          {% if st.status == 'complete' and st.display_duration %}
+          <span class="text-xs text-slate-500">{{ st.display_duration }} seconds</span>
+          {% endif %}
+        </div>
+        {% if st.status == 'complete' %}
+        <div class="mt-4 border-t border-slate-100 pt-4">
+          {% if st.metric_label %}
+          <p class="demo-metric-label">{{ st.metric_label }}</p>
+          <p class="demo-metric">{{ st.metric_value }}</p>
+          {% endif %}
+          {% if st.narrative_headline %}
+          <h3 class="mt-4 text-base font-semibold text-slate-900">{{ st.narrative_headline }}</h3>
+          <p class="mt-2 text-sm leading-relaxed text-slate-600">{{ st.narrative_body }}</p>
+          {% endif %}
+          {% if st.technical_detail %}
+          <details class="demo-tech">
+            <summary>Technical detail</summary>
+            <pre>{{ st.technical_detail }}</pre>
+          </details>
+          {% endif %}
+          {% if st.site_data.sites %}
+          <table class="demo-site-table" aria-label="Per-site metrics for this step">
+            <thead>
+              <tr>
+                <th>Health system</th>
+                {% for k, v in st.site_data.sites.0.items %}
+                  {% if k != "name" %}<th class="capitalize">{{ k }}</th>{% endif %}
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for site in st.site_data.sites %}
+              <tr>
+                <td>{{ site.name }}</td>
+                {% for key, val in site.items %}
+                  {% if key != "name" %}<td>{{ val|intcomma }}</td>{% endif %}
+                {% endfor %}
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div id="zone-c" class="demo-zone rounded-xl border border-slate-200 bg-white p-6 shadow-sm {% if run and run.status == 'complete' %}is-visible{% endif %}">
+  <h2 class="text-lg font-semibold text-slate-900">Run summary</h2>
+  <div id="summary-grid" class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    {% if run and run.status == 'complete' %}
+    <div><p class="text-xs font-semibold uppercase text-slate-500">Raw patient records</p><p class="text-2xl font-bold text-slate-900">{{ run.total_patients_raw|intcomma }}</p></div>
+    <div><p class="text-xs font-semibold uppercase text-slate-500">Unique after deduplication</p><p class="text-2xl font-bold text-slate-900">{{ run.total_patients_deduplicated|intcomma }}</p></div>
+    <div><p class="text-xs font-semibold uppercase text-slate-500">Cross-site duplicates resolved</p><p class="text-2xl font-bold text-slate-900">{{ run.cross_site_matches|intcomma }}</p></div>
+    <div><p class="text-xs font-semibold uppercase text-slate-500">Homelessness flag</p><p class="text-2xl font-bold text-slate-900">{{ run.homeless_flagged|intcomma }}</p></div>
+    <div><p class="text-xs font-semibold uppercase text-slate-500">Incarceration flag</p><p class="text-2xl font-bold text-slate-900">{{ run.incarcerated_flagged|intcomma }}</p></div>
+    <div><p class="text-xs font-semibold uppercase text-slate-500">Medicaid flag</p><p class="text-2xl font-bold text-slate-900">{{ run.medicaid_flagged|intcomma }}</p></div>
+    <div><p class="text-xs font-semibold uppercase text-slate-500">Estimates generated</p><p class="text-2xl font-bold text-slate-900">{{ run.total_estimates_generated|intcomma }}</p></div>
+    <div><p class="text-xs font-semibold uppercase text-slate-500">Estimates suppressed</p>
+      <p class="text-2xl font-bold text-slate-900">{{ run.total_estimates_suppressed|intcomma }}
+        {% if run.total_estimates_generated %}
+        <span class="text-sm font-normal text-slate-500">({% widthratio run.total_estimates_suppressed run.total_estimates_generated 100 %}%)</span>
+        {% endif %}
+      </p>
+    </div>
+    {% endif %}
+  </div>
+  <p id="closing-statement" class="mt-6 text-sm leading-relaxed text-slate-600">
+    {% if run and run.status == 'complete' and run_wall_seconds != None %}
+    This demonstration ran end-to-end in {{ run_wall_seconds }} seconds across 11 simulated health systems. In a production deployment, the same pipeline would run on real OMOP CDM instances at each participating health system, with network latency replacing the simulated processing delays. The output format — suppressed, stratified PrevalenceEstimate rows — is identical to the format used in the MNEHRC Health Trends Across Communities production system.
+    {% endif %}
+  </p>
+  <div class="mt-6 flex flex-wrap gap-3">
+    <a href="{% url 'htac_pipeline_step1' %}" class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50">View Pipeline Step 1</a>
+    <a href="{% url 'contact' %}" class="inline-flex items-center justify-center rounded-lg bg-htac-navy px-4 py-2 text-sm font-semibold text-white hover:bg-htac-teal">Discuss a Deployment</a>
+  </div>
+</div>
+
+<script>
+(function () {
+  var runUrl = "{% url 'htac_pipeline_run_start' %}";
+  var statusUrlTpl = "{{ status_url_tpl|escapejs }}";
+  var csrftoken = (document.cookie.match(/csrftoken=([^;]+)/) || [])[1];
+
+  function getStatusUrl(runId) {
+    return statusUrlTpl.replace("999999999", String(runId));
+  }
+
+  function esc(s) {
+    var d = document.createElement("div");
+    d.textContent = s == null ? "" : String(s);
+    return d.innerHTML;
+  }
+
+  function fmtInt(n) {
+    return n == null || n === "" ? "" : Number(n).toLocaleString();
+  }
+
+  function fmtDur(sec) {
+    if (sec == null || sec === "") return "";
+    var n = Math.round(Number(sec));
+    return n + " seconds";
+  }
+
+  function siteTableHtml(siteData) {
+    if (!siteData || !siteData.sites || !siteData.sites.length) return "";
+    var sites = siteData.sites;
+    var keys = Object.keys(sites[0]).filter(function (k) { return k !== "name"; });
+    var h = "<table class=\"demo-site-table\"><thead><tr><th>Health system</th>";
+    keys.forEach(function (k) {
+      h += "<th>" + esc(k.replace(/_/g, " ")) + "</th>";
+    });
+    h += "</tr></thead><tbody>";
+    sites.forEach(function (row) {
+      h += "<tr><td>" + esc(row.name) + "</td>";
+      keys.forEach(function (k) {
+        var v = row[k];
+        h += "<td>" + (typeof v === "number" ? fmtInt(v) : esc(v)) + "</td>";
+      });
+      h += "</tr>";
+    });
+    h += "</tbody></table>";
+    return h;
+  }
+
+  function renderStepCard(step) {
+    var num = step.step_number;
+    var el = document.getElementById("card-step-" + num);
+    if (!el) return;
+    el.className = "demo-step-card is-" + (step.status || "pending");
+    var dur = step.duration_seconds != null ? fmtDur(step.duration_seconds) : "";
+    var inner = "<div class=\"demo-step-inner\">";
+    inner += "<div class=\"flex flex-wrap items-baseline justify-between gap-2\"><div>";
+    inner += "<span class=\"inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-700\">" + num + "</span>";
+    inner += "<span class=\"ml-2 font-semibold text-slate-900\">" + esc(step.step_name) + "</span>";
+    if (step.status === "running") {
+      inner += "<span class=\"ml-2 text-sm text-htac-teal\"><span class=\"demo-pulse\"></span>Processing…</span>";
+    }
+    if (step.status === "complete") {
+      inner += "<span class=\"ml-2 text-sm font-medium text-emerald-700\">✓ Complete" + (dur ? " · " + dur : "") + "</span>";
+    }
+    if (step.status === "failed") {
+      inner += "<span class=\"ml-2 text-sm font-medium text-rose-700\">Failed</span>";
+    }
+    inner += "</div>";
+    if (dur && step.status === "complete") inner += "<span class=\"text-xs text-slate-500\">" + dur + "</span>";
+    inner += "</div>";
+    if (step.status === "complete") {
+      inner += "<div class=\"mt-4 border-t border-slate-100 pt-4\">";
+      if (step.metric_label) {
+        inner += "<p class=\"demo-metric-label\">" + esc(step.metric_label) + "</p>";
+        inner += "<p class=\"demo-metric\">" + esc(step.metric_value) + "</p>";
+      }
+      if (step.narrative_headline) {
+        inner += "<h3 class=\"mt-4 text-base font-semibold text-slate-900\">" + esc(step.narrative_headline) + "</h3>";
+        inner += "<p class=\"mt-2 text-sm leading-relaxed text-slate-600\">" + esc(step.narrative_body) + "</p>";
+      }
+      if (step.technical_detail) {
+        inner += "<details class=\"demo-tech\"><summary>Technical detail</summary><pre>" + esc(step.technical_detail) + "</pre></details>";
+      }
+      inner += siteTableHtml(step.site_data);
+      inner += "</div>";
+    }
+    inner += "</div>";
+    el.innerHTML = inner;
+    if (step.status === "running" || step.status === "complete") {
+      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }
+
+  function renderSummary(payload) {
+    var s = payload.summary || {};
+    var zone = document.getElementById("zone-c");
+    var grid = document.getElementById("summary-grid");
+    var pct = s.total_estimates_generated ? Math.round(100 * s.total_estimates_suppressed / s.total_estimates_generated) : 0;
+    grid.innerHTML =
+      "<div><p class=\"text-xs font-semibold uppercase text-slate-500\">Raw patient records</p><p class=\"text-2xl font-bold text-slate-900\">" + fmtInt(s.total_patients_raw) + "</p></div>" +
+      "<div><p class=\"text-xs font-semibold uppercase text-slate-500\">Unique after deduplication</p><p class=\"text-2xl font-bold text-slate-900\">" + fmtInt(s.total_patients_deduplicated) + "</p></div>" +
+      "<div><p class=\"text-xs font-semibold uppercase text-slate-500\">Cross-site duplicates resolved</p><p class=\"text-2xl font-bold text-slate-900\">" + fmtInt(s.cross_site_matches) + "</p></div>" +
+      "<div><p class=\"text-xs font-semibold uppercase text-slate-500\">Homelessness flag</p><p class=\"text-2xl font-bold text-slate-900\">" + fmtInt(s.homeless_flagged) + "</p></div>" +
+      "<div><p class=\"text-xs font-semibold uppercase text-slate-500\">Incarceration flag</p><p class=\"text-2xl font-bold text-slate-900\">" + fmtInt(s.incarcerated_flagged) + "</p></div>" +
+      "<div><p class=\"text-xs font-semibold uppercase text-slate-500\">Medicaid flag</p><p class=\"text-2xl font-bold text-slate-900\">" + fmtInt(s.medicaid_flagged) + "</p></div>" +
+      "<div><p class=\"text-xs font-semibold uppercase text-slate-500\">Estimates generated</p><p class=\"text-2xl font-bold text-slate-900\">" + fmtInt(s.total_estimates_generated) + "</p></div>" +
+      "<div><p class=\"text-xs font-semibold uppercase text-slate-500\">Estimates suppressed</p><p class=\"text-2xl font-bold text-slate-900\">" + fmtInt(s.total_estimates_suppressed) +
+      " <span class=\"text-sm font-normal text-slate-500\">(" + pct + "%)</span></p></div>";
+    document.getElementById("closing-statement").textContent =
+      "This demonstration ran end-to-end in " + fmtInt(payload.elapsed_seconds) + " seconds across 11 simulated health systems. In a production deployment, the same pipeline would run on real OMOP CDM instances at each participating health system, with network latency replacing the simulated processing delays. The output format — suppressed, stratified PrevalenceEstimate rows — is identical to the format used in the MNEHRC Health Trends Across Communities production system.";
+    zone.classList.add("is-visible");
+  }
+
+  function showError(msg) {
+    var e = document.getElementById("demo-error");
+    e.textContent = msg;
+    e.style.display = "block";
+  }
+
+  function pollRun(runId) {
+    var tries = 0;
+    var iv = setInterval(function () {
+      fetch(getStatusUrl(runId), { credentials: "same-origin" })
+        .then(function (r) { if (!r.ok) throw new Error("Status " + r.status); return r.json(); })
+        .then(function (data) {
+          tries = 0;
+          (data.steps || []).forEach(renderStepCard);
+          if (data.status === "complete") {
+            clearInterval(iv);
+            document.getElementById("btn-spinner").classList.add("hidden");
+            document.getElementById("btn-spinner").classList.remove("inline-flex");
+            document.getElementById("btn-run-pipeline").disabled = false;
+            document.getElementById("btn-run-pipeline").textContent = "Run Again";
+            renderSummary(data);
+          } else if (data.status === "failed") {
+            clearInterval(iv);
+            document.getElementById("btn-spinner").classList.add("hidden");
+            document.getElementById("btn-spinner").classList.remove("inline-flex");
+            document.getElementById("btn-run-pipeline").disabled = false;
+            showError(data.error_message || "Pipeline failed.");
+          }
+        })
+        .catch(function () {
+          tries += 1;
+          if (tries >= 3) {
+            clearInterval(iv);
+            document.getElementById("btn-spinner").classList.add("hidden");
+            document.getElementById("btn-spinner").classList.remove("inline-flex");
+            document.getElementById("btn-run-pipeline").disabled = false;
+            showError("Lost connection while polling. Please refresh the page.");
+          }
+        });
+    }, 1500);
+  }
+
+  document.getElementById("btn-run-pipeline").addEventListener("click", function () {
+    document.getElementById("demo-error").style.display = "none";
+    var btn = this;
+    btn.disabled = true;
+    var sp = document.getElementById("btn-spinner");
+    sp.classList.remove("hidden");
+    sp.classList.add("inline-flex");
+    fetch(runUrl, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "X-CSRFToken": csrftoken || ""
+      },
+      body: ""
+    })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (x) {
+        if (!x.ok && x.j.error) throw new Error(x.j.error);
+        if (!x.ok) throw new Error("Could not start run");
+        var runId = x.j.run_id;
+        for (var i = 1; i <= 7; i++) {
+          var el = document.getElementById("card-step-" + i);
+          if (el) {
+            el.className = "demo-step-card is-pending";
+            el.innerHTML = "<div class=\"demo-step-inner\"><span class=\"inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-500\">" + i + "</span><span class=\"ml-2 font-medium text-slate-400\">Pending</span></div>";
+          }
+        }
+        document.getElementById("zone-c").classList.remove("is-visible");
+        pollRun(runId);
+      })
+      .catch(function (e) {
+        btn.disabled = false;
+        sp.classList.add("hidden");
+        sp.classList.remove("inline-flex");
+        showError(e.message || "Request failed");
+      });
+  });
+})();
+</script>
+
+{% endblock %}

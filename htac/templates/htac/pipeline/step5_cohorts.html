@@ -150,5 +150,39 @@
   </div>
 </div>
 
+{% if pipeline_demo_cohorts %}
+<div class="htac-section">
+  <h2>Latest demonstration — federated cohort counts</h2>
+  <p style="font-size:.9rem;color:#555;margin-bottom:1rem;">Numerator / denominator (persons with a study-window visit who meet the condition definition).</p>
+  <div style="overflow-x:auto;">
+    <table class="htac-stats-table">
+      {% for row in pipeline_demo_cohorts %}
+        {% if forloop.first %}
+      <thead>
+        <tr>
+          <th>Site</th>
+          {% for name, cell in row.conditions.items %}
+          <th>{{ name }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+        {% endif %}
+      {% endfor %}
+      <tbody>
+        {% for row in pipeline_demo_cohorts %}
+        <tr>
+          <td>{{ row.site }}</td>
+          {% for name, cell in row.conditions.items %}
+          <td>{{ cell.numerator|intcomma }} / {{ cell.denominator|intcomma }}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% include 'htac/pipeline/_demo_run_banner.html' %}
 {% include 'htac/pipeline/_page_nav.html' %}
 {% endblock %}

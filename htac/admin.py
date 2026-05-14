@@ -49,6 +49,7 @@ from htac.models import (
     VitalStatisticsRecord,
     VisitOccurrence,
 )
+from htac.models_pipeline_run import PipelineRun, PipelineStep
 
 
 # ── HealthSystem ──────────────────────────────────────────────────────────────
@@ -435,3 +436,38 @@ class VitalStatisticsRecordAdmin(admin.ModelAdmin):
     @admin.display(description="Token hash")
     def token_hash_short(self, obj):
         return f"{obj.token_hash[:8]}…"
+
+
+# ── Pipeline demonstration runs ───────────────────────────────────────────────
+
+
+class PipelineStepInline(admin.TabularInline):
+    model = PipelineStep
+    extra = 0
+    readonly_fields = (
+        "step_number",
+        "step_name",
+        "status",
+        "started_at",
+        "completed_at",
+        "narrative_headline",
+        "metric_label",
+        "metric_value",
+    )
+    can_delete = False
+
+
+@admin.register(PipelineRun)
+class PipelineRunAdmin(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "status",
+        "started_at",
+        "completed_at",
+        "total_patients_raw",
+        "total_patients_deduplicated",
+        "created_at",
+    ]
+    list_filter = ["status"]
+    readonly_fields = ["created_at"]
+    inlines = [PipelineStepInline]

@@ -640,3 +640,6 @@ class DataQualityReport(models.Model):
             f"{self.health_system.short_code} | {self.metric_name} "
             f"= {self.metric_value} [{self.flag}]"
         )
+
+
+from htac.models_pipeline_run import PipelineRun, PipelineStep  # noqa: E402,F401

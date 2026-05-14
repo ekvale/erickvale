@@ -31,6 +31,12 @@ from htac.views_public import (
     PipelineStep6View,
     PipelineStep7View,
 )
+from htac.views_pipeline_demo import (
+    pipeline_demo,
+    pipeline_reset,
+    pipeline_run_start,
+    pipeline_run_status,
+)
 
 urlpatterns = [
     path('admin/htac/about/', htac_admin_about, name='htac_about'),
@@ -51,6 +57,10 @@ urlpatterns = [
     path('apps/dream-blue/', include('dream_blue.urls')),
     path('apps/braindump/', include('braindump.urls')),
     path('htac/about/', HTACAboutView.as_view(), name='htac_public_about'),
+    path('htac/demo/', pipeline_demo, name='htac_pipeline_demo'),
+    path('htac/demo/run/', pipeline_run_start, name='htac_pipeline_run_start'),
+    path('htac/demo/status/<int:run_id>/', pipeline_run_status, name='htac_pipeline_run_status'),
+    path('htac/demo/reset/', pipeline_reset, name='htac_pipeline_reset'),
     path('htac/pipeline/1/', PipelineStep1View.as_view(), name='htac_pipeline_step1'),
     path('htac/pipeline/2/', PipelineStep2View.as_view(), name='htac_pipeline_step2'),
     path('htac/pipeline/3/', PipelineStep3View.as_view(), name='htac_pipeline_step3'),

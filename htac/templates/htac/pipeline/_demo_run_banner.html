@@ -1,0 +1,14 @@
+{% load humanize %}
+{% if pipeline_demo_counts and demo_run %}
+<div class="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+  <strong>Latest pipeline demonstration</strong> (completed {{ demo_run.completed_at|date:"M j, Y H:i" }}).
+  Counts on this page reflect synthetic federated data from that run.
+  <a href="{% url 'htac_pipeline_demo' %}" class="font-semibold text-emerald-800 underline underline-offset-2 hover:text-emerald-950">Open the live demo →</a>
+</div>
+{% elif not pipeline_demo_counts %}
+<div class="mb-6 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+  <strong>No completed demonstration yet.</strong>
+  <a href="{% url 'htac_pipeline_demo' %}" class="font-semibold text-htac-teal hover:text-htac-navy">Run the pipeline demonstration</a>
+  to populate these metrics with a synthetic federated run (OMOP → PPRL → deduplication → cohorts → suppression).
+</div>
+{% endif %}

@@ -29,6 +29,9 @@ from htac.models import (
     VitalStatisticsRecord,
     VisitOccurrence,
 )
+from htac.models_pipeline_run import PipelineRun, PipelineStep
+from htac.pipeline_constants import DEMO_STUDY_NOTES_MARKER
+from htac.pipeline_runner import person_source_prefix
 
 
 class HTACAboutView(TemplateView):
@@ -46,6 +49,16 @@ PIPELINE_STEPS = [
     {"num": 6, "label": "Suppression",        "url_name": "htac_pipeline_step6"},
     {"num": 7, "label": "Results",            "url_name": "htac_pipeline_step7"},
 ]
+
+
+def _latest_completed_demo_run():
+    return PipelineRun.objects.filter(status="complete").order_by("-completed_at").first()
+
+
+def _demo_person_prefix_for_run(run):
+    if not run:
+        return None
+    return person_source_prefix(run.pk)
 
 
 def _resolve_steps(current_step: int) -> tuple[list, dict | None, dict | None]:
@@ -78,23 +91,44 @@ class PipelineStep1View(TemplateView):
         ctx.update({"pipeline_steps": steps, "current_step": 1,
                     "prev_step": prev_step, "next_step": next_step})
 
+        demo_run = _latest_completed_demo_run()
+        demo_step = demo_run.steps.filter(step_number=1).first() if demo_run else None
+        pfx = _demo_person_prefix_for_run(demo_run)
+
         active_sites = list(HealthSystem.objects.filter(is_active=True).order_by("name"))
-        site_stats = [
-            {
-                "name":         site.name,
-                "persons":      Person.objects.filter(health_system=site).count(),
-                "visits":       VisitOccurrence.objects.filter(health_system=site).count(),
-                "conditions":   ConditionOccurrence.objects.filter(health_system=site).count(),
-                "drugs":        DrugExposure.objects.filter(health_system=site).count(),
-                "measurements": Measurement.objects.filter(health_system=site).count(),
-                "observations": Observation.objects.filter(health_system=site).count(),
-            }
-            for site in active_sites
-        ]
+        if pfx:
+            site_stats = [
+                {
+                    "name":         site.name,
+                    "persons":      Person.objects.filter(health_system=site, person_source_value__startswith=pfx).count(),
+                    "visits":       VisitOccurrence.objects.filter(health_system=site, person__person_source_value__startswith=pfx).count(),
+                    "conditions":   ConditionOccurrence.objects.filter(health_system=site, person__person_source_value__startswith=pfx).count(),
+                    "drugs":        DrugExposure.objects.filter(health_system=site, person__person_source_value__startswith=pfx).count(),
+                    "measurements": Measurement.objects.filter(health_system=site, person__person_source_value__startswith=pfx).count(),
+                    "observations": Observation.objects.filter(health_system=site, person__person_source_value__startswith=pfx).count(),
+                }
+                for site in active_sites
+            ]
+        else:
+            site_stats = [
+                {
+                    "name":         site.name,
+                    "persons":      Person.objects.filter(health_system=site).count(),
+                    "visits":       VisitOccurrence.objects.filter(health_system=site).count(),
+                    "conditions":   ConditionOccurrence.objects.filter(health_system=site).count(),
+                    "drugs":        DrugExposure.objects.filter(health_system=site).count(),
+                    "measurements": Measurement.objects.filter(health_system=site).count(),
+                    "observations": Observation.objects.filter(health_system=site).count(),
+                }
+                for site in active_sites
+            ]
         ctx["site_stats"] = site_stats
         ctx["totals"] = {k: sum(s[k] for s in site_stats)
                          for k in ("persons", "visits", "conditions",
                                    "drugs", "measurements", "observations")}
+        ctx["demo_run"] = demo_run
+        ctx["demo_step"] = demo_step
+        ctx["pipeline_demo_counts"] = bool(pfx)
         return ctx
 
 
@@ -109,27 +143,53 @@ class PipelineStep2View(TemplateView):
         ctx.update({"pipeline_steps": steps, "current_step": 2,
                     "prev_step": prev_step, "next_step": next_step})
 
-        active_sites = list(HealthSystem.objects.filter(is_active=True).order_by("name"))
-        token_stats = [
-            {"name": site.name,
-             "tokens": HashToken.objects.filter(health_system=site).count()}
-            for site in active_sites
-        ]
-        total_tokens = sum(s["tokens"] for s in token_stats)
+        demo_run = _latest_completed_demo_run()
+        demo_step = demo_run.steps.filter(step_number=2).first() if demo_run else None
+        pfx = _demo_person_prefix_for_run(demo_run)
 
-        cross_site_count = (
-            HashToken.objects
-            .filter(health_system__is_active=True)
-            .values("token")
-            .annotate(n_sites=Count("health_system", distinct=True))
-            .filter(n_sites__gt=1)
-            .count()
-        )
+        active_sites = list(HealthSystem.objects.filter(is_active=True).order_by("name"))
+        if pfx:
+            token_stats = [
+                {
+                    "name": site.name,
+                    "tokens": HashToken.objects.filter(
+                        health_system=site, person__person_source_value__startswith=pfx
+                    ).count(),
+                }
+                for site in active_sites
+            ]
+            cross_site_count = (
+                HashToken.objects.filter(
+                    person__person_source_value__startswith=pfx,
+                    health_system__is_active=True,
+                )
+                .values("token")
+                .annotate(n_sites=Count("health_system", distinct=True))
+                .filter(n_sites__gt=1)
+                .count()
+            )
+        else:
+            token_stats = [
+                {"name": site.name,
+                 "tokens": HashToken.objects.filter(health_system=site).count()}
+                for site in active_sites
+            ]
+            cross_site_count = (
+                HashToken.objects.filter(health_system__is_active=True)
+                .values("token")
+                .annotate(n_sites=Count("health_system", distinct=True))
+                .filter(n_sites__gt=1)
+                .count()
+            )
+        total_tokens = sum(s["tokens"] for s in token_stats)
 
         ctx.update({
             "token_stats":       token_stats,
             "total_tokens":      total_tokens,
             "cross_site_count":  cross_site_count,
+            "demo_run":          demo_run,
+            "demo_step":         demo_step,
+            "pipeline_demo_counts": bool(pfx),
         })
         return ctx
 
@@ -145,17 +205,27 @@ class PipelineStep3View(TemplateView):
         ctx.update({"pipeline_steps": steps, "current_step": 3,
                     "prev_step": prev_step, "next_step": next_step})
 
-        roster_total = DeduplicatedRoster.objects.count()
-        multi_site   = DeduplicatedRoster.objects.filter(site_count__gt=1).count()
+        demo_run = _latest_completed_demo_run()
+        demo_step = demo_run.steps.filter(step_number=3).first() if demo_run else None
+        pfx = _demo_person_prefix_for_run(demo_run)
+        if pfx:
+            demo_tokens = HashToken.objects.filter(
+                person__person_source_value__startswith=pfx
+            ).values_list("token", flat=True)
+            r = DeduplicatedRoster.objects.filter(canonical_token__in=demo_tokens)
+        else:
+            r = DeduplicatedRoster.objects
+
+        roster_total = r.count()
+        multi_site   = r.filter(site_count__gt=1).count()
         single_site  = roster_total - multi_site
-        agg = DeduplicatedRoster.objects.aggregate(
+        agg = r.aggregate(
             max_sites=Max("site_count"),
             avg_sites=Avg("site_count"),
         )
 
         site_count_dist = list(
-            DeduplicatedRoster.objects
-            .values("site_count")
+            r.values("site_count")
             .annotate(n=Count("id"))
             .order_by("site_count")
         )
@@ -167,6 +237,9 @@ class PipelineStep3View(TemplateView):
             "max_sites":         agg["max_sites"] or 0,
             "avg_sites":         round(agg["avg_sites"] or 1, 2),
             "site_count_dist":   site_count_dist,
+            "demo_run":          demo_run,
+            "demo_step":         demo_step,
+            "pipeline_demo_counts": bool(pfx),
         })
         return ctx
 
@@ -182,7 +255,17 @@ class PipelineStep4View(TemplateView):
         ctx.update({"pipeline_steps": steps, "current_step": 4,
                     "prev_step": prev_step, "next_step": next_step})
 
-        r = DeduplicatedRoster.objects
+        demo_run = _latest_completed_demo_run()
+        demo_step = demo_run.steps.filter(step_number=4).first() if demo_run else None
+        pfx = _demo_person_prefix_for_run(demo_run)
+        if pfx:
+            toks = HashToken.objects.filter(
+                person__person_source_value__startswith=pfx
+            ).values_list("token", flat=True)
+            r = DeduplicatedRoster.objects.filter(canonical_token__in=toks)
+        else:
+            r = DeduplicatedRoster.objects
+
         roster_total = r.count()
         ctx.update({
             "roster_total":   roster_total,
@@ -202,6 +285,9 @@ class PipelineStep4View(TemplateView):
                 "MIICRecord":         MIICRecord.objects.count(),
                 "VitalStatisticsRecord": VitalStatisticsRecord.objects.count(),
             },
+            "demo_run": demo_run,
+            "demo_step": demo_step,
+            "pipeline_demo_counts": bool(pfx),
         })
         return ctx
 
@@ -251,6 +337,13 @@ class PipelineStep5View(TemplateView):
             "domain_totals":  domain_totals,
             "condition_count": len(condition_rows),
         })
+        demo_run = _latest_completed_demo_run()
+        demo_step = demo_run.steps.filter(step_number=5).first() if demo_run else None
+        ctx["demo_run"] = demo_run
+        ctx["demo_step"] = demo_step
+        ctx["pipeline_demo_cohorts"] = (
+            (demo_step.site_data or {}).get("cohorts") if demo_step else None
+        )
         return ctx
 
 
@@ -265,8 +358,19 @@ class PipelineStep6View(TemplateView):
         ctx.update({"pipeline_steps": steps, "current_step": 6,
                     "prev_step": prev_step, "next_step": next_step})
 
-        estimate_count   = PrevalenceEstimate.objects.count()
-        suppressed_count = PrevalenceEstimate.objects.filter(is_suppressed=True).count()
+        demo_run = _latest_completed_demo_run()
+        demo_step = demo_run.steps.filter(step_number=6).first() if demo_run else None
+        pfx = _demo_person_prefix_for_run(demo_run)
+        demo_study = (
+            StudyRun.objects.filter(notes=DEMO_STUDY_NOTES_MARKER).order_by("-id").first()
+        )
+        if demo_study:
+            est_q = PrevalenceEstimate.objects.filter(study_run=demo_study)
+        else:
+            est_q = PrevalenceEstimate.objects
+
+        estimate_count   = est_q.count()
+        suppressed_count = est_q.filter(is_suppressed=True).count()
         published_count  = estimate_count - suppressed_count
 
         ctx.update({
@@ -276,6 +380,9 @@ class PipelineStep6View(TemplateView):
             "suppression_pct":  round(suppressed_count / estimate_count * 100, 1) if estimate_count else 0,
             "stratifiers":      PrevalenceEstimate.STRATIFIER_CHOICES,
             "geo_levels":       PrevalenceEstimate.GEO_LEVEL_CHOICES,
+            "demo_run":         demo_run,
+            "demo_step":        demo_step,
+            "pipeline_demo_counts": bool(pfx),
         })
         return ctx
 
@@ -291,14 +398,24 @@ class PipelineStep7View(TemplateView):
         ctx.update({"pipeline_steps": steps, "current_step": 7,
                     "prev_step": prev_step, "next_step": next_step})
 
-        estimate_count   = PrevalenceEstimate.objects.count()
-        suppressed_count = PrevalenceEstimate.objects.filter(is_suppressed=True).count()
+        demo_run = _latest_completed_demo_run()
+        demo_step = demo_run.steps.filter(step_number=7).first() if demo_run else None
+        pfx = _demo_person_prefix_for_run(demo_run)
+        demo_study = (
+            StudyRun.objects.filter(notes=DEMO_STUDY_NOTES_MARKER).order_by("-id").first()
+        )
+        if demo_study:
+            est_q = PrevalenceEstimate.objects.filter(study_run=demo_study)
+        else:
+            est_q = PrevalenceEstimate.objects
+
+        estimate_count   = est_q.count()
+        suppressed_count = est_q.filter(is_suppressed=True).count()
         study_runs       = list(StudyRun.objects.order_by("-run_date"))
         dq_count         = DataQualityReport.objects.count()
 
         condition_counts = list(
-            PrevalenceEstimate.objects
-            .values("condition__name")
+            est_q.values("condition__name")
             .annotate(n=Count("id"))
             .order_by("-n")[:10]
         ) if estimate_count else []
@@ -310,5 +427,8 @@ class PipelineStep7View(TemplateView):
             "study_runs":       study_runs,
             "dq_count":         dq_count,
             "condition_counts": condition_counts,
+            "demo_run":         demo_run,
+            "demo_step":        demo_step,
+            "pipeline_demo_counts": bool(pfx),
         })
         return ctx
