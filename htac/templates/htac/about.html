@@ -6,7 +6,7 @@
 <style>
   /* ── Hero (elevated specificity for Bootstrap compatibility) ── */
   body.htac-site .htac-hero {
-    background: #003865; border-radius: 6px; padding: 2.5rem 2rem; margin-bottom: 2rem;
+    background: #003865; border-radius: 6px; padding: 4.5rem 2rem; margin-bottom: 2rem;
   }
   body.htac-site .htac-hero,
   body.htac-site .htac-hero h1,
@@ -15,17 +15,28 @@
   body.htac-site .htac-hero .htac-eyebrow { color: #7ecde0 !important; }
   body.htac-site .htac-hero h1 { font-size: 1.9rem; margin-bottom: .5rem; }
 
+  .htac-about-band { border-radius: 0.75rem; border: 1px solid rgb(241 245 249); padding: 4rem 1.25rem; margin-bottom: 2rem; }
+  @media (min-width: 640px) {
+    .htac-about-band { padding-left: 2rem; padding-right: 2rem; }
+  }
+
   /* ── Section headings ── */
   .htac-section { margin-bottom: 2.5rem; }
-  .htac-section h2 { font-size: 1.35rem; font-weight: 700;
+  .htac-section h2 { font-size: 1.875rem; font-weight: 600; letter-spacing: -0.02em;
                      border-bottom: 3px solid #008EAA; padding-bottom: .4rem;
                      margin-bottom: 1rem; }
+  .htac-section h3 { font-size: 1.125rem; font-weight: 600; margin-bottom: .5rem; }
+
+  /* ── OMOP reference table (HTAC about) ── */
+  .htac-omop-table td { padding: 12px 14px; vertical-align: top; border-bottom: 1px solid #e0e0e0; }
+  .htac-omop-table tr:nth-child(even) td { background: #f8fafc; }
+  .htac-omop-table td:first-child code { font-size: .75rem; color: #64748b; }
 
   /* ── HDU cards ── */
   .htac-card-row { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
   .htac-card { flex: 1 1 220px; background: #f5f8fb; border-left: 4px solid #003865;
                border-radius: 4px; padding: 1.1rem 1.25rem; }
-  .htac-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: .4rem; }
+  .htac-card h3 { font-size: 1.125rem; font-weight: 600; margin-bottom: .4rem; }
 
   /* ── Pipeline list ── */
   .htac-pipeline { counter-reset: step; list-style: none; padding-left: 0; }
@@ -51,12 +62,10 @@
   body.htac-site .htac-omop-table th {
     background: #003865 !important;
     color: #fff !important;
-    padding: 8px 12px;
+    padding: 10px 14px;
     text-align: left;
     font-weight: 600 !important;
   }
-  .htac-omop-table td { padding: 8px 12px; border-bottom: 1px solid #e0e0e0; }
-  .htac-omop-table tr:nth-child(even) td { background: #f5f8fb; }
 </style>
 {% endblock %}
 
@@ -69,17 +78,20 @@
   </p>
   <h1>Health Trends Across Communities (HTAC)</h1>
   <p>
-    HTAC describes a <strong>privacy-preserving, multi-site approach to population prevalence</strong>:
+    HTAC describes a <strong>privacy-preserving, multi-site approach to estimating health condition prevalence</strong>:
     clinical data remain with each contributor in a common clinical model (OMOP CDM), linkage uses
     one-way tokens, and only suppressed aggregate statistics are shared with a coordinating center.
-    The pages here walk through that workflow in a <strong>sandbox illustration</strong>; they are not
-    an official government reporting system.
+    The pages here walk through that workflow in a working demonstration environment. This is not an official reporting system and the record counts reflect a sandbox instance without a loaded synthetic dataset.
   </p>
 </div>
 
+<hr class="mb-8 border-t border-slate-200" aria-hidden="true">
+
 <!-- What is HTAC -->
-<div class="htac-section">
+<section class="htac-about-band bg-white">
+<div class="htac-section mb-0">
   <h2>What is HTAC?</h2>
+  <div class="max-w-3xl space-y-4 text-slate-700 [&>p:first-of-type]:text-lg [&>p:first-of-type]:font-light" style="font-size:.95rem;line-height:1.6;">
   <p>
     Routine surveillance still leans on registries, surveys, and payer fragments, each with blind spots.
     HTAC-style programs add <strong>federated queries against a shared clinical model</strong>,
@@ -98,17 +110,22 @@
     published vocabularies, versioned cohort definitions, documented data agreements, and review before
     new uses ship.
   </p>
+  </div>
 </div>
+</section>
 
 <!-- Governance model -->
-<div class="htac-section">
+<section class="htac-about-band bg-slate-50">
+<div class="htac-section mb-0">
   <h2>How collaboratives like this stay accountable</h2>
+  <div class="max-w-3xl space-y-4 text-slate-700 [&>p:first-of-type]:text-lg [&>p:first-of-type]:font-light" style="font-size:.95rem;line-height:1.6;">
   <p>
     Sustainable federated analytics depend less on any one vendor tool than on <strong>shared
     governance</strong>: a steering body with balanced representation, a scientific or ethics review path
     for new uses, documented data-use agreements, and technical assistance that keeps OMOP mappings
     and quality checks current.
   </p>
+  </div>
   <div class="htac-card-row">
     <div class="htac-card">
       <h3>Governance</h3>
@@ -133,10 +150,13 @@
     substantial. Your deployment’s numbers will depend on participation and legal scope.
   </p>
 </div>
+</section>
 
-<!-- What is OMOP -->
-<div class="htac-section">
+<!-- What is OMOP (conceptual + technical reference) -->
+<section class="htac-about-band bg-white">
+<div class="htac-section mb-0">
   <h2>What is OMOP?</h2>
+  <div class="max-w-3xl space-y-4 text-slate-700 [&>p:first-of-type]:text-lg [&>p:first-of-type]:font-light" style="font-size:.95rem;line-height:1.6;">
   <p>
     <strong>OMOP (Observational Medical Outcomes Partnership)</strong> is an open,
     internationally adopted common data model (CDM) maintained by the
@@ -149,6 +169,11 @@
     and vocabulary codes everywhere. Multi-site collaboratives typically invest sustained
     effort to harmonize OMOP before federated queries can run consistently.
   </p>
+  </div>
+
+  <hr class="my-10 border-t border-slate-200" aria-hidden="true">
+  <p class="mb-6 text-xs font-medium uppercase tracking-widest text-slate-400">Technical reference</p>
+
   <table class="htac-omop-table mb-6">
     <thead>
       <tr>
@@ -196,17 +221,19 @@
     build and audit condition definitions without ad hoc table-level queries.
   </p>
 </div>
+</section>
 
 <!-- How HTAC works -->
-<div class="htac-section" id="pipeline">
+<section class="htac-about-band bg-slate-50">
+<div class="htac-section mb-0" id="pipeline">
   <h2>How the HTAC Pipeline Works</h2>
+  <p class="mb-6 max-w-3xl text-lg font-light text-slate-600" style="font-size:1.05rem;line-height:1.55;">
+    Walk through each step in detail — data fields captured, why the step exists, and how it works.
+  </p>
 
   <div style="background:#edf4fb; border-left:4px solid #003865; border-radius:4px;
               padding:.9rem 1.2rem; margin-bottom:1.25rem; display:flex;
-              align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.75rem;">
-    <span style="font-size:.95rem;">
-      Walk through each step in detail — data fields captured, why the step exists, and how it works.
-    </span>
+              align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:.75rem;">
     <a href="{% url 'htac_pipeline_step1' %}"
        style="background:#003865; color:#fff !important; border-radius:4px;
               padding:.45rem 1.1rem; font-weight:700; text-decoration:none !important;
@@ -283,9 +310,11 @@
     </li>
   </ol>
 </div>
+</section>
 
 <!-- Data gaps -->
-<div class="htac-section">
+<section class="htac-about-band bg-white">
+<div class="htac-section mb-0">
   <h2>Known Data Gaps</h2>
   <div class="htac-gap mb-6">
     <p class="mb-1">
@@ -306,9 +335,11 @@
     </p>
   </div>
 </div>
+</section>
 
 <!-- Privacy -->
-<div class="htac-section">
+<section class="htac-about-band bg-slate-50">
+<div class="htac-section mb-0">
   <h2>Privacy &amp; Governance</h2>
   <ul>
     <li>PPRL tokens are one-way cryptographic hashes — mathematically irreversible without the shared salt.</li>
@@ -319,25 +350,27 @@
     <li>Ethics and oversight pathways depend on use case and jurisdiction—coordinate with counsel and IRBs as applicable.</li>
   </ul>
 </div>
+</section>
 
 <!-- Resources -->
-<div class="htac-section">
+<section class="htac-about-band bg-white">
+<div class="htac-section mb-0">
   <h2>Resources</h2>
 
-  <h3 style="font-size:1rem; font-weight:700; color:#003865; margin-top:1.25rem; margin-bottom:.5rem;">Learning networks &amp; field infrastructure</h3>
+  <h3 class="mt-4 text-lg font-semibold text-htac-navy">Learning networks &amp; field infrastructure</h3>
   <ul>
     <li><a href="https://www.astho.org/" target="_blank" rel="noopener">ASTHO</a> — leadership and policy alignment for governmental public health</li>
     <li><a href="https://www.debeaumont.org/" target="_blank" rel="noopener">de Beaumont Foundation</a> — workforce, capacity, and practice innovation</li>
     <li><a href="https://www.cdc.gov/surveillance/" target="_blank" rel="noopener">CDC — Public health surveillance resources</a></li>
   </ul>
 
-  <h3 style="font-size:1rem; font-weight:700; color:#003865; margin-top:1.25rem; margin-bottom:.5rem;">OMOP / OHDSI</h3>
+  <h3 class="mt-8 text-lg font-semibold text-htac-navy">OMOP / OHDSI</h3>
   <ul>
     <li><a href="https://www.ohdsi.org/" target="_blank" rel="noopener">OHDSI — Observational Health Data Sciences and Informatics</a></li>
     <li><a href="https://github.com/OHDSI" target="_blank" rel="noopener">OHDSI — CDM, Atlas, Achilles, and related tooling</a></li>
   </ul>
 
-  <h3 style="font-size:1rem; font-weight:700; color:#003865; margin-top:1.25rem; margin-bottom:.5rem;">Federal &amp; National Data Programs</h3>
+  <h3 class="mt-8 text-lg font-semibold text-htac-navy">Federal &amp; National Data Programs</h3>
   <ul>
     <li><a href="https://www2.ccwdata.org/web/guest/home" target="_blank" rel="noopener">CMS Chronic Conditions Warehouse (CCW)</a></li>
     <li><a href="https://www.hudexchange.info/programs/hmis/" target="_blank" rel="noopener">HUD — HMIS (Homeless Management Information System) Resources</a></li>
@@ -345,7 +378,7 @@
     <li><a href="https://pcornet.org/" target="_blank" rel="noopener">PCORnet — National Patient-Centered Clinical Research Network</a></li>
   </ul>
 
-  <h3 style="font-size:1rem; font-weight:700; color:#003865; margin-top:1.25rem; margin-bottom:.5rem;">Peer-reviewed context</h3>
+  <h3 class="mt-8 text-lg font-semibold text-htac-navy">Peer-reviewed context</h3>
   <p style="font-size:.95rem; color:#444; margin-bottom:.75rem;">Illustrative publications on statewide federated surveillance and equity-focused prevalence work (titles reflect original study settings).</p>
   <ul>
     <li>Johnson SG, Chamberlain AM, Drawz P, et al. <em>Design and Implementation of a State-Wide Network for Near Real-Time Public Health Surveillance and Research: The Minnesota Electronic Health Record Consortium Experience.</em> Learning Health Systems. 2026. <a href="https://doi.org/10.1002/lrh2.70070" target="_blank" rel="noopener">doi:10.1002/lrh2.70070</a></li>
@@ -354,5 +387,6 @@
     <li>Winkelman T, Chamberlain A, Margolis K, et al. <em>Health Trends Across Communities: A Healthcare System–Public Health Collaboration to Advance Health Equity Across Minnesota.</em> Annals of Family Medicine. 2024;22:6757.</li>
   </ul>
 </div>
+</section>
 
 {% endblock %}

@@ -1,9 +1,9 @@
 {% extends "base_site.html" %}
 {% block title %}Services — Eric Kvale{% endblock %}
 {% block content %}
-  <section class="relative overflow-hidden rounded-2xl bg-htac-navy px-6 py-14 text-white shadow-lg sm:px-10 lg:px-12">
+  <section class="relative overflow-hidden rounded-2xl bg-htac-navy px-6 py-24 text-white shadow-lg sm:px-10 lg:px-12">
     <div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" aria-hidden="true"></div>
-    <div class="relative max-w-3xl">
+    <div class="relative mx-auto max-w-3xl">
       <p class="text-xs font-semibold uppercase tracking-[0.2em] text-htac-sky">Population Health Data Infrastructure</p>
       <h1 class="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl lg:text-[2.5rem] lg:leading-tight">
         Data Infrastructure for Populations That Public Health Systems Routinely Miss
@@ -22,9 +22,11 @@
     </div>
   </section>
 
-  <section class="mt-16 max-w-3xl" aria-labelledby="gap-heading">
-    <h2 id="gap-heading" class="text-lg font-semibold text-slate-900">The Gap We Address</h2>
-    <div class="mt-4 space-y-4 text-sm leading-relaxed text-slate-600 sm:text-base">
+  <hr class="mx-auto mt-16 max-w-6xl border-t border-slate-100" aria-hidden="true">
+
+  <section class="mx-auto max-w-6xl rounded-2xl border border-slate-200 bg-white px-6 py-16 sm:px-10" aria-labelledby="gap-heading">
+    <h2 id="gap-heading" class="text-3xl font-semibold tracking-tight text-slate-900">The Gap We Address</h2>
+    <div class="mt-6 max-w-3xl space-y-4 text-sm leading-relaxed text-slate-600 sm:text-base [&>p:first-of-type]:text-lg [&>p:first-of-type]:font-light">
       <p>
         Health condition prevalence data in the United States is primarily derived from survey methods that carry a 2–3 year lag, lack the geographic granularity needed by local health departments, and systematically underrepresent populations with severe and multiple disadvantages. People who have recently experienced homelessness or incarceration — who carry disproportionately high burdens of mental health, substance use, and chronic disease — are largely absent from the national data systems that inform healthcare policy and resource allocation.
       </p>
@@ -37,29 +39,31 @@
     </div>
   </section>
 
-  <section class="mt-16" aria-labelledby="who-heading">
-    <h2 id="who-heading" class="text-lg font-semibold text-slate-900">Who We Work With</h2>
-    <div class="mt-8 grid gap-6 sm:grid-cols-2">
+  <hr class="mx-auto mt-16 max-w-6xl border-t border-slate-100" aria-hidden="true">
+
+  <section class="mx-auto max-w-6xl rounded-2xl border border-slate-200 bg-slate-50 px-6 py-16 sm:px-10" aria-labelledby="who-heading">
+    <h2 id="who-heading" class="text-3xl font-semibold tracking-tight text-slate-900">Who We Work With</h2>
+    <div class="mt-10 grid max-w-6xl gap-6 sm:grid-cols-2">
       <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <p class="text-sm font-semibold text-slate-900">State and local public health agencies</p>
+        <h3 class="text-lg font-medium text-slate-900">State and local public health agencies</h3>
         <p class="mt-3 text-sm leading-relaxed text-slate-600">
           Developing community health needs assessments, surveillance infrastructure, or data systems to support equity-focused program evaluation.
         </p>
       </div>
       <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <p class="text-sm font-semibold text-slate-900">Health system research consortia</p>
+        <h3 class="text-lg font-medium text-slate-900">Health system research consortia</h3>
         <p class="mt-3 text-sm leading-relaxed text-slate-600">
           Operating on OMOP common data model infrastructure who need support with codeset development, federated analytic pipelines, data quality processes, or translation of results into accessible data products.
         </p>
       </div>
       <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <p class="text-sm font-semibold text-slate-900">Academic and community research teams</p>
+        <h3 class="text-lg font-medium text-slate-900">Academic and community research teams</h3>
         <p class="mt-3 text-sm leading-relaxed text-slate-600">
           Studying health outcomes among people experiencing homelessness, incarceration, or Medicaid enrollment, particularly where linked administrative data is needed to identify and characterize these populations.
         </p>
       </div>
       <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <p class="text-sm font-semibold text-slate-900">Organizations pursuing grant funding</p>
+        <h3 class="text-lg font-medium text-slate-900">Organizations pursuing grant funding</h3>
         <p class="mt-3 text-sm leading-relaxed text-slate-600">
           From CDC, NIH, HRSA, or state health departments who need a technically credible partner for data infrastructure and evaluation design components of their applications.
         </p>
@@ -67,47 +71,56 @@
     </div>
   </section>
 
-  <section id="services-list" class="mt-16 scroll-mt-24" aria-labelledby="services-heading">
-    <h2 id="services-heading" class="text-lg font-semibold text-slate-900">Services</h2>
-    <div class="mt-8 space-y-6">
-      <article class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 class="text-base font-semibold text-slate-900">OMOP Common Data Model Implementation and Support</h3>
+  <hr class="mx-auto mt-16 max-w-6xl border-t border-slate-100" aria-hidden="true">
+
+  <section id="services-list" class="mx-auto max-w-6xl scroll-mt-24 rounded-2xl border border-slate-200 bg-white px-6 py-16 sm:px-10" aria-labelledby="services-heading">
+    <h2 id="services-heading" class="text-3xl font-semibold tracking-tight text-slate-900">Services</h2>
+    <div class="mt-12 max-w-6xl">
+      <article class="mb-16 border-l-[3px] border-htac-teal pl-6 last:mb-0 sm:pl-8">
+        <p class="text-sm font-mono text-slate-400">01</p>
+        <h3 class="mt-1 text-xl font-semibold text-slate-900">OMOP Common Data Model Implementation and Support</h3>
         <p class="mt-3 text-sm leading-relaxed text-slate-600">
           We support health systems and research networks in implementing and maintaining OMOP CDM infrastructure, including ETL pipeline development, vocabulary mapping, and standardization of demographic and encounter data across sites. We build condition codesets grounded in established sources — including the CMS Chronic Conditions Warehouse — and validate them through iterative clinical review. We deploy OHDSI quality assurance tools including Achilles and the Data Quality Dashboard, supplemented by custom scripts for longitudinal data quality monitoring.
         </p>
       </article>
-      <article class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 class="text-base font-semibold text-slate-900">Federated Network Architecture</h3>
+      <article class="mb-16 border-l-[3px] border-htac-teal pl-6 last:mb-0 sm:pl-8">
+        <p class="text-sm font-mono text-slate-400">02</p>
+        <h3 class="mt-1 text-xl font-semibold text-slate-900">Federated Network Architecture</h3>
         <p class="mt-3 text-sm leading-relaxed text-slate-600">
           We help organizations design and operationalize distributed health data networks in which patient-level data remains within each contributing site. Our work covers the governance structures, data use agreement frameworks, deduplication procedures, and analytic workflows that make multi-site collaboration feasible while preserving data security and institutional autonomy. We draw on established network models including PCORnet and HCSRN and adapt them to jurisdiction-specific regulatory and organizational contexts.
         </p>
       </article>
-      <article class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 class="text-base font-semibold text-slate-900">Administrative Data Linkage</h3>
+      <article class="mb-16 border-l-[3px] border-htac-teal pl-6 last:mb-0 sm:pl-8">
+        <p class="text-sm font-mono text-slate-400">03</p>
+        <h3 class="mt-1 text-xl font-semibold text-slate-900">Administrative Data Linkage</h3>
         <p class="mt-3 text-sm leading-relaxed text-slate-600">
           Characterizing the health of people experiencing homelessness or incarceration requires linking clinical data to administrative sources that health systems do not control — including Homeless Management Information System records, state department of corrections data, Medicaid enrollment files, immunization registries, and vital statistics. We design and implement privacy-preserving record linkage pipelines using hash-based algorithms that allow cross-source matching without transmitting personally identifiable information, and we build the data enrichment workflows that augment OMOP records with these contextual variables.
         </p>
       </article>
-      <article class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 class="text-base font-semibold text-slate-900">Population Health Prevalence Estimation</h3>
+      <article class="mb-16 border-l-[3px] border-htac-teal pl-6 last:mb-0 sm:pl-8">
+        <p class="text-sm font-mono text-slate-400">04</p>
+        <h3 class="mt-1 text-xl font-semibold text-slate-900">Population Health Prevalence Estimation</h3>
         <p class="mt-3 text-sm leading-relaxed text-slate-600">
           We produce directly standardized, age- and sex-adjusted prevalence estimates for physical health, mental health, and substance use conditions, stratified by race and ethnicity, geography, and social determinants including homelessness, incarceration, and insurance status. Estimates are generated at the state, county, zip code, and census tract level, providing the geographic resolution that local health departments need to assess community health needs and allocate resources.
         </p>
       </article>
-      <article class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 class="text-base font-semibold text-slate-900">Data Product and Dashboard Development</h3>
+      <article class="mb-16 border-l-[3px] border-htac-teal pl-6 last:mb-0 sm:pl-8">
+        <p class="text-sm font-mono text-slate-400">05</p>
+        <h3 class="mt-1 text-xl font-semibold text-slate-900">Data Product and Dashboard Development</h3>
         <p class="mt-3 text-sm leading-relaxed text-slate-600">
           We translate aggregated analytical results into publicly accessible dashboards, structured data exports, and interactive visualizations designed for use by public health practitioners, policymakers, and community organizations. We prioritize clarity, equity framing, and usability by non-technical audiences, and we build data products that can be updated as new cohort data becomes available rather than as one-time static outputs.
         </p>
       </article>
-      <article class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 class="text-base font-semibold text-slate-900">Grant Development — Technical Components</h3>
+      <article class="mb-16 border-l-[3px] border-htac-teal pl-6 last:mb-0 sm:pl-8">
+        <p class="text-sm font-mono text-slate-400">06</p>
+        <h3 class="mt-1 text-xl font-semibold text-slate-900">Grant Development — Technical Components</h3>
         <p class="mt-3 text-sm leading-relaxed text-slate-600">
           We support grant applications as a technical subcontractor or consultant, contributing data infrastructure plans, analytic frameworks, evaluation designs, and IRB-exempt public health surveillance justifications. We have particular familiarity with the technical requirements of CDC public health infrastructure grants, HRSA community health center programs, NIH observational research mechanisms, and the emerging CMS-mandated evaluation frameworks for Medicaid 1115 Reentry Waivers.
         </p>
       </article>
-      <article class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 class="text-base font-semibold text-slate-900">Community Health Needs Assessment Data Support</h3>
+      <article class="mb-16 border-l-[3px] border-htac-teal pl-6 last:mb-0 sm:pl-8">
+        <p class="text-sm font-mono text-slate-400">07</p>
+        <h3 class="mt-1 text-xl font-semibold text-slate-900">Community Health Needs Assessment Data Support</h3>
         <p class="mt-3 text-sm leading-relaxed text-slate-600">
           Hospitals and local health departments conducting CHNAs frequently lack access to condition prevalence data with sufficient timeliness, geographic resolution, or coverage of high-need populations. We provide CHNA-ready data packages that include standardized prevalence estimates broken down by demographic group, geography, and special populations — with particular attention to people experiencing homelessness, incarceration, or Medicaid enrollment.
         </p>
@@ -115,11 +128,15 @@
     </div>
   </section>
 
-  <section class="mt-16 rounded-2xl border border-slate-200 bg-white px-6 py-10 shadow-sm sm:px-10" aria-labelledby="engage-heading">
-    <h2 id="engage-heading" class="text-lg font-semibold text-slate-900">Engage With Us</h2>
-    <p class="mt-4 max-w-3xl text-sm leading-relaxed text-slate-600 sm:text-base">
-      We welcome conversations with public health agencies, research teams, health systems, and community organizations about potential collaborations — whether you are designing new data infrastructure, operationalizing an existing funded project, preparing a grant application, or exploring what linked EHR and administrative data could tell you about the populations you serve.
-    </p>
+  <hr class="mx-auto mt-16 max-w-6xl border-t border-slate-100" aria-hidden="true">
+
+  <section class="mx-auto max-w-6xl rounded-2xl border border-slate-200 bg-slate-50 px-6 py-16 sm:px-10" aria-labelledby="engage-heading">
+    <h2 id="engage-heading" class="text-3xl font-semibold tracking-tight text-slate-900">Engage With Us</h2>
+    <div class="mt-6 max-w-3xl space-y-4 text-sm leading-relaxed text-slate-600 sm:text-base [&>p:first-of-type]:text-lg [&>p:first-of-type]:font-light">
+      <p>
+        Engagements typically begin with a scoping conversation about the organization's current data environment, existing infrastructure, governance constraints, and near-term analytic priorities. Use the contact form to initiate that conversation.
+      </p>
+    </div>
     <div class="mt-8">
       <a href="{% url 'about' %}" class="inline-flex items-center justify-center rounded-lg bg-htac-navy px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-htac-teal">
         Start a Conversation

@@ -1,16 +1,18 @@
 {% extends "base_site.html" %}
 {% block title %}About — Eric Kvale{% endblock %}
 {% block content %}
-  <section class="relative overflow-hidden rounded-2xl bg-htac-navy px-6 py-12 text-white shadow-lg sm:px-10 lg:px-12">
+  <section class="relative overflow-hidden rounded-2xl bg-htac-navy px-6 py-24 text-white shadow-lg sm:px-10 lg:px-12">
     <div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" aria-hidden="true"></div>
-    <div class="relative max-w-3xl">
+    <div class="relative mx-auto max-w-3xl">
       <p class="text-xs font-semibold uppercase tracking-[0.2em] text-htac-sky">Population Health Data Infrastructure</p>
       <h1 class="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">About</h1>
     </div>
   </section>
 
-  <div class="mt-12 max-w-3xl space-y-6 text-slate-600">
-    <div class="space-y-4 text-sm leading-relaxed sm:text-base">
+  <hr class="mx-auto mt-16 max-w-6xl border-t border-slate-100" aria-hidden="true">
+
+  <section class="mx-auto max-w-6xl rounded-2xl border border-slate-200 bg-white px-6 py-16 sm:px-10">
+    <div class="mx-auto max-w-3xl space-y-4 text-sm leading-relaxed text-slate-600 sm:text-base [&>p:first-of-type]:text-lg [&>p:first-of-type]:font-light">
       <p>
         Eric Kvale is a data scientist and full-stack developer working at the intersection of clinical informatics,
         federated data infrastructure, and public health surveillance. His work focuses on building the technical
@@ -33,13 +35,15 @@
         disparities and least represented in the systems designed to measure them.
       </p>
     </div>
-  </div>
+  </section>
 
-  <section class="mt-16" aria-labelledby="demonstrates-heading">
-    <h2 id="demonstrates-heading" class="text-lg font-semibold text-slate-900">What This Site Demonstrates</h2>
-    <div class="mt-8 grid gap-4 sm:grid-cols-2">
+  <hr class="mx-auto mt-16 max-w-6xl border-t border-slate-100" aria-hidden="true">
+
+  <section class="mx-auto max-w-6xl rounded-2xl border border-slate-200 bg-slate-50 px-6 py-16 sm:px-10" aria-labelledby="demonstrates-heading">
+    <h2 id="demonstrates-heading" class="text-3xl font-semibold tracking-tight text-slate-900">What This Site Demonstrates</h2>
+    <div class="mt-6 grid max-w-6xl gap-4 sm:grid-cols-2">
       <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 class="text-sm font-semibold text-slate-900">Working OMOP CDM Implementation</h3>
+        <h3 class="text-lg font-medium text-slate-900">Working OMOP CDM Implementation</h3>
         <p class="mt-3 text-sm leading-relaxed text-slate-600">
           The pipeline walkthrough steps through a live federated data environment — from OMOP domain tables and
           concept mapping through PPRL tokenization, deduplication, administrative data enrichment, cohort queries, and
@@ -47,7 +51,7 @@
         </p>
       </div>
       <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 class="text-sm font-semibold text-slate-900">Privacy-Preserving Record Linkage</h3>
+        <h3 class="text-lg font-medium text-slate-900">Privacy-Preserving Record Linkage</h3>
         <p class="mt-3 text-sm leading-relaxed text-slate-600">
           The site implements HMAC-SHA256 token generation for cross-site patient deduplication — the same algorithm
           validated for public health surveillance use at 97% precision and 75% recall in published multi-site
@@ -55,14 +59,14 @@
         </p>
       </div>
       <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 class="text-sm font-semibold text-slate-900">Governance-Aware Architecture</h3>
+        <h3 class="text-lg font-medium text-slate-900">Governance-Aware Architecture</h3>
         <p class="mt-3 text-sm leading-relaxed text-slate-600">
           Data use agreement alignment, suppression policy, stratification dimensions, and the separation between
           contributor-held data and published aggregates are built into the system design, not treated as afterthoughts.
         </p>
       </div>
       <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 class="text-sm font-semibold text-slate-900">Health Equity Orientation</h3>
+        <h3 class="text-lg font-medium text-slate-900">Health Equity Orientation</h3>
         <p class="mt-3 text-sm leading-relaxed text-slate-600">
           Stratification by race, ethnicity, language, age, sex, homelessness, incarceration, and Medicaid enrollment is
           a core design requirement, not an optional layer — reflecting the populations this infrastructure is designed
@@ -72,24 +76,28 @@
     </div>
   </section>
 
-  <section class="mt-16 max-w-3xl" aria-labelledby="services-about-heading">
-    <h2 id="services-about-heading" class="text-lg font-semibold text-slate-900">Services</h2>
-    <p class="mt-4 text-sm leading-relaxed text-slate-600 sm:text-base">
+  <hr class="mx-auto mt-16 max-w-6xl border-t border-slate-100" aria-hidden="true">
+
+  <section class="mx-auto max-w-6xl rounded-2xl border border-slate-200 bg-white px-6 py-16 sm:px-10" aria-labelledby="services-about-heading">
+    <h2 id="services-about-heading" class="text-3xl font-semibold tracking-tight text-slate-900">Services</h2>
+    <p class="mt-6 max-w-3xl text-lg font-light leading-relaxed text-slate-600 sm:text-xl">
       This practice provides technical consulting services to public health agencies, health system research consortia,
       academic research teams, and community organizations building population health data infrastructure. Services
       include OMOP implementation and support, federated network architecture, administrative data linkage, prevalence
       estimation, dashboard development, and grant technical assistance.
     </p>
-    <div class="mt-6">
+    <div class="mt-8">
       <a href="{% url 'services' %}" class="inline-flex items-center justify-center rounded-lg bg-htac-navy px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-htac-teal focus:outline-none focus:ring-2 focus:ring-htac-teal focus:ring-offset-2">
         View Services
       </a>
     </div>
   </section>
 
-  <section class="mt-16 max-w-3xl border-t border-slate-200 pt-12" aria-labelledby="touch-heading">
-    <h2 id="touch-heading" class="text-lg font-semibold text-slate-900">Get in Touch</h2>
-    <p class="mt-4 text-sm leading-relaxed text-slate-600 sm:text-base">
+  <hr class="mx-auto mt-16 max-w-6xl border-t border-slate-100" aria-hidden="true">
+
+  <section class="mx-auto max-w-6xl rounded-2xl border border-slate-200 bg-slate-50 px-6 py-16 sm:px-10" aria-labelledby="touch-heading">
+    <h2 id="touch-heading" class="text-3xl font-semibold tracking-tight text-slate-900">Get in Touch</h2>
+    <p class="mt-6 max-w-3xl text-lg font-light leading-relaxed text-slate-600 sm:text-xl">
       For inquiries about consulting engagements, technical partnerships, or collaboration opportunities, use the
       <a href="{% url 'contact' %}" class="font-medium text-htac-teal underline-offset-4 hover:text-htac-navy hover:underline">contact form</a>
       or email directly at

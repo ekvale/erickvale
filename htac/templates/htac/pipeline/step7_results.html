@@ -27,14 +27,7 @@
     background:#f7fafc; border:1px solid #d5e3ee; border-radius:8px;
     padding:1.25rem 1.5rem; margin-bottom:1.5rem; font-size:.88rem;
   }
-  .sample-estimate table { width:100%; border-collapse:collapse; font-size:.85rem; }
-  body.htac-site .sample-estimate th {
-    background:#edf4fb !important; color:#003865 !important;
-    padding:6px 10px; text-align:left; font-weight:600 !important;
-    font-size:.8rem !important; border-bottom:2px solid #b0c8db;
-  }
-  .sample-estimate td { padding:6px 10px; border-bottom:1px solid #e8eff5; }
-  .sample-estimate tr:last-child td { border-bottom:none; }
+  .sample-estimate .htac-stats-table { margin-top:0; }
   .val-published { color:#3a7c3d; font-weight:700; }
   .val-suppressed { color:#d07000; font-style:italic; }
 
@@ -115,7 +108,7 @@
 <div class="htac-section">
   <h2>Sample Output — What a Published Row Looks Like</h2>
   <div class="sample-estimate">
-    <table>
+    <table class="htac-stats-table">
       <thead><tr>
         <th>Condition</th><th>Site</th><th>Geo</th><th>Stratifier</th><th>Stratum</th>
         <th>Numerator</th><th>Denominator</th><th>Rate (per 10k)</th><th>Suppressed?</th>

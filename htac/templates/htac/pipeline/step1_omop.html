@@ -12,16 +12,7 @@
   .omop-domain-header { background:#003865; color:#fff; padding:.7rem 1rem; display:flex; align-items:baseline; gap:.75rem; }
   body.htac-site .omop-domain-header h3 { color:#fff !important; font-size:1rem; margin:0; }
   .omop-domain-header .omop-row-count { font-size:.78rem; color:#cce4f0; font-weight:400; margin-left:auto; white-space:nowrap; }
-  .omop-field-table { width:100%; border-collapse:collapse; font-size:.87rem; }
-  body.htac-site .omop-field-table th {
-    background:#edf4fb !important; color:#003865 !important;
-    padding:6px 10px; text-align:left; font-weight:600 !important;
-    font-size:.8rem !important; border-bottom:2px solid #b0c8db;
-  }
-  .omop-field-table td { padding:6px 10px; border-bottom:1px solid #e8eff5; vertical-align:top; }
-  .omop-field-table tr:last-child td { border-bottom:none; }
-  .omop-field-table tr:nth-child(even) td { background:#f7fafc; }
-  .field-name { font-family:monospace; font-size:.84rem; color:#003865; white-space:nowrap; }
+  .field-name { white-space:nowrap; }
   .field-type { font-size:.78rem; color:#888; white-space:nowrap; }
 
   body.htac-site .htac-pipeline-intro {
@@ -104,7 +95,7 @@
     <ul>
       <li>Each site maintains its own OMOP database locally — no patient data leaves the site.</li>
       <li>The coordinating team distributes standardized analytic packages that run against each local OMOP database.</li>
-      <li>Scripts return only aggregate counts (e.g., "247 persons with diabetes at site X").</li>
+      <li>Scripts return only aggregate counts — for example, the number of persons meeting a condition definition at a given site during the study period.</li>
       <li>Aggregates are transmitted to the Data Coordinating Center (DCC) for final analysis.</li>
     </ul>
   </div>

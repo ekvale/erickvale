@@ -8,14 +8,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'erickvale/css/tw.css' %}?v=2">
+  <link rel="stylesheet" href="{% static 'erickvale/css/tw.css' %}?v=3">
   {% block extra_head %}{% endblock %}
 </head>
 <body class="flex min-h-full flex-col bg-slate-50 font-sans text-slate-900 antialiased">
   {% include "includes/site_nav.html" %}
   <main class="flex-1">
     {% block main_inner %}
-    <div class="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
+    <div class="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
       {% block content %}{% endblock %}
     </div>
     {% endblock %}
