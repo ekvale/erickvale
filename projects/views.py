@@ -1,4 +1,7 @@
+from datetime import datetime, timedelta
+
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.db.models import Count, Max, Q
@@ -26,12 +29,15 @@ from .models import (
     EventType,
     MembershipRole,
     Notification,
+    Priority,
     Project,
     ProjectMembership,
     ProjectStatus,
     Task,
     TaskStatus,
 )
+
+User = get_user_model()
 
 
 def _accessible_projects_qs(user):
@@ -531,4 +537,350 @@ def notification_mark_read(request):
     messages.success(request, 'All notifications marked read.')
     next_url = request.POST.get('next') or reverse('projects:notification_list')
     return redirect(next_url)
+
+
+_TASK_STATUS_ORDER = [
+    TaskStatus.BACKLOG,
+    TaskStatus.TODO,
+    TaskStatus.IN_PROGRESS,
+    TaskStatus.IN_REVIEW,
+    TaskStatus.BLOCKED,
+    TaskStatus.DONE,
+]
+_TASK_STATUS_LABELS = [dict(TaskStatus.choices)[s] for s in _TASK_STATUS_ORDER]
+
+_PRIORITY_ORDER = [
+    Priority.LOW,
+    Priority.MEDIUM,
+    Priority.HIGH,
+    Priority.CRITICAL,
+]
+_PRIORITY_LABELS = [dict(Priority.choices)[p] for p in _PRIORITY_ORDER]
+
+
+def _active_project_filter():
+    return ~Q(status__in=[ProjectStatus.COMPLETED, ProjectStatus.ARCHIVED])
+
+
+def _accessible_tasks_qs(user):
+    return Task.objects.filter(project__in=_accessible_projects_qs(user)).distinct()
+
+
+def _owner_project_ids(user, project_ids):
+    """Project IDs where user is account owner or membership role Owner."""
+    base = Project.objects.filter(pk__in=project_ids)
+    ids = set(base.filter(owner=user).values_list('id', flat=True))
+    ids |= set(
+        ProjectMembership.objects.filter(
+            user=user,
+            role=MembershipRole.OWNER,
+            project_id__in=project_ids,
+        ).values_list('project_id', flat=True)
+    )
+    return ids
+
+
+def _admin_project_ids(user, project_ids):
+    return set(
+        ProjectMembership.objects.filter(
+            user=user,
+            role=MembershipRole.ADMIN,
+            project_id__in=project_ids,
+        ).values_list('project_id', flat=True)
+    )
+
+
+def _team_users(user):
+    """Users who share at least one accessible project (owner or member)."""
+    projects = _accessible_projects_qs(user)
+    if not projects.exists():
+        return User.objects.none()
+    pids = list(projects.values_list('pk', flat=True))
+    owner_ids = set(projects.values_list('owner_id', flat=True))
+    member_ids = set(
+        ProjectMembership.objects.filter(project_id__in=pids).values_list('user_id', flat=True)
+    )
+    all_ids = owner_ids | member_ids
+    return User.objects.filter(pk__in=all_ids).order_by('username').distinct()
+
+
+def _user_display(u):
+    if not u:
+        return 'Unknown'
+    full = (u.get_full_name() or '').strip()
+    return full or u.get_username()
+
+
+def _build_dashboard_payload(user):
+    """Shared metrics for HTML dashboard and JSON charts."""
+    projects_qs = _accessible_projects_qs(user)
+    tasks_qs = _accessible_tasks_qs(user)
+    today = timezone.localdate()
+    now = timezone.now()
+    week_end = today + timedelta(days=7)
+    horizon = today + timedelta(days=14)
+
+    total_projects = projects_qs.count()
+    active_projects_qs = projects_qs.filter(_active_project_filter())
+    active_projects_count = active_projects_qs.count()
+
+    total_tasks = tasks_qs.count()
+    completed_tasks = tasks_qs.filter(status=TaskStatus.DONE).count()
+    overdue_tasks = tasks_qs.filter(
+        ~Q(status=TaskStatus.DONE),
+        due_date__isnull=False,
+        due_date__lt=today,
+    ).count()
+    tasks_due_this_week = tasks_qs.filter(
+        ~Q(status=TaskStatus.DONE),
+        due_date__isnull=False,
+        due_date__gte=today,
+        due_date__lte=week_end,
+    ).count()
+    open_tasks_assigned_to_me = (
+        tasks_qs.filter(assignees=user).exclude(status=TaskStatus.DONE).distinct().count()
+    )
+
+    status_counts_raw = dict(
+        tasks_qs.values('status').annotate(c=Count('id', distinct=True)).values_list('status', 'c')
+    )
+    task_status_counts = {dict(TaskStatus.choices)[k]: status_counts_raw.get(k, 0) for k, _ in TaskStatus.choices}
+
+    team = list(_team_users(user))
+    project_ids = list(projects_qs.values_list('pk', flat=True))
+    workload_by_user = []
+    for u in team:
+        assigned = tasks_qs.filter(assignees=u)
+        open_c = assigned.exclude(status=TaskStatus.DONE).count()
+        done_c = assigned.filter(status=TaskStatus.DONE).count()
+        overdue_c = assigned.filter(
+            ~Q(status=TaskStatus.DONE),
+            due_date__isnull=False,
+            due_date__lt=today,
+        ).count()
+        roles = set(
+            ProjectMembership.objects.filter(user=u, project_id__in=project_ids).values_list(
+                'role', flat=True
+            )
+        )
+        if projects_qs.filter(owner=u).exists():
+            roles.add(MembershipRole.OWNER)
+        role_labels = sorted({dict(MembershipRole.choices).get(r, r) for r in roles})
+        workload_by_user.append(
+            {
+                'user': u,
+                'user_display_name': _user_display(u),
+                'role': ', '.join(role_labels) if role_labels else '—',
+                'open_tasks': open_c,
+                'completed_tasks': done_c,
+                'overdue_tasks': overdue_c,
+            }
+        )
+
+    project_progress = []
+    for p in active_projects_qs.order_by('name'):
+        p_tasks = tasks_qs.filter(project=p)
+        tot = p_tasks.count()
+        done = p_tasks.filter(status=TaskStatus.DONE).count()
+        pct = round(100.0 * done / tot, 1) if tot else 0.0
+        overdue_c = p_tasks.filter(
+            ~Q(status=TaskStatus.DONE),
+            due_date__isnull=False,
+            due_date__lt=today,
+        ).count()
+        open_c = p_tasks.exclude(status=TaskStatus.DONE).count()
+        days_until = None
+        if p.due_date:
+            days_until = (p.due_date - today).days
+        project_progress.append(
+            {
+                'name': p.name,
+                'status': p.get_status_display(),
+                'priority': p.get_priority_display(),
+                'total_tasks': tot,
+                'done_tasks': done,
+                'percent_complete': pct,
+                'overdue_count': overdue_c,
+                'due_date': p.due_date,
+                'days_until_due': days_until,
+                'open_tasks': open_c,
+            }
+        )
+
+    upcoming_deadlines = (
+        tasks_qs.filter(
+            ~Q(status=TaskStatus.DONE),
+            due_date__isnull=False,
+            due_date__gte=today,
+            due_date__lte=horizon,
+        )
+        .select_related('project')
+        .prefetch_related('assignees')
+        .order_by('due_date')[:10]
+    )
+
+    comment_qs = (
+        Comment.objects.filter(task__project__in=projects_qs)
+        .select_related('author', 'task', 'task__project')
+        .order_by('-created_at')[:20]
+    )
+    task_touch_qs = tasks_qs.select_related('project', 'created_by').order_by('-updated_at')[:20]
+    activity = []
+    for c in comment_qs:
+        activity.append(
+            {
+                'timestamp': c.created_at,
+                'actor_name': _user_display(c.author),
+                'description': 'commented on',
+                'task_name': c.task.title,
+                'project_name': c.task.project.name,
+            }
+        )
+    for t in task_touch_qs:
+        activity.append(
+            {
+                'timestamp': t.updated_at,
+                'actor_name': _user_display(t.created_by) if t.created_by else 'System',
+                'description': 'task record updated',
+                'task_name': t.title,
+                'project_name': t.project.name,
+            }
+        )
+    activity.sort(key=lambda x: x['timestamp'], reverse=True)
+    recent_activity = activity[:15]
+
+    unread_notifications = Notification.objects.filter(recipient=user, is_read=False).count()
+
+    local_now = timezone.localtime(now)
+    week_start = local_now.replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(
+        days=local_now.weekday()
+    )
+    weekly_values = []
+    for i in range(7):
+        day_start = timezone.make_aware(
+            datetime.combine((week_start + timedelta(days=i)).date(), datetime.min.time()),
+            timezone.get_current_timezone(),
+        )
+        day_end = day_start + timedelta(days=1)
+        weekly_values.append(
+            tasks_qs.filter(
+                status=TaskStatus.DONE,
+                updated_at__gte=day_start,
+                updated_at__lt=day_end,
+            ).count()
+        )
+
+    workload_chart = {'labels': [], 'cto_open': [], 'cspo_open': []}
+    for u in team:
+        workload_chart['labels'].append(_user_display(u))
+        oids = _owner_project_ids(u, project_ids)
+        aids = _admin_project_ids(u, project_ids)
+        cto_open = (
+            tasks_qs.filter(project_id__in=oids, assignees=u)
+            .exclude(status=TaskStatus.DONE)
+            .distinct()
+            .count()
+        )
+        cspo_open = (
+            tasks_qs.filter(project_id__in=aids, assignees=u)
+            .exclude(status=TaskStatus.DONE)
+            .distinct()
+            .count()
+        )
+        workload_chart['cto_open'].append(cto_open)
+        workload_chart['cspo_open'].append(cspo_open)
+
+    project_completion_labels = []
+    project_completion_values = []
+    for row in sorted(project_progress, key=lambda r: r['percent_complete'], reverse=True):
+        project_completion_labels.append(row['name'])
+        project_completion_values.append(float(row['percent_complete']))
+
+    priority_values = [
+        tasks_qs.filter(priority=p).count() for p in _PRIORITY_ORDER
+    ]
+    task_status_values = [status_counts_raw.get(s, 0) for s in _TASK_STATUS_ORDER]
+
+    weekday_labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+
+    return {
+        'total_projects': total_projects,
+        'active_projects': active_projects_count,
+        'total_tasks': total_tasks,
+        'completed_tasks': completed_tasks,
+        'overdue_tasks': overdue_tasks,
+        'tasks_due_this_week': tasks_due_this_week,
+        'open_tasks_assigned_to_me': open_tasks_assigned_to_me,
+        'project_progress': project_progress,
+        'task_status_counts': task_status_counts,
+        'workload_by_user': workload_by_user,
+        'upcoming_deadlines': upcoming_deadlines,
+        'recent_activity': recent_activity,
+        'unread_notifications': unread_notifications,
+        'urgent_deadline_cutoff': today + timedelta(days=3),
+        '_json': {
+            'task_status': {'labels': _TASK_STATUS_LABELS, 'values': task_status_values},
+            'workload': workload_chart,
+            'project_completion': {
+                'labels': project_completion_labels,
+                'values': project_completion_values,
+            },
+            'tasks_by_priority': {'labels': _PRIORITY_LABELS, 'values': priority_values},
+            'weekly_completions': {'labels': weekday_labels, 'values': weekly_values},
+        },
+    }
+
+
+@login_required
+def dashboard(request):
+    projects_qs = _accessible_projects_qs(request.user)
+    if not projects_qs.exists():
+        return render(
+            request,
+            'projects/dashboard.html',
+            {'empty_state': True},
+        )
+
+    payload = _build_dashboard_payload(request.user)
+    ctx = {k: v for k, v in payload.items() if k != '_json'}
+    return render(request, 'projects/dashboard.html', {'empty_state': False, **ctx})
+
+
+@login_required
+def dashboard_data(request):
+    projects_qs = _accessible_projects_qs(request.user)
+    if not projects_qs.exists():
+        data = {
+            'task_status': {'labels': _TASK_STATUS_LABELS, 'values': [0, 0, 0, 0, 0, 0]},
+            'workload': {'labels': [], 'cto_open': [], 'cspo_open': []},
+            'project_completion': {'labels': [], 'values': []},
+            'tasks_by_priority': {'labels': _PRIORITY_LABELS, 'values': [0, 0, 0, 0]},
+            'weekly_completions': {
+                'labels': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                'values': [0, 0, 0, 0, 0, 0, 0],
+            },
+            'summary': {
+                'total_projects': 0,
+                'active_projects': 0,
+                'total_tasks': 0,
+                'completed_tasks': 0,
+                'overdue_tasks': 0,
+                'tasks_due_this_week': 0,
+                'open_tasks_assigned_to_me': 0,
+            },
+        }
+        return JsonResponse(data)
+
+    payload = _build_dashboard_payload(request.user)
+    data = dict(payload['_json'])
+    data['summary'] = {
+        'total_projects': payload['total_projects'],
+        'active_projects': payload['active_projects'],
+        'total_tasks': payload['total_tasks'],
+        'completed_tasks': payload['completed_tasks'],
+        'overdue_tasks': payload['overdue_tasks'],
+        'tasks_due_this_week': payload['tasks_due_this_week'],
+        'open_tasks_assigned_to_me': payload['open_tasks_assigned_to_me'],
+    }
+    return JsonResponse(data)
 

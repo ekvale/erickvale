@@ -1,0 +1,414 @@
+{% extends "base_site.html" %}
+{% load project_tags %}
+{% block title %}Dashboard — Projects{% endblock %}
+{% block content %}
+  {% if messages %}
+    <div class="mb-6 space-y-2">
+      {% for message in messages %}
+        <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if empty_state %}
+    <div class="mx-auto max-w-lg rounded-2xl border border-slate-200 bg-white px-8 py-12 text-center shadow-sm">
+      <h1 class="text-2xl font-semibold tracking-tight text-slate-900">No projects yet</h1>
+      <p class="mt-4 text-sm leading-relaxed text-slate-600">
+        Your reporting dashboard will show projects, tasks, workload, and deadlines here once you create a project and add work items.
+      </p>
+      <a href="{% url 'projects:project_create' %}" class="mt-8 inline-flex items-center justify-center rounded-lg bg-htac-navy px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-htac-teal">
+        Create a project
+      </a>
+    </div>
+  {% else %}
+    <div class="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-start sm:justify-between">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wide text-htac-teal"><a href="{% url 'projects:project_list' %}" class="hover:underline">Projects</a></p>
+        <h1 class="mt-1 text-2xl font-semibold tracking-tight text-slate-900">Dashboard</h1>
+        <p class="mt-2 text-sm text-slate-600">Progress and workload across your projects.</p>
+      </div>
+      <div class="text-right text-xs text-slate-500">
+        <p id="dash-last-refresh" class="font-medium text-slate-600">Loading…</p>
+        <p class="mt-1 text-slate-400">Auto-refreshes every 5 minutes</p>
+      </div>
+    </div>
+
+    <section class="mt-8" aria-label="Summary metrics">
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Total Projects</p>
+          <p id="metric-total-projects" class="mt-2 text-2xl font-semibold text-slate-900">{{ total_projects }}</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Active Projects</p>
+          <p id="metric-active-projects" class="mt-2 text-2xl font-semibold text-slate-900">{{ active_projects }}</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Total Tasks</p>
+          <p id="metric-total-tasks" class="mt-2 text-2xl font-semibold text-slate-900">{{ total_tasks }}</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Completed Tasks</p>
+          <p id="metric-completed-tasks" class="mt-2 text-2xl font-semibold text-slate-900">{{ completed_tasks }}</p>
+        </div>
+        <div id="metric-overdue-card" class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Overdue Tasks</p>
+          <p id="metric-overdue-tasks" class="mt-2 text-2xl font-semibold {% if overdue_tasks > 0 %}text-rose-600{% else %}text-slate-900{% endif %}">{{ overdue_tasks }}</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Due This Week</p>
+          <p id="metric-due-week" class="mt-2 text-2xl font-semibold text-slate-900">{{ tasks_due_this_week }}</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">My Open Tasks</p>
+          <p id="metric-my-open" class="mt-2 text-2xl font-semibold text-slate-900">{{ open_tasks_assigned_to_me }}</p>
+        </div>
+      </div>
+    </section>
+
+    <div id="dashboard-chart-zone" class="mt-10 hidden space-y-8">
+      <div class="flex flex-col gap-6 lg:flex-row">
+        <div class="lg:w-2/3">
+          <h2 class="text-sm font-semibold uppercase tracking-wide text-htac-teal">Task status</h2>
+          <div class="mt-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <canvas id="chart-task-status" class="max-h-72 w-full" height="220"></canvas>
+          </div>
+        </div>
+        <div class="lg:w-1/3">
+          <h2 class="text-sm font-semibold uppercase tracking-wide text-htac-teal">Tasks by priority</h2>
+          <div class="mt-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <canvas id="chart-priority" class="mx-auto max-h-64 max-w-xs" width="240" height="240"></canvas>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h2 class="text-sm font-semibold uppercase tracking-wide text-htac-teal">Project completion</h2>
+        <div class="mt-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <canvas id="chart-project-completion" class="max-h-80 w-full" height="260"></canvas>
+        </div>
+      </div>
+      <div>
+        <h2 class="text-sm font-semibold uppercase tracking-wide text-htac-teal">Weekly completions</h2>
+        <p class="mt-1 text-xs text-slate-500">Tasks marked Done with <code class="rounded bg-slate-100 px-1 font-mono text-[10px]">updated_at</code> in the current calendar week (local time).</p>
+        <div class="mt-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <canvas id="chart-weekly" class="max-h-64 w-full" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-12 grid gap-8 lg:grid-cols-2">
+      <div class="space-y-8">
+        <section>
+          <h2 class="text-lg font-semibold text-slate-900">Upcoming deadlines</h2>
+          <div class="mt-4 overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+            <table class="min-w-full divide-y divide-slate-200 text-sm">
+              <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+                <tr>
+                  <th class="px-3 py-2">Task</th>
+                  <th class="px-3 py-2">Project</th>
+                  <th class="px-3 py-2">Assignees</th>
+                  <th class="px-3 py-2">Due</th>
+                  <th class="px-3 py-2">Priority</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                {% for task in upcoming_deadlines %}
+                  <tr class="{% if task.due_date and task.due_date <= urgent_deadline_cutoff %}bg-rose-50{% endif %}">
+                    <td class="px-3 py-2 font-medium text-slate-900">
+                      <a href="{% url 'projects:task_detail' pk=task.project_id task_pk=task.pk %}" class="text-htac-teal hover:underline">{{ task.title }}</a>
+                    </td>
+                    <td class="px-3 py-2 text-slate-600">{{ task.project.name }}</td>
+                    <td class="px-3 py-2 text-slate-600">
+                      {% for a in task.assignees.all %}{{ a.get_username }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}
+                    </td>
+                    <td class="px-3 py-2 text-slate-600">{{ task.due_date|date:"M j, Y" }}</td>
+                    <td class="px-3 py-2 text-slate-600">{{ task.get_priority_display }}</td>
+                  </tr>
+                {% empty %}
+                  <tr><td colspan="5" class="px-3 py-6 text-center text-slate-500">No deadlines in the next 14 days.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <section>
+          <h2 class="text-lg font-semibold text-slate-900">Workload by user</h2>
+          <div class="mt-4 overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+            <table class="min-w-full divide-y divide-slate-200 text-sm">
+              <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+                <tr>
+                  <th class="px-3 py-2">Team member</th>
+                  <th class="px-3 py-2">Role</th>
+                  <th class="px-3 py-2">Open</th>
+                  <th class="px-3 py-2">Completed</th>
+                  <th class="px-3 py-2">Overdue</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                {% for row in workload_by_user %}
+                  <tr>
+                    <td class="px-3 py-2 font-medium text-slate-900">{{ row.user_display_name }}</td>
+                    <td class="px-3 py-2 text-slate-600">{{ row.role }}</td>
+                    <td class="px-3 py-2 text-slate-600">{{ row.open_tasks }}</td>
+                    <td class="px-3 py-2 text-slate-600">{{ row.completed_tasks }}</td>
+                    <td class="px-3 py-2 text-slate-600">{{ row.overdue_tasks }}</td>
+                  </tr>
+                {% empty %}
+                  <tr><td colspan="5" class="px-3 py-6 text-center text-slate-500">No team members found.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+      <div class="space-y-8">
+        <section>
+          <h2 class="text-lg font-semibold text-slate-900">Per-project progress</h2>
+          <div class="mt-4 overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+            <table class="min-w-full divide-y divide-slate-200 text-sm">
+              <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+                <tr>
+                  <th class="px-3 py-2">Project</th>
+                  <th class="px-3 py-2">Status</th>
+                  <th class="px-3 py-2">% Complete</th>
+                  <th class="px-3 py-2">Open</th>
+                  <th class="px-3 py-2">Overdue</th>
+                  <th class="px-3 py-2">Due</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                {% for row in project_progress %}
+                  <tr>
+                    <td class="px-3 py-2 font-medium text-slate-900">{{ row.name }}</td>
+                    <td class="px-3 py-2 text-slate-600">{{ row.status }}</td>
+                    <td class="px-3 py-2">
+                      <div class="flex items-center gap-2">
+                        <div class="h-2 min-w-[4rem] flex-1 rounded-full bg-slate-200">
+                          <div class="h-2 rounded-full bg-htac-teal" style="width: {{ row.percent_complete }}%"></div>
+                        </div>
+                        <span class="shrink-0 text-slate-600">{{ row.percent_complete }}%</span>
+                      </div>
+                    </td>
+                    <td class="px-3 py-2 text-slate-600">{{ row.open_tasks }}</td>
+                    <td class="px-3 py-2 text-slate-600">{{ row.overdue_count }}</td>
+                    <td class="px-3 py-2 text-slate-600">{% if row.due_date %}{{ row.due_date|date:"M j, Y" }}{% else %}—{% endif %}</td>
+                  </tr>
+                {% empty %}
+                  <tr><td colspan="6" class="px-3 py-6 text-center text-slate-500">No active projects.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <section>
+          <h2 class="text-lg font-semibold text-slate-900">Recent activity</h2>
+          <ul class="mt-4 divide-y divide-slate-200 rounded-xl border border-slate-200 bg-white shadow-sm">
+            {% for item in recent_activity %}
+              <li class="px-4 py-3 text-sm">
+                <p class="text-slate-900">
+                  <span class="font-semibold">{{ item.actor_name }}</span>
+                  {{ item.description }}
+                  <span class="font-medium text-htac-navy">{{ item.task_name }}</span>
+                  <span class="text-slate-500">({{ item.project_name }})</span>
+                </p>
+                <p class="mt-1 text-xs text-slate-500">{{ item.timestamp|timesince_short }}</p>
+              </li>
+            {% empty %}
+              <li class="px-4 py-6 text-center text-slate-500">No recent activity.</li>
+            {% endfor %}
+          </ul>
+        </section>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script>
+(function () {
+  var DATA_URL = '{% url "projects:dashboard_data" %}';
+  var REFRESH_MS = 5 * 60 * 1000;
+  var charts = {};
+  var lastFetchAt = null;
+
+  function setText(id, text) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = text;
+  }
+
+  function updateOverdueStyle(count) {
+    var num = document.getElementById('metric-overdue-tasks');
+    if (!num) return;
+    if (count > 0) {
+      num.classList.add('text-rose-600');
+      num.classList.remove('text-slate-900');
+    } else {
+      num.classList.remove('text-rose-600');
+      num.classList.add('text-slate-900');
+    }
+  }
+
+  function applySummary(s) {
+    if (!s) return;
+    setText('metric-total-projects', s.total_projects);
+    setText('metric-active-projects', s.active_projects);
+    setText('metric-total-tasks', s.total_tasks);
+    setText('metric-completed-tasks', s.completed_tasks);
+    setText('metric-overdue-tasks', s.overdue_tasks);
+    setText('metric-due-week', s.tasks_due_this_week);
+    setText('metric-my-open', s.open_tasks_assigned_to_me);
+    updateOverdueStyle(Number(s.overdue_tasks) || 0);
+  }
+
+  function destroyChart(key) {
+    if (charts[key]) {
+      try { charts[key].destroy(); } catch (e) {}
+      charts[key] = null;
+    }
+  }
+
+  function renderCharts(data) {
+    if (typeof Chart === 'undefined') return;
+
+    var statusColors = ['#64748b', '#2563eb', '#d97706', '#7c3aed', '#dc2626', '#16a34a'];
+    var ts = document.getElementById('chart-task-status');
+    if (ts) {
+      destroyChart('status');
+      charts.status = new Chart(ts, {
+        type: 'bar',
+        data: {
+          labels: data.task_status.labels,
+          datasets: [{
+            label: 'Tasks',
+            data: data.task_status.values,
+            backgroundColor: statusColors,
+            borderWidth: 0,
+          }],
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { beginAtZero: true, ticks: { precision: 0 } },
+            y: { grid: { display: false } },
+          },
+        },
+      });
+    }
+
+    var pr = document.getElementById('chart-priority');
+    if (pr) {
+      destroyChart('priority');
+      charts.priority = new Chart(pr, {
+        type: 'doughnut',
+        data: {
+          labels: data.tasks_by_priority.labels,
+          datasets: [{
+            data: data.tasks_by_priority.values,
+            backgroundColor: ['#94a3b8', '#008EAA', '#003865', '#c2410c'],
+            borderWidth: 1,
+            borderColor: '#fff',
+          }],
+        },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } } },
+      });
+    }
+
+    var pc = document.getElementById('chart-project-completion');
+    if (pc) {
+      destroyChart('completion');
+      charts.completion = new Chart(pc, {
+        type: 'bar',
+        data: {
+          labels: data.project_completion.labels,
+          datasets: [{
+            label: '% complete',
+            data: data.project_completion.values,
+            backgroundColor: '#003865',
+            borderWidth: 0,
+          }],
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { max: 100, beginAtZero: true },
+            y: { grid: { display: false } },
+          },
+        },
+      });
+    }
+
+    var wk = document.getElementById('chart-weekly');
+    if (wk) {
+      destroyChart('weekly');
+      charts.weekly = new Chart(wk, {
+        type: 'line',
+        data: {
+          labels: data.weekly_completions.labels,
+          datasets: [{
+            label: 'Completed tasks',
+            data: data.weekly_completions.values,
+            borderColor: '#008EAA',
+            backgroundColor: 'rgba(0, 142, 170, 0.12)',
+            fill: true,
+            tension: 0.25,
+            pointRadius: 3,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, ticks: { precision: 0 } },
+          },
+        },
+      });
+    }
+  }
+
+  function refreshLabel() {
+    var el = document.getElementById('dash-last-refresh');
+    if (!el || !lastFetchAt) return;
+    var m = Math.floor((Date.now() - lastFetchAt) / 60000);
+    if (m <= 0) el.textContent = 'Last updated: just now';
+    else if (m === 1) el.textContent = 'Last updated: 1 minute ago';
+    else el.textContent = 'Last updated: ' + m + ' minutes ago';
+  }
+
+  async function loadDashboardData() {
+    var zone = document.getElementById('dashboard-chart-zone');
+    try {
+      var res = await fetch(DATA_URL, { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      var data = await res.json();
+      if (data.summary) applySummary(data.summary);
+      destroyChart('status');
+      destroyChart('priority');
+      destroyChart('completion');
+      destroyChart('weekly');
+      renderCharts(data);
+      if (zone) zone.classList.remove('hidden');
+      lastFetchAt = Date.now();
+      refreshLabel();
+    } catch (e) {
+      if (zone) zone.classList.add('hidden');
+      setText('dash-last-refresh', 'Could not load chart data');
+    }
+  }
+
+  function boot() {
+    if (typeof Chart === 'undefined') return;
+    loadDashboardData();
+    setInterval(loadDashboardData, REFRESH_MS);
+    setInterval(refreshLabel, 60000);
+  }
+
+  document.addEventListener('DOMContentLoaded', boot);
+})();
+    </script>
+  {% endif %}
+{% endblock %}

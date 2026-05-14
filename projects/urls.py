@@ -9,6 +9,8 @@ app_name = 'projects'
 
 urlpatterns = [
     path('projects/', views.project_list, name='project_list'),
+    path('projects/dashboard/', views.dashboard, name='dashboard'),
+    path('projects/dashboard/data/', views.dashboard_data, name='dashboard_data'),
     path('projects/create/', views.project_create, name='project_create'),
     path('projects/<int:pk>/', views.project_detail, name='project_detail'),
     path('projects/<int:pk>/edit/', views.project_edit, name='project_edit'),

@@ -8,6 +8,7 @@
       <a href="{% url 'services' %}" class="hover:text-htac-navy transition-colors">Services</a>
       {% if user.is_authenticated %}
         <a href="{% url 'projects:project_list' %}" class="hover:text-htac-navy transition-colors">Projects</a>
+        <a href="{% url 'projects:dashboard' %}" class="hover:text-htac-navy transition-colors">Dashboard</a>
         <a href="{% url 'projects:calendar' %}" class="hover:text-htac-navy transition-colors">Calendar</a>
         <a href="{% url 'projects:contact_list' %}" class="hover:text-htac-navy transition-colors">Contacts</a>
         <a href="{% url 'projects:notification_list' %}" class="relative inline-flex items-center hover:text-htac-navy transition-colors" title="Notifications">
