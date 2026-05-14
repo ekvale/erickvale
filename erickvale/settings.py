@@ -330,7 +330,9 @@ USE_TZ = True
 LOGIN_URL = '/login/'
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+# Leading slash so {% static %} URLs are site-root absolute; relative "static/"
+# breaks on nested paths (e.g. /htac/... resolves to /htac/static/...).
+STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 STATICFILES_DIRS = [
