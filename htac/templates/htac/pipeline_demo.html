@@ -16,6 +16,7 @@
     background: #111d2e;
     margin-bottom: 1rem;
     overflow: hidden;
+    scroll-margin-top: 5.5rem;
     transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
     color: rgba(226,232,240,0.75);
   }
@@ -269,6 +270,16 @@
     var num = step.step_number;
     var el = document.getElementById("card-step-" + num);
     if (!el) return;
+    var sig = JSON.stringify({
+      st: step.status,
+      dur: step.duration_seconds,
+      mv: step.metric_value,
+      ml: step.metric_label,
+      nh: step.narrative_headline,
+      nb: step.status === "failed" ? step.narrative_body : ""
+    });
+    if (el.dataset.demoSig === sig) return;
+    el.dataset.demoSig = sig;
     el.className = "demo-step-card is-" + (step.status || "pending");
     var dur = step.duration_seconds != null ? fmtDur(step.duration_seconds) : "";
     var inner = "<div class=\"demo-step-inner\">";
@@ -305,9 +316,6 @@
     }
     inner += "</div>";
     el.innerHTML = inner;
-    if (step.status === "running" || step.status === "complete") {
-      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
   }
 
   function renderSummary(payload) {
@@ -399,11 +407,14 @@
         for (var i = 1; i <= 7; i++) {
           var el = document.getElementById("card-step-" + i);
           if (el) {
+            delete el.dataset.demoSig;
             el.className = "demo-step-card is-pending";
             el.innerHTML = "<div class=\"demo-step-inner\"><span class=\"inline-flex h-7 w-7 items-center justify-center rounded-full bg-navy-900 text-xs font-bold text-slate-500\">" + i + "</span><span class=\"ml-2 font-medium text-slate-500\">Pending</span></div>";
           }
         }
         document.getElementById("zone-c").classList.remove("is-visible");
+        var zb = document.getElementById("zone-b");
+        if (zb) zb.scrollIntoView({ behavior: "smooth", block: "start" });
         pollRun(runId);
       })
       .catch(function (e) {

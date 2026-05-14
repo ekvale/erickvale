@@ -45,6 +45,7 @@ from htac.pipeline_constants import (
     HOMELESS_FLAG_RATE,
     INCARCERATION_FLAG_RATE,
     MEDICAID_FLAG_RATE,
+    PIPELINE_DEMO_PREVALENCE_GEO_LEVELS,
     PIPELINE_STEP_DEFINITIONS,
     SIMULATED_SITES,
     SITE_ID_TO_SHORT_CODE,
@@ -435,18 +436,23 @@ def _build_prevalence_estimates(
     study: StudyRun,
     roster_qs,
     quotas: list[tuple[str, HealthSystem, int]],
+    *,
+    geo_levels: tuple[str, ...] | list[str] | None = None,
 ) -> tuple[list[PrevalenceEstimate], int, int]:
     """Return (estimate rows, total_cells, suppressed_count)."""
+    levels = tuple(geo_levels) if geo_levels is not None else tuple(GEO_LEVELS)
     hs_list = [h for _name, h, _n in quotas]
-    counties = sorted(
-        {
-            c
-            for c in Person.objects.filter(person_source_value__startswith=pfx).values_list(
-                "county_fips", flat=True
-            )
-            if c
-        }
-    )
+    counties: list[str] = []
+    if "county" in levels:
+        counties = sorted(
+            {
+                c
+                for c in Person.objects.filter(person_source_value__startswith=pfx).values_list(
+                    "county_fips", flat=True
+                )
+                if c
+            }
+        )
     race_vals = ["8515", "8516", "8527", "8657", "8552"]
     age_specs = [
         ("0-17", 2007, 2025),
@@ -498,7 +504,7 @@ def _build_prevalence_estimates(
         if not cobj or not ccid:
             continue
 
-        for geo_level in GEO_LEVELS:
+        for geo_level in levels:
             geo_iter = [None] if geo_level == "state" else counties
             for geo_value in geo_iter:
                 for demo_strat in DEMO_STRATIFIERS:
@@ -833,10 +839,14 @@ def execute_pipeline_run(run_id: int) -> None:
         # --- Step 6 ---
         s6 = steps[6]
         _mark_step_running(s6)
-        time.sleep(3.0)
+        time.sleep(0.6)
         quotas_cached = _normalized_site_quotas()
         estimates, total_cells, suppressed = _build_prevalence_estimates(
-            pfx, study, roster_qs, quotas_cached
+            pfx,
+            study,
+            roster_qs,
+            quotas_cached,
+            geo_levels=PIPELINE_DEMO_PREVALENCE_GEO_LEVELS,
         )
         PrevalenceEstimate.objects.bulk_create(estimates, batch_size=1000)
         pub = total_cells - suppressed
@@ -850,17 +860,18 @@ def execute_pipeline_run(run_id: int) -> None:
         s6.narrative_headline = (
             f"Stratification complete — {suppressed} of {total_cells} cells suppressed to protect small populations"
         )
+        demo_geo_n = len(PIPELINE_DEMO_PREVALENCE_GEO_LEVELS)
         s6.narrative_body = (
-            f"Estimates are stratified across {len(DEMO_STRATIFIERS)} demographic and social dimensions at {len(GEO_LEVELS)} geographic levels. "
+            f"Estimates are stratified across {len(DEMO_STRATIFIERS)} demographic and social dimensions at {demo_geo_n} geographic "
+            f"level{'s' if demo_geo_n != 1 else ''} in this live demonstration (full county, ZIP, and census-tract grids in production). "
             "Any stratum containing fewer than 11 individuals is suppressed — numerator, denominator, and rate are all cleared before results are stored or published. "
             "This threshold matches the MNEHRC Master Data Use Agreement and is consistent with CDC and CMS suppression standards. "
-            "Suppression is most common at fine geographic levels among small demographic groups: in this run, census tract-level estimates for American Indian / Alaska Native individuals "
-            "and for individuals with recent homelessness experience were the most frequently suppressed cells — reflecting real patterns in the MNEHRC production data."
+            "In full production runs, suppression is most common at fine geographic levels among small demographic groups — the same policy applies here on a reduced geography set for responsiveness."
         )
         s6.technical_detail = (
             "Suppression threshold: n < 11 (not ≤10, consistent with CMS standard). Secondary suppression applied: when a numerator is suppressed, "
             "the denominator is also cleared to prevent back-calculation of the suppressed count. Prevalence rate formula: (numerator / denominator) × 10,000 active patients. "
-            "Geographic levels: state and county in this demonstration (ZIP code and census tract available in production deployments)."
+            "This browser demonstration evaluates state-level cells only so the demo completes quickly; production adds county, ZIP, and census tract dimensions per DUA."
         )
         s6.metric_label = "Suppression rate"
         s6.metric_value = f"{sup_pct}% of cells suppressed ({suppressed} of {total_cells})"

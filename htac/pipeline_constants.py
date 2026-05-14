@@ -113,7 +113,8 @@ SIMULATED_SITES = [
     },
 ]
 
-TARGET_PATIENTS = 2500
+# Synthetic cohort size for the live browser demo (smaller = faster OMOP + PPRL steps).
+TARGET_PATIENTS = 1000
 
 CROSS_SITE_OVERLAP_RATE = 0.32
 
@@ -143,6 +144,10 @@ DEMO_CONDITION_NAME_TO_SLUG: dict[str, str] = {
 DEMO_STRATIFIERS = ["race", "homeless_status", "incarceration_status", "age_group", "total"]
 
 GEO_LEVELS = ["state", "county"]
+
+# Live demo only: full county × strata × sites explodes ORM count() calls and stalls step 6.
+# Production narratives still describe county/ZIP/tract; the runner uses this tuple for the demo build.
+PIPELINE_DEMO_PREVALENCE_GEO_LEVELS = ("state",)
 
 # PrevalenceEstimate.stratifier field codes (model uses "homeless" not "homeless_status")
 STRATIFIER_MODEL_KEYS: dict[str, str] = {
