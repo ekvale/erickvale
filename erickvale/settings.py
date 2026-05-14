@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'nomoar',
     'dream_blue',
     'braindump',
+    'projects.apps.ProjectsConfig',
 ]
 
 # --- Brain dump (personal GTD capture; owner-only) ---
@@ -260,6 +261,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'nomoar.context_processors.nomoar_banner',
                 'nomoar.context_processors.nomoar_engagement',
+                'projects.context_processors.notification_count',
             ],
         },
     },
@@ -320,8 +322,7 @@ USE_I18N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
+LOGIN_URL = '/login/'
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'

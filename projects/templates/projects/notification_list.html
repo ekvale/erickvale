@@ -1,0 +1,40 @@
+{% extends "base_site.html" %}
+{% block title %}Notifications — Eric Kvale{% endblock %}
+{% block content %}
+  {% if messages %}
+    <div class="mb-6 space-y-2">
+      {% for message in messages %}
+        <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+  <div class="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-center sm:justify-between">
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Notifications</h1>
+    <form method="post" action="{% url 'projects:notification_mark_read' %}">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{% url 'projects:notification_list' %}">
+      <button type="submit" class="rounded-lg bg-htac-navy px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-htac-teal">Mark all read</button>
+    </form>
+  </div>
+  <ul class="mt-8 divide-y divide-slate-200 rounded-xl border border-slate-200 bg-white shadow-sm">
+    {% for n in notifications %}
+      <li class="flex flex-col gap-1 px-4 py-4 sm:flex-row sm:items-start sm:justify-between {% if not n.is_read %}bg-htac-mist/40{% endif %}">
+        <div>
+          <p class="text-sm text-slate-900">
+            {% if n.actor %}<span class="font-semibold">{{ n.actor.get_username }}</span>{% else %}<span class="font-semibold">Someone</span>{% endif %}
+            {{ n.verb }}
+            {% if n.target_task %}
+              <a href="{% url 'projects:task_detail' pk=n.target_task.project_id task_pk=n.target_task_id %}" class="font-medium text-htac-teal hover:underline">{{ n.target_task.title }}</a>
+            {% endif %}
+          </p>
+          <p class="mt-1 text-xs text-slate-500">{{ n.created_at|date:"M j, Y g:i a" }}</p>
+        </div>
+        {% if not n.is_read %}
+          <span class="shrink-0 rounded-full bg-htac-teal px-2 py-0.5 text-xs font-semibold text-white">Unread</span>
+        {% endif %}
+      </li>
+    {% empty %}
+      <li class="px-4 py-10 text-center text-sm text-slate-500">No notifications.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

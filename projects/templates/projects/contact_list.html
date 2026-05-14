@@ -1,0 +1,59 @@
+{% extends "base_site.html" %}
+{% block title %}Contacts — Eric Kvale{% endblock %}
+{% block content %}
+  {% if messages %}
+    <div class="mb-6 space-y-2">
+      {% for message in messages %}
+        <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+  <div class="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-center sm:justify-between">
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Contacts</h1>
+    <a href="{% url 'projects:contact_create' %}" class="rounded-lg bg-htac-navy px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-htac-teal">New contact</a>
+  </div>
+  <form method="get" class="mt-6 flex flex-wrap items-end gap-3">
+    <div>
+      <label for="q" class="block text-xs font-medium uppercase tracking-wide text-slate-500">Search</label>
+      <input type="search" name="q" id="q" value="{{ q }}" placeholder="Name or organization" class="mt-1 block w-64 rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-htac-teal focus:outline-none focus:ring-1 focus:ring-htac-teal">
+    </div>
+    <div>
+      <label for="contact_type" class="block text-xs font-medium uppercase tracking-wide text-slate-500">Type</label>
+      <select name="contact_type" id="contact_type" class="mt-1 block rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-htac-teal focus:outline-none focus:ring-1 focus:ring-htac-teal">
+        <option value="">All</option>
+        {% for value, label in contact_type_choices %}
+          <option value="{{ value }}" {% if contact_type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50">Search</button>
+  </form>
+  <div class="mt-8 overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+    <table class="min-w-full divide-y divide-slate-200 text-sm">
+      <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+        <tr>
+          <th class="px-4 py-3">Name</th>
+          <th class="px-4 py-3">Organization</th>
+          <th class="px-4 py-3">Type</th>
+          <th class="px-4 py-3">Projects</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for c in contacts %}
+          <tr class="hover:bg-slate-50">
+            <td class="px-4 py-3"><a href="{% url 'projects:contact_detail' pk=c.pk %}" class="font-medium text-htac-teal hover:underline">{{ c.first_name }} {{ c.last_name }}</a></td>
+            <td class="px-4 py-3 text-slate-600">{{ c.organization|default:"—" }}</td>
+            <td class="px-4 py-3 text-slate-600">{{ c.get_contact_type_display }}</td>
+            <td class="px-4 py-3 text-slate-600">
+              {% for p in c.projects.all %}
+                <span class="mr-1 inline-block rounded bg-slate-100 px-2 py-0.5 text-xs">{{ p.name }}</span>
+              {% empty %}—{% endfor %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4" class="px-4 py-8 text-center text-slate-500">No contacts found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

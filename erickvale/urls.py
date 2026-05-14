@@ -64,6 +64,8 @@ urlpatterns = [
     path('logout/', logout_view, name='logout'),
     path('about/', about, name='about'),
     path('services/', services, name='services'),
+    # Project management (projects, contacts, calendar, notifications — see projects.urls)
+    path('', include('projects.urls')),
     path('', homepage, name='homepage'),
 ]
 

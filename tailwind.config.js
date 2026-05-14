@@ -3,6 +3,7 @@ module.exports = {
   content: [
     './erickvale/templates/**/*.html',
     './htac/templates/**/*.html',
+    './projects/templates/**/*.html',
   ],
   theme: {
     extend: {

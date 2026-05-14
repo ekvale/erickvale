@@ -1,0 +1,47 @@
+{% extends "base_site.html" %}
+{% load humanize %}
+{% block title %}Documents — {{ project.name }}{% endblock %}
+{% block content %}
+  {% if messages %}
+    <div class="mb-6 space-y-2">
+      {% for message in messages %}
+        <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+  <div class="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-wide text-htac-teal"><a href="{% url 'projects:project_detail' pk=project.pk %}">{{ project.name }}</a></p>
+      <h1 class="mt-1 text-2xl font-semibold tracking-tight text-slate-900">Documents</h1>
+    </div>
+    <a href="{% url 'projects:document_upload' pk=project.pk %}" class="rounded-lg bg-htac-navy px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-htac-teal">Upload</a>
+  </div>
+  <div class="mt-8 overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+    <table class="min-w-full divide-y divide-slate-200 text-sm">
+      <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+        <tr>
+          <th class="px-4 py-3">Title</th>
+          <th class="px-4 py-3">File</th>
+          <th class="px-4 py-3">Uploader</th>
+          <th class="px-4 py-3">Uploaded</th>
+          <th class="px-4 py-3">Size</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for d in documents %}
+          <tr>
+            <td class="px-4 py-3 font-medium text-slate-900">{{ d.title }}</td>
+            <td class="px-4 py-3 text-slate-600">{{ d.file.name|default:"—" }}</td>
+            <td class="px-4 py-3 text-slate-600">{% if d.uploaded_by %}{{ d.uploaded_by.get_username }}{% else %}—{% endif %}</td>
+            <td class="px-4 py-3 text-slate-600">{{ d.created_at|date:"M j, Y" }}</td>
+            <td class="px-4 py-3 text-slate-600">{{ d.file_size|filesizeformat }}</td>
+            <td class="px-4 py-3"><a href="{{ d.file.url }}" class="font-semibold text-htac-teal hover:underline">Download</a></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">No documents yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}
