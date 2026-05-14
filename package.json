@@ -2,8 +2,8 @@
   "name": "erickvale",
   "private": true,
   "scripts": {
-    "build:css": "tailwindcss -i ./src/input.css -o ./erickvale/static/erickvale/css/tw.css --minify",
-    "watch:css": "tailwindcss -i ./src/input.css -o ./erickvale/static/erickvale/css/tw.css --watch"
+    "build:css": "node ./node_modules/tailwindcss/lib/cli.js -i ./src/input.css -o ./erickvale/static/erickvale/css/tw.css --minify",
+    "watch:css": "node ./node_modules/tailwindcss/lib/cli.js -i ./src/input.css -o ./erickvale/static/erickvale/css/tw.css --watch"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.9",
