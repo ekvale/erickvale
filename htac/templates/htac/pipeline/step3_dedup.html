@@ -19,8 +19,8 @@
   .dedup-match { color:#008EAA; font-weight:700; font-size:.85rem; }
   .stat-grid { display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem; }
   .stat-tile { flex:1 1 150px; background:#fff; border:1px solid #d5e3ee; border-radius:6px; padding:1rem 1.2rem; text-align:center; }
-  body.mdh-app .stat-tile .stat-val { font-size:1.8rem; font-weight:700; color:#003865 !important; display:block; }
-  body.mdh-app .stat-tile .stat-lbl { font-size:.8rem; color:#555 !important; }
+  body.htac-site .stat-tile .stat-val { font-size:1.8rem; font-weight:700; color:#003865 !important; display:block; }
+  body.htac-site .stat-tile .stat-lbl { font-size:.8rem; color:#555 !important; }
 </style>
 {% endblock %}
 
@@ -38,7 +38,7 @@
   <h1>Cross-Site Deduplication</h1>
   <p>Patients who receive care at multiple health systems generate identical PPRL tokens at each site.
      This step collapses those duplicate records into a single entry in the
-     <strong>DeduplicatedRoster</strong> — one row per unique patient across the entire MNEHRC network.</p>
+     <strong>DeduplicatedRoster</strong> — one row per unique person across the entire federated network.</p>
 </div>
 
 {% include 'htac/pipeline/_stepper.html' %}
@@ -48,7 +48,7 @@
     <h3>Why this step?</h3>
     <p>Without deduplication, a patient seen at both Allina and M Health Fairview would be counted
        twice in every prevalence calculation — artificially inflating the denominator and distorting
-       rates. In real MNEHRC data, approximately <strong>75% of patients</strong> appear at more than
+       rates. In many multi-site deployments, a large share of <strong>patients</strong> appear at more than
        one health system.</p>
   </div>
   <div class="htac-callout how">

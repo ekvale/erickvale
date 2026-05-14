@@ -7,12 +7,12 @@
 {% include 'htac/pipeline/_styles.html' %}
 <style>
   .condition-table { width:100%; border-collapse:collapse; font-size:.87rem; }
-  body.mdh-app .condition-table th {
+  body.htac-site .condition-table th {
     background:#003865 !important; color:#fff !important;
     padding:8px 10px; text-align:right; font-weight:600 !important;
   }
-  body.mdh-app .condition-table th:first-child,
-  body.mdh-app .condition-table th:nth-child(2) { text-align:left !important; }
+  body.htac-site .condition-table th:first-child,
+  body.htac-site .condition-table th:nth-child(2) { text-align:left !important; }
   .condition-table td { padding:7px 10px; border-bottom:1px solid #e0e0e0; text-align:right; }
   .condition-table td:first-child { text-align:left; font-weight:600; }
   .condition-table td:nth-child(2) { text-align:left; }
@@ -82,7 +82,7 @@
     <h3>Federated execution</h3>
     <p>The same <code class="fn">get_condition_cohort()</code> function runs identically at every
        site against that site's local OMOP DB. This is equivalent to distributing R scripts in the
-       real MNEHRC — the code is the protocol.</p>
+       production networks — the code is the protocol.</p>
   </div>
 </div>
 

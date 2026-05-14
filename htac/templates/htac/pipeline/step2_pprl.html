@@ -13,7 +13,7 @@
     display:flex; flex-direction:column; gap:.3rem;
   }
   .pii-field-num { font-size:.7rem; font-weight:700; color:#008EAA; text-transform:uppercase; letter-spacing:.08em; }
-  body.mdh-app .pii-field-card h4 { font-size:.95rem; font-weight:700; color:#003865 !important; margin:0; }
+  body.htac-site .pii-field-card h4 { font-size:.95rem; font-weight:700; color:#003865 !important; margin:0; }
   .pii-field-rule { font-size:.82rem; color:#555; }
   code.fn { font-family:monospace; font-size:.8rem; background:#edf4fb; border:1px solid #c5d8ea; border-radius:3px; padding:1px 4px; }
 
@@ -65,12 +65,12 @@
     <h3>Why HMAC instead of plain SHA-256?</h3>
     <p>Plain SHA-256 is deterministic globally — anyone with the same PII gets the same hash,
        enabling external re-identification attacks. HMAC-SHA256 with a shared secret salt
-       makes tokens meaningful <em>only within the MNEHRC site group</em>. Without the salt,
+       makes tokens meaningful <em>only within the coordinated site group</em>. Without the salt,
        a token from one network cannot be linked to tokens from another.</p>
   </div>
   <div class="htac-callout privacy">
     <h3>Validation</h3>
-    <p>The MNEHRC PPRL algorithm was validated at the OneFlorida Research Network, producing
+    <p>This PPRL approach has been validated in multi-site research networks (e.g., OneFlorida), producing
        <strong>97% precision</strong> (few false links) and <strong>75% recall</strong>
        (most true matches found) — acceptable thresholds for population-level surveillance.</p>
   </div>

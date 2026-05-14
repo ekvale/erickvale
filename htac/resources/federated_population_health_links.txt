@@ -1,0 +1,13 @@
+Federated population health — reference links (update for your jurisdiction)
+
+OHDSI (OMOP CDM, tools, community)
+https://www.ohdsi.org/
+
+PCORnet (national patient-centered research network)
+https://pcornet.org/
+
+HUD HMIS program information
+https://www.hudexchange.info/programs/hmis/
+
+CMS Chronic Conditions Warehouse
+https://www2.ccwdata.org/web/guest/home

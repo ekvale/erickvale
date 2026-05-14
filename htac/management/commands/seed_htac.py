@@ -6,21 +6,21 @@ full HTAC pipeline end-to-end.
 
 What is created
 ---------------
-1. 11 MNEHRC HealthSystem records (active)
-2. Data-gap institutions: 11 MN tribal nations + 8 FQHCs (is_active=False)
+1. 11 reference HealthSystem records (active)
+2. Data-gap institutions: 11 Tribal nation placeholders + 8 FQHC placeholders (is_active=False)
 3. 22 HTAC Condition records, each with ≥ 3 real OMOP concept codes
    (SNOMED / ICD-10-CM / RxNorm / LOINC — verified against OHDSI Athena)
 4. 500 synthetic Person records distributed across the 11 sites with
-   realistic Minnesota demographic distributions
+   regionally varied (fictitious) demographic distributions
 5. VisitOccurrence records (1–4 per person)
 6. ConditionOccurrence records at prevalence rates that produce
    non-suppressed statewide cells for ≥ 18 of the 22 conditions
 7. A default pending StudyRun covering the 2022 calendar year
 
 With --tokens:
-8. Synthetic HashToken records derived from Minnesota-realistic fictitious PII
-   (names drawn from Scandinavian/German, Somali/East African, Hmong, Latino,
-   and American Indian pools matching MN demographic composition)
+8. Synthetic HashToken records derived from fictitious PII pools
+   (names drawn from Scandinavian/German, Somali/East Asian, Hmong, Latino,
+   and American Indian pools for instructional diversity)
 9. Cross-site patient linkages (~10% of patients appear at 2 sites,
    mirroring realistic specialist referral and care-transition patterns)
 10. DeduplicatedRoster rows produced by running deduplicate_tokens()
@@ -30,9 +30,10 @@ DATA GAP NOTE
 Federally Qualified Health Centers (FQHCs) and Tribal health programs are
 registered as is_active=False HealthSystem records to make the data gap
 visible in the admin and API.  No patient data is generated for these sites.
-This reflects the real-world situation: as of 2024, MN FQHCs and the 11
-federally recognized Tribal Nations have not been integrated into MNEHRC
-infrastructure.  Outreach efforts are ongoing.
+This reflects a common real-world pattern: FQHCs and sovereign Tribal health
+systems often require distinct agreements before joining a regional federated
+network.  Outreach and nation-to-nation processes belong in governance, not
+in silent defaults.
 
 Idempotency
 -----------
@@ -78,11 +79,10 @@ User = get_user_model()
 # ── Fixed seed for reproducible synthetic data ─────────────────────────────────
 _RNG = random.Random(42)
 
-# ── Synthetic name pools (Minnesota-realistic, obviously fictitious) ───────────
-# Stratified by OMOP race_concept_id and sex.  Names reflect MN's actual
-# demographic composition: heavy Scandinavian/German heritage among white
-# population; large Somali/East African community in Twin Cities; largest
-# urban Hmong population in the US; growing Latino community; 11 Tribal Nations.
+# ── Synthetic name pools (regionally diverse, obviously fictitious) ───────────
+# Stratified by OMOP race_concept_id and sex.  Names reflect diverse
+# instructional pools: Scandinavian/German-heritage Anglo names; Somali/East African;
+# Hmong; Latino; and American Indian / Alaska Native — combined for synthetic demo data.
 
 _FIRST_M = {
     # White — Scandinavian/German heritage heavy
@@ -97,11 +97,11 @@ _FIRST_M = {
            "Marcus", "DeShawn", "Jerome", "Tyrone", "Darnell", "Jamal", "Kendrick",
            "Andre", "Terrence", "Malik", "Brandon", "Jalen", "Isaiah", "Elijah",
            "Darius", "Marquis", "DeAndre", "Lamar", "Quincy", "Reginald"],
-    # Asian — Hmong names (MN has the largest urban Hmong community in the US)
+    # Asian — Hmong names (instructional diversity)
     8515: ["Ka", "Pao", "Vue", "Yer", "Xai", "Neng", "Toua", "Dang", "Blong",
            "Thai", "Chong", "Lue", "Chue", "Gao", "Sia", "Kou", "Shoua", "Nhia",
            "Keng", "Ger", "Txooj", "Huab", "Zong", "Ntxhais", "Hlub", "Tshiab"],
-    # American Indian / Alaska Native — MN tribal nations
+    # American Indian / Alaska Native — instructional name pools
     8657: ["Joseph", "Thomas", "James", "William", "Michael", "Robert", "John",
            "Raymond", "Gerald", "Leonard", "Harold", "Eugene", "Alfred", "Vernon",
            "Leroy", "Russell", "Wayne", "Roy", "Norman", "Clifford", "Marvin",
@@ -186,14 +186,14 @@ _SITE_AREA_CODES = {
 }
 
 # Cross-site patient linkages — (from_site, to_site, fraction_of_from_site)
-# Based on realistic MN care-transition patterns:
+# Based on plausible multi-site care-transition patterns:
 #   VA → ALLINA: veterans transitioning to community care
 #   ALLINA ↔ MAYO: specialty referrals (Rochester)
 #   HENNEPIN → NORTHMEMORIAL: north Minneapolis corridor
 #   MHFAIRVIEW ↔ HEALTHPARTNERS: Twin Cities market overlap
-#   ESSENTIA → MAYO: rural-to-specialty pipeline (NE MN to Rochester)
+#   ESSENTIA → MAYO: rural-to-specialty pipeline (regional hub to academic hub)
 #   CENTRACARE → MHFAIRVIEW: St. Cloud patients seeking sub-specialty
-#   SANFORD → MAYO: SW MN to Rochester specialty
+#   SANFORD → MAYO: regional system to academic specialty center
 CROSS_SITE_PAIRS = [
     ("VA",            "ALLINA",         0.10),
     ("ALLINA",        "MAYO",           0.07),
@@ -224,13 +224,13 @@ TRIBAL_NATIONS = [
 
 FQHC_INSTITUTIONS = [
     ("NorthPoint Health & Wellness Center",              "NORTHPOINT_FQHC"),
-    ("Minnesota Community Care",                         "MN_COMMUNITY_CARE_FQHC"),
+    ("Community Care Collaborative",                     "MN_COMMUNITY_CARE_FQHC"),
     ("Open Door Health Center",                          "OPEN_DOOR_FQHC"),
     ("Virginia Community Health Center",                 "VIRGINIA_CHC_FQHC"),
     ("Native American Community Clinic",                 "NACC_FQHC"),
     ("Comunidades Latinas Unidas En Servicio (CLUES)",   "CLUES_FQHC"),
     ("WellShare International",                          "WELLSHARE_FQHC"),
-    ("Central MN Community Empowerment Org",             "CMCEO_FQHC"),
+    ("Central Community Empowerment Org",             "CMCEO_FQHC"),
 ]
 
 # ── 1. Health systems ──────────────────────────────────────────────────────────
@@ -238,7 +238,7 @@ FQHC_INSTITUTIONS = [
 HEALTH_SYSTEMS = [
     ("Allina Health",         "ALLINA"),
     ("CentraCare",            "CENTRACARE"),
-    ("Children's Minnesota",  "CHILDRENS"),
+    ("Children's Regional Health",  "CHILDRENS"),
     ("Essentia Health",       "ESSENTIA"),
     ("HealthPartners",        "HEALTHPARTNERS"),
     ("Hennepin Healthcare",   "HENNEPIN"),
@@ -521,7 +521,7 @@ CONDITIONS_DATA = [
     },
 ]
 
-# ── 3. Demographic distributions (Minnesota population-based) ─────────────────
+# ── 3. Demographic distributions (synthetic, census-informed style weights) ─────────────────
 
 # OMOP standard concept IDs
 GENDER_WEIGHTS   = [(8507, "Male", 0.49), (8532, "Female", 0.51)]
@@ -544,7 +544,7 @@ LANGUAGES = [
     ("Hmong", 0.03), ("Vietnamese", 0.02), ("Other", 0.03),
 ]
 
-# MN county FIPS codes (site-appropriate)
+# U.S. county FIPS codes (site-appropriate)
 SITE_COUNTIES = {
     "ALLINA":         ["27053", "27123", "27003", "27037"],   # Metro
     "CENTRACARE":     ["27145", "27009", "27067"],             # Stearns area
@@ -670,7 +670,7 @@ class Command(BaseCommand):
             action="store_true",
             help=(
                 "Generate synthetic HashToken records and run PPRL deduplication. "
-                "Uses Minnesota-realistic fictitious PII; no real data is used or stored."
+                "Uses fictitious PII pools for instructional diversity; no real data is used or stored."
             ),
         )
 
@@ -954,7 +954,7 @@ class Command(BaseCommand):
         only the SHA-256 digest (token) is persisted.
 
         Cross-site linkages are created for a realistic fraction of each
-        site's population, mirroring known MN care-transition patterns.
+        site's population, mirroring common multi-site referral patterns.
         """
         if force:
             deleted, _ = HashToken.objects.filter(
@@ -1097,9 +1097,9 @@ class Command(BaseCommand):
         # ── Step 4: data-gap reminder ─────────────────────────────────────────
         self.stdout.write(
             self.style.WARNING(
-                "\n  DATA GAP: Tokens generated for MNEHRC sites only.\n"
-                f"  {len(TRIBAL_NATIONS)} MN Tribal Nation health programs and "
-                f"{len(FQHC_INSTITUTIONS)} FQHCs are NOT represented.\n"
+                "\n  DATA GAP: Tokens generated for active reference sites only.\n"
+                f"  {len(TRIBAL_NATIONS)} Tribal nation health program placeholders and "
+                f"{len(FQHC_INSTITUTIONS)} FQHC placeholders are NOT represented.\n"
                 "  These populations — disproportionately affected by chronic conditions —\n"
                 "  are systematically undercounted in current prevalence estimates.\n"
                 "  Tribal data sovereignty agreements and FQHC data-sharing MOUs\n"

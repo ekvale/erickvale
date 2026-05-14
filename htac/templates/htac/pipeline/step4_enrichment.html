@@ -14,15 +14,15 @@
   .source-stripe.miic    { background:#3a7c3d; }
   .source-stripe.vitals  { background:#7a1f1f; }
   .source-body { padding:.9rem 1.1rem; flex:1; }
-  body.mdh-app .source-card h3 { font-size:1rem; font-weight:700; margin:0 0 .3rem; color:#003865 !important; }
+  body.htac-site .source-card h3 { font-size:1rem; font-weight:700; margin:0 0 .3rem; color:#003865 !important; }
   .source-meta { display:flex; flex-wrap:wrap; gap:.5rem 1.5rem; font-size:.82rem; color:#555; margin-bottom:.4rem; }
   .source-meta span strong { color:#333; }
   .source-flags { display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.5rem; }
   .flag-pill { background:#edf4fb; border:1px solid #b0c8db; border-radius:12px; padding:2px 10px; font-size:.8rem; font-family:monospace; color:#003865; }
   .stat-grid { display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem; }
   .stat-tile { flex:1 1 130px; background:#fff; border:1px solid #d5e3ee; border-radius:6px; padding:.9rem 1rem; text-align:center; }
-  body.mdh-app .stat-tile .stat-val { font-size:1.6rem; font-weight:700; color:#003865 !important; display:block; }
-  body.mdh-app .stat-tile .stat-lbl { font-size:.78rem; color:#555 !important; }
+  body.htac-site .stat-tile .stat-val { font-size:1.6rem; font-weight:700; color:#003865 !important; display:block; }
+  body.htac-site .stat-tile .stat-lbl { font-size:.78rem; color:#555 !important; }
 </style>
 {% endblock %}
 
@@ -39,8 +39,9 @@
   <p class="htac-eyebrow">HTAC Pipeline &middot; Step 4 of {{ pipeline_steps|length }}</p>
   <h1>State Data Enrichment</h1>
   <p>EHR data alone cannot capture whether a patient is experiencing homelessness, is currently
-     incarcerated, or is enrolled in Medicaid. MDH provides periodic extracts from five state
-     administrative systems, matched to the DeduplicatedRoster by PPRL token hash.</p>
+     incarcerated, or is enrolled in public coverage. <strong>Authorized agency extracts</strong>
+     (Medicaid, housing services, corrections, immunization registries, vital events) are staged
+     and matched to the DeduplicatedRoster by PPRL token hash.</p>
 </div>
 
 {% include 'htac/pipeline/_stepper.html' %}
@@ -56,7 +57,7 @@
   <div class="htac-callout how">
     <h3>How enrichment works</h3>
     <ul>
-      <li>MDH extracts are loaded into <strong>staging tables</strong> keyed on PPRL token hash.</li>
+      <li>Approved extracts are loaded into <strong>staging tables</strong> keyed on PPRL token hash.</li>
       <li>Each enrichment function queries its staging table for tokens in the roster.</li>
       <li>Matched roster rows get their flag and date fields set; unmatched rows get <code class="fn">False</code> / <code class="fn">None</code>.</li>
       <li>Two DB round-trips per source regardless of roster size (efficient at scale).</li>
@@ -79,16 +80,16 @@
     <div class="source-card">
       <div class="source-stripe"></div>
       <div class="source-body">
-        <h3>MN DHS — Medicaid Enrollment</h3>
+        <h3>Medicaid enrollment</h3>
         <div class="source-meta">
           <span><strong>Staging model:</strong> MedicaidEnrollment</span>
           <span><strong>Function:</strong> <code class="fn">enrich_from_medicaid(roster_qs)</code></span>
-          <span><strong>Frequency:</strong> Monthly extract from MN DHS</span>
+          <span><strong>Frequency:</strong> Example: monthly eligibility extract</span>
         </div>
         <p style="font-size:.88rem;margin:.3rem 0;">
           Matches on <code class="fn">token_hash</code>. Sets <code class="fn">medicaid_effective_date</code>
           to the <strong>earliest</strong> enrollment period across all records for that token.
-          Captures current and historical Medicaid / MA / MinnesotaCare enrollment.
+          Captures current and historical Medicaid-style coverage where your jurisdiction defines it.
         </p>
         <div class="source-flags">
           <span class="flag-pill">medicaid_flag</span>
@@ -100,11 +101,11 @@
     <div class="source-card">
       <div class="source-stripe hmis"></div>
       <div class="source-body">
-        <h3>MN DHS — HMIS (Homelessness Services)</h3>
+        <h3>HMIS — homelessness services</h3>
         <div class="source-meta">
           <span><strong>Staging model:</strong> HMISRecord</span>
           <span><strong>Function:</strong> <code class="fn">enrich_from_hmis(roster_qs)</code></span>
-          <span><strong>Frequency:</strong> Quarterly extract</span>
+          <span><strong>Frequency:</strong> Example: quarterly extract</span>
         </div>
         <p style="font-size:.88rem;margin:.3rem 0;">
           The Homeless Management Information System (HMIS) tracks service touchpoints: street outreach,
@@ -122,7 +123,7 @@
     <div class="source-card">
       <div class="source-stripe doc"></div>
       <div class="source-body">
-        <h3>MN Dept. of Corrections — Jail &amp; Prison Records</h3>
+        <h3>Corrections — jail &amp; prison records</h3>
         <div class="source-meta">
           <span><strong>Staging model:</strong> DOCRecord</span>
           <span><strong>Function:</strong> <code class="fn">enrich_from_doc(roster_qs)</code></span>
@@ -145,16 +146,16 @@
     <div class="source-card">
       <div class="source-stripe miic"></div>
       <div class="source-body">
-        <h3>MIIC — MN Immunization Information Connection</h3>
+        <h3>Immunization information system (IIS)</h3>
         <div class="source-meta">
           <span><strong>Staging model:</strong> MIICRecord</span>
           <span><strong>Function:</strong> <code class="fn">enrich_from_miic(roster_qs)</code></span>
-          <span><strong>Frequency:</strong> Quarterly extract</span>
+          <span><strong>Frequency:</strong> Example: quarterly extract</span>
         </div>
         <p style="font-size:.88rem;margin:.3rem 0;">
           COVID-19 and influenza vaccinations are tracked separately. COVID stores the earliest
           vaccination date; influenza stores only a boolean (any influenza vaccination on record).
-          MIIC is Minnesota's statewide immunization registry — coverage exceeds 94% of the population.
+          Many jurisdictions operate a statewide or regional IIS with high population coverage.
         </p>
         <div class="source-flags">
           <span class="flag-pill">covid_vaccinated_flag</span>
@@ -167,14 +168,14 @@
     <div class="source-card">
       <div class="source-stripe vitals"></div>
       <div class="source-body">
-        <h3>MDH — Vital Statistics (Death Records)</h3>
+        <h3>Vital statistics (death records)</h3>
         <div class="source-meta">
           <span><strong>Staging model:</strong> VitalStatisticsRecord</span>
           <span><strong>Function:</strong> <code class="fn">enrich_from_vitals(roster_qs)</code></span>
-          <span><strong>Frequency:</strong> Annual extract with quarterly updates</span>
+          <span><strong>Frequency:</strong> Example: annual extract with quarterly updates</span>
         </div>
         <p style="font-size:.88rem;margin:.3rem 0;">
-          MDH vital statistics death records are matched to the roster. When multiple records exist
+          Civil vital events are matched to the roster. When multiple records exist
           for the same token (a data quality edge case), the <strong>latest</strong> death date is used.
           Deceased patients can be excluded from active-patient denominators or analyzed separately.
         </p>
@@ -197,7 +198,7 @@
     <h3>Staging tables are empty in the simulation</h3>
     <p>The five staging tables (MedicaidEnrollment, HMISRecord, DOCRecord, MIICRecord,
        VitalStatisticsRecord) contain <strong>{{ staging_counts.MedicaidEnrollment|add:staging_counts.HMISRecord|add:staging_counts.DOCRecord|add:staging_counts.MIICRecord|add:staging_counts.VitalStatisticsRecord }} rows</strong> total.
-       In a real deployment, MDH would load extracts from these five sources before running
+       In a real deployment, data stewards would load extracts from these five sources before running
        <code class="fn">python manage.py enrich_roster</code>, which would populate the
        flags below.
     </p>

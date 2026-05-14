@@ -8,13 +8,13 @@
 <style>
   .result-grid { display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem; }
   .result-tile { flex:1 1 150px; background:#fff; border:1px solid #d5e3ee; border-radius:6px; padding:1rem 1.2rem; text-align:center; }
-  body.mdh-app .result-tile .r-val { font-size:1.8rem; font-weight:700; color:#003865 !important; display:block; }
-  body.mdh-app .result-tile .r-lbl { font-size:.8rem; color:#555 !important; }
+  body.htac-site .result-tile .r-val { font-size:1.8rem; font-weight:700; color:#003865 !important; display:block; }
+  body.htac-site .result-tile .r-lbl { font-size:.8rem; color:#555 !important; }
 
   .access-grid { display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem; }
   .access-card { flex:1 1 200px; background:#fff; border:1px solid #d5e3ee; border-radius:6px; padding:1rem 1.2rem; }
   .access-card .access-icon { font-size:1.4rem; display:block; margin-bottom:.4rem; }
-  body.mdh-app .access-card h4 { font-size:.95rem; font-weight:700; color:#003865 !important; margin:0 0 .3rem; }
+  body.htac-site .access-card h4 { font-size:.95rem; font-weight:700; color:#003865 !important; margin:0 0 .3rem; }
   .access-card p { font-size:.83rem; color:#555; margin:0; }
 
   .sample-estimate {
@@ -22,7 +22,7 @@
     padding:1.25rem 1.5rem; margin-bottom:1.5rem; font-size:.88rem;
   }
   .sample-estimate table { width:100%; border-collapse:collapse; font-size:.85rem; }
-  body.mdh-app .sample-estimate th {
+  body.htac-site .sample-estimate th {
     background:#edf4fb !important; color:#003865 !important;
     padding:6px 10px; text-align:left; font-weight:600 !important;
     font-size:.8rem !important; border-bottom:2px solid #b0c8db;
@@ -57,8 +57,8 @@
   <h1>Prevalence Results</h1>
   <p>The final output: suppressed, stratified prevalence estimates stored as
      <strong>PrevalenceEstimate</strong> rows within a <strong>StudyRun</strong>.
-     Results are accessible through the MDH admin interface, the REST API,
-     CSV export, and the public HTAC dashboard.</p>
+     Results are accessible through the <strong>Django admin</strong>, the REST API,
+     CSV export, and any companion visualization layer you deploy.</p>
 </div>
 
 {% include 'htac/pipeline/_stepper.html' %}
@@ -126,7 +126,7 @@
           <td class="val-published">3,260.0</td><td>No</td>
         </tr>
         <tr>
-          <td>Diabetes</td><td>Hennepin Healthcare</td><td>County</td><td>Race</td><td>Black or African American</td>
+          <td>Diabetes</td><td>Regional Health A</td><td>County</td><td>Race</td><td>Black or African American</td>
           <td class="val-published">14</td><td class="val-published">42</td>
           <td class="val-published">3,333.3</td><td>No</td>
         </tr>
@@ -147,7 +147,7 @@
   <div class="access-grid">
     <div class="access-card">
       <span class="access-icon">🖥</span>
-      <h4>MDH Admin Interface</h4>
+      <h4>Staff admin (Django)</h4>
       <p>Staff can browse, filter, and export estimates through the Django admin at <code class="fn">/admin/</code>. Full CRUD access for authorized users.</p>
     </div>
     <div class="access-card">
@@ -158,12 +158,12 @@
     <div class="access-card">
       <span class="access-icon">📊</span>
       <h4>Public Dashboard</h4>
-      <p>The HTAC Health Trends Dashboard at <a href="https://mnehrconsortium.org/explore-our-findings/health-trends-across-communities-in-mn/" target="_blank" rel="noopener">mnehrconsortium.org</a> displays interactive prevalence maps and trend charts.</p>
+      <p>Interactive maps and charts can be hosted alongside this app or in a BI layer; wire them to the same suppressed tables or API.</p>
     </div>
     <div class="access-card">
       <span class="access-icon">📁</span>
       <h4>Public-Use Data File</h4>
-      <p>Analysts can request the full suppressed dataset as a CSV through the MDH Health Data Request process for off-platform analysis.</p>
+      <p>Analysts can request governed, public-use CSV extracts through your organization’s data request and DUA workflow.</p>
     </div>
   </div>
 </div>
@@ -220,8 +220,8 @@
 <div style="background:linear-gradient(135deg,#003865 0%,#008EAA 100%);border-radius:8px;padding:1.75rem 2rem;margin-top:2rem;text-align:center;">
   <h2 style="color:#fff;font-size:1.3rem;margin:0 0 .5rem;">Pipeline Complete</h2>
   <p style="color:#cce4f0;font-size:.95rem;margin:0 0 1rem;">
-    From raw EHR records in OMOP CDM to suppressed, stratified prevalence estimates — covering 22 conditions,
-    11 health systems, 9 stratifiers, and 4 geographic levels across Minnesota.
+    From raw EHR records in OMOP CDM to suppressed, stratified prevalence estimates — spanning the
+    conditions, sites, stratifiers, and geography levels configured in your study run.
   </p>
   <a href="{% url 'htac_public_about' %}" style="background:#fff;color:#003865 !important;border-radius:5px;padding:.55rem 1.5rem;font-weight:700;text-decoration:none !important;font-size:.95rem;">
     Back to HTAC overview

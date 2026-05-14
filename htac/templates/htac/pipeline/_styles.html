@@ -1,11 +1,11 @@
 <style>
-  /* ── Hero (specificity 0,2,x beats mn_style.css body.mdh-app at 0,1,x) ── */
-  body.mdh-app .htac-hero { background:#003865; border-radius:6px; padding:2.5rem 2rem; margin-bottom:2rem; }
-  body.mdh-app .htac-hero,
-  body.mdh-app .htac-hero h1,
-  body.mdh-app .htac-hero h2 { color:#fff !important; }
-  body.mdh-app .htac-hero p  { color:#cce4f0 !important; font-size:1.05rem !important; margin-bottom:0 !important; }
-  body.mdh-app .htac-hero .htac-eyebrow { color:#7ecde0 !important; font-size:.8rem; letter-spacing:.1em; text-transform:uppercase; }
+  /* ── Hero (elevated specificity for Bootstrap compatibility) ── */
+  body.htac-site .htac-hero { background:#003865; border-radius:6px; padding:2.5rem 2rem; margin-bottom:2rem; }
+  body.htac-site .htac-hero,
+  body.htac-site .htac-hero h1,
+  body.htac-site .htac-hero h2 { color:#fff !important; }
+  body.htac-site .htac-hero p  { color:#cce4f0 !important; font-size:1.05rem !important; margin-bottom:0 !important; }
+  body.htac-site .htac-hero .htac-eyebrow { color:#7ecde0 !important; font-size:.8rem; letter-spacing:.1em; text-transform:uppercase; }
 
   /* ── Pipeline stepper ── */
   .htac-stepper { display:flex; align-items:flex-start; gap:0; margin-bottom:2.5rem; overflow-x:auto; padding-bottom:.5rem; }
@@ -42,23 +42,23 @@
   .htac-callout.how     { background:#e8f7f9; border-left:4px solid #008EAA; }
   .htac-callout.privacy { background:#fff8e1; border-left:4px solid #d07000; }
   .htac-callout.note    { background:#f2f8f0; border-left:4px solid #3a7c3d; }
-  body.mdh-app .htac-callout h3 { font-size:1rem; margin-bottom:.5rem; }
-  body.mdh-app .htac-callout.why h3     { color:#003865 !important; }
-  body.mdh-app .htac-callout.how h3     { color:#006a7d !important; }
-  body.mdh-app .htac-callout.privacy h3 { color:#d07000 !important; }
-  body.mdh-app .htac-callout.note h3    { color:#3a7c3d !important; }
-  body.mdh-app .htac-callout p,
-  body.mdh-app .htac-callout ul { font-size:.95rem !important; margin-bottom:0 !important; }
+  body.htac-site .htac-callout h3 { font-size:1rem; margin-bottom:.5rem; }
+  body.htac-site .htac-callout.why h3     { color:#003865 !important; }
+  body.htac-site .htac-callout.how h3     { color:#006a7d !important; }
+  body.htac-site .htac-callout.privacy h3 { color:#d07000 !important; }
+  body.htac-site .htac-callout.note h3    { color:#3a7c3d !important; }
+  body.htac-site .htac-callout p,
+  body.htac-site .htac-callout ul { font-size:.95rem !important; margin-bottom:0 !important; }
   .htac-callout ul { padding-left:1.2rem; }
   .htac-callout li { margin-bottom:.25rem; }
 
   /* ── Generic stats table (live record counts) ── */
   .htac-stats-table { width:100%; border-collapse:collapse; font-size:.88rem; }
-  body.mdh-app .htac-stats-table th {
+  body.htac-site .htac-stats-table th {
     background:#003865 !important; color:#fff !important;
     padding:8px 12px; text-align:right; font-weight:600 !important;
   }
-  body.mdh-app .htac-stats-table th:first-child { text-align:left !important; }
+  body.htac-site .htac-stats-table th:first-child { text-align:left !important; }
   .htac-stats-table td { padding:7px 12px; border-bottom:1px solid #e0e0e0; text-align:right; }
   .htac-stats-table td:first-child { text-align:left; font-weight:600; }
   .htac-stats-table tr:nth-child(even) td { background:#f5f8fb; }

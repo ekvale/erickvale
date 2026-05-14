@@ -145,7 +145,7 @@ class ConditionViewSet(ReadOnlyModelViewSet):
 class HealthSystemViewSet(ReadOnlyModelViewSet):
     """
     GET /health-systems/
-        List all active MNEHRC health systems.
+        List all active participating health systems.
         No patient-level data or counts are exposed.
     """
     serializer_class   = HealthSystemSerializer

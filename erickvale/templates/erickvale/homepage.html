@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>eric kvale</title>
+    <title>eric kvale — population health &amp; data trust</title>
     {% load static %}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,7 +31,7 @@
         body {
             font-family: 'JetBrains Mono', 'Consolas', 'Monaco', 'Courier New', monospace, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: var(--bg);
-            background-image: 
+            background-image:
                 linear-gradient(to right, rgba(26, 26, 46, 0.7) 0%, rgba(26, 26, 46, 0.85) 50%, rgba(26, 26, 46, 0.95) 100%),
                 url('{% static "erickvale/images/cathederal_hall.jpg" %}');
             background-size: cover;
@@ -86,31 +86,33 @@
             color: var(--accent);
         }
 
+        .top-navbar a.nav-emphasis {
+            color: var(--accent);
+        }
+
         header {
-            margin-bottom: 60px;
+            margin-bottom: 48px;
             text-align: center;
         }
 
-        header h1 {
-            font-size: 32px;
+        header h1.site-tagline {
+            font-size: 1.15rem;
             font-weight: 400;
-            letter-spacing: -0.5px;
-            margin-bottom: 12px;
-            color: var(--text);
-        }
-
-        header .subtitle {
-            font-size: 16px;
+            letter-spacing: 0.02em;
+            margin-top: 28px;
             color: var(--text-secondary);
-            font-weight: 300;
+            max-width: 42rem;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.65;
         }
 
         .intro-text {
-            max-width: 600px;
-            margin-bottom: 80px;
+            max-width: 46rem;
+            margin-bottom: 56px;
             color: var(--text-secondary);
             font-size: 16px;
-            line-height: 1.7;
+            line-height: 1.75;
             font-weight: 300;
         }
 
@@ -130,6 +132,7 @@
             background: var(--bg-card);
             backdrop-filter: blur(10px);
             transition: border-color 0.2s ease, background 0.2s ease;
+            margin-bottom: 2rem;
         }
 
         .app-card:hover {
@@ -167,12 +170,6 @@
             margin-top: 8px;
         }
 
-        .app-month {
-            font-size: 14px;
-            color: var(--text-light);
-            font-weight: 400;
-        }
-
         .status-badge {
             display: inline-block;
             padding: 4px 10px;
@@ -192,13 +189,9 @@
         .app-description {
             color: var(--text-secondary);
             line-height: 1.7;
-            margin-bottom: 32px;
+            margin-bottom: 24px;
             font-size: 15px;
             font-weight: 300;
-        }
-
-        .app-features {
-            margin-bottom: 32px;
         }
 
         .app-features h3 {
@@ -213,6 +206,7 @@
         .app-features ul {
             list-style: none;
             padding: 0;
+            margin-bottom: 24px;
         }
 
         .app-features li {
@@ -234,6 +228,7 @@
             font-size: 14px;
             font-weight: 400;
             padding: 12px 0;
+            margin-right: 24px;
             border-bottom: 1px solid var(--accent);
             transition: color 0.2s ease, border-color 0.2s ease;
         }
@@ -243,7 +238,48 @@
             border-color: var(--accent-hover);
         }
 
-        /* Sidebar */
+        .pillars-section h3 {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .pillars-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .pillar-card {
+            border: 1px solid var(--border);
+            background: rgba(22, 33, 62, 0.35);
+            padding: 22px;
+            backdrop-filter: blur(8px);
+            transition: border-color 0.2s ease;
+        }
+
+        .pillar-card:hover {
+            border-color: rgba(233, 69, 96, 0.45);
+        }
+
+        .pillar-card h4 {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 10px;
+            letter-spacing: -0.2px;
+        }
+
+        .pillar-card p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.65;
+            font-weight: 300;
+        }
+
         .sidebar {
             position: sticky;
             top: 80px;
@@ -254,10 +290,6 @@
             backdrop-filter: blur(10px);
             border: 1px solid var(--border);
             padding: 20px;
-            margin-bottom: 16px;
-        }
-
-        .sidebar-header {
             margin-bottom: 24px;
         }
 
@@ -281,10 +313,6 @@
             padding: 0;
         }
 
-        .app-list-item {
-            margin-bottom: 1px;
-        }
-
         .app-list-item a {
             display: flex;
             align-items: center;
@@ -297,10 +325,6 @@
         }
 
         .app-list-item a:hover {
-            color: var(--accent);
-        }
-
-        .app-list-item.current-month-sidebar a {
             color: var(--accent);
         }
 
@@ -349,6 +373,10 @@
                 order: -1;
             }
 
+            .pillars-grid {
+                grid-template-columns: 1fr;
+            }
+
             .container {
                 padding: 40px 20px 60px 20px;
             }
@@ -361,23 +389,11 @@
                 gap: 20px;
                 flex-wrap: wrap;
             }
-
-            header {
-                margin-bottom: 60px;
-            }
-
-            .intro-text {
-                margin-bottom: 60px;
-            }
         }
 
         @media (max-width: 768px) {
             .container {
                 padding: 40px 16px;
-            }
-
-            header h1 {
-                font-size: 28px;
             }
 
             .app-header,
@@ -392,6 +408,7 @@
         <div class="container">
             <nav>
                 <a href="{% url 'homepage' %}">Home</a>
+                <a href="{% url 'htac_public_about' %}" class="nav-emphasis">HTAC</a>
                 <a href="{% url 'activity_media:list' %}">Media Gallery</a>
                 <a href="{% url 'arm_chair_detective:case_list' %}">Arm Chair Detective</a>
                 <a href="{% url 'chess_trainer:dashboard' %}">Chess Trainer</a>
@@ -409,127 +426,105 @@
             </nav>
         </div>
     </div>
-    
+
     <div class="container">
         <header>
             <div style="margin-bottom: 20px; text-align: center;">
-                <img src="{% static 'erickvale/eric_kvale_ascii_animation.gif' %}?v=2" 
-                     alt="ERIC KVALE" 
+                <img src="{% static 'erickvale/eric_kvale_ascii_animation.gif' %}?v=2"
+                     alt="ERIC KVALE"
                      id="eric-kvale-gif"
                      style="max-width: 100%; width: 1200px; height: auto; display: block; margin: 0 auto; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;">
             </div>
+            <h1 class="site-tagline">
+                Independent practice at the intersection of <strong style="color: var(--text); font-weight: 500;">federated
+                population health</strong>, <strong style="color: var(--text); font-weight: 500;">trustworthy data modernization</strong>,
+                and <strong style="color: var(--text); font-weight: 500;">responsible AI governance</strong> for nonprofits and public-sector teams.
+            </h1>
         </header>
 
         <p class="intro-text">
-            A playground for exploring ideas, new ways of learning, and understanding.
+            We help mission-driven organizations move from one-off extracts to <strong style="color: var(--text); font-weight: 500;">repeatable,
+            governable pipelines</strong>—OMOP-aware analytics, privacy-preserving linkage patterns, and interoperability that centers
+            community consent, Tribal data sovereignty, and small-signal equity stratifiers instead of treating them as edge cases.
         </p>
 
         <div class="homepage-layout">
             <main class="main-content">
-                {% if featured_app %}
-                    <div class="app-card">
-                        <div class="app-header">
-                            <div class="app-header-content">
-                                <div class="app-title-section">
-                                    <h2>{{ featured_app.name }}</h2>
-                                    <div class="app-meta">
-                                        <span class="app-month">{{ featured_app.month }}</span>
-                                        <span class="status-badge">Current</span>
-                                    </div>
+                <div class="app-card">
+                    <div class="app-header">
+                        <div class="app-header-content">
+                            <div class="app-title-section">
+                                <h2>HTAC — Health Trends Across Communities</h2>
+                                <div class="app-meta">
+                                    <span class="status-badge">Featured</span>
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="app-content">
-                            <p class="app-description">{{ featured_app.description }}</p>
-                            
-                            {% if featured_app.features %}
-                            <div class="app-features">
-                                <h3>Features</h3>
-                                <ul>
-                                    {% for feature in featured_app.features %}
-                                    <li>{{ feature }}</li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                            {% endif %}
-                            
-                            <div style="display: flex; gap: 24px; flex-wrap: wrap; margin-top: 8px;">
-                                <a href="{{ featured_app.url }}" class="app-link">Explore →</a>
-                            </div>
+                    </div>
+                    <div class="app-content">
+                        <p class="app-description">
+                            A working reference stack for <strong style="color: var(--text); font-weight: 500;">privacy-preserving record linkage (PPRL)</strong>,
+                            federated OMOP cohort logic, enrichment, suppression, and read-only APIs—aligned with how leading learning-health
+                            and public-interest networks operationalize transparency without centralizing sensitive rows.
+                        </p>
+                        <div class="app-features">
+                            <h3>Explore</h3>
+                            <ul>
+                                <li>End-to-end pipeline walkthrough (OMOP → tokens → dedup → enrichment → cohorts → suppression → results)</li>
+                                <li>REST API for conditions, study runs, and prevalence cells</li>
+                                <li>Seed data and management commands for local learning and demos</li>
+                            </ul>
+                        </div>
+                        <div style="display: flex; gap: 24px; flex-wrap: wrap; margin-top: 8px;">
+                            <a href="{% url 'htac_public_about' %}" class="app-link">HTAC overview →</a>
+                            <a href="{% url 'htac_pipeline_step1' %}" class="app-link">Start pipeline →</a>
+                            <a href="/api/htac/v1/" class="app-link">API root →</a>
                         </div>
                     </div>
-                {% else %}
-                {% for app in apps %}
-                    {% if app.is_current_month %}
-                    <div class="app-card">
-                        {% if app.cover_image %}
-                        <div class="app-cover-image-container" style="border-bottom: 1px solid var(--border); background: var(--bg-card);">
-                            <div class="app-cover-image" style="width: 100%; height: 200px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                                <img src="{% static app.cover_image %}" alt="Left: Workshop of Bonifacio Bembo (Italian, Cremonese, active ca. 1442–died before 1482). Pope, from The Visconti-Sforza Tarot, ca. 1450. Made in Milan, Italy. Paper (pasteboard) with opaque paint on tooled gold ground; 6 3/4 x 7 3/8 in. (17.3 x 8.7 cm). The Morgan Library & Museum, New York (MS M.630.4). Right: Death, from The Visconti-Sforza Tarot, ca. 1450. Made in Milan, Italy. Paper (pasteboard) with opaque paint on tooled gold ground; 6 3/4 x 7 3/8 in. (17.3 x 8.7 cm). Beinecke Rare Book & Manuscript Library, Yale University, New Haven, Connecticut (ITA 109)" style="max-width: 100%; max-height: 100%; object-fit: contain; object-position: center 25%; display: block;">
-                            </div>
-                            <div class="app-cover-caption" style="padding: 12px 20px; font-size: 11px; color: var(--text-light); line-height: 1.5; border-top: 1px solid var(--border);">
-                                <div style="margin-bottom: 4px; font-weight: 500; color: var(--text-secondary);">The Visconti-Sforza Tarot, ca. 1450</div>
-                                <div style="font-size: 10px;">Left: Workshop of Bonifacio Bembo (Italian, Cremonese, active ca. 1442–died before 1482). Pope. The Morgan Library & Museum, New York (MS M.630.4). Right: Death. Beinecke Rare Book & Manuscript Library, Yale University (ITA 109)</div>
-                            </div>
+                </div>
+
+                <div class="pillars-section">
+                    <h3>Where we focus</h3>
+                    <div class="pillars-grid">
+                        <div class="pillar-card">
+                            <h4>HTAC &amp; federated analytics</h4>
+                            <p>Token-based linkage, deduplicated rosters, and suppressed prevalence reporting so collaboratives can publish community-level insight without a “collect it all” warehouse.</p>
                         </div>
-                        {% endif %}
-                        <div class="app-header">
-                            <div class="app-header-content">
-                                <div class="app-title-section">
-                                    <h2>{{ app.name }}</h2>
-                                    <div class="app-meta">
-                                        <span class="app-month">{{ app.month }}</span>
-                                        <span class="status-badge">Current</span>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="pillar-card">
+                            <h4>Public-health data modernization</h4>
+                            <p>Cloud-ready pipelines, open standards (OMOP / OHDSI), and quality routines that match where philanthropy and agencies are investing: fewer brittle silos, more reproducible evidence.</p>
                         </div>
-                        
-                        <div class="app-content">
-                            <p class="app-description">{{ app.description }}</p>
-                            
-                            {% if app.features %}
-                            <div class="app-features">
-                                <h3>Features</h3>
-                                <ul>
-                                    {% for feature in app.features %}
-                                    <li>{{ feature }}</li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                            {% endif %}
-                            
-                            {% if app.status == 'active' %}
-                            <div style="display: flex; gap: 24px; flex-wrap: wrap; margin-top: 8px;">
-                                <a href="{{ app.url }}" class="app-link">Explore →</a>
-                                {% if 'mango-market' in app.url or 'mango' in app.name|lower %}
-                                <a href="{{ app.url }}results/" class="app-link" style="margin-left: 0;">View Results & Charts →</a>
-                                {% endif %}
-                            </div>
-                            {% endif %}
+                        <div class="pillar-card">
+                            <h4>Agentic AI in care &amp; governance</h4>
+                            <p>Workflows that pair LLMs with clear human accountability—documentation assistance, grant intelligence, and triage support bounded by DUAs, audit logs, and “human-in-the-loop” release gates.</p>
+                        </div>
+                        <div class="pillar-card">
+                            <h4>Data governance &amp; interoperability</h4>
+                            <p>Stewardship design, consent-aligned sharing, FHIR and CDM handoffs, and cross-sector interoperability patterns that respect FQHCs, Tribal nations, and justice-impacted data as first-class governance problems.</p>
                         </div>
                     </div>
-                    {% endif %}
-                {% endfor %}
-                {% endif %}
+                </div>
             </main>
 
             <aside class="sidebar">
                 <div class="sidebar-header">
-                    <h3>Monthly Apps</h3>
-                    <div class="sidebar-year">2025</div>
+                    <h3>Also on this site</h3>
+                    <div class="sidebar-year">{% now "Y" %}</div>
                 </div>
                 <ul class="app-list">
+                    <li class="app-list-item">
+                        <a href="{% url 'htac_public_about' %}">
+                            <span class="app-name-small">HTAC</span>
+                            <span class="app-month-small">Pipeline</span>
+                        </a>
+                    </li>
                     {% for app in apps %}
-                        {% if not app.is_current_month %}
-                        <li class="app-list-item {% if app.is_current_month %}current-month-sidebar{% endif %}">
-                            <a href="{{ app.url }}">
-                                <span class="app-name-small">{{ app.name }}</span>
-                                <span class="app-month-small">{{ app.month }}</span>
-                            </a>
-                        </li>
-                        {% endif %}
+                    <li class="app-list-item">
+                        <a href="{{ app.url }}">
+                            <span class="app-name-small">{{ app.name }}</span>
+                            <span class="app-month-small">{{ app.month }}</span>
+                        </a>
+                    </li>
                     {% endfor %}
                 </ul>
             </aside>

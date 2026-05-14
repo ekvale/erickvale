@@ -12,7 +12,7 @@ get_condition_cohort(condition, health_system, study_period) -> QuerySet[Person]
 stratify_cohort(cohort_qs, stratifier, roster_qs, study_period=None) -> dict
     Counts numerators (cohort) and denominators for each value of a
     stratification dimension.  When study_period is supplied the denominator
-    is restricted to persons with ≥ 1 visit in that period (MNEHRC definition);
+    is restricted to persons with ≥ 1 visit in that period (active-enrollment definition);
     otherwise it falls back to all persons at the site.
     Returns {stratifier_value: {"numerator": int, "denominator": int}}.
 
@@ -221,7 +221,7 @@ def stratify_cohort(cohort_qs, stratifier: str, roster_qs, study_period=None) ->
                    flags for the homeless / incarceration / medicaid stratifiers
     study_period : tuple[date, date] | None — (start_date, end_date) inclusive.
                    When supplied, the denominator is persons with ≥ 1 visit in
-                   the period (MNEHRC definition).  When None, all persons at
+                   the period (active-enrollment definition).  When None, all persons at
                    the site are used as the denominator.
 
     Returns

@@ -15,14 +15,14 @@
 
   .strat-grid { display:flex; flex-wrap:wrap; gap:.75rem; margin-bottom:1.5rem; }
   .strat-card { flex:1 1 180px; background:#fff; border:1px solid #d5e3ee; border-radius:6px; padding:.9rem 1rem; }
-  body.mdh-app .strat-card h4 { font-size:.92rem; font-weight:700; color:#003865 !important; margin:0 0 .25rem; }
+  body.htac-site .strat-card h4 { font-size:.92rem; font-weight:700; color:#003865 !important; margin:0 0 .25rem; }
   .strat-card p { font-size:.82rem; color:#555; margin:0; }
 
   .suppression-example {
     background:#fff8e1; border:2px solid #d07000; border-radius:8px;
     padding:1.1rem 1.4rem; margin-bottom:1.5rem;
   }
-  body.mdh-app .suppression-example h3 { color:#d07000 !important; font-size:1rem; margin-bottom:.5rem; }
+  body.htac-site .suppression-example h3 { color:#d07000 !important; font-size:1rem; margin-bottom:.5rem; }
   .example-row { display:flex; flex-wrap:wrap; gap:.5rem 1.5rem; font-size:.88rem; margin-bottom:.3rem; }
   .example-row .ex-label { min-width:120px; font-weight:600; }
   .suppressed-val { color:#d07000; font-style:italic; }
@@ -43,7 +43,7 @@
   <h1>Stratification &amp; Suppression</h1>
   <p>Each site's cohort is stratified across 9 demographic and social dimensions and 4 geographic
      levels. Any cell with fewer than 11 individuals is suppressed to protect small populations
-     from re-identification — a requirement of the MNEHRC Master Data Use Agreement.</p>
+     from re-identification — a requirement of the consortium’s Master Data Use Agreement.</p>
 </div>
 
 {% include 'htac/pipeline/_stepper.html' %}
@@ -52,20 +52,20 @@
   <div class="htac-callout why">
     <h3>Why stratify?</h3>
     <p>Statewide averages hide disparities. A condition may be twice as prevalent among Black
-       Minnesotans or patients experiencing homelessness. Stratification makes these inequities
+       covered lives or patients experiencing homelessness. Stratification makes these inequities
        visible and actionable for public health programs.</p>
   </div>
   <div class="htac-callout privacy">
     <h3>Why suppress at n &lt; 11?</h3>
     <p>Small-cell suppression prevents re-identification: if only 3 incarcerated Hmong adults
        in a county have diabetes, publishing that count could identify specific individuals.
-       The threshold of <strong>11</strong> (not 10) is set by the MNEHRC Master DUA and is
+       The threshold of <strong>11</strong> (not 10) is common in public-health DUAs and is
        consistent with CDC and CMS suppression standards.</p>
   </div>
   <div class="htac-callout how">
     <h3>Denominator definition</h3>
     <p>The denominator is <strong>persons with at least one VisitOccurrence during the study period</strong>
-       — not all persons in the database. This matches the MNEHRC methodology: inactive patients
+       — not all persons in the database. This matches typical federated methodology: inactive patients
        who appear in historical records but had no encounters during the study window are
        excluded from the denominator.</p>
   </div>
@@ -152,7 +152,7 @@
     <div class="htac-callout why" style="flex:1 1 180px;">
       <h3>{{ label }}</h3>
       {% if val == "state" %}<p>Single statewide estimate — highest population, lowest suppression rate</p>
-      {% elif val == "county" %}<p>87 Minnesota counties — county FIPS from Person.county_fips</p>
+      {% elif val == "county" %}<p>County level — county FIPS from Person.county_fips</p>
       {% elif val == "zip" %}<p>5-digit ZIP code from Person.zip_code</p>
       {% elif val == "census_tract" %}<p>11-char FIPS census tract — finest resolution, highest suppression rate</p>
       {% endif %}

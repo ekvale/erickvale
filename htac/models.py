@@ -1,7 +1,7 @@
 """
 htac/models.py
 
-Full data model for the MNEHRC / HTAC (Health Trends Across Communities) pipeline.
+Full data model for the multi-site federated HTAC (Health Trends Across Communities) pipeline.
 
 Layers:
   1  OMOP Core        — multi-tenant patient/clinical data (simulated federated EHR)
@@ -323,7 +323,7 @@ class DeduplicatedRoster(models.Model):
     )
     site_count = models.IntegerField(default=1)
 
-    # ── MN DHS Medicaid ──────────────────────────────────────────────────────
+    # ── Medicaid enrollment (staging) ────────────────────────────────────────
     medicaid_flag = models.BooleanField(default=False)
     medicaid_effective_date = models.DateField(null=True, blank=True)
 
@@ -344,7 +344,7 @@ class DeduplicatedRoster(models.Model):
     covid_vaccine_date = models.DateField(null=True, blank=True)
     influenza_vaccinated_flag = models.BooleanField(default=False)
 
-    # ── MDH vital statistics ─────────────────────────────────────────────────
+    # ── Vital statistics (staging) ───────────────────────────────────────────
     deceased_flag = models.BooleanField(default=False)
     death_date = models.DateField(null=True, blank=True)
 
@@ -372,7 +372,7 @@ class DeduplicatedRoster(models.Model):
 # ─── Layer 4: Enrichment Source Staging ──────────────────────────────────────
 
 class MedicaidEnrollment(models.Model):
-    """Raw Medicaid enrollment rows from MN DHS before linkage to the roster."""
+    """Raw Medicaid enrollment rows from a state eligibility file before linkage to the roster."""
     token_hash = models.CharField(max_length=64, db_index=True)
     effective_date = models.DateField()
     end_date = models.DateField(null=True, blank=True)
@@ -391,7 +391,7 @@ class MedicaidEnrollment(models.Model):
 
 
 class HMISRecord(models.Model):
-    """HMIS homelessness service records from MN DHS before roster linkage."""
+    """HMIS homelessness service records from a HUD-aligned HMIS feed before roster linkage."""
     SERVICE_TYPE_CHOICES = [
         ("street_outreach", "Street Outreach"),
         ("emergency_shelter", "Emergency Shelter"),
@@ -417,7 +417,7 @@ class HMISRecord(models.Model):
 
 
 class DOCRecord(models.Model):
-    """MN Dept. of Corrections records (jail and prison) before roster linkage."""
+    """Corrections custody records (jail and prison) before roster linkage."""
     RECORD_TYPE_CHOICES = [
         ("jail", "Jail"),
         ("prison", "Prison"),
@@ -444,7 +444,7 @@ class DOCRecord(models.Model):
 
 
 class MIICRecord(models.Model):
-    """MN Immunization Information Connection records before roster linkage."""
+    """Immunization information system (IIS) records before roster linkage."""
     VACCINE_TYPE_CHOICES = [
         ("covid", "COVID-19"),
         ("influenza", "Influenza"),
@@ -471,7 +471,7 @@ class MIICRecord(models.Model):
 
 
 class VitalStatisticsRecord(models.Model):
-    """MDH vital statistics death records before roster linkage."""
+    """Civil vital statistics death records from an authorized vital records feed before roster linkage."""
     token_hash = models.CharField(max_length=64, db_index=True)
     death_date = models.DateField()
     cause_of_death_icd10 = models.CharField(max_length=10, null=True, blank=True)

@@ -10,10 +10,10 @@
   .omop-domain-grid { display:flex; flex-wrap:wrap; gap:1.25rem; margin-bottom:1.5rem; }
   .omop-domain-card { flex:1 1 340px; border:1px solid #d5e3ee; border-radius:6px; overflow:hidden; }
   .omop-domain-header { background:#003865; color:#fff; padding:.7rem 1rem; display:flex; align-items:baseline; gap:.75rem; }
-  body.mdh-app .omop-domain-header h3 { color:#fff !important; font-size:1rem; margin:0; }
+  body.htac-site .omop-domain-header h3 { color:#fff !important; font-size:1rem; margin:0; }
   .omop-domain-header .omop-row-count { font-size:.78rem; color:#cce4f0; font-weight:400; margin-left:auto; white-space:nowrap; }
   .omop-field-table { width:100%; border-collapse:collapse; font-size:.87rem; }
-  body.mdh-app .omop-field-table th {
+  body.htac-site .omop-field-table th {
     background:#edf4fb !important; color:#003865 !important;
     padding:6px 10px; text-align:left; font-weight:600 !important;
     font-size:.8rem !important; border-bottom:2px solid #b0c8db;
@@ -49,7 +49,7 @@
 <div class="htac-callout-row">
   <div class="htac-callout why">
     <h3>Why this step?</h3>
-    <p>Minnesota's 11 MNEHRC health systems each run different EHR platforms (Epic, Cerner, Allscripts).
+    <p>Participating organizations in a federated network often run different EHR platforms (Epic, Cerner, Allscripts, and others).
        Without a common format, a query that finds "diabetes" at one system misses it at another.
        OMOP CDM creates a single shared vocabulary so the same analysis script produces comparable
        results at every site.</p>
@@ -58,7 +58,7 @@
     <h3>How it works</h3>
     <ul>
       <li>Each site maintains its own OMOP database locally — no patient data leaves the site.</li>
-      <li>MDH / MNEHRC distributes standardized R query scripts that run against each local OMOP DB.</li>
+      <li>The coordinating team distributes standardized R or SQL query packages that run against each local OMOP DB.</li>
       <li>Scripts return only aggregate counts (e.g., "247 persons with diabetes at site X").</li>
       <li>Aggregates are transmitted to the Data Coordinating Center (DCC) for final analysis.</li>
     </ul>

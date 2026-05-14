@@ -4,16 +4,16 @@
 
 {% block extra_head %}
 <style>
-  /* ── Hero ── specificity (0,2,x) beats mn_style.css body.mdh-app rules at (0,1,x) */
-  body.mdh-app .htac-hero {
+  /* ── Hero (elevated specificity for Bootstrap compatibility) ── */
+  body.htac-site .htac-hero {
     background: #003865; border-radius: 6px; padding: 2.5rem 2rem; margin-bottom: 2rem;
   }
-  body.mdh-app .htac-hero,
-  body.mdh-app .htac-hero h1,
-  body.mdh-app .htac-hero h2 { color: #fff !important; }
-  body.mdh-app .htac-hero p  { color: #cce4f0 !important; font-size: 1.05rem !important; margin-bottom: 0 !important; }
-  body.mdh-app .htac-hero .htac-eyebrow { color: #7ecde0 !important; }
-  body.mdh-app .htac-hero h1 { font-size: 1.9rem; margin-bottom: .5rem; }
+  body.htac-site .htac-hero,
+  body.htac-site .htac-hero h1,
+  body.htac-site .htac-hero h2 { color: #fff !important; }
+  body.htac-site .htac-hero p  { color: #cce4f0 !important; font-size: 1.05rem !important; margin-bottom: 0 !important; }
+  body.htac-site .htac-hero .htac-eyebrow { color: #7ecde0 !important; }
+  body.htac-site .htac-hero h1 { font-size: 1.9rem; margin-bottom: .5rem; }
 
   /* ── Section headings ── */
   .htac-section { margin-bottom: 2.5rem; }
@@ -46,9 +46,9 @@
               border-radius: 4px; padding: 1rem 1.25rem; }
   .htac-gap strong { color: #d07000; }
 
-  /* ── OMOP table ── specificity (0,2,2) beats body.mdh-app th at (0,1,2) */
+  /* ── OMOP table header contrast ── */
   .htac-omop-table { width: 100%; border-collapse: collapse; font-size: .93rem; }
-  body.mdh-app .htac-omop-table th {
+  body.htac-site .htac-omop-table th {
     background: #003865 !important;
     color: #fff !important;
     padding: 8px 12px;
@@ -65,13 +65,15 @@
 <!-- Hero -->
 <div class="htac-hero">
   <p class="htac-eyebrow text-uppercase" style="font-size:.8rem; letter-spacing:.1em; margin-bottom:.4rem;">
-    MN EHR Consortium · Minnesota Department of Health
+    Federated analytics · Privacy-preserving record linkage
   </p>
   <h1>Health Trends Across Communities (HTAC)</h1>
   <p>
-    A privacy-preserving statewide surveillance platform that links clinical, administrative,
-    and social-services data to produce suppressed prevalence estimates for over 70 health
-    conditions across Minnesota communities — covering 94% of the state population.
+    HTAC is a reference architecture for <strong>privacy-preserving, multi-site population health
+    intelligence</strong>: clinical data stay at the edge in OMOP CDM, PPRL tokens enable responsible
+    linkage, and only suppressed aggregates move to a coordinating center. This site hosts a working
+    Django implementation for learning, demos, and responsible innovation—not an official government
+    reporting system.
   </p>
 </div>
 
@@ -79,59 +81,57 @@
 <div class="htac-section">
   <h2>What is HTAC?</h2>
   <p>
-    HTAC is a collaboration between the <strong>Minnesota Electronic Health Record Consortium
-    (MN EHR Consortium / MNEHRC)</strong> and state and local public health agencies, funded
-    by the <strong>Minnesota Department of Health (MDH)</strong> through a CDC Public Health
-    Infrastructure Grant. It answers a foundational question in public health surveillance:
-    <em>how common is a health condition across different communities in Minnesota?</em>
+    Traditional surveillance still depends heavily on registries, surveys, and claims fragments—each
+    with coverage and timeliness gaps. HTAC-style pipelines combine <strong>federated OMOP queries</strong>,
+    <strong>token-based linkage</strong>, and <strong>stratified small-cell suppression</strong> so nonprofits,
+    health departments, and learning-health collaboratives can ask: <em>how common is a condition across
+    communities we serve—without centralizing identifiable records?</em>
   </p>
   <p>
-    Traditional surveillance relies on death certificates, disease registries, or voluntary
-    surveys — each with significant coverage gaps. HTAC instead aggregates <strong>electronic
-    health records (EHRs)</strong> from 11 large health systems that together serve more than
-    90% of Minnesotans, de-duplicates patients who appear at more than one site, and joins
-    to administrative data (Medicaid, corrections, housing, immunizations, vital statistics)
-    to capture the full picture of a person's health history.
+    Participating organizations map EHR and related sources to a common model, run approved scripts
+    locally, and transmit <strong>aggregate counts only</strong>. Administrative and community-service
+    enrichments (when ethically and legally permitted) attach <strong>social-risk context</strong>—for example
+    housing instability, justice involvement, coverage type—so equity stratifiers are first-class, not
+    afterthoughts.
   </p>
   <p>
-    HTAC uses a <strong>federated distributed architecture</strong> — query scripts run
-    against each site's local OMOP database and only aggregated, de-identified summary
-    counts are transmitted to the Data Coordinating Center (DCC). No patient-level data
-    ever leaves a participating health system.
+    The pattern mirrors what leading networks (PCORnet, OHDSI, and statewide collaboratives) are
+    converging on: <strong>open standards</strong>, transparent cohort definitions, and governance that
+    earns community trust.
   </p>
 </div>
 
-<!-- What is MNEHRC -->
+<!-- Governance model -->
 <div class="htac-section">
-  <h2>What is the MN EHR Consortium?</h2>
+  <h2>How collaboratives like this stay accountable</h2>
   <p>
-    The <strong>Minnesota Electronic Health Record Consortium (MNEHRC)</strong> is a
-    public-private collaboration established in 2020, initially to support COVID-19
-    pandemic surveillance. It now encompasses 11 of the state's largest health systems,
-    public health departments, and other cross-sector partners.
+    Sustainable federated analytics depend less on any one vendor tool than on <strong>shared
+    governance</strong>: a steering body with balanced representation, a scientific or ethics review path
+    for new uses, documented data-use agreements, and technical assistance that keeps OMOP mappings
+    and quality checks current.
   </p>
   <div class="htac-card-row">
     <div class="htac-card">
       <h3>Governance</h3>
-      <p>A Governance Board (one voting member per health system) oversees the consortium. An Executive Committee manages day-to-day operations. A Scientific Review Committee approves all project and manuscript proposals.</p>
+      <p>Voting or consensus models across participating sites; conflict-of-interest policies; public benefit framing for new analyses.</p>
     </div>
     <div class="htac-card">
       <h3>Data infrastructure</h3>
-      <p>Each site maintains its own OMOP database. The Technical Assistance Core distributes R query scripts, maintains deduplication procedures, and runs data quality assessments using OHDSI tools (Achilles, Data Quality Dashboard).</p>
+      <p>Local OMOP instances, versioned concept sets, Achilles-style data-quality routines, and reproducible query packages—not one-off SQL.</p>
     </div>
     <div class="htac-card">
       <h3>Analysis</h3>
-      <p>Condition codesets are defined using OMOP concept IDs. R scripts run at each site and aggregated results are sent to the study Coordinating Site for final analysis and publication.</p>
+      <p>Condition definitions as transparent OMOP concept lists; study periods and denominators published with results; audit trails for changes.</p>
     </div>
     <div class="htac-card">
       <h3>Equity focus</h3>
-      <p>Estimates are stratified by race, ethnicity, language, geography, age, sex, homelessness, incarceration, and Medicaid status to surface disparities that aggregate data obscure.</p>
+      <p>Stratifiers for race, ethnicity, language, geography, age, sex, and social drivers where policy allows—surfacing disparities aggregate dashboards hide.</p>
     </div>
   </div>
   <p>
-    <strong>Participating health systems:</strong> Allina Health · CentraCare · Children's
-    Minnesota · Essentia Health · HealthPartners · Hennepin Healthcare · M Health Fairview ·
-    Mayo Clinic · North Memorial Health · Sanford Health · Minneapolis VA Health Care System
+    <strong>Illustrative scale:</strong> In published statewide federated designs, large integrated networks
+    jointly cover a majority of residents in their region; deduplication rates across sites are often
+    substantial. Your deployment’s numbers will depend on participation and legal scope.
   </p>
 </div>
 
@@ -148,8 +148,8 @@
     Without a common model, comparing data from Epic at Allina Health to Oracle Health at
     Mayo Clinic requires custom translation for every pair of systems. OMOP solves this by
     giving each participating site a standard schema — the same table names, column names,
-    and vocabulary codes everywhere. MNEHRC spent two years implementing and harmonizing
-    OMOP across all 11 sites before HTAC queries could run consistently.
+    and vocabulary codes everywhere. Multi-site collaboratives typically invest sustained
+    effort to harmonize OMOP before federated queries can run consistently.
   </p>
   <table class="htac-omop-table mb-3">
     <thead>
@@ -241,17 +241,17 @@
         The Data Coordinating Center (DCC) receives tokens from all sites. Because the
         same PII produces the same hash, patients seen at multiple sites generate identical
         tokens. <em>deduplicate_tokens()</em> merges these into a single
-        <strong>DeduplicatedRoster</strong> row. In practice, about 75% of MNEHRC patients
-        have records at more than one health system.
+        <strong>DeduplicatedRoster</strong> row. In many multi-site deployments, a large share of
+        patients generate records at more than one organization—deduplication materially changes denominators.
       </div>
     </li>
     <li>
       <div>
         <strong>Enrichment with administrative data</strong>
-        MDH provides the DCC with periodic extracts from state administrative systems.
-        The roster is joined by token hash to Medicaid enrollment, HMIS (housing/homelessness),
-        DOC (corrections), MIIC (immunizations), and vital statistics — adding social-risk
-        flags (Medicaid-enrolled, unstably housed, incarcerated, deceased) to each entry.
+        Authorized public-sector and community-agency data stewards provide periodic extracts
+        aligned to the linkage model. The roster is joined by token hash to coverage, housing,
+        justice, immunization, and vital events where agreements allow—adding social-risk
+        context without pulling raw clinical rows into a central warehouse.
       </div>
     </li>
     <li>
@@ -270,16 +270,16 @@
         Counts are stratified by geography (state, county, ZIP code, census tract),
         race/ethnicity, language, age group, sex, and social-risk flags (homelessness,
         incarceration, Medicaid). Any stratum with fewer than 11 individuals is suppressed
-        before results are stored, per the MNEHRC Master Data Use Agreement.
+        before results are stored, per the consortium’s Master Data Use Agreement and local policy.
         Prevalence rates are calculated per 10,000 enrolled patients.
       </div>
     </li>
     <li>
       <div>
         <strong>Reporting</strong>
-        Suppressed, stratified estimates are available via the public HTAC dashboard,
-        a public-use data file request, the MDH Admin interface, CSV export, and the
-        HTAC REST API at <code>/api/htac/v1/</code>. Data are updated annually.
+        Suppressed, stratified estimates can be exposed through a public narrative site, governed
+        data extracts, the staff <strong>Django admin</strong> interface, CSV export, and the
+        HTAC REST API at <code>/api/htac/v1/</code>. Publication cadence follows your governance calendar.
       </div>
     </li>
   </ol>
@@ -290,20 +290,20 @@
   <h2>Known Data Gaps</h2>
   <div class="htac-gap mb-3">
     <p class="mb-1">
-      <strong>Tribal health systems</strong> — Minnesota's 11 federally recognized tribal
-      nations operate sovereign health systems under the Indian Self-Determination and
-      Education Assistance Act. Tribal health data are excluded from HTAC unless explicitly
-      authorized through nation-to-nation data-sharing agreements. Prevalence estimates
-      therefore <em>undercount</em> conditions in American Indian / Alaska Native communities.
+      <strong>Tribal and Indigenous health sovereignty</strong> — Tribal nations operate sovereign
+      health systems under federal self-governance frameworks. Data from those systems belong in
+      nation-to-nation agreements, not silent inclusion in regional aggregates. Prevalence products
+      that omit authorized Tribal participation can <em>undercount</em> American Indian / Alaska Native
+      communities; governance should center Tribal data sovereignty from the outset.
     </p>
   </div>
   <div class="htac-gap">
     <p class="mb-1">
-      <strong>Federally Qualified Health Centers (FQHCs) and community clinics</strong> —
-      Most FQHCs and some rural independent clinics serving low-income, uninsured, and
-      immigrant populations are not yet integrated (~10% of MN patients). Because these
-      sites disproportionately serve people without commercial insurance, their absence
-      creates undercount bias in estimates for low-income and non-English-speaking communities.
+      <strong>Community health centers and independent clinics</strong> —
+      Federally qualified health centers and smaller independent clinics often sit outside
+      the first wave of enterprise EHR integrations. Because they disproportionately care for
+      uninsured, immigrant, and low-English-proficiency populations, their absence can skew
+      equity stratifiers unless inclusion plans and trust-building investments are explicit.
     </p>
   </div>
 </div>
@@ -313,11 +313,11 @@
   <h2>Privacy &amp; Governance</h2>
   <ul>
     <li>PPRL tokens are one-way cryptographic hashes — mathematically irreversible without the shared salt.</li>
-    <li>Small-cell suppression (n &lt; 11) is applied to all strata before any estimate is stored or published, per the MNEHRC Master DUA.</li>
-    <li>Patient-level data never leaves a participating health system — only aggregate counts are transmitted to the DCC.</li>
-    <li>Data use is governed by the MNEHRC Master Data Use Agreement and project-specific appendices.</li>
-    <li>HTAC operates under <strong>Minn. Stat. §144.053</strong> (health data research authority).</li>
-    <li>Ethics review: determined exempt from IRB review as public health surveillance under federal regulations.</li>
+    <li>Small-cell suppression (n &lt; 11) is applied to all strata before estimates are stored or published, when required by policy.</li>
+    <li>Patient-level data stay at participating organizations unless a separate legal mechanism authorizes transfer.</li>
+    <li>Data use is governed by master and project-specific data agreements, tribal consultation where applicable, and institutional review as required.</li>
+    <li>HTAC deployments must follow <strong>all applicable federal, state, Tribal, and local</strong> health-data authorities—not a single static statute.</li>
+    <li>Ethics and oversight pathways depend on use case and jurisdiction—coordinate with counsel and IRBs as applicable.</li>
   </ul>
 </div>
 
@@ -325,12 +325,11 @@
 <div class="htac-section">
   <h2>Resources</h2>
 
-  <h3 style="font-size:1rem; font-weight:700; color:#003865; margin-top:1.25rem; margin-bottom:.5rem;">MN EHR Consortium</h3>
+  <h3 style="font-size:1rem; font-weight:700; color:#003865; margin-top:1.25rem; margin-bottom:.5rem;">Learning networks &amp; field infrastructure</h3>
   <ul>
-    <li><a href="https://mnehrconsortium.org/" target="_blank" rel="noopener">MN EHR Consortium — Homepage</a></li>
-    <li><a href="https://mnehrconsortium.org/projects/" target="_blank" rel="noopener">MN EHR Consortium — Active Projects</a></li>
-    <li><a href="https://mnehrconsortium.org/explore-our-findings/health-trends-across-communities-in-mn/" target="_blank" rel="noopener">HTAC Interactive Dashboard</a></li>
-    <li><a href="https://mnehrconsortium.org/projects/homelessness-and-incarceration-vaccine-project/" target="_blank" rel="noopener">Homelessness &amp; Incarceration Vaccine Project</a></li>
+    <li><a href="https://www.astho.org/" target="_blank" rel="noopener">ASTHO</a> — leadership and policy alignment for governmental public health</li>
+    <li><a href="https://www.debeaumont.org/" target="_blank" rel="noopener">de Beaumont Foundation</a> — workforce, capacity, and practice innovation</li>
+    <li><a href="https://www.cdc.gov/surveillance/" target="_blank" rel="noopener">CDC — Public health surveillance resources</a></li>
   </ul>
 
   <h3 style="font-size:1rem; font-weight:700; color:#003865; margin-top:1.25rem; margin-bottom:.5rem;">OMOP / OHDSI</h3>
@@ -347,7 +346,8 @@
     <li><a href="https://pcornet.org/" target="_blank" rel="noopener">PCORnet — National Patient-Centered Clinical Research Network</a></li>
   </ul>
 
-  <h3 style="font-size:1rem; font-weight:700; color:#003865; margin-top:1.25rem; margin-bottom:.5rem;">Key Publications</h3>
+  <h3 style="font-size:1rem; font-weight:700; color:#003865; margin-top:1.25rem; margin-bottom:.5rem;">Peer-reviewed context</h3>
+  <p style="font-size:.95rem; color:#444; margin-bottom:.75rem;">Illustrative publications on statewide federated surveillance and equity-focused prevalence work (titles reflect original study settings).</p>
   <ul>
     <li>Johnson SG, Chamberlain AM, Drawz P, et al. <em>Design and Implementation of a State-Wide Network for Near Real-Time Public Health Surveillance and Research: The Minnesota Electronic Health Record Consortium Experience.</em> Learning Health Systems. 2026. <a href="https://doi.org/10.1002/lrh2.70070" target="_blank" rel="noopener">doi:10.1002/lrh2.70070</a></li>
     <li>Zellmer L, Van Siclen R, Bodurtha P, et al. <em>Estimating Health Condition Prevalence Among a Statewide Cohort with Recent Homelessness or Incarceration.</em> J Gen Intern Med. 2025;40(15):3733–42. <a href="https://doi.org/10.1007/s11606-025-09814-x" target="_blank" rel="noopener">doi:10.1007/s11606-025-09814-x</a></li>
