@@ -12,10 +12,16 @@
   body.htac-site .result-tile .r-lbl { font-size:.8rem; color:#555 !important; }
 
   .access-grid { display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem; }
-  .access-card { flex:1 1 200px; background:#fff; border:1px solid #d5e3ee; border-radius:6px; padding:1rem 1.2rem; }
-  .access-card .access-icon { font-size:1.4rem; display:block; margin-bottom:.4rem; }
-  body.htac-site .access-card h4 { font-size:.95rem; font-weight:700; color:#003865 !important; margin:0 0 .3rem; }
-  .access-card p { font-size:.83rem; color:#555; margin:0; }
+  .access-card {
+    flex:1 1 200px; background:#fff; border:1px solid #d5e3ee; border-radius:6px;
+    padding:1.1rem 1.25rem; border-top:3px solid #003865;
+  }
+  .access-card .access-kicker {
+    font-size:.68rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase;
+    color:#6b7c8c; margin:0 0 .35rem;
+  }
+  body.htac-site .access-card h4 { font-size:.95rem; font-weight:700; color:#003865 !important; margin:0 0 .45rem; }
+  .access-card p { font-size:.83rem; color:#555; margin:0; line-height:1.5; }
 
   .sample-estimate {
     background:#f7fafc; border:1px solid #d5e3ee; border-radius:8px;
@@ -57,8 +63,8 @@
   <h1>Prevalence Results</h1>
   <p>The final output: suppressed, stratified prevalence estimates stored as
      <strong>PrevalenceEstimate</strong> rows within a <strong>StudyRun</strong>.
-     Results are accessible through the <strong>Django admin</strong>, the REST API,
-     CSV export, and any companion visualization layer you deploy.</p>
+     Those rows feed an internal <strong>operations console</strong>, optional maps and charts,
+     governed file extracts, and—where included in scope—a <strong>read-only programmatic interface</strong>.</p>
 </div>
 
 {% include 'htac/pipeline/_stepper.html' %}
@@ -92,19 +98,19 @@
   <h2>Output: PrevalenceEstimate Record</h2>
   <div style="overflow-x:auto;">
     <table class="htac-stats-table">
-      <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+      <thead><tr><th>Field</th><th>Role</th><th>Description</th></tr></thead>
       <tbody>
-        <tr><td><code class="fn">study_run</code></td><td>FK → StudyRun</td><td>The run this estimate belongs to</td></tr>
-        <tr><td><code class="fn">condition</code></td><td>FK → Condition</td><td>The HTAC health condition (e.g., Diabetes)</td></tr>
-        <tr><td><code class="fn">health_system</code></td><td>FK → HealthSystem (null=statewide)</td><td>Null indicates a network-wide aggregate across all sites</td></tr>
-        <tr><td><code class="fn">geo_level</code></td><td>str</td><td>state / county / zip / census_tract</td></tr>
-        <tr><td><code class="fn">geo_value</code></td><td>str (nullable)</td><td>FIPS code, ZIP, or census tract string; null for state-level rows</td></tr>
-        <tr><td><code class="fn">stratifier</code></td><td>str</td><td>One of 9 stratification dimensions (race, language, age_group, etc.)</td></tr>
-        <tr><td><code class="fn">stratifier_value</code></td><td>str</td><td>The specific stratum value (e.g., "Black or African American", "Somali")</td></tr>
-        <tr><td><code class="fn">numerator</code></td><td>int (nullable)</td><td>Patients with the condition in this stratum; null if suppressed</td></tr>
-        <tr><td><code class="fn">denominator</code></td><td>int (nullable)</td><td>Active patients in study period in this stratum; null if suppressed</td></tr>
-        <tr><td><code class="fn">prevalence_rate</code></td><td>decimal (nullable)</td><td>Cases per 10,000 active patients; null if suppressed</td></tr>
-        <tr><td><code class="fn">is_suppressed</code></td><td>bool</td><td>True when numerator &lt; 11; all value fields set to null</td></tr>
+        <tr><td><code class="fn">study_run</code></td><td>Link</td><td>The run this estimate belongs to</td></tr>
+        <tr><td><code class="fn">condition</code></td><td>Link</td><td>The HTAC health condition (e.g., Diabetes)</td></tr>
+        <tr><td><code class="fn">health_system</code></td><td>Link (optional)</td><td>Empty when the row is a network-wide aggregate across sites</td></tr>
+        <tr><td><code class="fn">geo_level</code></td><td>Category</td><td>state / county / zip / census_tract</td></tr>
+        <tr><td><code class="fn">geo_value</code></td><td>Text (optional)</td><td>FIPS code, ZIP, or census tract; empty for state-level rows</td></tr>
+        <tr><td><code class="fn">stratifier</code></td><td>Category</td><td>One of nine stratification dimensions (race, language, age group, etc.)</td></tr>
+        <tr><td><code class="fn">stratifier_value</code></td><td>Text</td><td>The stratum label (e.g., Black or African American, Somali)</td></tr>
+        <tr><td><code class="fn">numerator</code></td><td>Count (optional)</td><td>People with the condition in this stratum; empty when suppressed</td></tr>
+        <tr><td><code class="fn">denominator</code></td><td>Count (optional)</td><td>Active people in the study window for this stratum; empty when suppressed</td></tr>
+        <tr><td><code class="fn">prevalence_rate</code></td><td>Rate (optional)</td><td>Cases per 10,000 active people; empty when suppressed</td></tr>
+        <tr><td><code class="fn">is_suppressed</code></td><td>Flag</td><td>Set when the numerator is below the published threshold; detail fields are cleared</td></tr>
       </tbody>
     </table>
   </div>
@@ -138,7 +144,7 @@
       </tbody>
     </table>
   </div>
-  <p style="font-size:.83rem;color:#555;">Sample values are illustrative. Run <code class="fn">python manage.py execute_condition_queries</code> to populate real estimates from the simulation data.</p>
+  <p style="font-size:.83rem;color:#555;">Figures above are illustrative. After the roster and condition definitions are loaded, run the <strong>condition-query job</strong> for the active study period to materialize estimates in this environment.</p>
 </div>
 
 <!-- Access methods -->
@@ -146,40 +152,38 @@
   <h2>How Results Are Accessed</h2>
   <div class="access-grid">
     <div class="access-card">
-      <span class="access-icon">🖥</span>
-      <h4>Staff admin (Django)</h4>
-      <p>Staff can browse, filter, and export estimates through the Django admin at <code class="fn">/admin/</code>. Full CRUD access for authorized users.</p>
+      <p class="access-kicker">Operations</p>
+      <h4>Staff console</h4>
+      <p>Authorized analysts review, filter, and export estimate tables through the password-protected console (this deployment: <code class="fn">/admin/</code>). Access is limited to defined roles.</p>
     </div>
     <div class="access-card">
-      <span class="access-icon">⚙</span>
-      <h4>REST API</h4>
-      <p>Programmatic access at <code class="fn">/api/htac/v1/</code> using Django REST Framework. Supports filtering by condition, geo level, stratifier, and suppression status.</p>
+      <p class="access-kicker">Integration</p>
+      <h4>Read-only service interface</h4>
+      <p>Downstream systems can pull stratified cells over HTTPS at <code class="fn">/api/htac/v1/</code> with filters for condition, geography, stratifier, and suppression status, subject to the same publication rules as the console.</p>
     </div>
     <div class="access-card">
-      <span class="access-icon">📊</span>
-      <h4>Public Dashboard</h4>
-      <p>Interactive maps and charts can be hosted alongside this app or in a BI layer; wire them to the same suppressed tables or API.</p>
+      <p class="access-kicker">Reporting</p>
+      <h4>Maps and dashboards</h4>
+      <p>Maps and trend views are usually deployed in a separate reporting layer that reads the same published tables or service endpoints, so public traffic does not sit on operational databases.</p>
     </div>
     <div class="access-card">
-      <span class="access-icon">📁</span>
-      <h4>Public-Use Data File</h4>
-      <p>Analysts can request governed, public-use CSV extracts through your organization’s data request and DUA workflow.</p>
+      <p class="access-kicker">Disclosure</p>
+      <h4>Public-use files</h4>
+      <p>Full public-use extracts are released only through the organization’s data-request process, with DUAs and redistribution terms attached.</p>
     </div>
   </div>
 </div>
 
 <!-- Live stats -->
 <div class="htac-section">
-  <h2>Current Database Status</h2>
+  <h2>Operational snapshot</h2>
 
   {% if estimate_count == 0 %}
   <div class="htac-callout privacy" style="margin-bottom:1.25rem;">
     <h3>No prevalence estimates yet</h3>
-    <p>The pipeline has been seeded with synthetic patients and PPRL tokens, but
-       <code class="fn">execute_condition_queries</code> has not been run yet.
-       To generate estimates, run:<br>
-       <code class="fn">python manage.py execute_condition_queries</code>
-    </p>
+    <p>The demonstration roster and tokens are loaded, but the <strong>condition-query job</strong> for the
+       active study run has not produced estimate rows. Run that job after codesets and study windows
+       are finalized to populate this view.</p>
   </div>
   {% else %}
   <div class="result-grid">
@@ -212,7 +216,7 @@
     </div>
     {% endfor %}
   {% else %}
-    <p style="color:#666;font-size:.9rem;">No study runs found. Run <code class="fn">seed_htac</code> to create the default study run.</p>
+    <p style="color:#666;font-size:.9rem;">No study runs are on file. Initialize the demonstration dataset to create the baseline study run.</p>
   {% endif %}
 </div>
 

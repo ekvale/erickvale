@@ -60,9 +60,8 @@
   </div>
   <div class="htac-callout note">
     <h3>Idempotency</h3>
-    <p>The <code class="fn">deduplicate_tokens()</code> function uses <code class="fn">update_or_create</code>
-       on <code class="fn">canonical_token</code>. Re-running with the same data updates existing
-       rows rather than creating duplicates — safe to run after any new tokens are loaded.</p>
+    <p>The deduplication routine keys on <code class="fn">canonical_token</code>. Re-running with the same inputs refreshes
+       existing roster rows instead of inserting duplicates, so the job can be repeated safely after new tokens arrive.</p>
   </div>
 </div>
 
@@ -91,10 +90,7 @@
     </div>
   </div>
   <p style="font-size:.88rem;color:#555;">
-    Implemented in <code class="fn">htac/services/pprl.deduplicate_tokens(queryset)</code>.
-    Accepts a <code class="fn">HashToken</code> queryset, groups by <code class="fn">token</code> value,
-    counts distinct health systems, resolves the canonical site via <code class="fn">VisitOccurrence</code>,
-    and upserts one <code class="fn">DeduplicatedRoster</code> row per unique token.
+    The routine groups hash tokens that share the same value, counts contributing sites, selects the canonical site from the most recent visit record, and writes one <code class="fn">DeduplicatedRoster</code> row per unique token. Technical specifications ship with the deployment for independent verification.
   </p>
 </div>
 

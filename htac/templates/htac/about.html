@@ -69,11 +69,11 @@
   </p>
   <h1>Health Trends Across Communities (HTAC)</h1>
   <p>
-    HTAC is a reference architecture for <strong>privacy-preserving, multi-site population health
-    intelligence</strong>: clinical data stay at the edge in OMOP CDM, PPRL tokens enable responsible
-    linkage, and only suppressed aggregates move to a coordinating center. This site hosts a working
-    Django implementation for learning, demos, and responsible innovation—not an official government
-    reporting system.
+    HTAC describes a <strong>privacy-preserving, multi-site approach to population prevalence</strong>:
+    clinical data remain with each contributor in a common clinical model (OMOP CDM), linkage uses
+    one-way tokens, and only suppressed aggregate statistics are shared with a coordinating center.
+    The pages here walk through that workflow in a <strong>sandbox illustration</strong>; they are not
+    an official government reporting system.
   </p>
 </div>
 
@@ -81,23 +81,22 @@
 <div class="htac-section">
   <h2>What is HTAC?</h2>
   <p>
-    Traditional surveillance still depends heavily on registries, surveys, and claims fragments—each
-    with coverage and timeliness gaps. HTAC-style pipelines combine <strong>federated OMOP queries</strong>,
-    <strong>token-based linkage</strong>, and <strong>stratified small-cell suppression</strong> so nonprofits,
-    health departments, and learning-health collaboratives can ask: <em>how common is a condition across
-    communities we serve—without centralizing identifiable records?</em>
+    Routine surveillance still leans on registries, surveys, and payer fragments, each with blind spots.
+    HTAC-style programs add <strong>federated queries against a shared clinical model</strong>,
+    <strong>token-based record linkage</strong>, and <strong>small-cell suppression rules</strong> so
+    agencies and collaboratives can estimate: <em>how common is a condition across the communities we
+    serve—without pooling identifiable clinical rows in one warehouse?</em>
   </p>
   <p>
-    Participating organizations map EHR and related sources to a common model, run approved scripts
-    locally, and transmit <strong>aggregate counts only</strong>. Administrative and community-service
-    enrichments (when ethically and legally permitted) attach <strong>social-risk context</strong>—for example
-    housing instability, justice involvement, coverage type—so equity stratifiers are first-class, not
-    afterthoughts.
+    Contributors map electronic health data to the same model, execute approved analytic packages on
+    their own infrastructure, and transmit <strong>aggregate counts only</strong>. Where law and policy
+    allow, administrative and service-system files add <strong>coverage, housing, justice, and mortality
+    context</strong> so disparity dimensions are explicit in the analytic plan—not implied after the fact.
   </p>
   <p>
-    The pattern mirrors what leading networks (PCORnet, OHDSI, and statewide collaboratives) are
-    converging on: <strong>open standards</strong>, transparent cohort definitions, and governance that
-    earns community trust.
+    The same design principles appear in large research networks and statewide data collaboratives:
+    published vocabularies, versioned cohort definitions, documented data agreements, and review before
+    new uses ship.
   </p>
 </div>
 
@@ -117,11 +116,11 @@
     </div>
     <div class="htac-card">
       <h3>Data infrastructure</h3>
-      <p>Local OMOP instances, versioned concept sets, Achilles-style data-quality routines, and reproducible query packages—not one-off SQL.</p>
+      <p>Local OMOP instances, versioned concept sets, automated conformance checks, and packaged analytic definitions that can be re-run on a schedule.</p>
     </div>
     <div class="htac-card">
       <h3>Analysis</h3>
-      <p>Condition definitions as transparent OMOP concept lists; study periods and denominators published with results; audit trails for changes.</p>
+      <p>Condition definitions as published concept lists; study periods and denominators disclosed with results; change logs for definitions and code sets.</p>
     </div>
     <div class="htac-card">
       <h3>Equity focus</h3>
@@ -145,8 +144,7 @@
     that standardizes how clinical data from different EHR systems are structured and coded.
   </p>
   <p>
-    Without a common model, comparing data from Epic at Allina Health to Oracle Health at
-    Mayo Clinic requires custom translation for every pair of systems. OMOP solves this by
+    Without a common model, comparing two large vendors’ extracts means bespoke translation for every pair of systems. OMOP addresses this by
     giving each participating site a standard schema — the same table names, column names,
     and vocabulary codes everywhere. Multi-site collaboratives typically invest sustained
     effort to harmonize OMOP before federated queries can run consistently.
@@ -195,7 +193,7 @@
   <p>
     Codesets (lists of OMOP <code>concept_id</code>s) are versioned in the HTAC
     <strong>Condition</strong> and <strong>ConceptCode</strong> models so analysts can
-    build and audit condition definitions without touching raw SQL.
+    build and audit condition definitions without ad hoc table-level queries.
   </p>
 </div>
 
@@ -240,7 +238,7 @@
         <strong>Deduplication into a statewide roster</strong>
         The Data Coordinating Center (DCC) receives tokens from all sites. Because the
         same PII produces the same hash, patients seen at multiple sites generate identical
-        tokens. <em>deduplicate_tokens()</em> merges these into a single
+        tokens. The <strong>deduplication routine</strong> merges these into a single
         <strong>DeduplicatedRoster</strong> row. In many multi-site deployments, a large share of
         patients generate records at more than one organization—deduplication materially changes denominators.
       </div>
@@ -277,9 +275,10 @@
     <li>
       <div>
         <strong>Reporting</strong>
-        Suppressed, stratified estimates can be exposed through a public narrative site, governed
-        data extracts, the staff <strong>Django admin</strong> interface, CSV export, and the
-        HTAC REST API at <code>/api/htac/v1/</code>. Publication cadence follows your governance calendar.
+        Suppressed, stratified estimates are published through agreed channels: narrative summaries,
+        governed file extracts, a password-protected <strong>operations console</strong> for authorized staff,
+        delimited downloads, and a <strong>read-only programmatic interface</strong> (for example
+        <code>/api/htac/v1/</code>) where an API is part of the release. Cadence follows the governance calendar.
       </div>
     </li>
   </ol>
@@ -294,7 +293,7 @@
       health systems under federal self-governance frameworks. Data from those systems belong in
       nation-to-nation agreements, not silent inclusion in regional aggregates. Prevalence products
       that omit authorized Tribal participation can <em>undercount</em> American Indian / Alaska Native
-      communities; governance should center Tribal data sovereignty from the outset.
+      communities; governance plans should address Tribal data sovereignty explicitly, not only in disclaimers.
     </p>
   </div>
   <div class="htac-gap">
@@ -335,7 +334,7 @@
   <h3 style="font-size:1rem; font-weight:700; color:#003865; margin-top:1.25rem; margin-bottom:.5rem;">OMOP / OHDSI</h3>
   <ul>
     <li><a href="https://www.ohdsi.org/" target="_blank" rel="noopener">OHDSI — Observational Health Data Sciences and Informatics</a></li>
-    <li><a href="https://github.com/OHDSI" target="_blank" rel="noopener">OHDSI GitHub — Common Data Model, Atlas, Achilles, and more</a></li>
+    <li><a href="https://github.com/OHDSI" target="_blank" rel="noopener">OHDSI — CDM, Atlas, Achilles, and related tooling</a></li>
   </ul>
 
   <h3 style="font-size:1rem; font-weight:700; color:#003865; margin-top:1.25rem; margin-bottom:.5rem;">Federal &amp; National Data Programs</h3>

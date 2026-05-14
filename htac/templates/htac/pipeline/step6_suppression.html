@@ -79,11 +79,7 @@
     prevalence_rate = ( numerator / denominator ) &times; 10,000
   </div>
   <p style="font-size:.88rem;color:#555;">
-    Implemented in <code class="fn">htac/services/query_engine.apply_suppression(results_dict, threshold=11)</code>.
-    The rate is rounded to 4 decimal places using <code class="fn">ROUND_HALF_UP</code>.
-    When <code class="fn">numerator &lt; 11</code>, the cell is suppressed:
-    <code class="fn">numerator</code>, <code class="fn">denominator</code>, and
-    <code class="fn">prevalence_rate</code> are all set to <code class="fn">None</code>.
+    Suppression clears numerators, denominators, and published rates for any cell below the agreed threshold, using half-up rounding to four decimal places for cells that remain publishable.
   </p>
 </div>
 
@@ -168,10 +164,8 @@
   <div class="htac-callout privacy">
     <h3>No estimates generated yet</h3>
     <p>
-      Run <code class="fn">python manage.py execute_condition_queries</code> to run the full
-      pipeline across all 22 conditions and all 11 sites. This will populate
-      <code class="fn">PrevalenceEstimate</code> rows with stratified, suppressed counts
-      ready for Step 7.
+      Run the <strong>condition-query job</strong> for the configured study window to materialize
+      <code class="fn">PrevalenceEstimate</code> rows with stratified, suppressed counts for Step 7.
     </p>
   </div>
   {% else %}

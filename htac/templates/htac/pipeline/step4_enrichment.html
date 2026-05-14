@@ -199,7 +199,7 @@
     <p>The five staging tables (MedicaidEnrollment, HMISRecord, DOCRecord, MIICRecord,
        VitalStatisticsRecord) contain <strong>{{ staging_counts.MedicaidEnrollment|add:staging_counts.HMISRecord|add:staging_counts.DOCRecord|add:staging_counts.MIICRecord|add:staging_counts.VitalStatisticsRecord }} rows</strong> total.
        In a real deployment, data stewards would load extracts from these five sources before running
-       <code class="fn">python manage.py enrich_roster</code>, which would populate the
+       the <strong>roster enrichment job</strong>, which would populate the
        flags below.
     </p>
   </div>
@@ -226,8 +226,7 @@
     </table>
   </div>
   <p style="font-size:.82rem;color:#666;margin-top:.6rem;">
-    Run <code class="fn">python manage.py enrich_roster</code> after loading staging data
-    to propagate enrichment flags across the {{ roster_total|intcomma }}-row roster.
+    After staging files are loaded, run the <strong>roster enrichment job</strong> to refresh flags across the {{ roster_total|intcomma }}-row roster.
   </p>
 </div>
 

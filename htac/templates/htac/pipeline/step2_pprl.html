@@ -87,12 +87,12 @@
     <div class="pii-field-card">
       <span class="pii-field-num">Field 1</span>
       <h4>First Name</h4>
-      <span class="pii-field-rule">Normalization: <code class="fn">.lower()</code></span>
+      <span class="pii-field-rule">Normalization: lowercase folding</span>
     </div>
     <div class="pii-field-card">
       <span class="pii-field-num">Field 2</span>
       <h4>Last Name</h4>
-      <span class="pii-field-rule">Normalization: <code class="fn">.lower()</code></span>
+      <span class="pii-field-rule">Normalization: lowercase folding</span>
     </div>
     <div class="pii-field-card">
       <span class="pii-field-num">Field 3</span>
@@ -126,7 +126,7 @@
       <span class="hash-box">john<wbr>smith<wbr>19820315<wbr>m<wbr>6125551234<wbr>55401</span>
     </div>
     <div class="step-row">
-      <span>Shared site-group salt (from <code class="fn">settings.HTAC_PPRL_SALT</code>):</span>
+      <span>Shared site-group salt (from deployment configuration <code class="fn">HTAC_PPRL_SALT</code>):</span>
       <span class="hash-box salt">htac-prod-salt-[secret]</span>
     </div>
     <div class="step-row">
@@ -137,10 +137,8 @@
     </div>
   </div>
   <p style="font-size:.88rem;color:#555;">
-    The function is implemented in <code class="fn">htac/services/pprl.py</code> as
-    <code class="fn">compute_token(first_name, last_name, dob, sex, phone, zip_code, salt=None)</code>.
-    When <code class="fn">salt</code> is omitted, it reads from <code class="fn">settings.HTAC_PPRL_SALT</code>.
-    PII fields are passed transiently from a CSV row or stdin — they are <strong>never written to the database</strong>.
+    Token generation follows HMAC-SHA256 over a normalized preimage; the site-group salt is taken from deployment configuration when not supplied on input.
+    Personal identifiers are supplied only transiently from controlled intake paths and are <strong>not persisted</strong> in the clinical store.
   </p>
 </div>
 
