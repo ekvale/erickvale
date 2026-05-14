@@ -1,3 +1,206 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-sans text-navy-800 antialiased;
+    background-color: #f7f6f2;
+    font-size: 16px;
+    line-height: 1.75;
+    font-weight: 400;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display font-medium tracking-tight text-navy-800;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+  }
+  h2 {
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+  }
+  h3 {
+    font-size: clamp(1.1rem, 2vw, 1.4rem);
+  }
+
+  code,
+  pre,
+  .font-mono {
+    font-family: 'JetBrains Mono', Menlo, monospace;
+    font-size: 0.875em;
+  }
+}
+
+@layer components {
+  .eyebrow {
+    @apply font-sans text-xs font-semibold uppercase tracking-[0.12em] text-teal-600;
+  }
+
+  .btn-primary {
+    @apply inline-block rounded px-7 py-[0.65rem] font-sans text-[0.95rem] font-medium tracking-wide text-white no-underline transition;
+    background-color: #1a7f6e;
+    letter-spacing: 0.01em;
+  }
+  .btn-primary:hover {
+    background-color: #1f9880;
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    @apply inline-block rounded border-[1.5px] border-parchment-300 bg-transparent px-7 py-[0.65rem] font-sans text-[0.95rem] font-normal text-navy-800 no-underline transition;
+  }
+  .btn-secondary:hover {
+    border-color: #1a7f6e;
+    color: #1a7f6e;
+  }
+
+  .btn-hero-primary {
+    @apply inline-flex items-center justify-center rounded px-7 py-[0.65rem] font-sans text-[0.95rem] font-medium no-underline transition;
+    background-color: #ffffff;
+    color: #1b2b44;
+  }
+  .btn-hero-primary:hover {
+    background-color: #f0faf8;
+    transform: translateY(-1px);
+  }
+
+  .btn-hero-secondary {
+    @apply inline-flex items-center justify-center rounded border-[1.5px] border-white/80 bg-transparent px-7 py-[0.65rem] font-sans text-[0.95rem] font-medium text-white no-underline transition;
+  }
+  .btn-hero-secondary:hover {
+    border-color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .hero-dark {
+    background-color: #1b2b44;
+    background-image: url('../img/topo-pattern.svg');
+    background-size: 600px 600px;
+    background-repeat: repeat;
+    @apply text-white;
+  }
+
+  .hero-dark h1,
+  .hero-dark h2 {
+    @apply text-white;
+  }
+
+  .hero-dark .eyebrow {
+    color: #2db89e;
+  }
+
+  .section-grid {
+    @apply bg-white;
+    background-image: url('../img/grid-subtle.svg');
+    background-size: 40px 40px;
+    background-repeat: repeat;
+  }
+
+  .metric-callout {
+    @apply font-display text-[2.5rem] font-medium leading-none text-teal-600;
+  }
+
+  .metric-label {
+    @apply text-[0.8rem] font-semibold uppercase tracking-[0.08em];
+    color: #6b7a8d;
+  }
+
+  .service-card {
+    border-left: 3px solid #1a7f6e;
+    padding-left: 1.5rem;
+  }
+
+  .step-indicator-active {
+    @apply bg-teal-600 text-white;
+  }
+
+  .step-indicator-pending {
+    background-color: #e2e0da;
+    color: #6b7a8d;
+  }
+
+  .bg-label {
+    @apply pointer-events-none absolute -right-8 -top-4 select-none font-display text-[8rem] font-semibold leading-none sm:text-[12rem];
+    color: rgba(27, 43, 68, 0.04);
+  }
+
+  .bg-label-inverse {
+    color: rgba(255, 255, 255, 0.03);
+  }
+
+  .data-highlight {
+    @apply font-semibold text-amber-600;
+  }
+
+  .card {
+    @apply rounded-md border border-parchment-300 bg-white px-8 py-6;
+  }
+
+  /* Site chrome (scoped — avoids styling every <nav> in the DOM) */
+  .site-header {
+    @apply sticky top-0 z-50 border-b border-white/[0.08] bg-navy-800;
+  }
+
+  .site-header nav a {
+    @apply border-b-2 border-transparent pb-1 font-sans text-sm font-normal text-white/[0.75] no-underline transition-colors;
+  }
+
+  .site-header nav a:hover {
+    @apply text-white;
+  }
+
+  .site-header nav a.is-active {
+    @apply border-teal-500 text-white;
+  }
+
+  .site-header .nav-logo {
+    @apply font-display text-lg font-normal tracking-tight text-white no-underline;
+    letter-spacing: -0.01em;
+  }
+
+  .site-header .nav-accent {
+    @apply text-teal-400;
+  }
+
+  .site-header .nav-cta {
+    @apply inline-flex items-center rounded bg-teal-600 px-3 py-1.5 text-sm font-medium text-white no-underline transition hover:bg-teal-500;
+  }
+
+  .site-footer {
+    @apply mt-auto border-t border-parchment-300 bg-parchment-100 py-8 text-center text-sm;
+    color: #6b7a8d;
+  }
+
+  /* Pipeline documentation band */
+  .pipeline-band {
+    @apply -mx-4 mb-10 rounded-lg bg-navy-700 px-4 py-8 text-white sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8;
+  }
+
+  .pipeline-band h1 {
+    @apply text-white;
+  }
+
+  .pipeline-band .eyebrow {
+    color: #2db89e;
+  }
+
+  .pipeline-band .breadcrumb-pipe {
+    @apply text-white/30;
+  }
+
+  .pipeline-band a {
+    @apply font-medium text-teal-100 no-underline hover:text-white hover:underline;
+  }
+
+  body.demo-fullpage .site-footer {
+    background-color: #111d2e;
+    color: rgba(255, 255, 255, 0.55);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+}

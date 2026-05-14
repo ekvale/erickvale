@@ -1,54 +1,58 @@
 {% extends "base_site.html" %}
 {% block title %}Contact — Eric Kvale{% endblock %}
 {% block content %}
-  <header class="mb-10 max-w-2xl">
-    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-htac-teal">Get in Touch</p>
-    <h1 class="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Start a Conversation</h1>
-    <p class="mt-4 text-sm leading-relaxed text-slate-600 sm:text-base">
-      Whether you are designing new data infrastructure, operationalizing a funded project, preparing a grant
-      application, or exploring what linked EHR and administrative data could tell you about the populations you serve —
-      use this form to start a conversation.
-    </p>
-  </header>
+  <div class="mx-auto max-w-2xl pb-8 pt-4">
+    <header class="mb-10">
+      <p class="eyebrow">Get in Touch</p>
+      <h1 class="mt-2 font-display text-3xl font-semibold text-navy-800">Start a Conversation</h1>
+      <p class="mt-4 text-sm leading-relaxed text-slate-600 sm:text-base">
+        Whether you are designing new data infrastructure, operationalizing a funded project, preparing a grant
+        application, or exploring what linked EHR and administrative data could tell you about the populations you serve —
+        use this form to start a conversation.
+      </p>
+    </header>
 
-  {% if messages %}
-    <div class="mb-8 max-w-2xl space-y-2">
-      {% for message in messages %}
-        <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{{ message }}</div>
-      {% endfor %}
-    </div>
-  {% endif %}
-
-  <form method="post" class="max-w-2xl space-y-5">
-    {% csrf_token %}
-    {% for field in form %}
-      <div>
-        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-slate-700">{{ field.label }}</label>
-        {{ field }}
-        {% if field.errors %}
-          <ul class="mt-1 list-none text-sm text-rose-600">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>
-        {% endif %}
+    {% if messages %}
+      <div class="mb-8 space-y-2">
+        {% for message in messages %}
+          <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{{ message }}</div>
+        {% endfor %}
       </div>
-    {% endfor %}
-    {% if form.non_field_errors %}
-      <ul class="list-none rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800">
-        {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
-      </ul>
     {% endif %}
-    <button type="submit" class="rounded-lg bg-htac-navy px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-htac-teal focus:outline-none focus:ring-2 focus:ring-htac-teal focus:ring-offset-2">
-      Send Message
-    </button>
-  </form>
 
-  <div class="mt-12 max-w-2xl rounded-xl border border-slate-200 bg-slate-50 p-6 text-sm text-slate-600">
-    <p class="font-semibold text-slate-900">Contact details</p>
-    <p class="mt-3">
-      <span class="text-slate-500">Email:</span>
-      <a href="mailto:{{ contact_email }}" class="font-medium text-htac-teal hover:text-htac-navy hover:underline">{{ contact_email }}</a>
-    </p>
-    <p class="mt-2">
-      <span class="text-slate-500">Location:</span>
-      Minneapolis, Minnesota
-    </p>
+    <div class="card max-w-2xl">
+      <form method="post" class="space-y-5">
+        {% csrf_token %}
+        {% for field in form %}
+          <div>
+            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-slate-700">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+              <ul class="mt-1 list-none text-sm text-rose-600">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+            {% endif %}
+          </div>
+        {% endfor %}
+        {% if form.non_field_errors %}
+          <ul class="list-none rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800">
+            {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+          </ul>
+        {% endif %}
+        <button type="submit" class="btn-primary focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2">
+          Send Message
+        </button>
+      </form>
+    </div>
+
+    <div class="card mt-10 max-w-2xl border-parchment-300 bg-parchment-100 text-sm text-slate-600">
+      <p class="font-semibold text-navy-800">Contact details</p>
+      <p class="mt-3">
+        <span class="text-slate-500">Email:</span>
+        <a href="mailto:{{ contact_email }}" class="font-medium text-teal-600 hover:text-navy-800 hover:underline">{{ contact_email }}</a>
+      </p>
+      <p class="mt-2">
+        <span class="text-slate-500">Location:</span>
+        Minneapolis, Minnesota
+      </p>
+    </div>
   </div>
 {% endblock %}

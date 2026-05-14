@@ -1,6 +1,8 @@
 {% extends 'htac/base.html' %}
 {% load humanize %}
 
+{% block htac_main_class %}bg-white{% endblock %}
+
 {% block title %}Step 1: Clinical Data in OMOP CDM — HTAC Pipeline{% endblock %}
 
 {% block extra_head %}
@@ -47,17 +49,12 @@
 
 {% block content %}
 
-{% include "htac/pipeline/_breadcrumb.html" with current_label="Pipeline — Step 1" %}
-
-<div class="htac-hero">
-  <p class="htac-eyebrow">HTAC Pipeline &middot; Step 1 of {{ pipeline_steps|length }}</p>
-  <h1>Clinical Data in OMOP CDM</h1>
+{% include "htac/pipeline/_pipeline_band.html" with pipeline_title="Clinical Data in OMOP CDM" %}
+<div class="mt-4 max-w-3xl text-base font-light leading-relaxed text-slate-700">
   <p>The pipeline begins at each health system's local EHR database, where patient data is standardized
      into the OMOP Common Data Model — the shared vocabulary used by PCORnet, N3C, and over 300 research
      networks worldwide.</p>
 </div>
-
-{% include 'htac/pipeline/_stepper.html' %}
 
 <div class="htac-pipeline-intro">
   <h3>What This Pipeline Demonstrates</h3>

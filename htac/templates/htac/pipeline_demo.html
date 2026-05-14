@@ -1,33 +1,47 @@
 {% extends "htac/base.html" %}
 {% load humanize %}
 
+{% block htac_body_class %}demo-fullpage min-h-full bg-navy-900 text-slate-100{% endblock %}
+{% block htac_main_class %}mx-auto w-full max-w-5xl flex-1 bg-transparent px-4 pb-20 pt-8 sm:px-6 lg:px-8{% endblock %}
+
 {% block title %}Federated Pipeline Demonstration — HTAC{% endblock %}
 
 {% block extra_head %}
 <style>
   .demo-zone { margin-bottom: 2rem; }
   .demo-step-card {
-    border: 1px solid #e2e8f0;
-    border-left: 4px solid #cbd5e1;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-left: 4px solid rgba(255,255,255,0.12);
     border-radius: 0.5rem;
-    background: #fff;
+    background: #111d2e;
     margin-bottom: 1rem;
     overflow: hidden;
-    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
+    color: rgba(226,232,240,0.75);
   }
+  .demo-step-card.is-pending { color: rgba(148,163,184,0.55); }
   .demo-step-card.is-running {
-    border-left-color: #008EAA;
-    box-shadow: 0 0 0 1px rgba(0, 142, 170, 0.12);
+    background: #2d4057;
+    border-left-color: #2db89e;
+    box-shadow: 0 0 0 1px rgba(45,212,191,0.15);
+    color: #e2e8f0;
   }
-  .demo-step-card.is-complete { border-left-color: #059669; }
-  .demo-step-card.is-failed { border-left-color: #dc2626; }
+  .demo-step-card.is-complete {
+    background: #2d4057;
+    border-left-color: #2db89e;
+    border-color: rgba(255,255,255,0.14);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+    color: #e2e8f0;
+    transform: translateY(-1px);
+  }
+  .demo-step-card.is-failed { border-left-color: #f87171; }
   .demo-step-inner { padding: 1rem 1.25rem; }
   .demo-pulse {
     display: inline-block;
     width: 0.5rem;
     height: 0.5rem;
     border-radius: 9999px;
-    background: #008EAA;
+    background: #2db89e;
     animation: demo-pulse 1.2s ease-in-out infinite;
     margin-right: 0.35rem;
     vertical-align: middle;
@@ -36,25 +50,26 @@
     0%, 100% { opacity: 1; transform: scale(1); }
     50% { opacity: 0.45; transform: scale(0.85); }
   }
-  .demo-metric { font-size: 1.75rem; font-weight: 700; color: #003865; line-height: 1.2; }
-  .demo-metric-label { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; }
-  details.demo-tech > summary { cursor: pointer; font-weight: 600; color: #008EAA; font-size: 0.9rem; margin-top: 0.75rem; }
+  .demo-metric { font-family: Fraunces, Georgia, serif; font-size: 1.85rem; font-weight: 500; color: #2db89e; line-height: 1.2; }
+  .demo-metric-label { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(226,232,240,0.55); }
+  details.demo-tech > summary { cursor: pointer; font-weight: 600; color: #2db89e; font-size: 0.9rem; margin-top: 0.75rem; }
   details.demo-tech pre {
     margin-top: 0.5rem;
     font-size: 0.78rem;
     line-height: 1.45;
-    color: #334155;
+    color: #cbd5e1;
     white-space: pre-wrap;
     word-break: break-word;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    background: #111d2e;
+    border: 1px solid rgba(255,255,255,0.1);
     border-radius: 0.375rem;
     padding: 0.75rem 1rem;
   }
   .demo-site-table { width: 100%; font-size: 0.82rem; border-collapse: collapse; margin-top: 0.75rem; }
-  .demo-site-table th, .demo-site-table td { padding: 0.4rem 0.5rem; text-align: left; border-bottom: 1px solid #f1f5f9; }
-  .demo-site-table th { color: #64748b; font-weight: 600; }
+  .demo-site-table th, .demo-site-table td { padding: 0.4rem 0.5rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .demo-site-table th { color: rgba(226,232,240,0.65); font-weight: 600; }
+  .demo-site-table td { color: #e2e8f0; }
   #zone-c { display: none; }
   #zone-c.is-visible { display: block; }
   #demo-error { display: none; }
@@ -64,27 +79,27 @@
 {% block content %}
 
 <div class="demo-zone">
-  <p class="text-xs font-semibold uppercase tracking-wide text-htac-teal">HTAC · Live demonstration</p>
-  <h1 class="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Federated Pipeline Demonstration</h1>
-  <p class="mt-4 max-w-3xl text-base leading-relaxed text-slate-600">
+  <p class="eyebrow !text-teal-400">HTAC · Live demonstration</p>
+  <h1 class="mt-2 font-display text-3xl font-medium tracking-tight text-white">Federated Pipeline Demonstration</h1>
+  <p class="mt-4 max-w-3xl text-base font-light leading-relaxed text-slate-300">
     A live run of the HTAC data pipeline using synthetic patient records distributed across the 11 Minnesota Electronic Health Record Consortium health systems.
     Each step executes in sequence — clinical data loading, privacy-preserving tokenization, cross-site deduplication, administrative data enrichment,
     federated cohort queries, stratification and suppression, and published results.
   </p>
-  <p class="mt-3 max-w-3xl text-sm text-slate-500">
-    <span class="font-medium text-slate-600">For program and policy staff:</span> watch what happens to patient data at each step and why.
+  <p class="mt-3 max-w-3xl text-sm text-slate-400">
+    <span class="font-medium text-slate-300">For program and policy staff:</span> watch what happens to patient data at each step and why.
   </p>
-  <p class="mt-1 max-w-3xl text-sm text-slate-500">
-    <span class="font-medium text-slate-600">For technical implementers:</span> the step detail panels show the architectural decisions behind each phase.
+  <p class="mt-1 max-w-3xl text-sm text-slate-400">
+    <span class="font-medium text-slate-300">For technical implementers:</span> the step detail panels show the architectural decisions behind each phase.
   </p>
 
   <div class="mt-8 flex flex-wrap items-center gap-4">
     <button type="button" id="btn-run-pipeline"
-      class="inline-flex items-center justify-center rounded-lg bg-htac-navy px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-htac-teal disabled:cursor-not-allowed disabled:opacity-60">
+      class="btn-primary px-6 py-3 text-base disabled:cursor-not-allowed disabled:opacity-60">
       {% if run and run.status == 'complete' %}Run Again{% else %}Run the Pipeline{% endif %}
     </button>
-    <span id="btn-spinner" class="hidden items-center gap-2 text-sm text-slate-600">
-      <svg class="h-5 w-5 animate-spin text-htac-teal" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+    <span id="btn-spinner" class="hidden items-center gap-2 text-sm text-slate-300">
+      <svg class="h-5 w-5 animate-spin text-teal-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
       </svg>
@@ -92,7 +107,7 @@
     </span>
   </div>
   {% if run and run.status == 'complete' %}
-  <p class="mt-3 text-sm text-amber-800">Running again will clear the previous demonstration data and replace it with a new synthetic run.</p>
+  <p class="mt-3 text-sm text-amber-200">Running again will clear the previous demonstration data and replace it with a new synthetic run.</p>
   {% endif %}
   <p class="mt-6 max-w-3xl text-xs text-slate-500">
     All records are synthetic. No real patient data is used in this demonstration. Health system names reflect actual MNEHRC consortium members;
@@ -100,37 +115,37 @@
   </p>
 </div>
 
-<div id="demo-error" class="mb-6 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900" role="alert"></div>
+<div id="demo-error" class="mb-6 rounded-lg border border-rose-400/40 bg-rose-950/50 px-4 py-3 text-sm text-rose-100" role="alert"></div>
 
 <div id="zone-b" class="demo-zone">
-  <h2 class="mb-4 text-lg font-semibold text-slate-900">Pipeline steps</h2>
+  <h2 class="mb-4 text-lg font-semibold text-white">Pipeline steps</h2>
   <div id="step-cards">
     {% for st in steps_display %}
     <div class="demo-step-card is-{{ st.status }}" data-step="{{ st.step_number }}" id="card-step-{{ st.step_number }}">
       <div class="demo-step-inner">
         <div class="flex flex-wrap items-baseline justify-between gap-2">
           <div>
-            <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-700">{{ st.step_number }}</span>
-            <span class="ml-2 font-semibold text-slate-900">{{ st.step_name }}</span>
-            {% if st.status == 'running' %}<span class="ml-2 text-sm text-htac-teal"><span class="demo-pulse" aria-hidden="true"></span>Processing…</span>{% endif %}
+            <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-navy-900 text-xs font-bold text-slate-300">{{ st.step_number }}</span>
+            <span class="ml-2 font-semibold text-white">{{ st.step_name }}</span>
+            {% if st.status == 'running' %}<span class="ml-2 text-sm text-teal-400"><span class="demo-pulse" aria-hidden="true"></span>Processing…</span>{% endif %}
             {% if st.status == 'complete' %}
-            <span class="ml-2 text-sm font-medium text-emerald-700">✓ Complete{% if st.display_duration %} · {{ st.display_duration }}s{% endif %}</span>
+            <span class="ml-2 text-sm font-medium text-teal-300">✓ Complete{% if st.display_duration %} · {{ st.display_duration }}s{% endif %}</span>
             {% endif %}
-            {% if st.status == 'failed' %}<span class="ml-2 text-sm font-medium text-rose-700">Failed</span>{% endif %}
+            {% if st.status == 'failed' %}<span class="ml-2 text-sm font-medium text-rose-300">Failed</span>{% endif %}
           </div>
           {% if st.status == 'complete' and st.display_duration %}
-          <span class="text-xs text-slate-500">{{ st.display_duration }} seconds</span>
+          <span class="text-xs text-slate-400">{{ st.display_duration }} seconds</span>
           {% endif %}
         </div>
         {% if st.status == 'complete' %}
-        <div class="mt-4 border-t border-slate-100 pt-4">
+        <div class="mt-4 border-t border-white/10 pt-4">
           {% if st.metric_label %}
           <p class="demo-metric-label">{{ st.metric_label }}</p>
-          <p class="demo-metric">{{ st.metric_value }}</p>
+          <p class="demo-metric metric-callout !text-3xl">{{ st.metric_value }}</p>
           {% endif %}
           {% if st.narrative_headline %}
-          <h3 class="mt-4 text-base font-semibold text-slate-900">{{ st.narrative_headline }}</h3>
-          <p class="mt-2 text-sm leading-relaxed text-slate-600">{{ st.narrative_body }}</p>
+          <h3 class="mt-4 text-base font-semibold text-white">{{ st.narrative_headline }}</h3>
+          <p class="mt-2 text-sm leading-relaxed text-slate-300">{{ st.narrative_body }}</p>
           {% endif %}
           {% if st.technical_detail %}
           <details class="demo-tech">
@@ -168,34 +183,34 @@
   </div>
 </div>
 
-<div id="zone-c" class="demo-zone rounded-xl border border-slate-200 bg-white p-6 shadow-sm {% if run and run.status == 'complete' %}is-visible{% endif %}">
-  <h2 class="text-lg font-semibold text-slate-900">Run summary</h2>
+<div id="zone-c" class="demo-zone rounded-xl border border-white/10 bg-navy-800 p-6 shadow-lg {% if run and run.status == 'complete' %}is-visible{% endif %}">
+  <h2 class="text-lg font-semibold text-white">Run summary</h2>
   <div id="summary-grid" class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
     {% if run and run.status == 'complete' %}
-    <div><p class="text-xs font-semibold uppercase text-slate-500">Raw patient records</p><p class="text-2xl font-bold text-slate-900">{{ run.total_patients_raw|intcomma }}</p></div>
-    <div><p class="text-xs font-semibold uppercase text-slate-500">Unique after deduplication</p><p class="text-2xl font-bold text-slate-900">{{ run.total_patients_deduplicated|intcomma }}</p></div>
-    <div><p class="text-xs font-semibold uppercase text-slate-500">Cross-site duplicates resolved</p><p class="text-2xl font-bold text-slate-900">{{ run.cross_site_matches|intcomma }}</p></div>
-    <div><p class="text-xs font-semibold uppercase text-slate-500">Homelessness flag</p><p class="text-2xl font-bold text-slate-900">{{ run.homeless_flagged|intcomma }}</p></div>
-    <div><p class="text-xs font-semibold uppercase text-slate-500">Incarceration flag</p><p class="text-2xl font-bold text-slate-900">{{ run.incarcerated_flagged|intcomma }}</p></div>
-    <div><p class="text-xs font-semibold uppercase text-slate-500">Medicaid flag</p><p class="text-2xl font-bold text-slate-900">{{ run.medicaid_flagged|intcomma }}</p></div>
-    <div><p class="text-xs font-semibold uppercase text-slate-500">Estimates generated</p><p class="text-2xl font-bold text-slate-900">{{ run.total_estimates_generated|intcomma }}</p></div>
-    <div><p class="text-xs font-semibold uppercase text-slate-500">Estimates suppressed</p>
-      <p class="text-2xl font-bold text-slate-900">{{ run.total_estimates_suppressed|intcomma }}
+    <div class="rounded-lg border border-white/10 bg-navy-900/50 p-4"><p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Raw patient records</p><p class="metric-callout mt-2 !text-2xl sm:!text-3xl">{{ run.total_patients_raw|intcomma }}</p></div>
+    <div class="rounded-lg border border-white/10 bg-navy-900/50 p-4"><p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Unique after deduplication</p><p class="metric-callout mt-2 !text-2xl sm:!text-3xl">{{ run.total_patients_deduplicated|intcomma }}</p></div>
+    <div class="rounded-lg border border-white/10 bg-navy-900/50 p-4"><p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Cross-site duplicates resolved</p><p class="metric-callout mt-2 !text-2xl sm:!text-3xl">{{ run.cross_site_matches|intcomma }}</p></div>
+    <div class="rounded-lg border border-white/10 bg-navy-900/50 p-4"><p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Homelessness flag</p><p class="metric-callout mt-2 !text-2xl sm:!text-3xl">{{ run.homeless_flagged|intcomma }}</p></div>
+    <div class="rounded-lg border border-white/10 bg-navy-900/50 p-4"><p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Incarceration flag</p><p class="metric-callout mt-2 !text-2xl sm:!text-3xl">{{ run.incarcerated_flagged|intcomma }}</p></div>
+    <div class="rounded-lg border border-white/10 bg-navy-900/50 p-4"><p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Medicaid flag</p><p class="metric-callout mt-2 !text-2xl sm:!text-3xl">{{ run.medicaid_flagged|intcomma }}</p></div>
+    <div class="rounded-lg border border-white/10 bg-navy-900/50 p-4"><p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Estimates generated</p><p class="metric-callout mt-2 !text-2xl sm:!text-3xl">{{ run.total_estimates_generated|intcomma }}</p></div>
+    <div class="rounded-lg border border-white/10 bg-navy-900/50 p-4"><p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Estimates suppressed</p>
+      <p class="metric-callout mt-2 !text-2xl sm:!text-3xl">{{ run.total_estimates_suppressed|intcomma }}
         {% if run.total_estimates_generated %}
-        <span class="text-sm font-normal text-slate-500">({% widthratio run.total_estimates_suppressed run.total_estimates_generated 100 %}%)</span>
+        <span class="text-sm font-normal text-slate-400">({% widthratio run.total_estimates_suppressed run.total_estimates_generated 100 %}%)</span>
         {% endif %}
       </p>
     </div>
     {% endif %}
   </div>
-  <p id="closing-statement" class="mt-6 text-sm leading-relaxed text-slate-600">
+  <p id="closing-statement" class="mt-6 text-sm leading-relaxed text-slate-300">
     {% if run and run.status == 'complete' and run_wall_seconds != None %}
     This demonstration ran end-to-end in {{ run_wall_seconds }} seconds across 11 simulated health systems. In a production deployment, the same pipeline would run on real OMOP CDM instances at each participating health system, with network latency replacing the simulated processing delays. The output format — suppressed, stratified PrevalenceEstimate rows — is identical to the format used in the MNEHRC Health Trends Across Communities production system.
     {% endif %}
   </p>
   <div class="mt-6 flex flex-wrap gap-3">
-    <a href="{% url 'htac_pipeline_step1' %}" class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50">View Pipeline Step 1</a>
-    <a href="{% url 'contact' %}" class="inline-flex items-center justify-center rounded-lg bg-htac-navy px-4 py-2 text-sm font-semibold text-white hover:bg-htac-teal">Discuss a Deployment</a>
+    <a href="{% url 'htac_pipeline_step1' %}" class="btn-secondary border-white/20 text-white hover:border-teal-400 hover:text-teal-300">View Pipeline Step 1</a>
+    <a href="{% url 'contact' %}" class="btn-primary">Discuss a Deployment</a>
   </div>
 </div>
 
@@ -254,29 +269,29 @@
     var dur = step.duration_seconds != null ? fmtDur(step.duration_seconds) : "";
     var inner = "<div class=\"demo-step-inner\">";
     inner += "<div class=\"flex flex-wrap items-baseline justify-between gap-2\"><div>";
-    inner += "<span class=\"inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-700\">" + num + "</span>";
-    inner += "<span class=\"ml-2 font-semibold text-slate-900\">" + esc(step.step_name) + "</span>";
+    inner += "<span class=\"inline-flex h-7 w-7 items-center justify-center rounded-full bg-navy-900 text-xs font-bold text-slate-300\">" + num + "</span>";
+    inner += "<span class=\"ml-2 font-semibold text-white\">" + esc(step.step_name) + "</span>";
     if (step.status === "running") {
-      inner += "<span class=\"ml-2 text-sm text-htac-teal\"><span class=\"demo-pulse\"></span>Processing…</span>";
+      inner += "<span class=\"ml-2 text-sm text-teal-400\"><span class=\"demo-pulse\"></span>Processing…</span>";
     }
     if (step.status === "complete") {
-      inner += "<span class=\"ml-2 text-sm font-medium text-emerald-700\">✓ Complete" + (dur ? " · " + dur : "") + "</span>";
+      inner += "<span class=\"ml-2 text-sm font-medium text-teal-300\">✓ Complete" + (dur ? " · " + dur : "") + "</span>";
     }
     if (step.status === "failed") {
-      inner += "<span class=\"ml-2 text-sm font-medium text-rose-700\">Failed</span>";
+      inner += "<span class=\"ml-2 text-sm font-medium text-rose-300\">Failed</span>";
     }
     inner += "</div>";
-    if (dur && step.status === "complete") inner += "<span class=\"text-xs text-slate-500\">" + dur + "</span>";
+    if (dur && step.status === "complete") inner += "<span class=\"text-xs text-slate-400\">" + dur + "</span>";
     inner += "</div>";
     if (step.status === "complete") {
-      inner += "<div class=\"mt-4 border-t border-slate-100 pt-4\">";
+      inner += "<div class=\"mt-4 border-t border-white/10 pt-4\">";
       if (step.metric_label) {
         inner += "<p class=\"demo-metric-label\">" + esc(step.metric_label) + "</p>";
         inner += "<p class=\"demo-metric\">" + esc(step.metric_value) + "</p>";
       }
       if (step.narrative_headline) {
-        inner += "<h3 class=\"mt-4 text-base font-semibold text-slate-900\">" + esc(step.narrative_headline) + "</h3>";
-        inner += "<p class=\"mt-2 text-sm leading-relaxed text-slate-600\">" + esc(step.narrative_body) + "</p>";
+        inner += "<h3 class=\"mt-4 text-base font-semibold text-white\">" + esc(step.narrative_headline) + "</h3>";
+        inner += "<p class=\"mt-2 text-sm leading-relaxed text-slate-300\">" + esc(step.narrative_body) + "</p>";
       }
       if (step.technical_detail) {
         inner += "<details class=\"demo-tech\"><summary>Technical detail</summary><pre>" + esc(step.technical_detail) + "</pre></details>";
@@ -296,16 +311,19 @@
     var zone = document.getElementById("zone-c");
     var grid = document.getElementById("summary-grid");
     var pct = s.total_estimates_generated ? Math.round(100 * s.total_estimates_suppressed / s.total_estimates_generated) : 0;
+    var stat = "rounded-lg border border-white/10 bg-navy-900/50 p-4";
+    var lbl = "text-xs font-semibold uppercase tracking-wider text-slate-400";
+    var val = "metric-callout mt-2 text-2xl sm:text-3xl";
     grid.innerHTML =
-      "<div><p class=\"text-xs font-semibold uppercase text-slate-500\">Raw patient records</p><p class=\"text-2xl font-bold text-slate-900\">" + fmtInt(s.total_patients_raw) + "</p></div>" +
-      "<div><p class=\"text-xs font-semibold uppercase text-slate-500\">Unique after deduplication</p><p class=\"text-2xl font-bold text-slate-900\">" + fmtInt(s.total_patients_deduplicated) + "</p></div>" +
-      "<div><p class=\"text-xs font-semibold uppercase text-slate-500\">Cross-site duplicates resolved</p><p class=\"text-2xl font-bold text-slate-900\">" + fmtInt(s.cross_site_matches) + "</p></div>" +
-      "<div><p class=\"text-xs font-semibold uppercase text-slate-500\">Homelessness flag</p><p class=\"text-2xl font-bold text-slate-900\">" + fmtInt(s.homeless_flagged) + "</p></div>" +
-      "<div><p class=\"text-xs font-semibold uppercase text-slate-500\">Incarceration flag</p><p class=\"text-2xl font-bold text-slate-900\">" + fmtInt(s.incarcerated_flagged) + "</p></div>" +
-      "<div><p class=\"text-xs font-semibold uppercase text-slate-500\">Medicaid flag</p><p class=\"text-2xl font-bold text-slate-900\">" + fmtInt(s.medicaid_flagged) + "</p></div>" +
-      "<div><p class=\"text-xs font-semibold uppercase text-slate-500\">Estimates generated</p><p class=\"text-2xl font-bold text-slate-900\">" + fmtInt(s.total_estimates_generated) + "</p></div>" +
-      "<div><p class=\"text-xs font-semibold uppercase text-slate-500\">Estimates suppressed</p><p class=\"text-2xl font-bold text-slate-900\">" + fmtInt(s.total_estimates_suppressed) +
-      " <span class=\"text-sm font-normal text-slate-500\">(" + pct + "%)</span></p></div>";
+      "<div class=\"" + stat + "\"><p class=\"" + lbl + "\">Raw patient records</p><p class=\"" + val + "\">" + fmtInt(s.total_patients_raw) + "</p></div>" +
+      "<div class=\"" + stat + "\"><p class=\"" + lbl + "\">Unique after deduplication</p><p class=\"" + val + "\">" + fmtInt(s.total_patients_deduplicated) + "</p></div>" +
+      "<div class=\"" + stat + "\"><p class=\"" + lbl + "\">Cross-site duplicates resolved</p><p class=\"" + val + "\">" + fmtInt(s.cross_site_matches) + "</p></div>" +
+      "<div class=\"" + stat + "\"><p class=\"" + lbl + "\">Homelessness flag</p><p class=\"" + val + "\">" + fmtInt(s.homeless_flagged) + "</p></div>" +
+      "<div class=\"" + stat + "\"><p class=\"" + lbl + "\">Incarceration flag</p><p class=\"" + val + "\">" + fmtInt(s.incarcerated_flagged) + "</p></div>" +
+      "<div class=\"" + stat + "\"><p class=\"" + lbl + "\">Medicaid flag</p><p class=\"" + val + "\">" + fmtInt(s.medicaid_flagged) + "</p></div>" +
+      "<div class=\"" + stat + "\"><p class=\"" + lbl + "\">Estimates generated</p><p class=\"" + val + "\">" + fmtInt(s.total_estimates_generated) + "</p></div>" +
+      "<div class=\"" + stat + "\"><p class=\"" + lbl + "\">Estimates suppressed</p><p class=\"" + val + "\">" + fmtInt(s.total_estimates_suppressed) +
+      " <span class=\"text-sm font-normal text-slate-400\">(" + pct + "%)</span></p></div>";
     document.getElementById("closing-statement").textContent =
       "This demonstration ran end-to-end in " + fmtInt(payload.elapsed_seconds) + " seconds across 11 simulated health systems. In a production deployment, the same pipeline would run on real OMOP CDM instances at each participating health system, with network latency replacing the simulated processing delays. The output format — suppressed, stratified PrevalenceEstimate rows — is identical to the format used in the MNEHRC Health Trends Across Communities production system.";
     zone.classList.add("is-visible");
@@ -378,7 +396,7 @@
           var el = document.getElementById("card-step-" + i);
           if (el) {
             el.className = "demo-step-card is-pending";
-            el.innerHTML = "<div class=\"demo-step-inner\"><span class=\"inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-500\">" + i + "</span><span class=\"ml-2 font-medium text-slate-400\">Pending</span></div>";
+            el.innerHTML = "<div class=\"demo-step-inner\"><span class=\"inline-flex h-7 w-7 items-center justify-center rounded-full bg-navy-900 text-xs font-bold text-slate-500\">" + i + "</span><span class=\"ml-2 font-medium text-slate-500\">Pending</span></div>";
           }
         }
         document.getElementById("zone-c").classList.remove("is-visible");

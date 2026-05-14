@@ -1,6 +1,8 @@
 {% extends 'htac/base.html' %}
 {% load humanize %}
 
+{% block htac_main_class %}bg-white{% endblock %}
+
 {% block title %}Step 6: Stratification &amp; Suppression — HTAC Pipeline{% endblock %}
 
 {% block extra_head %}
@@ -31,17 +33,12 @@
 
 {% block content %}
 
-{% include "htac/pipeline/_breadcrumb.html" with current_label="Pipeline — Step 6" %}
-
-<div class="htac-hero">
-  <p class="htac-eyebrow">HTAC Pipeline &middot; Step 6 of {{ pipeline_steps|length }}</p>
-  <h1>Stratification &amp; Suppression</h1>
+{% include "htac/pipeline/_pipeline_band.html" with pipeline_title="Stratification and Suppression" %}
+<div class="mt-4 max-w-3xl text-base font-light leading-relaxed text-slate-700">
   <p>Each site's cohort is stratified across 9 demographic and social dimensions and 4 geographic
      levels. Any cell with fewer than 11 individuals is suppressed to protect small populations
      from re-identification — a requirement of the consortium’s Master Data Use Agreement.</p>
 </div>
-
-{% include 'htac/pipeline/_stepper.html' %}
 
 <div class="htac-callout-row">
   <div class="htac-callout why">

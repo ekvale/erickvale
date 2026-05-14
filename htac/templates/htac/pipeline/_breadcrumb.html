@@ -1,9 +1,13 @@
-<nav class="mb-6 text-sm text-slate-500" aria-label="Breadcrumb">
+<nav class="mb-5 text-sm" aria-label="Breadcrumb">
   <ol class="m-0 flex list-none flex-wrap items-center gap-2 p-0">
     <li>
-      <a href="{% url 'htac_public_about' %}" class="font-medium text-htac-navy hover:text-htac-teal transition-colors">HTAC</a>
+      <a href="{% url 'htac_public_about' %}" class="font-medium text-teal-100 hover:text-white">HTAC</a>
     </li>
-    <li class="text-slate-300" aria-hidden="true">/</li>
-    <li class="font-medium text-slate-800" aria-current="page">{{ current_label }}</li>
+    <li class="text-white/30" aria-hidden="true">/</li>
+    <li>
+      <a href="{% url 'htac_pipeline_step1' %}" class="font-medium text-teal-100 hover:text-white">Pipeline</a>
+    </li>
+    <li class="text-white/30" aria-hidden="true">/</li>
+    <li class="font-medium text-white" aria-current="page">Step {{ current_step }}</li>
   </ol>
 </nav>

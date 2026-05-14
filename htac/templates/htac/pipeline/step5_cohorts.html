@@ -1,6 +1,8 @@
 {% extends 'htac/base.html' %}
 {% load humanize %}
 
+{% block htac_main_class %}bg-white{% endblock %}
+
 {% block title %}Step 5: Condition Cohort Queries — HTAC Pipeline{% endblock %}
 
 {% block extra_head %}
@@ -32,17 +34,12 @@
 
 {% block content %}
 
-{% include "htac/pipeline/_breadcrumb.html" with current_label="Pipeline — Step 5" %}
-
-<div class="htac-hero">
-  <p class="htac-eyebrow">HTAC Pipeline &middot; Step 5 of {{ pipeline_steps|length }}</p>
-  <h1>Condition Cohort Queries</h1>
+{% include "htac/pipeline/_pipeline_band.html" with pipeline_title="Condition Cohort Queries" %}
+<div class="mt-4 max-w-3xl text-base font-light leading-relaxed text-slate-700">
   <p>For each of the {{ condition_count }} HTAC health conditions, a codeset of OMOP concept codes defines
      who qualifies as a case. The query engine searches four clinical domains at each site — Condition,
      Drug, Measurement, and Observation — and returns a patient cohort for stratification.</p>
 </div>
-
-{% include 'htac/pipeline/_stepper.html' %}
 
 <div class="htac-callout-row">
   <div class="htac-callout why">

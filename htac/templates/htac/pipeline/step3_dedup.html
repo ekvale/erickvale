@@ -1,6 +1,8 @@
 {% extends 'htac/base.html' %}
 {% load humanize %}
 
+{% block htac_main_class %}bg-white{% endblock %}
+
 {% block title %}Step 3: Cross-Site Deduplication — HTAC Pipeline{% endblock %}
 
 {% block extra_head %}
@@ -26,17 +28,12 @@
 
 {% block content %}
 
-{% include "htac/pipeline/_breadcrumb.html" with current_label="Pipeline — Step 3" %}
-
-<div class="htac-hero">
-  <p class="htac-eyebrow">HTAC Pipeline &middot; Step 3 of {{ pipeline_steps|length }}</p>
-  <h1>Cross-Site Deduplication</h1>
+{% include "htac/pipeline/_pipeline_band.html" with pipeline_title="Cross-Site Deduplication" %}
+<div class="mt-4 max-w-3xl text-base font-light leading-relaxed text-slate-700">
   <p>Patients who receive care at multiple health systems generate identical PPRL tokens at each site.
      This step collapses those duplicate records into a single entry in the
      <strong>DeduplicatedRoster</strong> — one row per unique person across the entire federated network.</p>
 </div>
-
-{% include 'htac/pipeline/_stepper.html' %}
 
 <div class="htac-callout-row">
   <div class="htac-callout why">

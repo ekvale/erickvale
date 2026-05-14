@@ -1,17 +1,20 @@
-<header class="sticky top-0 z-50 border-b border-slate-200/90 bg-white/90 backdrop-blur-md">
+<header class="site-header">
   <div class="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-    <a href="{% url 'homepage' %}" class="text-lg font-semibold tracking-tight text-slate-900 hover:text-htac-navy transition-colors">
-      Eric Kvale
+    <a href="{% url 'homepage' %}" class="nav-logo inline-flex flex-wrap items-baseline gap-x-2 gap-y-1">
+      <span>Eric Kvale</span>
+      <span class="nav-accent select-none" aria-hidden="true">·</span>
+      <span class="font-sans text-sm font-normal tracking-normal text-white/70">Population health data infrastructure</span>
     </a>
-    <nav class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm font-medium text-slate-600" aria-label="Main">
-      <a href="{% url 'homepage' %}" class="hover:text-htac-navy transition-colors">Home</a>
-      <a href="{% url 'services' %}" class="hover:text-htac-navy transition-colors">Services</a>
+    <nav class="flex flex-wrap items-center gap-x-5 gap-y-2" aria-label="Main">
+      {% with p=request.path %}
+      <a href="{% url 'homepage' %}" class="{% if p == '/' %}is-active{% endif %}">Home</a>
+      <a href="{% url 'services' %}" class="{% if p == '/services/' %}is-active{% endif %}">Services</a>
       {% if user.is_authenticated %}
-        <a href="{% url 'projects:project_list' %}" class="hover:text-htac-navy transition-colors">Projects</a>
-        <a href="{% url 'projects:dashboard' %}" class="hover:text-htac-navy transition-colors">Dashboard</a>
-        <a href="{% url 'projects:calendar' %}" class="hover:text-htac-navy transition-colors">Calendar</a>
-        <a href="{% url 'projects:contact_list' %}" class="hover:text-htac-navy transition-colors">Contacts</a>
-        <a href="{% url 'projects:notification_list' %}" class="relative inline-flex items-center hover:text-htac-navy transition-colors" title="Notifications">
+        <a href="{% url 'projects:project_list' %}" class="{% if '/projects/' in p and '/projects/calendar' not in p and '/projects/dashboard' not in p and '/projects/contacts' not in p and '/projects/notifications' not in p %}is-active{% endif %}">Projects</a>
+        <a href="{% url 'projects:dashboard' %}" class="{% if '/projects/dashboard' in p %}is-active{% endif %}">Dashboard</a>
+        <a href="{% url 'projects:calendar' %}" class="{% if '/projects/calendar' in p %}is-active{% endif %}">Calendar</a>
+        <a href="{% url 'projects:contact_list' %}" class="{% if '/projects/contacts' in p %}is-active{% endif %}">Contacts</a>
+        <a href="{% url 'projects:notification_list' %}" class="relative inline-flex items-center {% if '/projects/notifications' in p %}is-active{% endif %}" title="Notifications">
           <span class="sr-only">Notifications</span>
           <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.102V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
@@ -21,25 +24,26 @@
           {% endif %}
         </a>
       {% endif %}
-      <a href="{% url 'htac_public_about' %}" class="hover:text-htac-navy transition-colors">HTAC</a>
-      <a href="{% url 'htac_pipeline_demo' %}" class="group inline-flex items-center gap-1.5 pl-2 hover:text-htac-navy transition-colors sm:border-l sm:border-slate-200 sm:pl-4">
+      <a href="{% url 'htac_public_about' %}" class="{% if p == '/htac/about/' %}is-active{% endif %}">HTAC</a>
+      <a href="{% url 'htac_pipeline_demo' %}" class="nav-cta group gap-1.5 {% if '/htac/demo/' in p %}ring-2 ring-teal-400 ring-offset-2 ring-offset-navy-800{% endif %}">
         <span class="relative flex h-2 w-2">
-          <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-40"></span>
-          <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" title="Live demo"></span>
+          <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-teal-300 opacity-40"></span>
+          <span class="relative inline-flex h-2 w-2 rounded-full bg-teal-400" title="Live demo"></span>
         </span>
         Live Demo
       </a>
-      <a href="{% url 'htac_pipeline_step1' %}" class="hover:text-htac-navy transition-colors">Pipeline</a>
-      <a href="{% url 'about' %}" class="hover:text-htac-navy transition-colors">About</a>
-      <a href="{% url 'contact' %}" class="hover:text-htac-navy transition-colors">Contact</a>
+      <a href="{% url 'htac_pipeline_step1' %}" class="{% if '/htac/pipeline/' in p %}is-active{% endif %}">Pipeline</a>
+      <a href="{% url 'about' %}" class="{% if p == '/about/' %}is-active{% endif %}">About</a>
+      <a href="{% url 'contact' %}" class="{% if p == '/contact/' %}is-active{% endif %}">Contact</a>
       {% if user.is_authenticated %}
         {% if user.is_staff %}
-          <a href="/admin/" class="hover:text-htac-navy transition-colors">Admin</a>
+          <a href="/admin/">Admin</a>
         {% endif %}
-        <a href="{% url 'logout' %}" class="hover:text-htac-navy transition-colors">Logout</a>
+        <a href="{% url 'logout' %}">Logout</a>
       {% else %}
-        <a href="{% url 'login' %}" class="hover:text-htac-navy transition-colors">Login</a>
+        <a href="{% url 'login' %}">Login</a>
       {% endif %}
+      {% endwith %}
     </nav>
   </div>
 </header>

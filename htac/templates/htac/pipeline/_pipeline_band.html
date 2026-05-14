@@ -1,0 +1,6 @@
+<div class="pipeline-band">
+  {% include "htac/pipeline/_breadcrumb.html" %}
+  <p class="eyebrow mb-2 mt-1">HTAC Pipeline · Step {{ current_step }} of {{ pipeline_steps|length }}</p>
+  <h1 class="mt-0 font-display text-2xl font-medium tracking-tight text-white sm:text-3xl">{{ pipeline_title }}</h1>
+  {% include "htac/pipeline/_stepper.html" %}
+</div>

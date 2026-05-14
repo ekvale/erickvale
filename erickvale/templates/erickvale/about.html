@@ -1,17 +1,16 @@
 {% extends "base_site.html" %}
 {% block title %}About — Eric Kvale{% endblock %}
 {% block content %}
-  <section class="relative overflow-hidden rounded-2xl bg-htac-navy px-6 py-24 text-white shadow-lg sm:px-10 lg:px-12">
-    <div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" aria-hidden="true"></div>
+  <section class="hero-dark rounded-2xl px-6 py-16 text-white shadow-lg sm:px-10 lg:px-12">
     <div class="relative mx-auto max-w-3xl">
-      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-htac-sky">Population Health Data Infrastructure</p>
-      <h1 class="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">About</h1>
+      <p class="eyebrow">Population Health Data Infrastructure</p>
+      <h1 class="mt-4 font-display text-3xl font-medium tracking-tight text-white sm:text-4xl">About</h1>
     </div>
   </section>
 
-  <hr class="mx-auto mt-16 max-w-6xl border-t border-slate-100" aria-hidden="true">
+  <hr class="mx-auto mt-16 max-w-6xl border-t border-parchment-300" aria-hidden="true">
 
-  <section class="mx-auto max-w-6xl rounded-2xl border border-slate-200 bg-white px-6 py-16 sm:px-10">
+  <section class="mx-auto max-w-6xl rounded-2xl border border-parchment-300 bg-parchment-100 px-6 py-16 sm:px-10">
     <div class="mx-auto max-w-3xl space-y-4 text-sm leading-relaxed text-slate-600 sm:text-base [&>p:first-of-type]:text-lg [&>p:first-of-type]:font-light">
       <p>
         Eric Kvale is a data scientist and full-stack developer working at the intersection of clinical informatics,
@@ -37,36 +36,36 @@
     </div>
   </section>
 
-  <hr class="mx-auto mt-16 max-w-6xl border-t border-slate-100" aria-hidden="true">
+  <hr class="mx-auto mt-16 max-w-6xl border-t border-parchment-300" aria-hidden="true">
 
-  <section class="mx-auto max-w-6xl rounded-2xl border border-slate-200 bg-slate-50 px-6 py-16 sm:px-10" aria-labelledby="demonstrates-heading">
-    <h2 id="demonstrates-heading" class="text-3xl font-semibold tracking-tight text-slate-900">What This Site Demonstrates</h2>
+  <section class="mx-auto max-w-6xl rounded-2xl border border-parchment-300 bg-white px-6 py-16 shadow-sm sm:px-10" aria-labelledby="demonstrates-heading">
+    <h2 id="demonstrates-heading" class="font-display text-3xl font-semibold text-navy-800">What This Site Demonstrates</h2>
     <div class="mt-6 grid max-w-6xl gap-4 sm:grid-cols-2">
-      <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 class="text-lg font-medium text-slate-900">Working OMOP CDM Implementation</h3>
+      <div class="rounded-xl border border-parchment-300 border-t-2 border-t-teal-600 bg-white p-6 shadow-sm">
+        <h3 class="text-lg font-medium text-navy-800">Working OMOP CDM Implementation</h3>
         <p class="mt-3 text-sm leading-relaxed text-slate-600">
           The pipeline walkthrough steps through a live federated data environment — from OMOP domain tables and
           concept mapping through PPRL tokenization, deduplication, administrative data enrichment, cohort queries, and
           small-cell suppression to stratified prevalence estimates.
         </p>
       </div>
-      <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 class="text-lg font-medium text-slate-900">Privacy-Preserving Record Linkage</h3>
+      <div class="rounded-xl border border-parchment-300 border-t-2 border-t-teal-600 bg-white p-6 shadow-sm">
+        <h3 class="text-lg font-medium text-navy-800">Privacy-Preserving Record Linkage</h3>
         <p class="mt-3 text-sm leading-relaxed text-slate-600">
           The site implements HMAC-SHA256 token generation for cross-site patient deduplication — the same algorithm
           validated for public health surveillance use at 97% precision and 75% recall in published multi-site
           deployments.
         </p>
       </div>
-      <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 class="text-lg font-medium text-slate-900">Governance-Aware Architecture</h3>
+      <div class="rounded-xl border border-parchment-300 border-t-2 border-t-teal-600 bg-white p-6 shadow-sm">
+        <h3 class="text-lg font-medium text-navy-800">Governance-Aware Architecture</h3>
         <p class="mt-3 text-sm leading-relaxed text-slate-600">
           Data use agreement alignment, suppression policy, stratification dimensions, and the separation between
           contributor-held data and published aggregates are built into the system design, not treated as afterthoughts.
         </p>
       </div>
-      <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 class="text-lg font-medium text-slate-900">Health Equity Orientation</h3>
+      <div class="rounded-xl border border-parchment-300 border-t-2 border-t-teal-600 bg-white p-6 shadow-sm">
+        <h3 class="text-lg font-medium text-navy-800">Health Equity Orientation</h3>
         <p class="mt-3 text-sm leading-relaxed text-slate-600">
           Stratification by race, ethnicity, language, age, sex, homelessness, incarceration, and Medicaid enrollment is
           a core design requirement, not an optional layer — reflecting the populations this infrastructure is designed
@@ -76,10 +75,10 @@
     </div>
   </section>
 
-  <hr class="mx-auto mt-16 max-w-6xl border-t border-slate-100" aria-hidden="true">
+  <hr class="mx-auto mt-16 max-w-6xl border-t border-parchment-300" aria-hidden="true">
 
-  <section class="mx-auto max-w-6xl rounded-2xl border border-slate-200 bg-white px-6 py-16 sm:px-10" aria-labelledby="services-about-heading">
-    <h2 id="services-about-heading" class="text-3xl font-semibold tracking-tight text-slate-900">Services</h2>
+  <section class="mx-auto max-w-6xl rounded-2xl border border-parchment-300 bg-parchment-100 px-6 py-16 sm:px-10" aria-labelledby="services-about-heading">
+    <h2 id="services-about-heading" class="font-display text-3xl font-semibold text-navy-800">Services</h2>
     <p class="mt-6 max-w-3xl text-lg font-light leading-relaxed text-slate-600 sm:text-xl">
       This practice provides technical consulting services to public health agencies, health system research consortia,
       academic research teams, and community organizations building population health data infrastructure. Services
@@ -87,21 +86,21 @@
       estimation, dashboard development, and grant technical assistance.
     </p>
     <div class="mt-8">
-      <a href="{% url 'services' %}" class="inline-flex items-center justify-center rounded-lg bg-htac-navy px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-htac-teal focus:outline-none focus:ring-2 focus:ring-htac-teal focus:ring-offset-2">
+      <a href="{% url 'services' %}" class="btn-primary text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2">
         View Services
       </a>
     </div>
   </section>
 
-  <hr class="mx-auto mt-16 max-w-6xl border-t border-slate-100" aria-hidden="true">
+  <hr class="mx-auto mt-16 max-w-6xl border-t border-parchment-300" aria-hidden="true">
 
-  <section class="mx-auto max-w-6xl rounded-2xl border border-slate-200 bg-slate-50 px-6 py-16 sm:px-10" aria-labelledby="touch-heading">
-    <h2 id="touch-heading" class="text-3xl font-semibold tracking-tight text-slate-900">Get in Touch</h2>
+  <section class="mx-auto max-w-6xl rounded-2xl border border-parchment-300 bg-white px-6 py-16 shadow-sm sm:px-10" aria-labelledby="touch-heading">
+    <h2 id="touch-heading" class="font-display text-3xl font-semibold text-navy-800">Get in Touch</h2>
     <p class="mt-6 max-w-3xl text-lg font-light leading-relaxed text-slate-600 sm:text-xl">
       For inquiries about consulting engagements, technical partnerships, or collaboration opportunities, use the
-      <a href="{% url 'contact' %}" class="font-medium text-htac-teal underline-offset-4 hover:text-htac-navy hover:underline">contact form</a>
+      <a href="{% url 'contact' %}" class="font-medium text-teal-600 underline-offset-4 hover:text-navy-800 hover:underline">contact form</a>
       or email directly at
-      <a href="mailto:eric@erickvale.com" class="font-medium text-htac-teal underline-offset-4 hover:text-htac-navy hover:underline">eric@erickvale.com</a>.
+      <a href="mailto:eric@erickvale.com" class="font-medium text-teal-600 underline-offset-4 hover:text-navy-800 hover:underline">eric@erickvale.com</a>.
     </p>
   </section>
 {% endblock %}
