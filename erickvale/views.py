@@ -2,49 +2,18 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
-from datetime import datetime
-
 from braindump.authz import braindump_configured, is_braindump_owner
-
-from .models import FeaturedApp
 
 
 def homepage(request):
-    """Homepage view showcasing monthly apps."""
+    """Public landing page (HTAC-focused)."""
     if (
         request.user.is_authenticated
         and braindump_configured()
         and is_braindump_owner(request.user)
     ):
         return redirect('braindump:dashboard')
-    current_date = datetime.now()
-    current_month = current_date.strftime('%B %Y')
-    
-    # Get all published apps for sidebar
-    published_apps = FeaturedApp.objects.filter(is_published=True)
-    
-    # Convert to dict format for template compatibility
-    apps = []
-    for app in published_apps:
-        apps.append({
-            'name': app.name,
-            'slug': app.slug,
-            'description': app.description,
-            'icon': app.icon,
-            'url': app.url,
-            'cover_image': app.cover_image if app.cover_image else None,
-            'features': app.features if app.features else [],
-            'month': app.month,
-            'status': 'active',
-            'is_current_month': app.is_current_month,
-        })
-    
-    context = {
-        'apps': apps,
-        'current_month': current_month,
-    }
-    
-    return render(request, 'erickvale/homepage.html', context)
+    return render(request, 'erickvale/homepage.html')
 
 
 def about(request):

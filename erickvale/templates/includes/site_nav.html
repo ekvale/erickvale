@@ -1,0 +1,23 @@
+{% load static %}
+<header class="sticky top-0 z-50 border-b border-slate-200/90 bg-white/90 backdrop-blur-md">
+  <div class="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+    <a href="{% url 'homepage' %}" class="text-lg font-semibold tracking-tight text-slate-900 hover:text-htac-navy transition-colors">
+      Eric Kvale
+    </a>
+    <nav class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm font-medium text-slate-600" aria-label="Main">
+      <a href="{% url 'homepage' %}" class="hover:text-htac-navy transition-colors">Home</a>
+      <a href="{% url 'htac_public_about' %}" class="hover:text-htac-navy transition-colors">HTAC</a>
+      <a href="{% url 'htac_pipeline_step1' %}" class="hover:text-htac-navy transition-colors">Pipeline</a>
+      <a href="/api/htac/v1/" class="hover:text-htac-navy transition-colors">API</a>
+      <a href="{% url 'about' %}" class="hover:text-htac-navy transition-colors">About</a>
+      {% if user.is_authenticated %}
+        {% if user.is_staff %}
+          <a href="/admin/" class="hover:text-htac-navy transition-colors">Admin</a>
+        {% endif %}
+        <a href="{% url 'logout' %}" class="hover:text-htac-navy transition-colors">Logout</a>
+      {% else %}
+        <a href="{% url 'login' %}" class="hover:text-htac-navy transition-colors">Login</a>
+      {% endif %}
+    </nav>
+  </div>
+</header>

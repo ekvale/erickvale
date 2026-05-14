@@ -1,0 +1,9 @@
+<nav class="mb-6 text-sm text-slate-500" aria-label="Breadcrumb">
+  <ol class="m-0 flex list-none flex-wrap items-center gap-2 p-0">
+    <li>
+      <a href="{% url 'htac_public_about' %}" class="font-medium text-htac-navy hover:text-htac-teal transition-colors">HTAC</a>
+    </li>
+    <li class="text-slate-300" aria-hidden="true">/</li>
+    <li class="font-medium text-slate-800" aria-current="page">{{ current_label }}</li>
+  </ol>
+</nav>

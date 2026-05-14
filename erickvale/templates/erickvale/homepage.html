@@ -1,538 +1,59 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>eric kvale — population health &amp; data trust</title>
-    {% load static %}
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --bg: #1a1a2e;
-            --bg-secondary: #16213e;
-            --bg-card: rgba(233, 69, 96, 0.05);
-            --text: #ffffff;
-            --text-secondary: #b0b0b0;
-            --text-light: #808080;
-            --border: rgba(233, 69, 96, 0.2);
-            --accent: #e94560;
-            --accent-hover: #ff5c7a;
-            --hover: rgba(233, 69, 96, 0.1);
-        }
-
-        body {
-            font-family: 'JetBrains Mono', 'Consolas', 'Monaco', 'Courier New', monospace, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--bg);
-            background-image:
-                linear-gradient(to right, rgba(26, 26, 46, 0.7) 0%, rgba(26, 26, 46, 0.85) 50%, rgba(26, 26, 46, 0.95) 100%),
-                url('{% static "erickvale/images/cathederal_hall.jpg" %}');
-            background-size: cover;
-            background-position: center left;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            color: var(--text);
-            line-height: 1.6;
-            font-size: 16px;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 40px 24px 80px 24px;
-        }
-
-        .top-navbar {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: rgba(26, 26, 46, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border);
-            padding: 16px 0;
-            margin-bottom: 40px;
-        }
-
-        .top-navbar .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 24px;
-        }
-
-        .top-navbar nav {
-            display: flex;
-            gap: 32px;
-            align-items: center;
-        }
-
-        .top-navbar a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 14px;
-            transition: color 0.2s ease;
-        }
-
-        .top-navbar a:hover {
-            color: var(--accent);
-        }
-
-        .top-navbar a.nav-emphasis {
-            color: var(--accent);
-        }
-
-        header {
-            margin-bottom: 48px;
-            text-align: center;
-        }
-
-        header h1.site-tagline {
-            font-size: 1.15rem;
-            font-weight: 400;
-            letter-spacing: 0.02em;
-            margin-top: 28px;
-            color: var(--text-secondary);
-            max-width: 42rem;
-            margin-left: auto;
-            margin-right: auto;
-            line-height: 1.65;
-        }
-
-        .intro-text {
-            max-width: 46rem;
-            margin-bottom: 56px;
-            color: var(--text-secondary);
-            font-size: 16px;
-            line-height: 1.75;
-            font-weight: 300;
-        }
-
-        .homepage-layout {
-            display: grid;
-            grid-template-columns: 1fr 280px;
-            gap: 80px;
-            align-items: start;
-        }
-
-        .main-content {
-            min-width: 0;
-        }
-
-        .app-card {
-            border: 1px solid var(--border);
-            background: var(--bg-card);
-            backdrop-filter: blur(10px);
-            transition: border-color 0.2s ease, background 0.2s ease;
-            margin-bottom: 2rem;
-        }
-
-        .app-card:hover {
-            border-color: var(--accent);
-            background: var(--hover);
-        }
-
-        .app-header {
-            padding: 32px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .app-header-content {
-            display: flex;
-            align-items: flex-start;
-            gap: 20px;
-        }
-
-        .app-title-section {
-            flex: 1;
-        }
-
-        .app-title-section h2 {
-            font-size: 24px;
-            font-weight: 500;
-            margin-bottom: 8px;
-            color: var(--text);
-            letter-spacing: -0.3px;
-        }
-
-        .app-meta {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-top: 8px;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            font-size: 11px;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            background: var(--accent);
-            color: var(--bg);
-            border: 1px solid var(--accent);
-        }
-
-        .app-content {
-            padding: 32px;
-        }
-
-        .app-description {
-            color: var(--text-secondary);
-            line-height: 1.7;
-            margin-bottom: 24px;
-            font-size: 15px;
-            font-weight: 300;
-        }
-
-        .app-features h3 {
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text);
-            margin-bottom: 16px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .app-features ul {
-            list-style: none;
-            padding: 0;
-            margin-bottom: 24px;
-        }
-
-        .app-features li {
-            padding: 8px 0;
-            color: var(--text-secondary);
-            font-size: 14px;
-            font-weight: 300;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .app-features li:last-child {
-            border-bottom: none;
-        }
-
-        .app-link {
-            display: inline-block;
-            color: var(--accent);
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 400;
-            padding: 12px 0;
-            margin-right: 24px;
-            border-bottom: 1px solid var(--accent);
-            transition: color 0.2s ease, border-color 0.2s ease;
-        }
-
-        .app-link:hover {
-            color: var(--accent-hover);
-            border-color: var(--accent-hover);
-        }
-
-        .pillars-section h3 {
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text);
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .pillars-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-        }
-
-        .pillar-card {
-            border: 1px solid var(--border);
-            background: rgba(22, 33, 62, 0.35);
-            padding: 22px;
-            backdrop-filter: blur(8px);
-            transition: border-color 0.2s ease;
-        }
-
-        .pillar-card:hover {
-            border-color: rgba(233, 69, 96, 0.45);
-        }
-
-        .pillar-card h4 {
-            font-size: 15px;
-            font-weight: 500;
-            color: var(--text);
-            margin-bottom: 10px;
-            letter-spacing: -0.2px;
-        }
-
-        .pillar-card p {
-            font-size: 13px;
-            color: var(--text-secondary);
-            line-height: 1.65;
-            font-weight: 300;
-        }
-
-        .sidebar {
-            position: sticky;
-            top: 80px;
-        }
-
-        .sidebar-header {
-            background: var(--bg-card);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--border);
-            padding: 20px;
-            margin-bottom: 24px;
-        }
-
-        .sidebar-header h3 {
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--text);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 4px;
-        }
-
-        .sidebar-year {
-            font-size: 14px;
-            color: var(--text-light);
-            font-weight: 300;
-        }
-
-        .app-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .app-list-item a {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 0;
-            text-decoration: none;
-            color: var(--text-secondary);
-            transition: color 0.2s ease;
-            font-size: 14px;
-        }
-
-        .app-list-item a:hover {
-            color: var(--accent);
-        }
-
-        .app-name-small {
-            flex: 1;
-            font-weight: 400;
-        }
-
-        .app-month-small {
-            font-size: 12px;
-            color: var(--text-light);
-            font-weight: 300;
-        }
-
-        .footer {
-            margin-top: 120px;
-            padding-top: 40px;
-            border-top: 1px solid var(--border);
-            text-align: center;
-            color: var(--text-light);
-            font-size: 13px;
-            font-weight: 300;
-        }
-
-        .footer a {
-            color: var(--accent);
-            text-decoration: none;
-            border-bottom: 1px solid var(--accent);
-            transition: color 0.2s ease, border-color 0.2s ease;
-        }
-
-        .footer a:hover {
-            color: var(--accent-hover);
-            border-color: var(--accent-hover);
-        }
-
-        @media (max-width: 968px) {
-            .homepage-layout {
-                grid-template-columns: 1fr;
-                gap: 60px;
-            }
-
-            .sidebar {
-                position: relative;
-                top: 0;
-                order: -1;
-            }
-
-            .pillars-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .container {
-                padding: 40px 20px 60px 20px;
-            }
-
-            .top-navbar .container {
-                padding: 0 20px;
-            }
-
-            .top-navbar nav {
-                gap: 20px;
-                flex-wrap: wrap;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 40px 16px;
-            }
-
-            .app-header,
-            .app-content {
-                padding: 24px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="top-navbar">
-        <div class="container">
-            <nav>
-                <a href="{% url 'homepage' %}">Home</a>
-                <a href="{% url 'htac_public_about' %}" class="nav-emphasis">HTAC</a>
-                <a href="{% url 'activity_media:list' %}">Media Gallery</a>
-                <a href="{% url 'arm_chair_detective:case_list' %}">Arm Chair Detective</a>
-                <a href="{% url 'chess_trainer:dashboard' %}">Chess Trainer</a>
-                <a href="{% url 'nomoar:home' %}">NOMOAR Archive</a>
-                <a href="{% url 'about' %}">About</a>
-                {% if user.is_authenticated and user.is_staff %}
-                    <a href="{% url 'fraud_detection:dashboard' %}">Fraud Detection</a>
-                    <a href="{% url 'human_rights_archive:dashboard' %}">Rights Archive</a>
-                {% endif %}
-                {% if user.is_authenticated %}
-                    <a href="{% url 'logout' %}">Logout</a>
-                {% else %}
-                    <a href="{% url 'login' %}">Login</a>
-                {% endif %}
-            </nav>
-        </div>
+{% extends "base_site.html" %}
+{% block title %}HTAC — Eric Kvale{% endblock %}
+{% block content %}
+  <section class="relative overflow-hidden rounded-2xl bg-htac-navy px-6 py-14 text-white shadow-lg sm:px-10 lg:px-12">
+    <div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" aria-hidden="true"></div>
+    <div class="relative max-w-3xl">
+      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-htac-sky">Population health · Federated analytics</p>
+      <h1 class="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl lg:text-[2.5rem] lg:leading-tight">
+        Health Trends Across Communities (HTAC)
+      </h1>
+      <p class="mt-5 max-w-2xl text-base leading-relaxed text-slate-200 sm:text-lg">
+        Documentation and a working walkthrough of privacy-preserving linkage, OMOP-based cohort logic,
+        enrichment, stratification, and small-cell suppression—plus the services we provide around that architecture.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a href="{% url 'htac_public_about' %}" class="inline-flex items-center justify-center rounded-lg bg-white px-5 py-2.5 text-sm font-semibold text-htac-navy shadow-sm transition hover:bg-slate-100">
+          HTAC overview
+        </a>
+        <a href="{% url 'htac_pipeline_step1' %}" class="inline-flex items-center justify-center rounded-lg border border-white/30 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/20">
+          Pipeline walkthrough
+        </a>
+        <a href="/api/htac/v1/" class="inline-flex items-center justify-center rounded-lg border border-transparent px-5 py-2.5 text-sm font-semibold text-htac-sky underline-offset-4 hover:underline">
+          Read-only API
+        </a>
+      </div>
     </div>
+  </section>
 
-    <div class="container">
-        <header>
-            <div style="margin-bottom: 20px; text-align: center;">
-                <img src="{% static 'erickvale/eric_kvale_ascii_animation.gif' %}?v=2"
-                     alt="ERIC KVALE"
-                     id="eric-kvale-gif"
-                     style="max-width: 100%; width: 1200px; height: auto; display: block; margin: 0 auto; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;">
-            </div>
-            <h1 class="site-tagline">
-                Independent practice at the intersection of <strong style="color: var(--text); font-weight: 500;">federated
-                population health</strong>, <strong style="color: var(--text); font-weight: 500;">trustworthy data modernization</strong>,
-                and <strong style="color: var(--text); font-weight: 500;">responsible AI governance</strong> for nonprofits and public-sector teams.
-            </h1>
-        </header>
-
-        <p class="intro-text">
-            We help mission-driven organizations move from one-off extracts to <strong style="color: var(--text); font-weight: 500;">repeatable,
-            governable pipelines</strong>—OMOP-aware analytics, privacy-preserving linkage patterns, and interoperability that centers
-            community consent, Tribal data sovereignty, and small-signal equity stratifiers instead of treating them as edge cases.
-        </p>
-
-        <div class="homepage-layout">
-            <main class="main-content">
-                <div class="app-card">
-                    <div class="app-header">
-                        <div class="app-header-content">
-                            <div class="app-title-section">
-                                <h2>HTAC — Health Trends Across Communities</h2>
-                                <div class="app-meta">
-                                    <span class="status-badge">Featured</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="app-content">
-                        <p class="app-description">
-                            Documentation and a runnable walkthrough for <strong style="color: var(--text); font-weight: 500;">privacy-preserving record linkage</strong>,
-                            federated prevalence estimation on OMOP CDM, enrichment from authorized administrative files,
-                            stratification, and small-cell suppression—presented as the HTAC workflow, not as a vendor product pitch.
-                        </p>
-                        <div class="app-features">
-                            <h3>Explore</h3>
-                            <ul>
-                                <li>Pipeline narrative: clinical model → tokens → deduplication → enrichment → cohorts → suppression → published estimates</li>
-                                <li>Read-only service layer for conditions, study runs, and prevalence cells (HTTPS, versioned path)</li>
-                                <li>Synthetic demonstration data for training and design reviews</li>
-                            </ul>
-                        </div>
-                        <div style="display: flex; gap: 24px; flex-wrap: wrap; margin-top: 8px;">
-                            <a href="{% url 'htac_public_about' %}" class="app-link">HTAC overview →</a>
-                            <a href="{% url 'htac_pipeline_step1' %}" class="app-link">Start pipeline →</a>
-                            <a href="/api/htac/v1/" class="app-link">API root →</a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="pillars-section">
-                    <h3>Where we focus</h3>
-                    <div class="pillars-grid">
-                        <div class="pillar-card">
-                            <h4>HTAC &amp; federated analytics</h4>
-                            <p>Token-based linkage, deduplicated rosters, and suppressed prevalence reporting so collaboratives can publish community-level insight without a “collect it all” warehouse.</p>
-                        </div>
-                        <div class="pillar-card">
-                            <h4>Public-health data modernization</h4>
-                            <p>Cloud-ready pipelines, open standards (OMOP / OHDSI), and quality routines that match where philanthropy and agencies are investing: fewer brittle silos, more reproducible evidence.</p>
-                        </div>
-                        <div class="pillar-card">
-                            <h4>Agentic AI in care &amp; governance</h4>
-                            <p>Workflows that pair LLMs with clear human accountability—documentation assistance, grant intelligence, and triage support bounded by DUAs, audit logs, and “human-in-the-loop” release gates.</p>
-                        </div>
-                        <div class="pillar-card">
-                            <h4>Data governance &amp; interoperability</h4>
-                            <p>Stewardship design, consent-aligned sharing, FHIR and CDM handoffs, and cross-sector interoperability patterns that respect FQHCs, Tribal nations, and justice-impacted data as first-class governance problems.</p>
-                        </div>
-                    </div>
-                </div>
-            </main>
-
-            <aside class="sidebar">
-                <div class="sidebar-header">
-                    <h3>Also on this site</h3>
-                    <div class="sidebar-year">{% now "Y" %}</div>
-                </div>
-                <ul class="app-list">
-                    <li class="app-list-item">
-                        <a href="{% url 'htac_public_about' %}">
-                            <span class="app-name-small">HTAC</span>
-                            <span class="app-month-small">Pipeline</span>
-                        </a>
-                    </li>
-                    {% for app in apps %}
-                    <li class="app-list-item">
-                        <a href="{{ app.url }}">
-                            <span class="app-name-small">{{ app.name }}</span>
-                            <span class="app-month-small">{{ app.month }}</span>
-                        </a>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </aside>
-        </div>
-
-        <div class="footer">
-            <p><a href="/admin/">Admin</a></p>
-        </div>
+  <section class="mt-16 grid gap-6 sm:grid-cols-3">
+    <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <h2 class="text-sm font-semibold uppercase tracking-wide text-htac-teal">Implementation</h2>
+      <p class="mt-3 text-sm leading-relaxed text-slate-600">
+        End-to-end pipeline design, demonstration environments, and handoff materials so your technical and governance leads share the same picture.
+      </p>
     </div>
-</body>
-</html>
+    <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <h2 class="text-sm font-semibold uppercase tracking-wide text-htac-teal">Governance</h2>
+      <p class="mt-3 text-sm leading-relaxed text-slate-600">
+        DUA alignment, stratification and suppression policy, Tribal and FQHC inclusion planning, and documentation for oversight bodies.
+      </p>
+    </div>
+    <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <h2 class="text-sm font-semibold uppercase tracking-wide text-htac-teal">Interoperability</h2>
+      <p class="mt-3 text-sm leading-relaxed text-slate-600">
+        OMOP CDM, federated execution patterns, and service boundaries between operational systems and published analytics products.
+      </p>
+    </div>
+  </section>
+
+  <section class="mt-16 rounded-2xl border border-slate-200 bg-white px-6 py-10 shadow-sm sm:px-10">
+    <h2 class="text-lg font-semibold text-slate-900">How to use this site</h2>
+    <p class="mt-3 max-w-3xl text-sm leading-relaxed text-slate-600">
+      Start with <strong class="font-medium text-slate-800">HTAC overview</strong> for the narrative, then step through the
+      <strong class="font-medium text-slate-800">pipeline</strong> for field-level detail. The versioned HTTPS endpoint under
+      <code class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-slate-800">/api/htac/v1/</code> exposes read-only
+      estimates for integration testing. Other applications on this domain remain available at their URLs but are not linked from the public header while this focus is in place.
+    </p>
+  </section>
+{% endblock %}

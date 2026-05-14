@@ -1,171 +1,29 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About - eric kvale</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+{% extends "base_site.html" %}
+{% block title %}About — Eric Kvale{% endblock %}
+{% block content %}
+  <header class="mb-10 border-b border-slate-200 pb-8">
+    <h1 class="text-3xl font-semibold tracking-tight text-slate-900">About</h1>
+    <p class="mt-2 text-slate-500">Eric Kvale</p>
+  </header>
 
-        :root {
-            --bg: #1a1a2e;
-            --bg-secondary: #16213e;
-            --bg-card: rgba(233, 69, 96, 0.05);
-            --text: #ffffff;
-            --text-secondary: #b0b0b0;
-            --text-light: #808080;
-            --border: rgba(233, 69, 96, 0.2);
-            --accent: #e94560;
-            --accent-hover: #ff5c7a;
-            --hover: rgba(233, 69, 96, 0.1);
-        }
+  <div class="max-w-3xl space-y-6 text-slate-600">
+    <h2 class="text-xl font-semibold text-slate-900">This site</h2>
+    <p class="leading-relaxed">
+      The public entry point currently highlights <strong class="font-medium text-slate-800">HTAC</strong>—Health Trends Across Communities—
+      including a full pipeline walkthrough and read-only interfaces. Other experiments and tools on this domain stay available
+      for those who have direct links; the header keeps navigation focused on HTAC and related professional work.
+    </p>
 
-        body {
-            font-family: 'JetBrains Mono', 'Consolas', 'Monaco', 'Courier New', monospace, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--bg);
-            background-image: 
-                linear-gradient(to right, rgba(26, 26, 46, 0.7) 0%, rgba(26, 26, 46, 0.85) 50%, rgba(26, 26, 46, 0.95) 100%),
-                url('{% static "erickvale/images/cathederal_hall.jpg" %}');
-            background-size: cover;
-            background-position: center left;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            color: var(--text);
-            line-height: 1.6;
-            font-size: 16px;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            min-height: 100vh;
-        }
+    <h2 class="pt-4 text-xl font-semibold text-slate-900">Background</h2>
+    <p class="leading-relaxed">
+      I work at the intersection of population health analytics, trustworthy data modernization, and governance for
+      federated and sensitive datasets—in nonprofit, public-sector, and collaborative settings.
+    </p>
 
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 80px 24px;
-        }
-
-        .nav {
-            margin-bottom: 60px;
-        }
-
-        .nav-link {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 14px;
-            transition: color 0.2s ease;
-        }
-
-        .nav-link:hover {
-            color: var(--accent);
-        }
-
-        header {
-            margin-bottom: 60px;
-        }
-
-        header h1 {
-            font-size: 32px;
-            font-weight: 400;
-            letter-spacing: -0.5px;
-            margin-bottom: 12px;
-            color: var(--text);
-        }
-
-        header .subtitle {
-            font-size: 16px;
-            color: var(--text-secondary);
-            font-weight: 300;
-        }
-
-        .content {
-            background: var(--bg-card);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--border);
-            padding: 40px;
-        }
-
-        .content h2 {
-            font-size: 24px;
-            font-weight: 400;
-            margin-bottom: 24px;
-            color: var(--text);
-        }
-
-        .content p {
-            color: var(--text-secondary);
-            line-height: 1.8;
-            margin-bottom: 24px;
-            font-size: 16px;
-            font-weight: 300;
-        }
-
-        .content p:last-child {
-            margin-bottom: 0;
-        }
-
-        .content a {
-            color: var(--text);
-            text-decoration: underline;
-            transition: opacity 0.2s ease;
-        }
-
-        .content a:hover {
-            opacity: 0.7;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 40px 16px;
-            }
-
-            .content {
-                padding: 24px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <nav class="nav">
-            <a href="{% url 'homepage' %}" class="nav-link">← Back to Home</a>
-        </nav>
-
-        <header>
-            <h1>About</h1>
-            <p class="subtitle">eric kvale</p>
-        </header>
-
-        <div class="content">
-            <h2>About This Site</h2>
-            <p>
-                This site explores the intersection between education, technology, and gamification. 
-                Each month, I build a new application that experiments with how these domains can 
-                come together to create engaging, meaningful experiences. While that's the focus, 
-                all interesting ideas are considered.
-            </p>
-
-            <h2>About Me</h2>
-            <p>
-                I'm a data scientist passionate about using technology to solve problems and create 
-                tools that make learning and exploration more engaging. This site is a space to 
-                experiment, learn, and share what I'm building.
-            </p>
-
-            <h2>Contact</h2>
-            <p>
-                For inquiries, collaboration opportunities, or just to say hello, you can reach me at 
-                <a href="mailto:ekvale@gmail.com">ekvale@gmail.com</a>.
-            </p>
-        </div>
-    </div>
-</body>
-</html>
-
+    <h2 class="pt-4 text-xl font-semibold text-slate-900">Contact</h2>
+    <p class="leading-relaxed">
+      For inquiries or collaboration, email
+      <a href="mailto:ekvale@gmail.com" class="font-medium text-htac-teal hover:text-htac-navy hover:underline">ekvale@gmail.com</a>.
+    </p>
+  </div>
+{% endblock %}

@@ -1,0 +1,14 @@
+{
+  "name": "erickvale",
+  "private": true,
+  "scripts": {
+    "build:css": "tailwindcss -i ./src/input.css -o ./erickvale/static/erickvale/css/tw.css --minify",
+    "watch:css": "tailwindcss -i ./src/input.css -o ./erickvale/static/erickvale/css/tw.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.9",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.15"
+  }
+}
