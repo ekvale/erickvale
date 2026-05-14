@@ -20,9 +20,6 @@
         <a href="{% url 'htac_pipeline_step1' %}" class="inline-flex items-center justify-center rounded-lg border border-white/30 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/20">
           Pipeline walkthrough
         </a>
-        <a href="/api/htac/v1/" class="inline-flex items-center justify-center rounded-lg border border-transparent px-5 py-2.5 text-sm font-semibold text-htac-sky underline-offset-4 hover:underline">
-          Read-only API
-        </a>
       </div>
     </div>
   </section>
@@ -107,7 +104,7 @@
           reproducible tables for leadership, and handoff materials so technical and program teams share one picture.
         </p>
         <ul class="mt-4 list-disc space-y-1 pl-5 text-sm text-slate-600">
-          <li>Versioned read-only API for integration testing</li>
+          <li>Documented read-only HTTPS interface for integration testing</li>
           <li>Clear separation between contributor-held data and published outputs</li>
           <li>Room to pair analytics with narrative documentation for policy audiences</li>
         </ul>
@@ -140,9 +137,24 @@
     <h2 class="text-lg font-semibold text-slate-900">How to use this site</h2>
     <p class="mt-3 max-w-3xl text-sm leading-relaxed text-slate-600">
       Start with <strong class="font-medium text-slate-800">HTAC overview</strong> for the narrative, then step through the
-      <strong class="font-medium text-slate-800">pipeline</strong> for field-level detail. The versioned HTTPS endpoint under
-      <code class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-slate-800">/api/htac/v1/</code> exposes read-only
-      estimates for integration testing. Other applications on this domain remain at their URLs; this home page stays the entry point for the HTAC / OMOP / HDU story.
+      <strong class="font-medium text-slate-800">pipeline</strong> for field-level detail. The walkthrough is backed by the same
+      Django application patterns that power a governed data product layer for stakeholders. Other applications on this
+      domain remain at their URLs; this home page stays the entry point for the HTAC / OMOP / HDU story.
     </p>
   </section>
-{% endblock %}
+
+  <section class="relative left-1/2 mt-16 w-screen max-w-none -translate-x-1/2 bg-htac-navy px-4 py-14 text-white sm:px-6">
+    <div class="mx-auto max-w-3xl text-center">
+      <h2 class="text-xl font-semibold tracking-tight sm:text-2xl">Ready to discuss your data infrastructure needs?</h2>
+      <p class="mt-4 text-sm leading-relaxed text-slate-200 sm:text-base">
+        Whether you are a public health agency, a health system research team, or an organization preparing a grant
+        application — use the contact form to start a conversation about what this kind of infrastructure could do for
+        your work.
+      </p>
+      <div class="mt-8">
+        <a href="{% url 'contact' %}" class="inline-flex items-center justify-center rounded-lg bg-white px-5 py-2.5 text-sm font-semibold text-htac-navy shadow-sm transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-htac-navy">
+          Get in Touch
+        </a>
+      </div>
+    </div>
+  </section>

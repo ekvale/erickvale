@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import homepage, about, services, login_view, logout_view
+from .views import about, contact, homepage, login_view, logout_view, services
 
 from htac.views_admin import about as htac_admin_about
 from htac.views_public import (
@@ -63,6 +63,7 @@ urlpatterns = [
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
     path('about/', about, name='about'),
+    path('contact/', contact, name='contact'),
     path('services/', services, name='services'),
     # Project management (projects, contacts, calendar, notifications — see projects.urls)
     path('', include('projects.urls')),

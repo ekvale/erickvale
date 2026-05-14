@@ -1,29 +1,99 @@
 {% extends "base_site.html" %}
 {% block title %}About — Eric Kvale{% endblock %}
 {% block content %}
-  <header class="mb-10 border-b border-slate-200 pb-8">
-    <h1 class="text-3xl font-semibold tracking-tight text-slate-900">About</h1>
-    <p class="mt-2 text-slate-500">Eric Kvale</p>
-  </header>
+  <section class="relative overflow-hidden rounded-2xl bg-htac-navy px-6 py-12 text-white shadow-lg sm:px-10 lg:px-12">
+    <div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" aria-hidden="true"></div>
+    <div class="relative max-w-3xl">
+      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-htac-sky">Population Health Data Infrastructure</p>
+      <h1 class="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">About</h1>
+    </div>
+  </section>
 
-  <div class="max-w-3xl space-y-6 text-slate-600">
-    <h2 class="text-xl font-semibold text-slate-900">This site</h2>
-    <p class="leading-relaxed">
-      The public entry point currently highlights <strong class="font-medium text-slate-800">HTAC</strong>—Health Trends Across Communities—
-      including a full pipeline walkthrough and read-only interfaces. Other experiments and tools on this domain stay available
-      for those who have direct links; the header keeps navigation focused on HTAC and related professional work.
-    </p>
-
-    <h2 class="pt-4 text-xl font-semibold text-slate-900">Background</h2>
-    <p class="leading-relaxed">
-      I work at the intersection of population health analytics, trustworthy data modernization, and governance for
-      federated and sensitive datasets—in nonprofit, public-sector, and collaborative settings.
-    </p>
-
-    <h2 class="pt-4 text-xl font-semibold text-slate-900">Contact</h2>
-    <p class="leading-relaxed">
-      For inquiries or collaboration, email
-      <a href="mailto:ekvale@gmail.com" class="font-medium text-htac-teal hover:text-htac-navy hover:underline">ekvale@gmail.com</a>.
-    </p>
+  <div class="mt-12 max-w-3xl space-y-6 text-slate-600">
+    <div class="space-y-4 text-sm leading-relaxed sm:text-base">
+      <p>
+        Eric Kvale is a data scientist and full-stack developer working at the intersection of clinical informatics,
+        federated data infrastructure, and public health surveillance. His work focuses on building the technical
+        systems that allow public health agencies, health system research consortia, and community organizations to
+        generate timely, accurate health data for populations that existing surveillance systems routinely miss —
+        including people experiencing homelessness, incarceration, and housing instability.
+      </p>
+      <p>
+        The demonstration environment on this site — including the HTAC pipeline walkthrough, the OMOP common data
+        model implementation, and the privacy-preserving record linkage simulation — represents a working implementation
+        of the federated population health data architecture used by the Minnesota Electronic Health Record Consortium
+        and similar statewide collaboratives. It is built on open-source, interoperable infrastructure: the OMOP CDM,
+        OHDSI tooling, and a Django-based data product layer. The implementation reflects real architectural decisions
+        about governance, small-cell suppression, deduplication, and administrative data linkage that practitioners
+        building similar systems face in the field.
+      </p>
+      <p>
+        Prior to this practice, Eric worked across nonprofit, public-sector, and collaborative data settings, with a
+        consistent focus on making health data infrastructure work for the communities most affected by health
+        disparities and least represented in the systems designed to measure them.
+      </p>
+    </div>
   </div>
+
+  <section class="mt-16" aria-labelledby="demonstrates-heading">
+    <h2 id="demonstrates-heading" class="text-lg font-semibold text-slate-900">What This Site Demonstrates</h2>
+    <div class="mt-8 grid gap-4 sm:grid-cols-2">
+      <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h3 class="text-sm font-semibold text-slate-900">Working OMOP CDM Implementation</h3>
+        <p class="mt-3 text-sm leading-relaxed text-slate-600">
+          The pipeline walkthrough steps through a live federated data environment — from OMOP domain tables and
+          concept mapping through PPRL tokenization, deduplication, administrative data enrichment, cohort queries, and
+          small-cell suppression to stratified prevalence estimates.
+        </p>
+      </div>
+      <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h3 class="text-sm font-semibold text-slate-900">Privacy-Preserving Record Linkage</h3>
+        <p class="mt-3 text-sm leading-relaxed text-slate-600">
+          The site implements HMAC-SHA256 token generation for cross-site patient deduplication — the same algorithm
+          validated for public health surveillance use at 97% precision and 75% recall in published multi-site
+          deployments.
+        </p>
+      </div>
+      <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h3 class="text-sm font-semibold text-slate-900">Governance-Aware Architecture</h3>
+        <p class="mt-3 text-sm leading-relaxed text-slate-600">
+          Data use agreement alignment, suppression policy, stratification dimensions, and the separation between
+          contributor-held data and published aggregates are built into the system design, not treated as afterthoughts.
+        </p>
+      </div>
+      <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h3 class="text-sm font-semibold text-slate-900">Health Equity Orientation</h3>
+        <p class="mt-3 text-sm leading-relaxed text-slate-600">
+          Stratification by race, ethnicity, language, age, sex, homelessness, incarceration, and Medicaid enrollment is
+          a core design requirement, not an optional layer — reflecting the populations this infrastructure is designed
+          to make visible.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="mt-16 max-w-3xl" aria-labelledby="services-about-heading">
+    <h2 id="services-about-heading" class="text-lg font-semibold text-slate-900">Services</h2>
+    <p class="mt-4 text-sm leading-relaxed text-slate-600 sm:text-base">
+      This practice provides technical consulting services to public health agencies, health system research consortia,
+      academic research teams, and community organizations building population health data infrastructure. Services
+      include OMOP implementation and support, federated network architecture, administrative data linkage, prevalence
+      estimation, dashboard development, and grant technical assistance.
+    </p>
+    <div class="mt-6">
+      <a href="{% url 'services' %}" class="inline-flex items-center justify-center rounded-lg bg-htac-navy px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-htac-teal focus:outline-none focus:ring-2 focus:ring-htac-teal focus:ring-offset-2">
+        View Services
+      </a>
+    </div>
+  </section>
+
+  <section class="mt-16 max-w-3xl border-t border-slate-200 pt-12" aria-labelledby="touch-heading">
+    <h2 id="touch-heading" class="text-lg font-semibold text-slate-900">Get in Touch</h2>
+    <p class="mt-4 text-sm leading-relaxed text-slate-600 sm:text-base">
+      For inquiries about consulting engagements, technical partnerships, or collaboration opportunities, use the
+      <a href="{% url 'contact' %}" class="font-medium text-htac-teal underline-offset-4 hover:text-htac-navy hover:underline">contact form</a>
+      or email directly at
+      <a href="mailto:eric@erickvale.com" class="font-medium text-htac-teal underline-offset-4 hover:text-htac-navy hover:underline">eric@erickvale.com</a>.
+    </p>
+  </section>
 {% endblock %}

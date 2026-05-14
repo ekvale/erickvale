@@ -1,7 +1,11 @@
-from django.shortcuts import render, redirect
+from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib import messages
+from django.core.mail import send_mail
+from django.shortcuts import redirect, render
+
+from .forms import SiteContactForm
 
 
 def homepage(request):
@@ -17,6 +21,46 @@ def about(request):
 def services(request):
     """Professional services page."""
     return render(request, 'erickvale/services.html')
+
+
+def contact(request):
+    """Public contact form; sends notification email on valid POST."""
+    if request.method == 'POST':
+        form = SiteContactForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            subject = f"New Contact Form Submission — {data['inquiry_type']}"
+            org = data.get('organization') or '(not provided)'
+            body = (
+                f"Name: {data['name']}\n"
+                f"Organization: {org}\n"
+                f"Email: {data['email']}\n"
+                f"Inquiry type: {data['inquiry_type']}\n\n"
+                f"Message:\n{data['message']}\n"
+            )
+            send_mail(
+                subject,
+                body,
+                settings.DEFAULT_FROM_EMAIL,
+                [settings.CONTACT_EMAIL],
+                fail_silently=False,
+            )
+            messages.success(
+                request,
+                "Your message has been sent. I'll be in touch shortly.",
+            )
+            return redirect('contact')
+    else:
+        form = SiteContactForm()
+
+    return render(
+        request,
+        'erickvale/contact.html',
+        {
+            'form': form,
+            'contact_email': settings.CONTACT_EMAIL,
+        },
+    )
 
 
 def login_view(request):

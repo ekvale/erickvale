@@ -227,5 +227,25 @@
   </a>
 </div>
 
+<div class="mt-8 rounded-xl border border-slate-200 bg-slate-50 p-6 sm:p-8">
+  <h2 class="text-lg font-semibold tracking-tight text-slate-900 sm:text-xl">From Demo to Deployment</h2>
+  <p class="mt-4 text-sm leading-relaxed text-slate-600 sm:text-base">
+    This demonstration environment illustrates the full federated pipeline in a sandbox context. A production deployment
+    for a health system consortium or public health agency would layer in: a governance structure with a steering
+    committee and scientific review process, data use agreements with each contributing health system and administrative
+    data provider, a privacy-preserving record linkage process using tokens generated at each contributing site, validated
+    condition codesets reviewed by clinical and epidemiological staff, a data quality monitoring process running on a
+    quarterly or annual cadence, and a publication process that governs who sees what results and under what conditions.
+  </p>
+  <p class="mt-4 text-sm leading-relaxed text-slate-600 sm:text-base">
+    Building that production layer is the work this practice supports.
+  </p>
+  <div class="mt-6">
+    <a href="{% url 'contact' %}" class="inline-flex items-center justify-center rounded-lg bg-htac-navy px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-htac-teal focus:outline-none focus:ring-2 focus:ring-htac-teal focus:ring-offset-2">
+      Discuss a Deployment
+    </a>
+  </div>
+</div>
+
 {% include 'htac/pipeline/_page_nav.html' %}
 {% endblock %}

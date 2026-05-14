@@ -231,10 +231,15 @@ EMAIL_USE_TLS = config('EMAIL_USE_TLS', default='False') == 'True'
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='webmaster@localhost')
+CONTACT_EMAIL = config('CONTACT_EMAIL', default='eric@erickvale.com')
 EMAIL_BACKEND = config(
     'EMAIL_BACKEND',
     default='django.core.mail.backends.smtp.EmailBackend',
 )
+
+# Local development: log outbound mail to the console when SMTP is not configured.
+if DEBUG and not EMAIL_HOST:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

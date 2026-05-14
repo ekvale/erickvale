@@ -23,6 +23,34 @@
   .omop-field-table tr:nth-child(even) td { background:#f7fafc; }
   .field-name { font-family:monospace; font-size:.84rem; color:#003865; white-space:nowrap; }
   .field-type { font-size:.78rem; color:#888; white-space:nowrap; }
+
+  body.htac-site .htac-pipeline-intro {
+    background: #f7fafc;
+    border: 1px solid #d5e3ee;
+    border-left: 4px solid #003865;
+    border-radius: 6px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  body.htac-site .htac-pipeline-intro h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #003865 !important;
+    margin: 0 0 0.65rem;
+  }
+  body.htac-site .htac-pipeline-intro p {
+    font-size: 0.95rem;
+    color: #444 !important;
+    line-height: 1.55;
+    margin: 0 0 0.75rem;
+  }
+  body.htac-site .htac-pipeline-intro p:last-child { margin-bottom: 0; }
+  body.htac-site .htac-pipeline-intro a {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #008EAA !important;
+  }
+  body.htac-site .htac-pipeline-intro a:hover { text-decoration: underline !important; }
 </style>
 {% endblock %}
 
@@ -39,6 +67,28 @@
 </div>
 
 {% include 'htac/pipeline/_stepper.html' %}
+
+<div class="htac-pipeline-intro">
+  <h3>What This Pipeline Demonstrates</h3>
+  <p>
+    This walkthrough steps through a working implementation of the federated population health data architecture used by
+    statewide EHR consortia — including the Minnesota Electronic Health Record Consortium. Each step reflects real
+    architectural decisions that practitioners building similar systems encounter: how patient data stays at contributing
+    sites, how cross-site deduplication works without sharing identifiable information, how administrative data from HMIS
+    and corrections systems gets linked, how condition cohorts are defined using OMOP concept IDs, and how small-cell
+    suppression protects individual privacy while preserving analytic utility.
+  </p>
+  <p>
+    This is not a slide deck or a diagram. The pipeline is connected to a live Django application with real data models,
+    real suppression logic, and a real OMOP CDM schema. The record counts are zero because no synthetic dataset has been
+    loaded into this public instance — but the infrastructure that would process them is here.
+  </p>
+  <p>
+    If you are evaluating whether this kind of technical capability is relevant to your organization's work, the
+    services page describes how this translates into consulting engagements.
+  </p>
+  <p><a href="{% url 'services' %}">See how this translates into services →</a></p>
+</div>
 
 <!-- Why / How / Privacy -->
 <div class="htac-callout-row">
