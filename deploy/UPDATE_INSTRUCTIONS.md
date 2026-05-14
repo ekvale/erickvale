@@ -1,5 +1,21 @@
 # Server Update Instructions
 
+## One-command update (from repo)
+
+After SSH and `cd /home/erickvale/erickvale`, run:
+
+```bash
+bash deploy/sync_site.sh
+```
+
+This pulls `main`, installs dependencies, runs migrations, rebuilds Tailwind CSS when `npm` is available, runs `collectstatic`, and restarts the `erickvale` systemd unit. Override paths if needed:
+
+```bash
+DEPLOY_ROOT=/path/to/repo VENV_ACTIVATE=/path/to/venv/bin/activate bash deploy/sync_site.sh
+```
+
+---
+
 ## Quick Update Process
 
 Follow these steps to update your server with the latest changes from GitHub:
