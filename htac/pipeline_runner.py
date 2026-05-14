@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import datetime as dt
 import logging
+import calendar
 import random
 import re
 import time
@@ -145,9 +146,10 @@ def _pii_for_identity_on_person(identity: int, person: Person) -> dict:
     first = rng.choice(_FIRST_NAMES)
     last = rng.choice(_LAST_NAMES)
     month = rng.randint(1, 12)
-    day_max = [0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month]
+    yob = person.year_of_birth or 1980
+    _, day_max = calendar.monthrange(yob, month)
     day = rng.randint(1, day_max)
-    dob = dt.date(person.year_of_birth, month, day)
+    dob = dt.date(yob, month, day)
     sex = "M" if person.gender_concept_id == 8507 else "F"
     phone = f"612{rng.randint(1000000, 9999999)}"
     zip5 = (person.zip_code or "55401")[:5]
