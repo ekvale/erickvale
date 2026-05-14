@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import about, contact, homepage, login_view, logout_view, services
+from .views import about, contact, coming_soon, homepage, login_view, logout_view, services
 
 from htac.views_admin import about as htac_admin_about
 from htac.views_public import (
@@ -72,6 +72,7 @@ urlpatterns = [
     path('ckeditor/', include('ckeditor_uploader.urls')),
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
+    path('coming-soon/', coming_soon, name='coming_soon'),
     path('about/', about, name='about'),
     path('contact/', contact, name='contact'),
     path('services/', services, name='services'),

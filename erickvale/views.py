@@ -1,11 +1,52 @@
+from urllib.parse import urlencode
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.core.mail import send_mail
 from django.shortcuts import redirect, render
+from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from .forms import SiteContactForm
+
+
+def _safe_next_path(request):
+    """Return a relative next URL safe for redirect after login."""
+    nxt = (request.POST.get("next") or request.GET.get("next") or "").strip()
+    if not nxt:
+        return reverse("homepage")
+    if nxt.startswith("/") and url_has_allowed_host_and_scheme(
+        url=nxt,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return nxt
+    return reverse("homepage")
+
+
+def coming_soon(request):
+    """Public placeholder while the marketing site is under construction."""
+    if request.user.is_authenticated:
+        return redirect("homepage")
+    next_target = "/"
+    raw = (request.GET.get("next") or "").strip()
+    if raw.startswith("/") and url_has_allowed_host_and_scheme(
+        url=raw,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        next_target = raw
+    login_url = reverse("login") + "?" + urlencode({"next": next_target})
+    return render(
+        request,
+        "erickvale/coming_soon.html",
+        {
+            "login_url": login_url,
+            "contact_email": settings.CONTACT_EMAIL,
+        },
+    )
 
 
 def homepage(request):
@@ -74,12 +115,18 @@ def login_view(request):
             user = form.get_user()
             login(request, user)
             messages.success(request, f'Welcome back, {user.username}!')
-            next_url = request.GET.get('next', 'homepage')
-            return redirect(next_url)
+            return redirect(_safe_next_path(request))
     else:
         form = AuthenticationForm()
 
-    return render(request, 'erickvale/login.html', {'form': form})
+    return render(
+        request,
+        'erickvale/login.html',
+        {
+            'form': form,
+            'next': request.GET.get('next', ''),
+        },
+    )
 
 
 def logout_view(request):

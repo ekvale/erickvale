@@ -241,6 +241,17 @@ EMAIL_BACKEND = config(
 if DEBUG and not EMAIL_HOST:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
+# Public "coming soon" curtain for anonymous visitors (see erickvale.middleware).
+# Set SITE_COMING_SOON=true / false in .env to override; when unset, curtain is ON
+# only when DEBUG is False (typical production).
+_site_cs_raw = config('SITE_COMING_SOON', default='').strip().lower()
+if _site_cs_raw in ('1', 'true', 'yes', 'on'):
+    SITE_COMING_SOON = True
+elif _site_cs_raw in ('0', 'false', 'no', 'off'):
+    SITE_COMING_SOON = False
+else:
+    SITE_COMING_SOON = not DEBUG
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -248,6 +259,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'erickvale.middleware.SiteComingSoonMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 

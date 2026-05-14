@@ -16,6 +16,9 @@
 
     <form method="post" class="mt-8 space-y-5">
       {% csrf_token %}
+      {% if next %}
+      <input type="hidden" name="next" value="{{ next }}" />
+      {% endif %}
 
       <div>
         <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-slate-700">Username</label>

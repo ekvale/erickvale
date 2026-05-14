@@ -1,0 +1,23 @@
+{% extends "base_site.html" %}
+{% block title %}Coming soon — Eric Kvale{% endblock %}
+{% block main_inner %}
+  <section class="hero-dark w-full py-24 sm:py-32">
+    <div class="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
+      <p class="eyebrow">Eric Kvale</p>
+      <h1 class="mt-4 font-display text-4xl font-medium tracking-tight text-white sm:text-5xl">
+        COMING SOON!
+      </h1>
+      <p class="mt-6 text-lg font-light leading-relaxed text-white/[0.88] sm:text-xl">
+        A new public site for population health data infrastructure is almost ready. Sign in to access the full site — homepage, services, HTAC pipeline, and the rest.
+      </p>
+      <div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6">
+        <a href="{{ login_url }}" class="btn-hero-primary px-8 py-3 text-base">
+          Sign in
+        </a>
+      </div>
+      <p class="mt-12 text-sm text-white/60">
+        <a href="mailto:{{ contact_email }}" class="font-medium text-teal-200 underline-offset-2 hover:text-white hover:underline">{{ contact_email }}</a>
+      </p>
+    </div>
+  </section>
+{% endblock %}
