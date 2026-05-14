@@ -1,16 +1,17 @@
 {% extends "base_site.html" %}
-{% block title %}HTAC — Eric Kvale{% endblock %}
+{% block title %}Eric Kvale — HTAC, OMOP & health data utility{% endblock %}
 {% block content %}
   <section class="relative overflow-hidden rounded-2xl bg-htac-navy px-6 py-14 text-white shadow-lg sm:px-10 lg:px-12">
     <div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" aria-hidden="true"></div>
     <div class="relative max-w-3xl">
       <p class="text-xs font-semibold uppercase tracking-[0.2em] text-htac-sky">Population health · Federated analytics</p>
       <h1 class="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl lg:text-[2.5rem] lg:leading-tight">
-        Health Trends Across Communities (HTAC)
+        HTAC, OMOP CDM, and health data utility (HDU)
       </h1>
       <p class="mt-5 max-w-2xl text-base leading-relaxed text-slate-200 sm:text-lg">
-        Documentation and a working walkthrough of privacy-preserving linkage, OMOP-based cohort logic,
-        enrichment, stratification, and small-cell suppression—plus the services we provide around that architecture.
+        This site showcases how standardized clinical data, privacy-preserving linkage, and governance-aware
+        publishing fit together: from multi-site OMOP cohorts to small-cell suppression, then out to APIs and
+        materials decision-makers can use—without moving raw records off contributor systems.
       </p>
       <div class="mt-8 flex flex-wrap gap-3">
         <a href="{% url 'htac_public_about' %}" class="inline-flex items-center justify-center rounded-lg bg-white px-5 py-2.5 text-sm font-semibold text-htac-navy shadow-sm transition hover:bg-slate-100">
@@ -23,6 +24,59 @@
           Read-only API
         </a>
       </div>
+    </div>
+  </section>
+
+  <section class="mt-14" aria-labelledby="pillars-heading">
+    <h2 id="pillars-heading" class="text-lg font-semibold text-slate-900">What you can build on this stack</h2>
+    <p class="mt-2 max-w-3xl text-sm leading-relaxed text-slate-600">
+      The HTAC narrative and demo pipeline on this domain are aligned with OHDSI’s OMOP CDM and federated patterns.
+      Resources under the HTAC app (including OHDSI links and population-health references) inform the framing below.
+    </p>
+    <div class="mt-8 grid gap-6 lg:grid-cols-3">
+      <article class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <p class="text-xs font-semibold uppercase tracking-wide text-htac-teal">HTAC</p>
+        <h3 class="mt-2 text-base font-semibold text-slate-900">Health Trends Across Communities</h3>
+        <p class="mt-3 text-sm leading-relaxed text-slate-600">
+          Privacy-preserving record linkage, enrichment, stratification, and suppression so prevalence and trend
+          estimates can move between sites without exposing identifiable microdata.
+        </p>
+        <ul class="mt-4 list-disc space-y-1 pl-5 text-sm text-slate-600">
+          <li>Step-by-step pipeline pages with field-level notes</li>
+          <li>Governance-oriented language for DUAs and oversight</li>
+          <li>Sandbox-style illustration, not an official reporting system</li>
+        </ul>
+      </article>
+      <article class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <p class="text-xs font-semibold uppercase tracking-wide text-htac-teal">OMOP CDM</p>
+        <h3 class="mt-2 text-base font-semibold text-slate-900">Common data model &amp; cohort logic</h3>
+        <p class="mt-3 text-sm leading-relaxed text-slate-600">
+          Clinical data stay with contributors in OMOP; cohort definitions and federated execution patterns keep
+          analytics portable across jurisdictions and vendors.
+        </p>
+        <ul class="mt-4 list-disc space-y-1 pl-5 text-sm text-slate-600">
+          <li>Shared vocabulary and tables for consistent measures</li>
+          <li>OHDSI tooling and community practices as the backbone</li>
+          <li>Interoperability between operational systems and published aggregates</li>
+        </ul>
+        <p class="mt-4 text-xs text-slate-500">
+          See also: <a href="https://www.ohdsi.org/" class="font-medium text-htac-navy underline-offset-2 hover:underline">ohdsi.org</a>
+          and the HTAC about page for how OMOP fits the HTAC workflow.
+        </p>
+      </article>
+      <article class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <p class="text-xs font-semibold uppercase tracking-wide text-htac-teal">HDU</p>
+        <h3 class="mt-2 text-base font-semibold text-slate-900">Health data utility</h3>
+        <p class="mt-3 text-sm leading-relaxed text-slate-600">
+          Turning standardized models and governed aggregates into <em>usable</em> products: documented HTTPS APIs,
+          reproducible tables for leadership, and handoff materials so technical and program teams share one picture.
+        </p>
+        <ul class="mt-4 list-disc space-y-1 pl-5 text-sm text-slate-600">
+          <li>Versioned read-only API for integration testing</li>
+          <li>Clear separation between contributor-held data and published outputs</li>
+          <li>Room to pair analytics with narrative documentation for policy audiences</li>
+        </ul>
+      </article>
     </div>
   </section>
 
@@ -53,7 +107,7 @@
       Start with <strong class="font-medium text-slate-800">HTAC overview</strong> for the narrative, then step through the
       <strong class="font-medium text-slate-800">pipeline</strong> for field-level detail. The versioned HTTPS endpoint under
       <code class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-slate-800">/api/htac/v1/</code> exposes read-only
-      estimates for integration testing. Other applications on this domain remain available at their URLs but are not linked from the public header while this focus is in place.
+      estimates for integration testing. Other applications on this domain remain at their URLs; this home page stays the entry point for the HTAC / OMOP / HDU story.
     </p>
   </section>
 {% endblock %}
