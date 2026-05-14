@@ -154,17 +154,19 @@
           </details>
           {% endif %}
           {% if st.site_data.sites %}
+          {% with sites=st.site_data.sites head=st.site_data.sites|first %}
+          {% if head %}
           <table class="demo-site-table" aria-label="Per-site metrics for this step">
             <thead>
               <tr>
                 <th>Health system</th>
-                {% for k, v in st.site_data.sites.0.items %}
+                {% for k, v in head.items %}
                   {% if k != "name" %}<th class="capitalize">{{ k }}</th>{% endif %}
                 {% endfor %}
               </tr>
             </thead>
             <tbody>
-              {% for site in st.site_data.sites %}
+              {% for site in sites %}
               <tr>
                 <td>{{ site.name }}</td>
                 {% for key, val in site.items %}
@@ -174,6 +176,8 @@
               {% endfor %}
             </tbody>
           </table>
+          {% endif %}
+          {% endwith %}
           {% endif %}
         </div>
         {% endif %}

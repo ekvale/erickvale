@@ -1,5 +1,5 @@
 {% load humanize %}
-{% if pipeline_demo_counts and demo_run %}
+{% if pipeline_demo_counts and demo_run and demo_run.completed_at %}
 <div class="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
   <strong>Latest pipeline demonstration</strong> (completed {{ demo_run.completed_at|date:"M j, Y H:i" }}).
   Counts on this page reflect synthetic federated data from that run.

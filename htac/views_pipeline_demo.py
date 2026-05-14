@@ -27,6 +27,17 @@ def _step_duration_seconds(step: PipelineStep) -> float | None:
     return None
 
 
+def _sanitize_site_data(site_data: object) -> dict:
+    """Ensure site_data.sites is a list of dicts so pipeline_demo.html never crashes."""
+    if not isinstance(site_data, dict):
+        return {}
+    raw = site_data.get("sites")
+    if not isinstance(raw, list):
+        return {**site_data, "sites": []}
+    cleaned = [row for row in raw if isinstance(row, dict) and row]
+    return {**site_data, "sites": cleaned}
+
+
 def _run_pipeline_thread(run_id: int) -> None:
     close_old_connections()
     try:
@@ -46,6 +57,7 @@ def pipeline_demo(request):
     if latest and latest.steps.exists():
         steps_display = list(latest.steps.order_by("step_number"))
         for s in steps_display:
+            s.site_data = _sanitize_site_data(s.site_data)
             s.display_duration = _step_duration_seconds(s)
     else:
         for num, name in PIPELINE_STEP_DEFINITIONS:

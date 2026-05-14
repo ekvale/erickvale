@@ -4,6 +4,10 @@ htac/views_public.py
 Public-facing views for the HTAC app — no login required.
 """
 
+from __future__ import annotations
+
+from typing import Any, Dict, List, Optional, Tuple
+
 from django.db.models import Avg, Count, Max, Min
 from django.urls import NoReverseMatch, reverse
 from django.views.generic import TemplateView
@@ -61,7 +65,7 @@ def _demo_person_prefix_for_run(run):
     return person_source_prefix(run.pk)
 
 
-def _resolve_steps(current_step: int) -> tuple[list, dict | None, dict | None]:
+def _resolve_steps(current_step: int) -> Tuple[List[Dict[str, Any]], Optional[Dict[str, Any]], Optional[Dict[str, Any]]]:
     """Return (steps_with_urls, prev_step, next_step) for template context."""
     steps = []
     for s in PIPELINE_STEPS:
