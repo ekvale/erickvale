@@ -20,7 +20,20 @@ from django.conf import settings
 from django.conf.urls.static import static
 from .views import homepage, about, login_view, logout_view
 
+from htac.views_admin import about as htac_admin_about
+from htac.views_public import (
+    HTACAboutView,
+    PipelineStep1View,
+    PipelineStep2View,
+    PipelineStep3View,
+    PipelineStep4View,
+    PipelineStep5View,
+    PipelineStep6View,
+    PipelineStep7View,
+)
+
 urlpatterns = [
+    path('admin/htac/about/', htac_admin_about, name='htac_about'),
     path('admin/', admin.site.urls),
     path('apps/emergency/', include('emergency_preparedness.urls')),
     path('apps/blog/', include('blog.urls')),
@@ -37,6 +50,15 @@ urlpatterns = [
     path('apps/nomoar/', include('nomoar.urls')),
     path('apps/dream-blue/', include('dream_blue.urls')),
     path('apps/braindump/', include('braindump.urls')),
+    path('htac/about/', HTACAboutView.as_view(), name='htac_public_about'),
+    path('htac/pipeline/1/', PipelineStep1View.as_view(), name='htac_pipeline_step1'),
+    path('htac/pipeline/2/', PipelineStep2View.as_view(), name='htac_pipeline_step2'),
+    path('htac/pipeline/3/', PipelineStep3View.as_view(), name='htac_pipeline_step3'),
+    path('htac/pipeline/4/', PipelineStep4View.as_view(), name='htac_pipeline_step4'),
+    path('htac/pipeline/5/', PipelineStep5View.as_view(), name='htac_pipeline_step5'),
+    path('htac/pipeline/6/', PipelineStep6View.as_view(), name='htac_pipeline_step6'),
+    path('htac/pipeline/7/', PipelineStep7View.as_view(), name='htac_pipeline_step7'),
+    path('api/htac/v1/', include('htac.urls')),
     path('ckeditor/', include('ckeditor_uploader.urls')),
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),

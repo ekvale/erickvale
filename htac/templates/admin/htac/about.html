@@ -1,0 +1,17 @@
+{% extends "admin/base_site.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div id="content-main">
+  <h1>{{ title }}</h1>
+  <p>Summary counts for the HTAC pipeline (staff-only).</p>
+  <table>
+    <tbody>
+      <tr><th scope="row">Active health systems</th><td>{{ active_sites }}</td></tr>
+      <tr><th scope="row">Inactive health systems</th><td>{{ inactive_sites }}</td></tr>
+      <tr><th scope="row">Deduplicated roster rows</th><td>{{ roster_count }}</td></tr>
+      <tr><th scope="row">Study runs</th><td>{{ run_count }}</td></tr>
+    </tbody>
+  </table>
+  <p><a href="{% url 'admin:index' %}">Back to admin home</a></p>
+</div>
+{% endblock %}

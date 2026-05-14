@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Step 1: Clinical Data in OMOP CDM — HTAC Pipeline{% endblock %}
+
+{% block extra_head %}
+{% include 'htac/pipeline/_styles.html' %}
+<style>
+  /* ── OMOP domain cards ── */
+  .omop-domain-grid { display:flex; flex-wrap:wrap; gap:1.25rem; margin-bottom:1.5rem; }
+  .omop-domain-card { flex:1 1 340px; border:1px solid #d5e3ee; border-radius:6px; overflow:hidden; }
+  .omop-domain-header { background:#003865; color:#fff; padding:.7rem 1rem; display:flex; align-items:baseline; gap:.75rem; }
+  body.mdh-app .omop-domain-header h3 { color:#fff !important; font-size:1rem; margin:0; }
+  .omop-domain-header .omop-row-count { font-size:.78rem; color:#cce4f0; font-weight:400; margin-left:auto; white-space:nowrap; }
+  .omop-field-table { width:100%; border-collapse:collapse; font-size:.87rem; }
+  body.mdh-app .omop-field-table th {
+    background:#edf4fb !important; color:#003865 !important;
+    padding:6px 10px; text-align:left; font-weight:600 !important;
+    font-size:.8rem !important; border-bottom:2px solid #b0c8db;
+  }
+  .omop-field-table td { padding:6px 10px; border-bottom:1px solid #e8eff5; vertical-align:top; }
+  .omop-field-table tr:last-child td { border-bottom:none; }
+  .omop-field-table tr:nth-child(even) td { background:#f7fafc; }
+  .field-name { font-family:monospace; font-size:.84rem; color:#003865; white-space:nowrap; }
+  .field-type { font-size:.78rem; color:#888; white-space:nowrap; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb" style="margin-bottom:1.25rem;">
+  <ol class="breadcrumb" style="background:transparent;padding:0;font-size:.88rem;">
+    <li class="breadcrumb-item"><a href="{% url 'htac_public_about' %}">HTAC</a></li>
+    <li class="breadcrumb-item active">Pipeline — Step 1</li>
+  </ol>
+</nav>
+
+<div class="htac-hero">
+  <p class="htac-eyebrow">HTAC Pipeline &middot; Step 1 of {{ pipeline_steps|length }}</p>
+  <h1>Clinical Data in OMOP CDM</h1>
+  <p>The pipeline begins at each health system's local EHR database, where patient data is standardized
+     into the OMOP Common Data Model — the shared vocabulary used by PCORnet, N3C, and over 300 research
+     networks worldwide.</p>
+</div>
+
+{% include 'htac/pipeline/_stepper.html' %}
+
+<!-- Why / How / Privacy -->
+<div class="htac-callout-row">
+  <div class="htac-callout why">
+    <h3>Why this step?</h3>
+    <p>Minnesota's 11 MNEHRC health systems each run different EHR platforms (Epic, Cerner, Allscripts).
+       Without a common format, a query that finds "diabetes" at one system misses it at another.
+       OMOP CDM creates a single shared vocabulary so the same analysis script produces comparable
+       results at every site.</p>
+  </div>
+  <div class="htac-callout how">
+    <h3>How it works</h3>
+    <ul>
+      <li>Each site maintains its own OMOP database locally — no patient data leaves the site.</li>
+      <li>MDH / MNEHRC distributes standardized R query scripts that run against each local OMOP DB.</li>
+      <li>Scripts return only aggregate counts (e.g., "247 persons with diabetes at site X").</li>
+      <li>Aggregates are transmitted to the Data Coordinating Center (DCC) for final analysis.</li>
+    </ul>
+  </div>
+  <div class="htac-callout privacy">
+    <h3>What is never stored</h3>
+    <p>No patient names, dates of birth, phone numbers, or Social Security numbers are persisted
+       in the HTAC database. These PII fields exist only <em>transiently</em> during PPRL token
+       generation (Step 2) and are immediately discarded — only the one-way cryptographic hash is retained.</p>
+  </div>
+</div>
+
+<!-- OMOP Domain Cards -->
+<div class="htac-section">
+  <h2>Data Fields Captured Per Domain</h2>
+  <p style="margin-bottom:1.25rem;">OMOP CDM organizes clinical data into six domains. Each row is one clinical
+     event linked to a <strong>Person</strong> and a <strong>HealthSystem</strong>. Concept IDs reference the
+     <a href="https://athena.ohdsi.org/" target="_blank" rel="noopener">OHDSI Athena</a> vocabulary browser.</p>
+
+  <div class="omop-domain-grid">
+
+    <div class="omop-domain-card">
+      <div class="omop-domain-header"><h3>Person</h3><span class="omop-row-count">{{ totals.persons|intcomma }} rows</span></div>
+      <table class="omop-field-table">
+        <thead><tr><th>Field</th><th>Type</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><span class="field-name">person_source_value</span></td><td><span class="field-type">str</span></td><td>Site-internal patient ID — never shared across sites</td></tr>
+          <tr><td><span class="field-name">gender_concept_id</span></td><td><span class="field-type">int</span></td><td>Sex at birth — OMOP standard (<span class="concept-id">8507</span> Male, <span class="concept-id">8532</span> Female)</td></tr>
+          <tr><td><span class="field-name">year_of_birth</span></td><td><span class="field-type">int</span></td><td>Birth year; used to compute age group stratifier</td></tr>
+          <tr><td><span class="field-name">race_concept_id</span></td><td><span class="field-type">int</span></td><td>OMOP standard race concept</td></tr>
+          <tr><td><span class="field-name">ethnicity_concept_id</span></td><td><span class="field-type">int</span></td><td>OMOP standard ethnicity (<span class="concept-id">38003563</span> Hispanic or Latino)</td></tr>
+          <tr><td><span class="field-name">preferred_language</span></td><td><span class="field-type">str</span></td><td>Primary language — used as a stratification dimension</td></tr>
+          <tr><td><span class="field-name">county_fips</span></td><td><span class="field-type">str(5)</span></td><td>5-digit county FIPS code for county-level prevalence</td></tr>
+          <tr><td><span class="field-name">zip_code</span></td><td><span class="field-type">str(5)</span></td><td>ZIP code for ZIP-level geographic estimates</td></tr>
+          <tr><td><span class="field-name">census_tract</span></td><td><span class="field-type">str(11)</span></td><td>11-char FIPS census tract for finest geographic resolution</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="omop-domain-card">
+      <div class="omop-domain-header"><h3>VisitOccurrence</h3><span class="omop-row-count">{{ totals.visits|intcomma }} rows</span></div>
+      <table class="omop-field-table">
+        <thead><tr><th>Field</th><th>Type</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><span class="field-name">visit_concept_id</span></td><td><span class="field-type">int</span></td><td>Encounter type (<span class="concept-id">9201</span> Inpatient, <span class="concept-id">9202</span> Outpatient)</td></tr>
+          <tr><td><span class="field-name">visit_start_date</span></td><td><span class="field-type">date</span></td><td>Encounter start — defines the active-patient denominator in Step 6</td></tr>
+          <tr><td><span class="field-name">visit_end_date</span></td><td><span class="field-type">date</span></td><td>Encounter end; null for same-day visits</td></tr>
+          <tr><td><span class="field-name">visit_type_concept_id</span></td><td><span class="field-type">int</span></td><td>How encounter was recorded (<span class="concept-id">44818518</span> EHR encounter)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="omop-domain-card">
+      <div class="omop-domain-header"><h3>ConditionOccurrence</h3><span class="omop-row-count">{{ totals.conditions|intcomma }} rows</span></div>
+      <table class="omop-field-table">
+        <thead><tr><th>Field</th><th>Type</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><span class="field-name">condition_concept_id</span></td><td><span class="field-type">int</span></td><td>OMOP standard diagnosis concept (SNOMED CT / ICD-10-CM)</td></tr>
+          <tr><td><span class="field-name">condition_start_date</span></td><td><span class="field-type">date</span></td><td>Onset or first-recorded date — used for study-period filtering</td></tr>
+          <tr><td><span class="field-name">condition_end_date</span></td><td><span class="field-type">date</span></td><td>Resolution date; null for chronic conditions</td></tr>
+          <tr><td><span class="field-name">condition_type_concept_id</span></td><td><span class="field-type">int</span></td><td>Provenance (<span class="concept-id">32817</span> EHR encounter diagnosis)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="omop-domain-card">
+      <div class="omop-domain-header"><h3>DrugExposure</h3><span class="omop-row-count">{{ totals.drugs|intcomma }} rows</span></div>
+      <table class="omop-field-table">
+        <thead><tr><th>Field</th><th>Type</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><span class="field-name">drug_concept_id</span></td><td><span class="field-type">int</span></td><td>OMOP standard drug concept (RxNorm — Metformin, Buprenorphine, etc.)</td></tr>
+          <tr><td><span class="field-name">drug_exposure_start_date</span></td><td><span class="field-type">date</span></td><td>Prescription or dispensing start date</td></tr>
+          <tr><td><span class="field-name">drug_exposure_end_date</span></td><td><span class="field-type">date</span></td><td>End of supply; derived from days_supply when available</td></tr>
+          <tr><td><span class="field-name">drug_type_concept_id</span> <span class="badge-omop">required</span></td><td><span class="field-type">int</span></td><td>Provenance (<span class="concept-id">32817</span> EHR encounter, <span class="concept-id">38000180</span> Prescription written)</td></tr>
+          <tr><td><span class="field-name">quantity</span></td><td><span class="field-type">decimal</span></td><td>Units dispensed (tablets, mL, etc.)</td></tr>
+          <tr><td><span class="field-name">days_supply</span></td><td><span class="field-type">int</span></td><td>Days of medication in the dispense (30 / 60 / 90 day fills)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="omop-domain-card">
+      <div class="omop-domain-header"><h3>Measurement</h3><span class="omop-row-count">{{ totals.measurements|intcomma }} rows</span></div>
+      <table class="omop-field-table">
+        <thead><tr><th>Field</th><th>Type</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><span class="field-name">measurement_concept_id</span></td><td><span class="field-type">int</span></td><td>OMOP standard lab / vital concept (LOINC — HbA1c, BMI, Creatinine, etc.)</td></tr>
+          <tr><td><span class="field-name">measurement_date</span></td><td><span class="field-type">date</span></td><td>Date of lab draw or vital sign collection</td></tr>
+          <tr><td><span class="field-name">measurement_type_concept_id</span> <span class="badge-omop">required</span></td><td><span class="field-type">int</span></td><td>Provenance (<span class="concept-id">44818702</span> Lab result, <span class="concept-id">44818701</span> Vital sign)</td></tr>
+          <tr><td><span class="field-name">value_as_number</span></td><td><span class="field-type">decimal</span></td><td>Numeric result (e.g., 7.4 for HbA1c %, 142 for systolic BP mmHg)</td></tr>
+          <tr><td><span class="field-name">value_as_concept_id</span></td><td><span class="field-type">int</span></td><td>Coded result for qualitative measurements (Positive / Negative)</td></tr>
+          <tr><td><span class="field-name">unit_concept_id</span></td><td><span class="field-type">int</span></td><td>Unit of measure (UCUM vocabulary — mg/dL, mmHg, kg/m²)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="omop-domain-card">
+      <div class="omop-domain-header"><h3>Observation</h3><span class="omop-row-count">{{ totals.observations|intcomma }} rows</span></div>
+      <table class="omop-field-table">
+        <thead><tr><th>Field</th><th>Type</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><span class="field-name">observation_concept_id</span></td><td><span class="field-type">int</span></td><td>OMOP standard observation concept (social history, functional status, etc.)</td></tr>
+          <tr><td><span class="field-name">observation_date</span></td><td><span class="field-type">date</span></td><td>Date the observation was recorded</td></tr>
+          <tr><td><span class="field-name">observation_type_concept_id</span> <span class="badge-omop">required</span></td><td><span class="field-type">int</span></td><td>Provenance (<span class="concept-id">38000280</span> Observation recorded from EHR)</td></tr>
+          <tr><td><span class="field-name">value_as_string</span></td><td><span class="field-type">str</span></td><td>Text value (e.g., tobacco use status)</td></tr>
+          <tr><td><span class="field-name">value_as_number</span> <span class="badge-omop">required</span></td><td><span class="field-type">decimal</span></td><td>Numeric value when observation has a quantitative component</td></tr>
+          <tr><td><span class="field-name">value_as_concept_id</span></td><td><span class="field-type">int</span></td><td>Coded value (e.g., current smoker concept)</td></tr>
+          <tr><td><span class="field-name">unit_concept_id</span> <span class="badge-omop">required</span></td><td><span class="field-type">int</span></td><td>Unit of measure when value_as_number is populated</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+  <p style="font-size:.83rem;color:#555;">
+    <span class="badge-omop">required</span> marks fields mandatory in OMOP CDM v5.4 that were added to this implementation to match the standard.
+    Vocabularies supported: SNOMED CT, ICD-10-CM, RxNorm, LOINC, NDC, CPT-4, HCPCS, ICD-10-PCS.
+  </p>
+</div>
+
+<!-- Live record counts -->
+<div class="htac-section">
+  <h2>Simulation Record Counts by Site</h2>
+  <p style="margin-bottom:1rem;">Live counts from the current synthetic dataset.
+     In production, only aggregate counts like these — never patient records — travel to the DCC.</p>
+  <div style="overflow-x:auto;">
+    <table class="htac-stats-table">
+      <thead><tr>
+        <th>Health System</th><th>Persons</th><th>Visits</th><th>Conditions</th>
+        <th>Drug Exposures</th><th>Measurements</th><th>Observations</th>
+      </tr></thead>
+      <tbody>
+        {% for s in site_stats %}
+        <tr>
+          <td>{{ s.name }}</td>
+          <td>{{ s.persons|intcomma }}</td><td>{{ s.visits|intcomma }}</td>
+          <td>{{ s.conditions|intcomma }}</td><td>{{ s.drugs|intcomma }}</td>
+          <td>{{ s.measurements|intcomma }}</td><td>{{ s.observations|intcomma }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot><tr>
+        <td>Total ({{ site_stats|length }} sites)</td>
+        <td>{{ totals.persons|intcomma }}</td><td>{{ totals.visits|intcomma }}</td>
+        <td>{{ totals.conditions|intcomma }}</td><td>{{ totals.drugs|intcomma }}</td>
+        <td>{{ totals.measurements|intcomma }}</td><td>{{ totals.observations|intcomma }}</td>
+      </tr></tfoot>
+    </table>
+  </div>
+  <p style="font-size:.82rem;color:#666;margin-top:.6rem;">
+    Observations are zero because the 22 HTAC condition codesets currently use the Condition,
+    Drug, and Measurement domains. The Observation domain would capture social determinants
+    (housing status, tobacco use) when added to future codeset expansions.
+  </p>
+</div>
+
+{% include 'htac/pipeline/_page_nav.html' %}
+{% endblock %}

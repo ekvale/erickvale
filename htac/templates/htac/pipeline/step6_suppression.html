@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Step 6: Stratification &amp; Suppression — HTAC Pipeline{% endblock %}
+
+{% block extra_head %}
+{% include 'htac/pipeline/_styles.html' %}
+<style>
+  .formula-box {
+    background:#003865; color:#fff; border-radius:8px;
+    padding:1.25rem 1.75rem; font-family:monospace; font-size:1rem;
+    text-align:center; margin-bottom:1.5rem; letter-spacing:.02em;
+  }
+  .formula-box .formula-label { font-size:.75rem; color:#cce4f0; text-transform:uppercase; letter-spacing:.1em; display:block; margin-bottom:.4rem; }
+
+  .strat-grid { display:flex; flex-wrap:wrap; gap:.75rem; margin-bottom:1.5rem; }
+  .strat-card { flex:1 1 180px; background:#fff; border:1px solid #d5e3ee; border-radius:6px; padding:.9rem 1rem; }
+  body.mdh-app .strat-card h4 { font-size:.92rem; font-weight:700; color:#003865 !important; margin:0 0 .25rem; }
+  .strat-card p { font-size:.82rem; color:#555; margin:0; }
+
+  .suppression-example {
+    background:#fff8e1; border:2px solid #d07000; border-radius:8px;
+    padding:1.1rem 1.4rem; margin-bottom:1.5rem;
+  }
+  body.mdh-app .suppression-example h3 { color:#d07000 !important; font-size:1rem; margin-bottom:.5rem; }
+  .example-row { display:flex; flex-wrap:wrap; gap:.5rem 1.5rem; font-size:.88rem; margin-bottom:.3rem; }
+  .example-row .ex-label { min-width:120px; font-weight:600; }
+  .suppressed-val { color:#d07000; font-style:italic; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb" style="margin-bottom:1.25rem;">
+  <ol class="breadcrumb" style="background:transparent;padding:0;font-size:.88rem;">
+    <li class="breadcrumb-item"><a href="{% url 'htac_public_about' %}">HTAC</a></li>
+    <li class="breadcrumb-item active">Pipeline — Step 6</li>
+  </ol>
+</nav>
+
+<div class="htac-hero">
+  <p class="htac-eyebrow">HTAC Pipeline &middot; Step 6 of {{ pipeline_steps|length }}</p>
+  <h1>Stratification &amp; Suppression</h1>
+  <p>Each site's cohort is stratified across 9 demographic and social dimensions and 4 geographic
+     levels. Any cell with fewer than 11 individuals is suppressed to protect small populations
+     from re-identification — a requirement of the MNEHRC Master Data Use Agreement.</p>
+</div>
+
+{% include 'htac/pipeline/_stepper.html' %}
+
+<div class="htac-callout-row">
+  <div class="htac-callout why">
+    <h3>Why stratify?</h3>
+    <p>Statewide averages hide disparities. A condition may be twice as prevalent among Black
+       Minnesotans or patients experiencing homelessness. Stratification makes these inequities
+       visible and actionable for public health programs.</p>
+  </div>
+  <div class="htac-callout privacy">
+    <h3>Why suppress at n &lt; 11?</h3>
+    <p>Small-cell suppression prevents re-identification: if only 3 incarcerated Hmong adults
+       in a county have diabetes, publishing that count could identify specific individuals.
+       The threshold of <strong>11</strong> (not 10) is set by the MNEHRC Master DUA and is
+       consistent with CDC and CMS suppression standards.</p>
+  </div>
+  <div class="htac-callout how">
+    <h3>Denominator definition</h3>
+    <p>The denominator is <strong>persons with at least one VisitOccurrence during the study period</strong>
+       — not all persons in the database. This matches the MNEHRC methodology: inactive patients
+       who appear in historical records but had no encounters during the study window are
+       excluded from the denominator.</p>
+  </div>
+</div>
+
+<!-- Prevalence formula -->
+<div class="htac-section">
+  <h2>Prevalence Rate Formula</h2>
+  <div class="formula-box">
+    <span class="formula-label">Prevalence Rate (per 10,000 active patients)</span>
+    prevalence_rate = ( numerator / denominator ) &times; 10,000
+  </div>
+  <p style="font-size:.88rem;color:#555;">
+    Implemented in <code class="fn">htac/services/query_engine.apply_suppression(results_dict, threshold=11)</code>.
+    The rate is rounded to 4 decimal places using <code class="fn">ROUND_HALF_UP</code>.
+    When <code class="fn">numerator &lt; 11</code>, the cell is suppressed:
+    <code class="fn">numerator</code>, <code class="fn">denominator</code>, and
+    <code class="fn">prevalence_rate</code> are all set to <code class="fn">None</code>.
+  </p>
+</div>
+
+<!-- Suppression example -->
+<div class="htac-section">
+  <h2>Suppression in Practice</h2>
+  <div class="suppression-example">
+    <h3>Example: Diabetes by race, County X</h3>
+    <div class="example-row">
+      <span class="ex-label">White — 87 cases</span>
+      <span>denominator 312 → rate = <strong>2,788.5 per 10,000</strong></span>
+      <span style="color:#3a7c3d;font-weight:600;">✓ Published</span>
+    </div>
+    <div class="example-row">
+      <span class="ex-label">Hispanic — 14 cases</span>
+      <span>denominator 58 → rate = <strong>2,413.8 per 10,000</strong></span>
+      <span style="color:#3a7c3d;font-weight:600;">✓ Published</span>
+    </div>
+    <div class="example-row">
+      <span class="ex-label">Am. Indian — <span class="suppressed-val">8 cases</span></span>
+      <span class="suppressed-val">n &lt; 11 → numerator = null, denominator = null, rate = null</span>
+      <span style="color:#d07000;font-weight:600;">✗ Suppressed</span>
+    </div>
+    <p style="font-size:.82rem;color:#666;margin-top:.5rem;margin-bottom:0;">
+      Even the denominator is suppressed — publishing denominator alone could reveal the group size.
+    </p>
+  </div>
+</div>
+
+<!-- 9 Stratifiers -->
+<div class="htac-section">
+  <h2>9 Stratification Dimensions</h2>
+  <div class="strat-grid">
+    {% for val, label in stratifiers %}
+    <div class="strat-card">
+      <h4>{{ label }}</h4>
+      {% if val == "race" %}
+        <p>OMOP race concept — Asian, Black/African American, White, Am. Indian, NHOPI, Other, Unknown</p>
+      {% elif val == "ethnicity" %}
+        <p>Hispanic or Latino / Not Hispanic or Latino / Unknown</p>
+      {% elif val == "language" %}
+        <p>Preferred language field — English, Spanish, Somali, Hmong, Vietnamese, Other</p>
+      {% elif val == "sex" %}
+        <p>OMOP gender concept — Male / Female / Unknown</p>
+      {% elif val == "age_group" %}
+        <p>Computed from year_of_birth: 0–17, 18–34, 35–49, 50–64, 65+</p>
+      {% elif val == "homeless" %}
+        <p>Derived from <code class="fn">homeless_flag</code> on DeduplicatedRoster (Step 4)</p>
+      {% elif val == "incarceration" %}
+        <p>Derived from <code class="fn">jail_flag OR prison_flag</code> on DeduplicatedRoster (Step 4)</p>
+      {% elif val == "medicaid" %}
+        <p>Derived from <code class="fn">medicaid_flag</code> on DeduplicatedRoster (Step 4)</p>
+      {% elif val == "total" %}
+        <p>Overall count across the entire site population — no breakdown</p>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- 4 Geo levels -->
+<div class="htac-section">
+  <h2>4 Geographic Levels</h2>
+  <div class="htac-callout-row">
+    {% for val, label in geo_levels %}
+    <div class="htac-callout why" style="flex:1 1 180px;">
+      <h3>{{ label }}</h3>
+      {% if val == "state" %}<p>Single statewide estimate — highest population, lowest suppression rate</p>
+      {% elif val == "county" %}<p>87 Minnesota counties — county FIPS from Person.county_fips</p>
+      {% elif val == "zip" %}<p>5-digit ZIP code from Person.zip_code</p>
+      {% elif val == "census_tract" %}<p>11-char FIPS census tract — finest resolution, highest suppression rate</p>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Live stats -->
+<div class="htac-section">
+  <h2>Estimate Database Status</h2>
+  {% if estimate_count == 0 %}
+  <div class="htac-callout privacy">
+    <h3>No estimates generated yet</h3>
+    <p>
+      Run <code class="fn">python manage.py execute_condition_queries</code> to run the full
+      pipeline across all 22 conditions and all 11 sites. This will populate
+      <code class="fn">PrevalenceEstimate</code> rows with stratified, suppressed counts
+      ready for Step 7.
+    </p>
+  </div>
+  {% else %}
+  <div style="display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:1rem;">
+    <div class="htac-callout why" style="flex:0 1 auto;padding:.75rem 1.25rem;">
+      <h3 style="font-size:.9rem;">Total cells</h3>
+      <p style="font-size:1.6rem !important;font-weight:700;color:#003865 !important;">{{ estimate_count|intcomma }}</p>
+    </div>
+    <div class="htac-callout note" style="flex:0 1 auto;padding:.75rem 1.25rem;">
+      <h3 style="font-size:.9rem;">Published</h3>
+      <p style="font-size:1.6rem !important;font-weight:700;color:#3a7c3d !important;">{{ published_count|intcomma }}</p>
+    </div>
+    <div class="htac-callout privacy" style="flex:0 1 auto;padding:.75rem 1.25rem;">
+      <h3 style="font-size:.9rem;">Suppressed</h3>
+      <p style="font-size:1.6rem !important;font-weight:700;color:#d07000 !important;">{{ suppressed_count|intcomma }} ({{ suppression_pct }}%)</p>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+{% include 'htac/pipeline/_page_nav.html' %}
+{% endblock %}

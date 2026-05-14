@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Step 2: PPRL Token Generation — HTAC Pipeline{% endblock %}
+
+{% block extra_head %}
+{% include 'htac/pipeline/_styles.html' %}
+<style>
+  .pii-field-grid { display:flex; flex-wrap:wrap; gap:.75rem; margin-bottom:1.5rem; }
+  .pii-field-card {
+    flex:1 1 160px; background:#fff; border:1px solid #d5e3ee;
+    border-radius:6px; padding:.9rem 1rem;
+    display:flex; flex-direction:column; gap:.3rem;
+  }
+  .pii-field-num { font-size:.7rem; font-weight:700; color:#008EAA; text-transform:uppercase; letter-spacing:.08em; }
+  body.mdh-app .pii-field-card h4 { font-size:.95rem; font-weight:700; color:#003865 !important; margin:0; }
+  .pii-field-rule { font-size:.82rem; color:#555; }
+  code.fn { font-family:monospace; font-size:.8rem; background:#edf4fb; border:1px solid #c5d8ea; border-radius:3px; padding:1px 4px; }
+
+  .hash-diagram {
+    background:#f7fafc; border:1px solid #d5e3ee; border-radius:8px;
+    padding:1.25rem 1.5rem; margin-bottom:1.5rem; font-size:.93rem;
+  }
+  .hash-diagram .step-row { display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; margin-bottom:.6rem; }
+  .hash-diagram .step-row:last-child { margin-bottom:0; }
+  .hash-box {
+    background:#fff; border:2px solid #b0c8db; border-radius:6px;
+    padding:.45rem .9rem; font-family:monospace; font-size:.85rem; color:#003865;
+    white-space:nowrap;
+  }
+  .hash-arrow { font-size:1.1rem; color:#008EAA; flex-shrink:0; }
+  .hash-box.output { background:#003865; color:#fff; border-color:#003865; font-size:.78rem; letter-spacing:.02em; }
+  .hash-box.salt { background:#fff8e1; border-color:#d07000; color:#7a4400; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb" style="margin-bottom:1.25rem;">
+  <ol class="breadcrumb" style="background:transparent;padding:0;font-size:.88rem;">
+    <li class="breadcrumb-item"><a href="{% url 'htac_public_about' %}">HTAC</a></li>
+    <li class="breadcrumb-item active">Pipeline — Step 2</li>
+  </ol>
+</nav>
+
+<div class="htac-hero">
+  <p class="htac-eyebrow">HTAC Pipeline &middot; Step 2 of {{ pipeline_steps|length }}</p>
+  <h1>PPRL Token Generation</h1>
+  <p>Before any patient can be matched across health systems, their identity is converted into a
+     one-way cryptographic token using HMAC-SHA256. The six PII fields used to generate the
+     token are immediately discarded — only the 64-character hex digest is retained.</p>
+</div>
+
+{% include 'htac/pipeline/_stepper.html' %}
+
+<div class="htac-callout-row">
+  <div class="htac-callout why">
+    <h3>Why this step?</h3>
+    <p>HTAC needs to know when the same patient appears at multiple health systems so they
+       are not counted twice in prevalence denominators. But health systems cannot legally share
+       patient names or identifiers across organizational boundaries. PPRL solves this: two
+       sites compute the same hash from the same PII — without exchanging the PII itself.</p>
+  </div>
+  <div class="htac-callout how">
+    <h3>Why HMAC instead of plain SHA-256?</h3>
+    <p>Plain SHA-256 is deterministic globally — anyone with the same PII gets the same hash,
+       enabling external re-identification attacks. HMAC-SHA256 with a shared secret salt
+       makes tokens meaningful <em>only within the MNEHRC site group</em>. Without the salt,
+       a token from one network cannot be linked to tokens from another.</p>
+  </div>
+  <div class="htac-callout privacy">
+    <h3>Validation</h3>
+    <p>The MNEHRC PPRL algorithm was validated at the OneFlorida Research Network, producing
+       <strong>97% precision</strong> (few false links) and <strong>75% recall</strong>
+       (most true matches found) — acceptable thresholds for population-level surveillance.</p>
+  </div>
+</div>
+
+<!-- The 6 PII fields -->
+<div class="htac-section">
+  <h2>The Six PII Input Fields</h2>
+  <p style="margin-bottom:1rem;">Each field is normalized before concatenation.
+     Normalization ensures minor formatting differences (e.g., "612-555-1234" vs "6125551234")
+     produce identical tokens.</p>
+
+  <div class="pii-field-grid">
+    <div class="pii-field-card">
+      <span class="pii-field-num">Field 1</span>
+      <h4>First Name</h4>
+      <span class="pii-field-rule">Normalization: <code class="fn">.lower()</code></span>
+    </div>
+    <div class="pii-field-card">
+      <span class="pii-field-num">Field 2</span>
+      <h4>Last Name</h4>
+      <span class="pii-field-rule">Normalization: <code class="fn">.lower()</code></span>
+    </div>
+    <div class="pii-field-card">
+      <span class="pii-field-num">Field 3</span>
+      <h4>Date of Birth</h4>
+      <span class="pii-field-rule">Normalization: <code class="fn">YYYYMMDD</code> (strips separators)</span>
+    </div>
+    <div class="pii-field-card">
+      <span class="pii-field-num">Field 4</span>
+      <h4>Sex</h4>
+      <span class="pii-field-rule">Normalization: first character only, lowercase (<code class="fn">m</code> / <code class="fn">f</code>)</span>
+    </div>
+    <div class="pii-field-card">
+      <span class="pii-field-num">Field 5</span>
+      <h4>Phone Number</h4>
+      <span class="pii-field-rule">Normalization: digits only, strip all non-numeric characters</span>
+    </div>
+    <div class="pii-field-card">
+      <span class="pii-field-num">Field 6</span>
+      <h4>ZIP Code</h4>
+      <span class="pii-field-rule">Normalization: first 5 characters only</span>
+    </div>
+  </div>
+</div>
+
+<!-- Hash diagram -->
+<div class="htac-section">
+  <h2>How the Hash Is Computed</h2>
+  <div class="hash-diagram">
+    <div class="step-row">
+      <span>Normalized fields concatenated:</span>
+      <span class="hash-box">john<wbr>smith<wbr>19820315<wbr>m<wbr>6125551234<wbr>55401</span>
+    </div>
+    <div class="step-row">
+      <span>Shared site-group salt (from <code class="fn">settings.HTAC_PPRL_SALT</code>):</span>
+      <span class="hash-box salt">htac-prod-salt-[secret]</span>
+    </div>
+    <div class="step-row">
+      <span>Algorithm:</span>
+      <span class="hash-box">HMAC-SHA256(key=salt, msg=preimage)</span>
+      <span class="hash-arrow">→</span>
+      <span class="hash-box output">3a7f8c2d19e04b5a…&nbsp;(64 hex chars)</span>
+    </div>
+  </div>
+  <p style="font-size:.88rem;color:#555;">
+    The function is implemented in <code class="fn">htac/services/pprl.py</code> as
+    <code class="fn">compute_token(first_name, last_name, dob, sex, phone, zip_code, salt=None)</code>.
+    When <code class="fn">salt</code> is omitted, it reads from <code class="fn">settings.HTAC_PPRL_SALT</code>.
+    PII fields are passed transiently from a CSV row or stdin — they are <strong>never written to the database</strong>.
+  </p>
+</div>
+
+<!-- Output: HashToken model -->
+<div class="htac-section">
+  <h2>Output: HashToken Record</h2>
+  <p style="margin-bottom:1rem;">
+    One <strong>HashToken</strong> row is written per patient per health system.
+    A patient seen at two sites generates two HashToken rows with identical <code class="fn">token</code> values —
+    this is how cross-site matches are detected in Step 3.
+  </p>
+  <div style="overflow-x:auto;">
+    <table class="htac-stats-table">
+      <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code class="fn">token</code></td><td>str(64)</td><td>Lowercase hex HMAC-SHA256 digest — the privacy-preserving patient identifier</td></tr>
+        <tr><td><code class="fn">person</code></td><td>FK → Person</td><td>The Person record this token represents at this site</td></tr>
+        <tr><td><code class="fn">health_system</code></td><td>FK → HealthSystem</td><td>The site that generated this token</td></tr>
+        <tr><td><code class="fn">generated_at</code></td><td>datetime</td><td>Timestamp of token generation (auto-set)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Live stats -->
+<div class="htac-section">
+  <h2>Simulation Token Counts</h2>
+  <div class="htac-callout-row" style="margin-bottom:1rem;">
+    <div class="htac-callout why" style="flex:0 1 auto; padding:.75rem 1.25rem;">
+      <h3 style="font-size:.9rem;">Total tokens</h3>
+      <p style="font-size:1.6rem !important; font-weight:700; color:#003865 !important;">{{ total_tokens|intcomma }}</p>
+    </div>
+    <div class="htac-callout how" style="flex:0 1 auto; padding:.75rem 1.25rem;">
+      <h3 style="font-size:.9rem;">Cross-site shared tokens</h3>
+      <p style="font-size:1.6rem !important; font-weight:700; color:#006a7d !important;">{{ cross_site_count|intcomma }}</p>
+    </div>
+    <div class="htac-callout note" style="flex:0 1 auto; padding:.75rem 1.25rem;">
+      <h3 style="font-size:.9rem;">These represent</h3>
+      <p style="font-size:.93rem !important;">patients appearing at 2+ sites — they will be deduplicated in Step 3.</p>
+    </div>
+  </div>
+  <div style="overflow-x:auto;">
+    <table class="htac-stats-table">
+      <thead><tr><th>Health System</th><th>HashToken rows</th></tr></thead>
+      <tbody>
+        {% for s in token_stats %}
+        <tr><td>{{ s.name }}</td><td>{{ s.tokens|intcomma }}</td></tr>
+        {% endfor %}
+      </tbody>
+      <tfoot><tr><td>Total</td><td>{{ total_tokens|intcomma }}</td></tr></tfoot>
+    </table>
+  </div>
+</div>
+
+{% include 'htac/pipeline/_page_nav.html' %}
+{% endblock %}

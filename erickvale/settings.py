@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'mango_market',
     'activity_media',
     'fraud_detection',
+    'htac',
     'human_rights_archive',
     'allminnesota',
     'arm_chair_detective',
@@ -341,6 +342,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # NOMOAR: optional mailto for “report a correction” (shown under /apps/nomoar/)
 NOMOAR_CORRECTIONS_EMAIL = config('NOMOAR_CORRECTIONS_EMAIL', default='')
+
+# HTAC — privacy-preserving record linkage (HMAC salt; must match across federated sites in a group)
+HTAC_PPRL_SALT = config(
+    'HTAC_PPRL_SALT',
+    default='htac-dev-pprl-salt-change-in-production',
+).strip()
 
 # REST Framework settings
 REST_FRAMEWORK = {

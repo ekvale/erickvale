@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Step 4: State Data Enrichment — HTAC Pipeline{% endblock %}
+
+{% block extra_head %}
+{% include 'htac/pipeline/_styles.html' %}
+<style>
+  .source-grid { display:flex; flex-direction:column; gap:1rem; margin-bottom:1.5rem; }
+  .source-card { border:1px solid #d5e3ee; border-radius:6px; overflow:hidden; display:flex; }
+  .source-stripe { width:8px; flex-shrink:0; background:#003865; }
+  .source-stripe.hmis    { background:#008EAA; }
+  .source-stripe.doc     { background:#d07000; }
+  .source-stripe.miic    { background:#3a7c3d; }
+  .source-stripe.vitals  { background:#7a1f1f; }
+  .source-body { padding:.9rem 1.1rem; flex:1; }
+  body.mdh-app .source-card h3 { font-size:1rem; font-weight:700; margin:0 0 .3rem; color:#003865 !important; }
+  .source-meta { display:flex; flex-wrap:wrap; gap:.5rem 1.5rem; font-size:.82rem; color:#555; margin-bottom:.4rem; }
+  .source-meta span strong { color:#333; }
+  .source-flags { display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.5rem; }
+  .flag-pill { background:#edf4fb; border:1px solid #b0c8db; border-radius:12px; padding:2px 10px; font-size:.8rem; font-family:monospace; color:#003865; }
+  .stat-grid { display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem; }
+  .stat-tile { flex:1 1 130px; background:#fff; border:1px solid #d5e3ee; border-radius:6px; padding:.9rem 1rem; text-align:center; }
+  body.mdh-app .stat-tile .stat-val { font-size:1.6rem; font-weight:700; color:#003865 !important; display:block; }
+  body.mdh-app .stat-tile .stat-lbl { font-size:.78rem; color:#555 !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb" style="margin-bottom:1.25rem;">
+  <ol class="breadcrumb" style="background:transparent;padding:0;font-size:.88rem;">
+    <li class="breadcrumb-item"><a href="{% url 'htac_public_about' %}">HTAC</a></li>
+    <li class="breadcrumb-item active">Pipeline — Step 4</li>
+  </ol>
+</nav>
+
+<div class="htac-hero">
+  <p class="htac-eyebrow">HTAC Pipeline &middot; Step 4 of {{ pipeline_steps|length }}</p>
+  <h1>State Data Enrichment</h1>
+  <p>EHR data alone cannot capture whether a patient is experiencing homelessness, is currently
+     incarcerated, or is enrolled in Medicaid. MDH provides periodic extracts from five state
+     administrative systems, matched to the DeduplicatedRoster by PPRL token hash.</p>
+</div>
+
+{% include 'htac/pipeline/_stepper.html' %}
+
+<div class="htac-callout-row">
+  <div class="htac-callout why">
+    <h3>Why enrichment matters</h3>
+    <p>The HTAC mission is to understand health disparities across communities. Medicaid status,
+       housing instability, and incarceration are among the strongest predictors of chronic disease
+       burden — but none of these appear in EHR records. Enrichment makes these dimensions
+       available as stratifiers in Step 6.</p>
+  </div>
+  <div class="htac-callout how">
+    <h3>How enrichment works</h3>
+    <ul>
+      <li>MDH extracts are loaded into <strong>staging tables</strong> keyed on PPRL token hash.</li>
+      <li>Each enrichment function queries its staging table for tokens in the roster.</li>
+      <li>Matched roster rows get their flag and date fields set; unmatched rows get <code class="fn">False</code> / <code class="fn">None</code>.</li>
+      <li>Two DB round-trips per source regardless of roster size (efficient at scale).</li>
+    </ul>
+  </div>
+  <div class="htac-callout note">
+    <h3>Idempotency</h3>
+    <p>All five enrichment functions perform a <strong>complete refresh</strong> — every roster row
+       is updated on each run. Re-running with updated staging data is safe and replaces stale flags
+       rather than accumulating duplicates.</p>
+  </div>
+</div>
+
+<!-- Five sources -->
+<div class="htac-section">
+  <h2>The Five Enrichment Sources</h2>
+
+  <div class="source-grid">
+
+    <div class="source-card">
+      <div class="source-stripe"></div>
+      <div class="source-body">
+        <h3>MN DHS — Medicaid Enrollment</h3>
+        <div class="source-meta">
+          <span><strong>Staging model:</strong> MedicaidEnrollment</span>
+          <span><strong>Function:</strong> <code class="fn">enrich_from_medicaid(roster_qs)</code></span>
+          <span><strong>Frequency:</strong> Monthly extract from MN DHS</span>
+        </div>
+        <p style="font-size:.88rem;margin:.3rem 0;">
+          Matches on <code class="fn">token_hash</code>. Sets <code class="fn">medicaid_effective_date</code>
+          to the <strong>earliest</strong> enrollment period across all records for that token.
+          Captures current and historical Medicaid / MA / MinnesotaCare enrollment.
+        </p>
+        <div class="source-flags">
+          <span class="flag-pill">medicaid_flag</span>
+          <span class="flag-pill">medicaid_effective_date</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="source-card">
+      <div class="source-stripe hmis"></div>
+      <div class="source-body">
+        <h3>MN DHS — HMIS (Homelessness Services)</h3>
+        <div class="source-meta">
+          <span><strong>Staging model:</strong> HMISRecord</span>
+          <span><strong>Function:</strong> <code class="fn">enrich_from_hmis(roster_qs)</code></span>
+          <span><strong>Frequency:</strong> Quarterly extract</span>
+        </div>
+        <p style="font-size:.88rem;margin:.3rem 0;">
+          The Homeless Management Information System (HMIS) tracks service touchpoints: street outreach,
+          emergency shelter, transitional housing, and supportive housing. Sets
+          <code class="fn">homeless_first_service_date</code> to the <strong>earliest</strong> entry date
+          across all service types.
+        </p>
+        <div class="source-flags">
+          <span class="flag-pill">homeless_flag</span>
+          <span class="flag-pill">homeless_first_service_date</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="source-card">
+      <div class="source-stripe doc"></div>
+      <div class="source-body">
+        <h3>MN Dept. of Corrections — Jail &amp; Prison Records</h3>
+        <div class="source-meta">
+          <span><strong>Staging model:</strong> DOCRecord</span>
+          <span><strong>Function:</strong> <code class="fn">enrich_from_doc(roster_qs)</code></span>
+          <span><strong>Frequency:</strong> Quarterly extract</span>
+        </div>
+        <p style="font-size:.88rem;margin:.3rem 0;">
+          Jail (county) and prison (state) records are handled in <strong>two separate queries</strong>
+          so a person with both types of incarceration history gets both flags set independently.
+          Admission dates are the earliest admission across all matching records.
+        </p>
+        <div class="source-flags">
+          <span class="flag-pill">jail_flag</span>
+          <span class="flag-pill">jail_admission_date</span>
+          <span class="flag-pill">prison_flag</span>
+          <span class="flag-pill">prison_admission_date</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="source-card">
+      <div class="source-stripe miic"></div>
+      <div class="source-body">
+        <h3>MIIC — MN Immunization Information Connection</h3>
+        <div class="source-meta">
+          <span><strong>Staging model:</strong> MIICRecord</span>
+          <span><strong>Function:</strong> <code class="fn">enrich_from_miic(roster_qs)</code></span>
+          <span><strong>Frequency:</strong> Quarterly extract</span>
+        </div>
+        <p style="font-size:.88rem;margin:.3rem 0;">
+          COVID-19 and influenza vaccinations are tracked separately. COVID stores the earliest
+          vaccination date; influenza stores only a boolean (any influenza vaccination on record).
+          MIIC is Minnesota's statewide immunization registry — coverage exceeds 94% of the population.
+        </p>
+        <div class="source-flags">
+          <span class="flag-pill">covid_vaccinated_flag</span>
+          <span class="flag-pill">covid_vaccine_date</span>
+          <span class="flag-pill">influenza_vaccinated_flag</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="source-card">
+      <div class="source-stripe vitals"></div>
+      <div class="source-body">
+        <h3>MDH — Vital Statistics (Death Records)</h3>
+        <div class="source-meta">
+          <span><strong>Staging model:</strong> VitalStatisticsRecord</span>
+          <span><strong>Function:</strong> <code class="fn">enrich_from_vitals(roster_qs)</code></span>
+          <span><strong>Frequency:</strong> Annual extract with quarterly updates</span>
+        </div>
+        <p style="font-size:.88rem;margin:.3rem 0;">
+          MDH vital statistics death records are matched to the roster. When multiple records exist
+          for the same token (a data quality edge case), the <strong>latest</strong> death date is used.
+          Deceased patients can be excluded from active-patient denominators or analyzed separately.
+        </p>
+        <div class="source-flags">
+          <span class="flag-pill">deceased_flag</span>
+          <span class="flag-pill">death_date</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Live stats -->
+<div class="htac-section">
+  <h2>Enrichment Status — Current Roster</h2>
+
+  {% if staging_counts.MedicaidEnrollment == 0 %}
+  <div class="htac-callout privacy" style="margin-bottom:1.25rem;">
+    <h3>Staging tables are empty in the simulation</h3>
+    <p>The five staging tables (MedicaidEnrollment, HMISRecord, DOCRecord, MIICRecord,
+       VitalStatisticsRecord) contain <strong>{{ staging_counts.MedicaidEnrollment|add:staging_counts.HMISRecord|add:staging_counts.DOCRecord|add:staging_counts.MIICRecord|add:staging_counts.VitalStatisticsRecord }} rows</strong> total.
+       In a real deployment, MDH would load extracts from these five sources before running
+       <code class="fn">python manage.py enrich_roster</code>, which would populate the
+       flags below.
+    </p>
+  </div>
+  {% endif %}
+
+  <div class="stat-grid">
+    {% for label, count in enrichment_flags.items %}
+    <div class="stat-tile">
+      <span class="stat-val">{{ count|intcomma }}</span>
+      <span class="stat-lbl">{{ label }}</span>
+    </div>
+    {% endfor %}
+  </div>
+
+  <h3>Staging Table Row Counts</h3>
+  <div style="overflow-x:auto; max-width:480px;">
+    <table class="htac-stats-table">
+      <thead><tr><th>Staging Table</th><th>Rows loaded</th></tr></thead>
+      <tbody>
+        {% for model, count in staging_counts.items %}
+        <tr><td><code class="fn">{{ model }}</code></td><td>{{ count|intcomma }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p style="font-size:.82rem;color:#666;margin-top:.6rem;">
+    Run <code class="fn">python manage.py enrich_roster</code> after loading staging data
+    to propagate enrichment flags across the {{ roster_total|intcomma }}-row roster.
+  </p>
+</div>
+
+{% include 'htac/pipeline/_page_nav.html' %}
+{% endblock %}

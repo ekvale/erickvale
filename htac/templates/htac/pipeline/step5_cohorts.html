@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Step 5: Condition Cohort Queries — HTAC Pipeline{% endblock %}
+
+{% block extra_head %}
+{% include 'htac/pipeline/_styles.html' %}
+<style>
+  .condition-table { width:100%; border-collapse:collapse; font-size:.87rem; }
+  body.mdh-app .condition-table th {
+    background:#003865 !important; color:#fff !important;
+    padding:8px 10px; text-align:right; font-weight:600 !important;
+  }
+  body.mdh-app .condition-table th:first-child,
+  body.mdh-app .condition-table th:nth-child(2) { text-align:left !important; }
+  .condition-table td { padding:7px 10px; border-bottom:1px solid #e0e0e0; text-align:right; }
+  .condition-table td:first-child { text-align:left; font-weight:600; }
+  .condition-table td:nth-child(2) { text-align:left; }
+  .condition-table tr:nth-child(even) td { background:#f5f8fb; }
+  .condition-table tfoot td { font-weight:700; background:#edf4fb !important; border-top:2px solid #003865; text-align:right; }
+  .condition-table tfoot td:first-child,
+  .condition-table tfoot td:nth-child(2) { text-align:left !important; }
+
+  .cat-pill { display:inline-block; font-size:.7rem; font-weight:700; border-radius:10px;
+              padding:1px 8px; text-transform:uppercase; letter-spacing:.04em; }
+  .cat-cardiometabolic { background:#fce8e8; color:#8b1a1a; }
+  .cat-respiratory     { background:#e8f4e8; color:#1a5c1a; }
+  .cat-mental_health   { background:#e8e8f9; color:#1a1a8b; }
+  .cat-substance_use   { background:#fff3e0; color:#7a4400; }
+  .cat-infectious      { background:#fce8f5; color:#7a1a5c; }
+  .cat-neurological    { background:#e8f7f9; color:#006a7d; }
+  .cat-endocrine       { background:#f0e8fb; color:#5c1a8b; }
+  .cat-renal           { background:#e8f0fb; color:#1a3c8b; }
+  .cat-other           { background:#f5f5f5; color:#555; }
+
+  .logic-diagram {
+    background:#f7fafc; border:1px solid #d5e3ee; border-radius:8px;
+    padding:1.25rem 1.5rem; font-size:.88rem; margin-bottom:1.5rem;
+  }
+  .logic-diagram code { font-size:.82rem; }
+  .logic-row { margin-bottom:.5rem; }
+  .logic-row:last-child { margin-bottom:0; }
+  .logic-or { color:#008EAA; font-weight:700; }
+  .logic-and-not { color:#d07000; font-weight:700; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb" style="margin-bottom:1.25rem;">
+  <ol class="breadcrumb" style="background:transparent;padding:0;font-size:.88rem;">
+    <li class="breadcrumb-item"><a href="{% url 'htac_public_about' %}">HTAC</a></li>
+    <li class="breadcrumb-item active">Pipeline — Step 5</li>
+  </ol>
+</nav>
+
+<div class="htac-hero">
+  <p class="htac-eyebrow">HTAC Pipeline &middot; Step 5 of {{ pipeline_steps|length }}</p>
+  <h1>Condition Cohort Queries</h1>
+  <p>For each of the {{ condition_count }} HTAC health conditions, a codeset of OMOP concept codes defines
+     who qualifies as a case. The query engine searches four clinical domains at each site — Condition,
+     Drug, Measurement, and Observation — and returns a patient cohort for stratification.</p>
+</div>
+
+{% include 'htac/pipeline/_stepper.html' %}
+
+<div class="htac-callout-row">
+  <div class="htac-callout why">
+    <h3>Why use codesets?</h3>
+    <p>A single diagnosis concept is rarely sufficient to identify all patients with a condition.
+       Diabetes, for example, may appear as a SNOMED diagnosis, a Metformin prescription, or an
+       elevated HbA1c measurement. A codeset with include and exclude codes across multiple domains
+       captures the full clinical picture.</p>
+  </div>
+  <div class="htac-callout how">
+    <h3>Query logic</h3>
+    <p>For each condition, the engine builds an <strong>OR</strong> across all included domains:
+       a patient qualifies if they have <em>at least one</em> matching clinical event in any domain
+       during the study period. Excluded codes then remove patients who match an exclusion criterion.</p>
+  </div>
+  <div class="htac-callout note">
+    <h3>Federated execution</h3>
+    <p>The same <code class="fn">get_condition_cohort()</code> function runs identically at every
+       site against that site's local OMOP DB. This is equivalent to distributing R scripts in the
+       real MNEHRC — the code is the protocol.</p>
+  </div>
+</div>
+
+<!-- Query logic diagram -->
+<div class="htac-section">
+  <h2>Include / Exclude Logic</h2>
+  <div class="logic-diagram">
+    <div class="logic-row">
+      <strong>Step 1 — Inclusion (OR across all domains):</strong>
+    </div>
+    <div class="logic-row" style="padding-left:1.5rem;">
+      <span class="logic-or">Person qualifies IF</span>
+      <code>ConditionOccurrence.condition_concept_id IN [included_condition_codes]</code>
+    </div>
+    <div class="logic-row" style="padding-left:1.5rem;">
+      <span class="logic-or">OR</span>
+      <code>DrugExposure.drug_concept_id IN [included_drug_codes]</code>
+    </div>
+    <div class="logic-row" style="padding-left:1.5rem;">
+      <span class="logic-or">OR</span>
+      <code>Measurement.measurement_concept_id IN [included_measurement_codes]</code>
+    </div>
+    <div class="logic-row" style="padding-left:1.5rem;">
+      <span class="logic-or">OR</span>
+      <code>Observation.observation_concept_id IN [included_observation_codes]</code>
+    </div>
+    <div class="logic-row" style="padding-left:1.5rem; font-size:.82rem; color:#555;">
+      All filtered to <code>health_system</code> and <code>start_date BETWEEN study_start AND study_end</code>
+    </div>
+    <hr style="margin:.75rem 0; border-color:#d5e3ee;">
+    <div class="logic-row">
+      <strong>Step 2 — Exclusion (removes patients matching any exclusion code):</strong>
+    </div>
+    <div class="logic-row" style="padding-left:1.5rem;">
+      <span class="logic-and-not">EXCLUDE IF</span>
+      any matching event exists with <code>is_excluded=True</code> concept codes
+    </div>
+  </div>
+  <p style="font-size:.88rem;color:#555;">
+    Implemented in <code class="fn">htac/services/query_engine.get_condition_cohort(condition, health_system, study_period)</code>.
+    Returns a lazy <code class="fn">QuerySet[Person]</code> — evaluated only when the caller counts or iterates.
+  </p>
+</div>
+
+<!-- Condition table -->
+<div class="htac-section">
+  <h2>All {{ condition_count }} HTAC Conditions</h2>
+  <p style="margin-bottom:1rem;">Total concept codes in the database: <strong>{{ total_codes }}</strong>
+    ({{ domain_totals.Condition }} Condition, {{ domain_totals.Drug }} Drug,
+     {{ domain_totals.Measurement }} Measurement, {{ domain_totals.Observation }} Observation)</p>
+  <div style="overflow-x:auto;">
+    <table class="condition-table">
+      <thead><tr>
+        <th>Condition</th>
+        <th>Category</th>
+        <th>Total codes</th>
+        <th>Condition</th>
+        <th>Drug</th>
+        <th>Measurement</th>
+        <th>Observation</th>
+      </tr></thead>
+      <tbody>
+        {% for row in condition_rows %}
+        <tr>
+          <td>{{ row.name }}</td>
+          <td>
+            <span class="cat-pill cat-{{ row.category|lower|cut:' ' }}">
+              {{ row.category }}
+            </span>
+          </td>
+          <td>{{ row.total }}</td>
+          <td>{{ row.condition }}</td>
+          <td>{{ row.drug }}</td>
+          <td>{{ row.measurement }}</td>
+          <td>{{ row.observation }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot><tr>
+        <td>Total</td><td></td>
+        <td>{{ total_codes }}</td>
+        <td>{{ domain_totals.Condition }}</td>
+        <td>{{ domain_totals.Drug }}</td>
+        <td>{{ domain_totals.Measurement }}</td>
+        <td>{{ domain_totals.Observation }}</td>
+      </tr></tfoot>
+    </table>
+  </div>
+</div>
+
+{% include 'htac/pipeline/_page_nav.html' %}
+{% endblock %}

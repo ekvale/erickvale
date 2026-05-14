@@ -1,0 +1,17 @@
+<div class="htac-page-nav">
+  <div>
+    {% if prev_step and prev_step.url %}
+      <a href="{{ prev_step.url }}" class="htac-btn-prev">
+        &larr; Step {{ prev_step.num }}: {{ prev_step.label }}
+      </a>
+    {% endif %}
+  </div>
+  <a href="{% url 'htac_public_about' %}#pipeline" class="htac-btn-about">&#8592; Pipeline overview</a>
+  <div>
+    {% if next_step and next_step.url %}
+      <a href="{{ next_step.url }}" class="htac-btn-next">
+        Step {{ next_step.num }}: {{ next_step.label }} &rarr;
+      </a>
+    {% endif %}
+  </div>
+</div>

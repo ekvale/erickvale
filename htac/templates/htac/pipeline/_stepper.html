@@ -1,0 +1,19 @@
+<div class="htac-stepper" role="list" aria-label="HTAC pipeline steps">
+  {% for step in pipeline_steps %}
+    <div class="htac-step {% if step.num == current_step %}active{% elif step.num < current_step %}done{% endif %}"
+         role="listitem"
+         aria-current="{% if step.num == current_step %}step{% else %}false{% endif %}">
+      <div class="htac-step-inner">
+        {% if step.url and step.num != current_step %}
+          <a href="{{ step.url }}"
+             class="htac-step-circle"
+             title="Step {{ step.num }}: {{ step.label }}">{{ step.num }}</a>
+        {% else %}
+          <div class="htac-step-circle">{{ step.num }}</div>
+        {% endif %}
+        {% if not forloop.last %}<div class="htac-step-connector"></div>{% endif %}
+      </div>
+      <div class="htac-step-label">{{ step.label }}</div>
+    </div>
+  {% endfor %}
+</div>

@@ -1,0 +1,82 @@
+<style>
+  /* ── Hero (specificity 0,2,x beats mn_style.css body.mdh-app at 0,1,x) ── */
+  body.mdh-app .htac-hero { background:#003865; border-radius:6px; padding:2.5rem 2rem; margin-bottom:2rem; }
+  body.mdh-app .htac-hero,
+  body.mdh-app .htac-hero h1,
+  body.mdh-app .htac-hero h2 { color:#fff !important; }
+  body.mdh-app .htac-hero p  { color:#cce4f0 !important; font-size:1.05rem !important; margin-bottom:0 !important; }
+  body.mdh-app .htac-hero .htac-eyebrow { color:#7ecde0 !important; font-size:.8rem; letter-spacing:.1em; text-transform:uppercase; }
+
+  /* ── Pipeline stepper ── */
+  .htac-stepper { display:flex; align-items:flex-start; gap:0; margin-bottom:2.5rem; overflow-x:auto; padding-bottom:.5rem; }
+  .htac-step { display:flex; flex-direction:column; align-items:center; min-width:72px; flex:1; }
+  .htac-step-inner { display:flex; align-items:center; width:100%; }
+  .htac-step-circle {
+    width:38px; height:38px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:.9rem;
+    background:#d8e4ee; color:#555; border:2px solid #b0c8db;
+    z-index:1; position:relative;
+  }
+  /* anchor variant */
+  a.htac-step-circle { text-decoration:none !important; cursor:pointer; }
+  a.htac-step-circle:hover { background:#b0c8db !important; color:#003865 !important; border-color:#7aaac8 !important; }
+  .htac-step.done .htac-step-circle    { background:#008EAA; color:#fff; border-color:#008EAA; }
+  .htac-step.done a.htac-step-circle:hover { background:#006a7d !important; }
+  .htac-step.active .htac-step-circle  { background:#003865; color:#fff; border-color:#003865; box-shadow:0 0 0 4px rgba(0,56,101,.18); }
+  .htac-step-connector { flex:1; height:3px; background:#b0c8db; margin-top:19px; min-width:10px; }
+  .htac-step.done .htac-step-connector { background:#008EAA; }
+  .htac-step-label { font-size:.72rem; font-weight:600; text-align:center; margin-top:.45rem; color:#555; line-height:1.2; max-width:80px; }
+  .htac-step.active .htac-step-label { color:#003865; }
+  .htac-step.done .htac-step-label { color:#006a7d; }
+
+  /* ── Section headings ── */
+  .htac-section { margin-bottom:2.5rem; }
+  .htac-section h2 { font-size:1.3rem; font-weight:700; border-bottom:3px solid #008EAA; padding-bottom:.4rem; margin-bottom:1rem; }
+  .htac-section h3 { font-size:1.05rem; font-weight:700; margin-bottom:.5rem; }
+
+  /* ── Callout cards ── */
+  .htac-callout-row { display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem; }
+  .htac-callout { flex:1 1 240px; border-radius:6px; padding:1.2rem 1.4rem; }
+  .htac-callout.why     { background:#edf4fb; border-left:4px solid #003865; }
+  .htac-callout.how     { background:#e8f7f9; border-left:4px solid #008EAA; }
+  .htac-callout.privacy { background:#fff8e1; border-left:4px solid #d07000; }
+  .htac-callout.note    { background:#f2f8f0; border-left:4px solid #3a7c3d; }
+  body.mdh-app .htac-callout h3 { font-size:1rem; margin-bottom:.5rem; }
+  body.mdh-app .htac-callout.why h3     { color:#003865 !important; }
+  body.mdh-app .htac-callout.how h3     { color:#006a7d !important; }
+  body.mdh-app .htac-callout.privacy h3 { color:#d07000 !important; }
+  body.mdh-app .htac-callout.note h3    { color:#3a7c3d !important; }
+  body.mdh-app .htac-callout p,
+  body.mdh-app .htac-callout ul { font-size:.95rem !important; margin-bottom:0 !important; }
+  .htac-callout ul { padding-left:1.2rem; }
+  .htac-callout li { margin-bottom:.25rem; }
+
+  /* ── Generic stats table (live record counts) ── */
+  .htac-stats-table { width:100%; border-collapse:collapse; font-size:.88rem; }
+  body.mdh-app .htac-stats-table th {
+    background:#003865 !important; color:#fff !important;
+    padding:8px 12px; text-align:right; font-weight:600 !important;
+  }
+  body.mdh-app .htac-stats-table th:first-child { text-align:left !important; }
+  .htac-stats-table td { padding:7px 12px; border-bottom:1px solid #e0e0e0; text-align:right; }
+  .htac-stats-table td:first-child { text-align:left; font-weight:600; }
+  .htac-stats-table tr:nth-child(even) td { background:#f5f8fb; }
+  .htac-stats-table tfoot td { font-weight:700; background:#edf4fb !important; border-top:2px solid #003865; }
+
+  /* ── Field/code display helpers ── */
+  code.field  { font-family:monospace; font-size:.85rem; color:#003865; background:#edf4fb; border:1px solid #c5d8ea; border-radius:3px; padding:1px 5px; }
+  .concept-id { font-family:monospace; font-size:.8rem; background:#edf4fb; border:1px solid #b0c8db; border-radius:3px; padding:1px 5px; }
+  .badge-omop { display:inline-block; background:#008EAA; color:#fff; font-size:.63rem; font-weight:700; border-radius:3px; padding:1px 5px; vertical-align:middle; margin-left:4px; }
+  .badge-new  { display:inline-block; background:#3a7c3d; color:#fff; font-size:.63rem; font-weight:700; border-radius:3px; padding:1px 5px; vertical-align:middle; margin-left:4px; }
+
+  /* ── Page nav (prev / next) ── */
+  .htac-page-nav { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.75rem; margin-top:2.5rem; padding-top:1.5rem; border-top:2px solid #d5e3ee; }
+  .htac-page-nav a { border-radius:5px; padding:.5rem 1.25rem; font-weight:700; text-decoration:none !important; font-size:.92rem; transition:background .15s; }
+  .htac-btn-prev { background:#edf4fb; color:#003865 !important; border:2px solid #b0c8db; }
+  .htac-btn-prev:hover { background:#d5e3ee !important; }
+  .htac-btn-next { background:#003865; color:#fff !important; }
+  .htac-btn-next:hover { background:#005b8c !important; }
+  .htac-btn-about { background:#f5f5f5; color:#555 !important; border:2px solid #ccc; font-size:.85rem; padding:.4rem 1rem !important; }
+  .htac-btn-about:hover { background:#e8e8e8 !important; }
+</style>

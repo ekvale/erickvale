@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Step 7: Prevalence Results — HTAC Pipeline{% endblock %}
+
+{% block extra_head %}
+{% include 'htac/pipeline/_styles.html' %}
+<style>
+  .result-grid { display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem; }
+  .result-tile { flex:1 1 150px; background:#fff; border:1px solid #d5e3ee; border-radius:6px; padding:1rem 1.2rem; text-align:center; }
+  body.mdh-app .result-tile .r-val { font-size:1.8rem; font-weight:700; color:#003865 !important; display:block; }
+  body.mdh-app .result-tile .r-lbl { font-size:.8rem; color:#555 !important; }
+
+  .access-grid { display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem; }
+  .access-card { flex:1 1 200px; background:#fff; border:1px solid #d5e3ee; border-radius:6px; padding:1rem 1.2rem; }
+  .access-card .access-icon { font-size:1.4rem; display:block; margin-bottom:.4rem; }
+  body.mdh-app .access-card h4 { font-size:.95rem; font-weight:700; color:#003865 !important; margin:0 0 .3rem; }
+  .access-card p { font-size:.83rem; color:#555; margin:0; }
+
+  .sample-estimate {
+    background:#f7fafc; border:1px solid #d5e3ee; border-radius:8px;
+    padding:1.25rem 1.5rem; margin-bottom:1.5rem; font-size:.88rem;
+  }
+  .sample-estimate table { width:100%; border-collapse:collapse; font-size:.85rem; }
+  body.mdh-app .sample-estimate th {
+    background:#edf4fb !important; color:#003865 !important;
+    padding:6px 10px; text-align:left; font-weight:600 !important;
+    font-size:.8rem !important; border-bottom:2px solid #b0c8db;
+  }
+  .sample-estimate td { padding:6px 10px; border-bottom:1px solid #e8eff5; }
+  .sample-estimate tr:last-child td { border-bottom:none; }
+  .val-published { color:#3a7c3d; font-weight:700; }
+  .val-suppressed { color:#d07000; font-style:italic; }
+
+  .run-card { border:1px solid #d5e3ee; border-radius:6px; padding:.9rem 1.1rem; margin-bottom:.75rem; }
+  .run-card h4 { font-size:.95rem; font-weight:700; margin:0 0 .3rem; }
+  .run-card .run-meta { font-size:.82rem; color:#666; }
+  .status-badge { display:inline-block; border-radius:10px; padding:1px 10px; font-size:.75rem; font-weight:700; }
+  .status-pending  { background:#fff3e0; color:#7a4400; }
+  .status-running  { background:#e8f7f9; color:#006a7d; }
+  .status-complete { background:#f2f8f0; color:#3a7c3d; }
+  .status-failed   { background:#fce8e8; color:#8b1a1a; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb" style="margin-bottom:1.25rem;">
+  <ol class="breadcrumb" style="background:transparent;padding:0;font-size:.88rem;">
+    <li class="breadcrumb-item"><a href="{% url 'htac_public_about' %}">HTAC</a></li>
+    <li class="breadcrumb-item active">Pipeline — Step 7</li>
+  </ol>
+</nav>
+
+<div class="htac-hero">
+  <p class="htac-eyebrow">HTAC Pipeline &middot; Step 7 of {{ pipeline_steps|length }}</p>
+  <h1>Prevalence Results</h1>
+  <p>The final output: suppressed, stratified prevalence estimates stored as
+     <strong>PrevalenceEstimate</strong> rows within a <strong>StudyRun</strong>.
+     Results are accessible through the MDH admin interface, the REST API,
+     CSV export, and the public HTAC dashboard.</p>
+</div>
+
+{% include 'htac/pipeline/_stepper.html' %}
+
+<div class="htac-callout-row">
+  <div class="htac-callout why">
+    <h3>What a result represents</h3>
+    <p>Each <strong>PrevalenceEstimate</strong> row is one cell in a multi-dimensional
+       cube: one condition × one health system × one geographic level × one geographic value
+       × one stratifier × one stratifier value. A single study run for 22 conditions
+       across 11 sites, 4 geo levels, and 9 stratifiers can produce tens of thousands of cells.</p>
+  </div>
+  <div class="htac-callout how">
+    <h3>StudyRun organizes everything</h3>
+    <p>A <strong>StudyRun</strong> groups all estimates from one execution of the pipeline:
+       it records the run date, roster version, study period, which conditions were queried,
+       and the run status (Pending → Running → Complete / Failed). Multiple study runs
+       allow year-over-year trend comparisons.</p>
+  </div>
+  <div class="htac-callout note">
+    <h3>Data quality reports</h3>
+    <p>Each run can also generate <strong>DataQualityReport</strong> rows — one metric per site
+       per run date. Metrics include completeness rates, missingness in key fields,
+       and concept mapping coverage. DQ flags (Pass / Warn / Fail) help analysts
+       identify sites with data issues before using their estimates.</p>
+  </div>
+</div>
+
+<!-- PrevalenceEstimate fields -->
+<div class="htac-section">
+  <h2>Output: PrevalenceEstimate Record</h2>
+  <div style="overflow-x:auto;">
+    <table class="htac-stats-table">
+      <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code class="fn">study_run</code></td><td>FK → StudyRun</td><td>The run this estimate belongs to</td></tr>
+        <tr><td><code class="fn">condition</code></td><td>FK → Condition</td><td>The HTAC health condition (e.g., Diabetes)</td></tr>
+        <tr><td><code class="fn">health_system</code></td><td>FK → HealthSystem (null=statewide)</td><td>Null indicates a network-wide aggregate across all sites</td></tr>
+        <tr><td><code class="fn">geo_level</code></td><td>str</td><td>state / county / zip / census_tract</td></tr>
+        <tr><td><code class="fn">geo_value</code></td><td>str (nullable)</td><td>FIPS code, ZIP, or census tract string; null for state-level rows</td></tr>
+        <tr><td><code class="fn">stratifier</code></td><td>str</td><td>One of 9 stratification dimensions (race, language, age_group, etc.)</td></tr>
+        <tr><td><code class="fn">stratifier_value</code></td><td>str</td><td>The specific stratum value (e.g., "Black or African American", "Somali")</td></tr>
+        <tr><td><code class="fn">numerator</code></td><td>int (nullable)</td><td>Patients with the condition in this stratum; null if suppressed</td></tr>
+        <tr><td><code class="fn">denominator</code></td><td>int (nullable)</td><td>Active patients in study period in this stratum; null if suppressed</td></tr>
+        <tr><td><code class="fn">prevalence_rate</code></td><td>decimal (nullable)</td><td>Cases per 10,000 active patients; null if suppressed</td></tr>
+        <tr><td><code class="fn">is_suppressed</code></td><td>bool</td><td>True when numerator &lt; 11; all value fields set to null</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Sample output -->
+<div class="htac-section">
+  <h2>Sample Output — What a Published Row Looks Like</h2>
+  <div class="sample-estimate">
+    <table>
+      <thead><tr>
+        <th>Condition</th><th>Site</th><th>Geo</th><th>Stratifier</th><th>Stratum</th>
+        <th>Numerator</th><th>Denominator</th><th>Rate (per 10k)</th><th>Suppressed?</th>
+      </tr></thead>
+      <tbody>
+        <tr>
+          <td>Hypertension</td><td>Statewide</td><td>State</td><td>Total</td><td>All</td>
+          <td class="val-published">163</td><td class="val-published">500</td>
+          <td class="val-published">3,260.0</td><td>No</td>
+        </tr>
+        <tr>
+          <td>Diabetes</td><td>Hennepin Healthcare</td><td>County</td><td>Race</td><td>Black or African American</td>
+          <td class="val-published">14</td><td class="val-published">42</td>
+          <td class="val-published">3,333.3</td><td>No</td>
+        </tr>
+        <tr>
+          <td>HIV</td><td>Essentia Health</td><td>County</td><td>Race</td><td>Am. Indian / Alaska Native</td>
+          <td class="val-suppressed">—</td><td class="val-suppressed">—</td>
+          <td class="val-suppressed">—</td><td style="color:#d07000;font-weight:700;">Yes (n &lt; 11)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="font-size:.83rem;color:#555;">Sample values are illustrative. Run <code class="fn">python manage.py execute_condition_queries</code> to populate real estimates from the simulation data.</p>
+</div>
+
+<!-- Access methods -->
+<div class="htac-section">
+  <h2>How Results Are Accessed</h2>
+  <div class="access-grid">
+    <div class="access-card">
+      <span class="access-icon">🖥</span>
+      <h4>MDH Admin Interface</h4>
+      <p>Staff can browse, filter, and export estimates through the Django admin at <code class="fn">/admin/</code>. Full CRUD access for authorized users.</p>
+    </div>
+    <div class="access-card">
+      <span class="access-icon">⚙</span>
+      <h4>REST API</h4>
+      <p>Programmatic access at <code class="fn">/api/htac/v1/</code> using Django REST Framework. Supports filtering by condition, geo level, stratifier, and suppression status.</p>
+    </div>
+    <div class="access-card">
+      <span class="access-icon">📊</span>
+      <h4>Public Dashboard</h4>
+      <p>The HTAC Health Trends Dashboard at <a href="https://mnehrconsortium.org/explore-our-findings/health-trends-across-communities-in-mn/" target="_blank" rel="noopener">mnehrconsortium.org</a> displays interactive prevalence maps and trend charts.</p>
+    </div>
+    <div class="access-card">
+      <span class="access-icon">📁</span>
+      <h4>Public-Use Data File</h4>
+      <p>Analysts can request the full suppressed dataset as a CSV through the MDH Health Data Request process for off-platform analysis.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Live stats -->
+<div class="htac-section">
+  <h2>Current Database Status</h2>
+
+  {% if estimate_count == 0 %}
+  <div class="htac-callout privacy" style="margin-bottom:1.25rem;">
+    <h3>No prevalence estimates yet</h3>
+    <p>The pipeline has been seeded with synthetic patients and PPRL tokens, but
+       <code class="fn">execute_condition_queries</code> has not been run yet.
+       To generate estimates, run:<br>
+       <code class="fn">python manage.py execute_condition_queries</code>
+    </p>
+  </div>
+  {% else %}
+  <div class="result-grid">
+    <div class="result-tile"><span class="r-val">{{ estimate_count|intcomma }}</span><span class="r-lbl">Total estimate cells</span></div>
+    <div class="result-tile"><span class="r-val">{{ published_count|intcomma }}</span><span class="r-lbl">Published</span></div>
+    <div class="result-tile"><span class="r-val">{{ suppressed_count|intcomma }}</span><span class="r-lbl">Suppressed</span></div>
+  </div>
+  {% if condition_counts %}
+  <h3>Top conditions by cell count</h3>
+  <div style="overflow-x:auto;max-width:400px;">
+    <table class="htac-stats-table">
+      <thead><tr><th>Condition</th><th>Estimate cells</th></tr></thead>
+      <tbody>{% for row in condition_counts %}<tr><td>{{ row.condition__name }}</td><td>{{ row.n|intcomma }}</td></tr>{% endfor %}</tbody>
+    </table>
+  </div>
+  {% endif %}
+  {% endif %}
+
+  <h3 style="margin-top:1.5rem;">Study Runs</h3>
+  {% if study_runs %}
+    {% for run in study_runs %}
+    <div class="run-card">
+      <h4>{{ run.name }}</h4>
+      <div class="run-meta">
+        Run date: {{ run.run_date }} &nbsp;|&nbsp;
+        Roster version: {{ run.roster_version }} &nbsp;|&nbsp;
+        <span class="status-badge status-{{ run.status }}">{{ run.get_status_display }}</span>
+      </div>
+      {% if run.description %}<p style="font-size:.85rem;color:#555;margin:.4rem 0 0;">{{ run.description }}</p>{% endif %}
+    </div>
+    {% endfor %}
+  {% else %}
+    <p style="color:#666;font-size:.9rem;">No study runs found. Run <code class="fn">seed_htac</code> to create the default study run.</p>
+  {% endif %}
+</div>
+
+<!-- Pipeline complete banner -->
+<div style="background:linear-gradient(135deg,#003865 0%,#008EAA 100%);border-radius:8px;padding:1.75rem 2rem;margin-top:2rem;text-align:center;">
+  <h2 style="color:#fff;font-size:1.3rem;margin:0 0 .5rem;">Pipeline Complete</h2>
+  <p style="color:#cce4f0;font-size:.95rem;margin:0 0 1rem;">
+    From raw EHR records in OMOP CDM to suppressed, stratified prevalence estimates — covering 22 conditions,
+    11 health systems, 9 stratifiers, and 4 geographic levels across Minnesota.
+  </p>
+  <a href="{% url 'htac_public_about' %}" style="background:#fff;color:#003865 !important;border-radius:5px;padding:.55rem 1.5rem;font-weight:700;text-decoration:none !important;font-size:.95rem;">
+    Back to HTAC overview
+  </a>
+</div>
+
+{% include 'htac/pipeline/_page_nav.html' %}
+{% endblock %}

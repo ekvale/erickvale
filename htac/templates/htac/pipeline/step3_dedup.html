@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Step 3: Cross-Site Deduplication — HTAC Pipeline{% endblock %}
+
+{% block extra_head %}
+{% include 'htac/pipeline/_styles.html' %}
+<style>
+  .dedup-flow {
+    display:flex; align-items:center; gap:.5rem; flex-wrap:wrap;
+    background:#f7fafc; border:1px solid #d5e3ee; border-radius:8px;
+    padding:1.25rem 1.5rem; margin-bottom:1.5rem; font-size:.9rem;
+  }
+  .dedup-box { background:#fff; border:2px solid #b0c8db; border-radius:6px; padding:.55rem 1rem; text-align:center; }
+  .dedup-box.site-a { border-color:#003865; }
+  .dedup-box.site-b { border-color:#008EAA; }
+  .dedup-box.roster { border-color:#3a7c3d; background:#f2f8f0; font-weight:700; }
+  .dedup-arrow { font-size:1.4rem; color:#aaa; }
+  .dedup-match { color:#008EAA; font-weight:700; font-size:.85rem; }
+  .stat-grid { display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem; }
+  .stat-tile { flex:1 1 150px; background:#fff; border:1px solid #d5e3ee; border-radius:6px; padding:1rem 1.2rem; text-align:center; }
+  body.mdh-app .stat-tile .stat-val { font-size:1.8rem; font-weight:700; color:#003865 !important; display:block; }
+  body.mdh-app .stat-tile .stat-lbl { font-size:.8rem; color:#555 !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb" style="margin-bottom:1.25rem;">
+  <ol class="breadcrumb" style="background:transparent;padding:0;font-size:.88rem;">
+    <li class="breadcrumb-item"><a href="{% url 'htac_public_about' %}">HTAC</a></li>
+    <li class="breadcrumb-item active">Pipeline — Step 3</li>
+  </ol>
+</nav>
+
+<div class="htac-hero">
+  <p class="htac-eyebrow">HTAC Pipeline &middot; Step 3 of {{ pipeline_steps|length }}</p>
+  <h1>Cross-Site Deduplication</h1>
+  <p>Patients who receive care at multiple health systems generate identical PPRL tokens at each site.
+     This step collapses those duplicate records into a single entry in the
+     <strong>DeduplicatedRoster</strong> — one row per unique patient across the entire MNEHRC network.</p>
+</div>
+
+{% include 'htac/pipeline/_stepper.html' %}
+
+<div class="htac-callout-row">
+  <div class="htac-callout why">
+    <h3>Why this step?</h3>
+    <p>Without deduplication, a patient seen at both Allina and M Health Fairview would be counted
+       twice in every prevalence calculation — artificially inflating the denominator and distorting
+       rates. In real MNEHRC data, approximately <strong>75% of patients</strong> appear at more than
+       one health system.</p>
+  </div>
+  <div class="htac-callout how">
+    <h3>How canonical site is chosen</h3>
+    <p>The <em>canonical site</em> is the health system that recorded the patient's most recent
+       <code class="fn">VisitOccurrence</code>. This reflects the site most likely to have the
+       most complete and up-to-date record. When no visits exist, the first site encountered
+       is used as the canonical site.</p>
+  </div>
+  <div class="htac-callout note">
+    <h3>Idempotency</h3>
+    <p>The <code class="fn">deduplicate_tokens()</code> function uses <code class="fn">update_or_create</code>
+       on <code class="fn">canonical_token</code>. Re-running with the same data updates existing
+       rows rather than creating duplicates — safe to run after any new tokens are loaded.</p>
+  </div>
+</div>
+
+<!-- How it works diagram -->
+<div class="htac-section">
+  <h2>How Token Matching Works</h2>
+  <div class="dedup-flow">
+    <div class="dedup-box site-a">
+      <div style="font-size:.75rem;color:#003865;font-weight:700;">ALLINA</div>
+      <div>token: <code>3a7f8c2d…</code></div>
+    </div>
+    <div class="dedup-arrow">+</div>
+    <div class="dedup-box site-b">
+      <div style="font-size:.75rem;color:#008EAA;font-weight:700;">MHFAIRVIEW</div>
+      <div>token: <code>3a7f8c2d…</code></div>
+    </div>
+    <div class="dedup-arrow">→</div>
+    <div style="text-align:center;">
+      <div class="dedup-match">Same token = Same patient</div>
+      <div style="font-size:.8rem;color:#555;">canonical_site = most recent visit</div>
+    </div>
+    <div class="dedup-arrow">→</div>
+    <div class="dedup-box roster">
+      <div style="font-size:.75rem;color:#3a7c3d;">DeduplicatedRoster</div>
+      <div>1 row · site_count = 2</div>
+    </div>
+  </div>
+  <p style="font-size:.88rem;color:#555;">
+    Implemented in <code class="fn">htac/services/pprl.deduplicate_tokens(queryset)</code>.
+    Accepts a <code class="fn">HashToken</code> queryset, groups by <code class="fn">token</code> value,
+    counts distinct health systems, resolves the canonical site via <code class="fn">VisitOccurrence</code>,
+    and upserts one <code class="fn">DeduplicatedRoster</code> row per unique token.
+  </p>
+</div>
+
+<!-- DeduplicatedRoster model -->
+<div class="htac-section">
+  <h2>Output: DeduplicatedRoster Record</h2>
+  <p style="margin-bottom:1rem;">
+    One row per unique patient across the network. Enrichment flag fields (Medicaid, housing, etc.)
+    are populated in Step 4 and remain at defaults here.
+  </p>
+  <div style="overflow-x:auto;">
+    <table class="htac-stats-table">
+      <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code class="fn">canonical_token</code></td><td>str(64)</td><td>The HMAC-SHA256 token — unique identifier for this patient across the network</td></tr>
+        <tr><td><code class="fn">canonical_site</code></td><td>FK → HealthSystem</td><td>Site with the most recent VisitOccurrence for this patient</td></tr>
+        <tr><td><code class="fn">site_count</code></td><td>int</td><td>Number of distinct health systems where this patient appears</td></tr>
+        <tr><td><code class="fn">roster_version</code></td><td>date</td><td>Date this row was last generated (today's date at run time)</td></tr>
+        <tr><td><code class="fn">medicaid_flag</code> &amp; friends</td><td>bool</td><td>Enrichment flags — all False until Step 4 runs</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Live stats -->
+<div class="htac-section">
+  <h2>Simulation Roster Statistics</h2>
+  <div class="stat-grid">
+    <div class="stat-tile">
+      <span class="stat-val">{{ roster_total|intcomma }}</span>
+      <span class="stat-lbl">Unique patients in roster</span>
+    </div>
+    <div class="stat-tile">
+      <span class="stat-val">{{ multi_site|intcomma }}</span>
+      <span class="stat-lbl">Patients at 2+ sites</span>
+    </div>
+    <div class="stat-tile">
+      <span class="stat-val">{{ single_site|intcomma }}</span>
+      <span class="stat-lbl">Single-site patients</span>
+    </div>
+    <div class="stat-tile">
+      <span class="stat-val">{{ max_sites }}</span>
+      <span class="stat-lbl">Max sites for one patient</span>
+    </div>
+    <div class="stat-tile">
+      <span class="stat-val">{{ avg_sites }}</span>
+      <span class="stat-lbl">Avg sites per patient</span>
+    </div>
+  </div>
+
+  {% if site_count_dist %}
+  <h3>Site-count distribution</h3>
+  <div style="overflow-x:auto;">
+    <table class="htac-stats-table" style="max-width:420px;">
+      <thead><tr><th>Sites per patient</th><th>Patient count</th></tr></thead>
+      <tbody>
+        {% for row in site_count_dist %}
+        <tr><td>{{ row.site_count }}</td><td>{{ row.n|intcomma }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+
+{% include 'htac/pipeline/_page_nav.html' %}
+{% endblock %}
