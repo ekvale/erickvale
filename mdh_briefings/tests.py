@@ -14,12 +14,12 @@ from mdh_briefings.digest import (
 from mdh_briefings.models import LeaderBriefing
 
 
-@override_settings(MDH_BRIEFINGS_DIGEST_RECIPIENTS='ekvale@gmail.com,other@example.com')
+@override_settings(MDH_BRIEFINGS_DIGEST_RECIPIENTS='eric.kvale@state.mn.us,other@example.com')
 class DigestRecipientTests(SimpleTestCase):
     def test_parse_recipients(self):
         self.assertEqual(
             get_digest_recipients(),
-            ['ekvale@gmail.com', 'other@example.com'],
+            ['eric.kvale@state.mn.us', 'other@example.com'],
         )
 
 
@@ -75,7 +75,7 @@ class DigestTemplateTests(TestCase):
 
 
 @override_settings(
-    MDH_BRIEFINGS_DIGEST_RECIPIENTS='ekvale@gmail.com',
+    MDH_BRIEFINGS_DIGEST_RECIPIENTS='eric.kvale@state.mn.us',
     PERPLEXITY_API_KEY='',
 )
 class DigestSendDryRunTests(TestCase):
@@ -99,4 +99,4 @@ class DigestSendDryRunTests(TestCase):
         mock_news.return_value = []
         result = run_daily_digest_send(dry_run=True, today=today, include_news=True)
         self.assertTrue(result['ok'])
-        self.assertIn('ekvale@gmail.com', result['recipients'][0])
+        self.assertIn('eric.kvale@state.mn.us', result['recipients'][0])

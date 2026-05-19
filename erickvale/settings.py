@@ -70,7 +70,7 @@ MDH_BRIEFINGS_OWNER_USER_ID = config('MDH_BRIEFINGS_OWNER_USER_ID', default='').
 MDH_BRIEFINGS_PERPLEXITY_MODEL = config('MDH_BRIEFINGS_PERPLEXITY_MODEL', default='').strip()
 MDH_BRIEFINGS_DIGEST_RECIPIENTS = config(
     'MDH_BRIEFINGS_DIGEST_RECIPIENTS',
-    default='ekvale@gmail.com',
+    default='eric.kvale@state.mn.us',
 ).strip()
 MDH_BRIEFINGS_DIGEST_BASE_URL = config('MDH_BRIEFINGS_DIGEST_BASE_URL', default='').strip()
 
