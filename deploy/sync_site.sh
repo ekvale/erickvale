@@ -8,7 +8,7 @@
 set -euo pipefail
 
 DEPLOY_ROOT="${DEPLOY_ROOT:-/home/erickvale/erickvale}"
-VENV_ACTIVATE="${VENV_ACTIVATE:-/home/erickvale/venv/bin/activate}"
+VENV_ACTIVATE="${VENV_ACTIVATE:-/home/erickvale/erickvale/venv/bin/activate}"
 
 cd "${DEPLOY_ROOT}"
 echo "==> Working directory: $(pwd)"
@@ -32,7 +32,11 @@ python manage.py migrate
 
 if [[ -f package.json ]] && command -v npm >/dev/null 2>&1; then
   echo "==> npm run build:css (Tailwind)"
-  npm run build:css
+  if npm run build:css; then
+    :
+  else
+    echo "WARN: Tailwind build failed (often Node too old). Skipping — existing tw.css unchanged." >&2
+  fi
 fi
 
 echo "==> collectstatic"

@@ -68,6 +68,11 @@ INSTALLED_APPS = [
 MDH_BRIEFINGS_OWNER_USERNAME = config('MDH_BRIEFINGS_OWNER_USERNAME', default='eric').strip()
 MDH_BRIEFINGS_OWNER_USER_ID = config('MDH_BRIEFINGS_OWNER_USER_ID', default='').strip()
 MDH_BRIEFINGS_PERPLEXITY_MODEL = config('MDH_BRIEFINGS_PERPLEXITY_MODEL', default='').strip()
+MDH_BRIEFINGS_DIGEST_RECIPIENTS = config(
+    'MDH_BRIEFINGS_DIGEST_RECIPIENTS',
+    default='ekvale@gmail.com',
+).strip()
+MDH_BRIEFINGS_DIGEST_BASE_URL = config('MDH_BRIEFINGS_DIGEST_BASE_URL', default='').strip()
 
 # --- Brain dump (personal GTD capture; owner-only) ---
 # Set username OR numeric user id of the single account that may use /apps/braindump/.

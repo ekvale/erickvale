@@ -1,3 +1,77 @@
-from django.test import TestCase
+from datetime import date
+from unittest.mock import patch
 
-# Create your tests here.
+from django.test import SimpleTestCase, TestCase, override_settings
+
+from mdh_briefings.agents import LEADERS
+from mdh_briefings.digest import (
+    build_digest_context,
+    get_digest_recipients,
+    render_digest_html,
+    run_daily_digest_send,
+)
+from mdh_briefings.models import LeaderBriefing
+
+
+@override_settings(MDH_BRIEFINGS_DIGEST_RECIPIENTS='ekvale@gmail.com,other@example.com')
+class DigestRecipientTests(SimpleTestCase):
+    def test_parse_recipients(self):
+        self.assertEqual(
+            get_digest_recipients(),
+            ['ekvale@gmail.com', 'other@example.com'],
+        )
+
+
+class DigestTemplateTests(TestCase):
+    def test_render_includes_leader_priorities(self):
+        today = date(2026, 5, 19)
+        leader = LEADERS[0]
+        briefing = LeaderBriefing.objects.create(
+            leader_id=leader['id'],
+            name=leader['name'],
+            title=leader['title'],
+            bureau=leader['bureau'],
+            date=today,
+            schedule=[],
+            core_beliefs='',
+            vision='',
+            top_priorities=['Priority A', 'Priority B'],
+        )
+        ctx = build_digest_context(
+            today,
+            briefings=[briefing],
+            news_items=[{'headline': 'Test headline', 'summary': 'Summary', 'why_it_matters': 'Matters'}],
+        )
+        subject, html = render_digest_html(today, ctx)
+        self.assertIn('MDH Leadership Daily', subject)
+        self.assertIn('Priority A', html)
+        self.assertIn('Test headline', html)
+        self.assertIn(leader['name'], html)
+
+
+@override_settings(
+    MDH_BRIEFINGS_DIGEST_RECIPIENTS='ekvale@gmail.com',
+    PERPLEXITY_API_KEY='',
+)
+class DigestSendDryRunTests(TestCase):
+    @patch('mdh_briefings.digest.ensure_briefings_for_date')
+    @patch('mdh_briefings.services.fetch_daily_news_digest')
+    def test_dry_run(self, mock_news, mock_ensure):
+        today = date(2026, 5, 19)
+        leader = LEADERS[0]
+        briefing = LeaderBriefing(
+            leader_id=leader['id'],
+            name=leader['name'],
+            title=leader['title'],
+            bureau=leader['bureau'],
+            date=today,
+            schedule=[],
+            core_beliefs='',
+            vision='',
+            top_priorities=['One'],
+        )
+        mock_ensure.return_value = ([briefing], [])
+        mock_news.return_value = []
+        result = run_daily_digest_send(dry_run=True, today=today, include_news=True)
+        self.assertTrue(result['ok'])
+        self.assertIn('ekvale@gmail.com', result['recipients'][0])

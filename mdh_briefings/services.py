@@ -69,6 +69,42 @@ def _extract_json_object(text: str) -> dict:
 
 def generate_briefing(leader: dict, today: date) -> dict:
     """Call Perplexity chat completions and return parsed briefing dict."""
+    raw = _perplexity_chat(
+        SYSTEM_PROMPT,
+        build_user_prompt(leader, today),
+        max_tokens=1200,
+    )
+    return _extract_json_object(raw)
+
+
+NEWS_SYSTEM_PROMPT = """You are a public health news analyst focused on Minnesota and MDH.
+Use current web information when available. Respond with valid JSON only — no markdown fences."""
+
+
+def build_news_prompt(today: date) -> str:
+    return f"""
+Today is {today.strftime('%A, %B %d, %Y')}.
+
+List the 5–8 most relevant news items from roughly the last 48 hours for Minnesota Department
+of Health leadership. Prioritize: federal funding and PHIG/CDC grant changes, Minnesota legislative
+or policy actions affecting public health, infectious disease and outbreak news in MN or the
+region, health equity and rural access, litigation or federal actions affecting state health
+authority, and major MDH program announcements.
+
+Respond ONLY with this JSON:
+{{
+  "items": [
+    {{
+      "headline": "Short headline",
+      "summary": "1–2 sentences on what happened.",
+      "why_it_matters": "One sentence on relevance to MDH leaders."
+    }}
+  ]
+}}
+"""
+
+
+def _perplexity_chat(system: str, user: str, *, max_tokens: int = 2000) -> str:
     key = (getattr(settings, 'PERPLEXITY_API_KEY', '') or '').strip()
     if not key:
         raise RuntimeError('PERPLEXITY_API_KEY is not set')
@@ -87,14 +123,14 @@ def generate_briefing(leader: dict, today: date) -> dict:
         },
         json={
             'model': model,
-            'temperature': 0.4,
-            'max_tokens': 1200,
+            'temperature': 0.3,
+            'max_tokens': max_tokens,
             'messages': [
-                {'role': 'system', 'content': SYSTEM_PROMPT},
-                {'role': 'user', 'content': build_user_prompt(leader, today)},
+                {'role': 'system', 'content': system},
+                {'role': 'user', 'content': user},
             ],
         },
-        timeout=120,
+        timeout=180,
     )
     if resp.status_code >= 400:
         logger.warning(
@@ -111,4 +147,32 @@ def generate_briefing(leader: dict, today: date) -> dict:
     content = (choices[0].get('message') or {}).get('content')
     if not content:
         raise RuntimeError('Perplexity response missing content')
-    return _extract_json_object(str(content))
+    return str(content)
+
+
+def fetch_daily_news_digest(today: date) -> list[dict]:
+    """Perplexity (sonar) web-grounded MDH news headlines for the digest email."""
+    raw = _perplexity_chat(
+        NEWS_SYSTEM_PROMPT,
+        build_news_prompt(today),
+        max_tokens=2500,
+    )
+    data = _extract_json_object(raw)
+    items = data.get('items') if isinstance(data, dict) else None
+    if not isinstance(items, list):
+        raise RuntimeError('News digest JSON missing "items" list')
+    out: list[dict] = []
+    for row in items[:10]:
+        if not isinstance(row, dict):
+            continue
+        headline = (row.get('headline') or '').strip()
+        if not headline:
+            continue
+        out.append(
+            {
+                'headline': headline,
+                'summary': (row.get('summary') or '').strip(),
+                'why_it_matters': (row.get('why_it_matters') or '').strip(),
+            }
+        )
+    return out
