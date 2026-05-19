@@ -1,0 +1,106 @@
+{% extends "base_site.html" %}
+{% load static %}
+
+{% block title %}MDH Leadership Briefings{% endblock %}
+
+{% block extra_head %}
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="{% static 'mdh_briefings/dashboard.css' %}">
+<script src="https://unpkg.com/htmx.org@2.0.4"></script>
+{% endblock %}
+
+{% block main_inner %}
+<div class="mdh-briefings" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  {% csrf_token %}
+  <header class="mdh-header">
+    <div>
+      <h1 class="mdh-title">MDH Leadership Briefings</h1>
+      <p class="mdh-subtitle">{{ today|date:"l, F j, Y" }}</p>
+    </div>
+    <div class="mdh-actions">
+      <button
+        type="button"
+        class="mdh-btn mdh-btn-primary"
+        id="mdh-generate-all"
+        hx-post="{% url 'mdh_briefings:mdh_generate_all' %}"
+        hx-swap="none"
+      >
+        Generate All Briefings
+      </button>
+      <button type="button" class="mdh-btn mdh-btn-secondary" onclick="location.reload()">
+        Refresh
+      </button>
+    </div>
+  </header>
+
+  <p class="mdh-hint" id="mdh-generate-all-status" hidden></p>
+
+  <div class="mdh-grid">
+    {% for leader in leaders %}
+    <article class="mdh-card" id="card-{{ leader.id }}">
+      <div class="mdh-card-head">
+        <span class="mdh-avatar mdh-avatar--{{ leader.color }}" aria-hidden="true">{{ leader.initials }}</span>
+        <div class="mdh-card-meta">
+          <h2 class="mdh-card-name">{{ leader.name }}</h2>
+          <p class="mdh-card-title">{{ leader.title }}</p>
+          <p class="mdh-card-bureau">{{ leader.bureau }}</p>
+        </div>
+        <span
+          class="mdh-status-dot {% if leader.has_briefing %}mdh-status-dot--complete{% else %}mdh-status-dot--idle{% endif %}"
+          id="status-{{ leader.id }}"
+          title="{% if leader.has_briefing %}Briefing ready{% else %}Waiting{% endif %}"
+        ></span>
+      </div>
+
+      <div
+        class="mdh-card-body"
+        id="briefing-{{ leader.id }}"
+        hx-post="{% url 'mdh_briefings:mdh_generate_briefing' leader.id %}"
+        hx-trigger="load"
+        hx-swap="innerHTML"
+      >
+        <div class="mdh-skeleton" aria-busy="true" aria-label="Loading briefing">
+          <div class="mdh-skeleton-line mdh-skeleton-line--short"></div>
+          <div class="mdh-skeleton-line"></div>
+          <div class="mdh-skeleton-line"></div>
+          <div class="mdh-skeleton-line mdh-skeleton-line--medium"></div>
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</div>
+
+<script>
+(function () {
+  const btn = document.getElementById('mdh-generate-all');
+  const status = document.getElementById('mdh-generate-all-status');
+  if (!btn) return;
+
+  btn.addEventListener('htmx:afterRequest', function (evt) {
+    if (evt.detail.successful) {
+      status.hidden = false;
+      status.textContent = 'Batch generation finished. Reloading cards…';
+      document.querySelectorAll('.mdh-card-body').forEach(function (el) {
+        htmx.trigger(el, 'load');
+      });
+    }
+  });
+
+  document.body.addEventListener('htmx:afterSwap', function (evt) {
+    const target = evt.detail.target;
+    if (!target || !target.id || !target.id.startsWith('briefing-')) return;
+    const leaderId = target.id.replace('briefing-', '');
+    const dot = document.getElementById('status-' + leaderId);
+    if (!dot) return;
+    if (target.querySelector('.mdh-error')) {
+      dot.className = 'mdh-status-dot mdh-status-dot--error';
+      dot.title = 'Error';
+    } else {
+      dot.className = 'mdh-status-dot mdh-status-dot--complete';
+      dot.title = 'Briefing ready';
+    }
+  });
+})();
+</script>
+{% endblock %}

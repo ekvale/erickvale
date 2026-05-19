@@ -1,0 +1,52 @@
+{% if error %}
+<div class="mdh-briefing mdh-briefing--error">
+  <p class="mdh-error">Could not generate briefing: {{ error }}</p>
+  <button
+    type="button"
+    class="mdh-btn mdh-btn-secondary mdh-retry"
+    hx-post="{% url 'mdh_briefings:mdh_generate_briefing' leader_id %}"
+    hx-target="#briefing-{{ leader_id }}"
+    hx-swap="innerHTML"
+  >
+    Retry
+  </button>
+</div>
+{% else %}
+<div class="mdh-briefing">
+  <section class="mdh-section">
+    <h3 class="mdh-section-label">Today&rsquo;s schedule</h3>
+    <ul class="mdh-schedule">
+      {% for item in schedule %}
+      <li class="mdh-schedule-pill">{{ item }}</li>
+      {% empty %}
+      <li class="mdh-schedule-pill mdh-schedule-pill--muted">No items</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="mdh-section">
+    <h3 class="mdh-section-label">Core beliefs</h3>
+    <p class="mdh-body-text">{{ core_beliefs }}</p>
+  </section>
+
+  <section class="mdh-section">
+    <h3 class="mdh-section-label">Vision</h3>
+    <p class="mdh-vision-text">{{ vision }}</p>
+  </section>
+
+  <section class="mdh-section">
+    <h3 class="mdh-section-label">Top priorities</h3>
+    <ol class="mdh-priorities">
+      {% for priority in top_priorities %}
+      <li><span class="mdh-priority-arrow" aria-hidden="true">→</span>{{ priority }}</li>
+      {% empty %}
+      <li class="mdh-muted">No priorities listed.</li>
+      {% endfor %}
+    </ol>
+  </section>
+
+  {% if cached %}
+  <p class="mdh-cached-note">Cached for today</p>
+  {% endif %}
+</div>
+{% endif %}

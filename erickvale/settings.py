@@ -60,8 +60,14 @@ INSTALLED_APPS = [
     'nomoar',
     'dream_blue',
     'braindump',
+    'mdh_briefings',
     'projects.apps.ProjectsConfig',
 ]
+
+# --- MDH Leadership Briefings (Eric-only; Perplexity API) ---
+MDH_BRIEFINGS_OWNER_USERNAME = config('MDH_BRIEFINGS_OWNER_USERNAME', default='eric').strip()
+MDH_BRIEFINGS_OWNER_USER_ID = config('MDH_BRIEFINGS_OWNER_USER_ID', default='').strip()
+MDH_BRIEFINGS_PERPLEXITY_MODEL = config('MDH_BRIEFINGS_PERPLEXITY_MODEL', default='').strip()
 
 # --- Brain dump (personal GTD capture; owner-only) ---
 # Set username OR numeric user id of the single account that may use /apps/braindump/.
