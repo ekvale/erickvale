@@ -45,6 +45,35 @@
     </ol>
   </section>
 
+  {% if relevant_news %}
+  <section class="mdh-section">
+    <h3 class="mdh-section-label">Relevant news</h3>
+    <ul class="mdh-news-list">
+      {% for item in relevant_news %}
+      <li class="mdh-news-item">
+        <strong>{{ item.headline }}</strong>
+        {% if item.summary %}<span class="mdh-body-text"> — {{ item.summary }}</span>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {% if high_value_projects %}
+  <section class="mdh-section">
+    <h3 class="mdh-section-label">Highest-value projects</h3>
+    <ol class="mdh-projects">
+      {% for proj in high_value_projects %}
+      <li>
+        <span class="mdh-project-title">{{ proj.title }}</span>
+        {% if proj.impact %}<p class="mdh-body-text">{{ proj.impact }}</p>{% endif %}
+        {% if proj.next_step %}<p class="mdh-project-next"><strong>Next:</strong> {{ proj.next_step }}</p>{% endif %}
+      </li>
+      {% endfor %}
+    </ol>
+  </section>
+  {% endif %}
+
   {% if cached %}
   <p class="mdh-cached-note">Cached for today</p>
   {% endif %}

@@ -57,6 +57,26 @@
                   <li style="color:#94a3b8;">No priorities generated.</li>
                   {% endfor %}
                 </ol>
+                {% if card.relevant_news %}
+                <p style="margin:12px 0 6px;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#64748b;font-family:Arial,sans-serif;">Role-specific news</p>
+                <ul style="margin:0 0 10px;padding-left:18px;font-size:12px;line-height:1.45;color:#334155;font-family:Arial,sans-serif;">
+                  {% for item in card.relevant_news %}
+                  <li style="margin-bottom:6px;"><strong>{{ item.headline }}</strong>{% if item.summary %} — {{ item.summary }}{% endif %}</li>
+                  {% endfor %}
+                </ul>
+                {% endif %}
+                {% if card.high_value_projects %}
+                <p style="margin:12px 0 6px;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#64748b;font-family:Arial,sans-serif;">Highest-value projects</p>
+                <ul style="margin:0;padding-left:18px;font-size:12px;line-height:1.45;color:#334155;font-family:Arial,sans-serif;">
+                  {% for proj in card.high_value_projects %}
+                  <li style="margin-bottom:8px;">
+                    <strong>{{ proj.title }}</strong>
+                    {% if proj.impact %}<br><span style="color:#475569;">{{ proj.impact }}</span>{% endif %}
+                    {% if proj.next_step %}<br><span style="color:#64748b;"><em>Next:</em> {{ proj.next_step }}</span>{% endif %}
+                  </li>
+                  {% endfor %}
+                </ul>
+                {% endif %}
               </div>
               {% empty %}
               <p style="font-size:13px;color:#94a3b8;font-family:Arial,sans-serif;">No leader briefings were available for today.</p>

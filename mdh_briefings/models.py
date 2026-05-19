@@ -11,6 +11,8 @@ class LeaderBriefing(models.Model):
     core_beliefs = models.TextField()
     vision = models.TextField()
     top_priorities = models.JSONField()
+    relevant_news = models.JSONField(default=list, blank=True)
+    high_value_projects = models.JSONField(default=list, blank=True)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

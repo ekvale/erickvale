@@ -296,3 +296,38 @@
 .mdh-retry {
   font-size: 0.8rem;
 }
+
+.mdh-news-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mdh-news-item {
+  font-size: 0.82rem;
+  line-height: 1.45;
+  margin-bottom: 0.5rem;
+  color: #334155;
+}
+
+.mdh-projects {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.82rem;
+  color: #334155;
+}
+
+.mdh-projects li {
+  margin-bottom: 0.65rem;
+}
+
+.mdh-project-title {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.mdh-project-next {
+  margin: 0.2rem 0 0;
+  font-size: 0.78rem;
+  color: #475569;
+}

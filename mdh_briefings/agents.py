@@ -176,6 +176,38 @@ LEADERS = [
         """,
     },
     {
+        'id': 'senior_data_scientist_interop',
+        'name': 'Eric Kvale',
+        'title': 'Senior Data Scientist, Data Strategy and Interoperability',
+        'bureau': 'Office of Data and Analytics',
+        'initials': 'EK',
+        'color': 'gray',
+        'extended_briefing': True,
+        'context': """
+            Eric Kvale serves as Senior Data Scientist for Data Strategy and Interoperability within
+            MDH's Office of Data and Analytics, reporting through the Chief Data & Analytics Officer.
+            Scope spans enterprise data strategy, public health informatics standards (FHIR R4, USCDI,
+            TEFCA/QHIN), cross-bureau data governance, and hands-on analytics that turn fragmented
+            program data into decision-ready products for leadership.
+
+            Core systems and partners: Minnesota Electronic Disease Surveillance System (MEDSS), eLC,
+            vital records and immunization interfaces, MDH data warehouse / analytics environments,
+            interagency feeds (MN-ITS, DHS, MDE), and federal pipelines (CDC NSSP, NHSN) now stressed
+            by PHIG termination ($38M+, Feb 2026) and prior COVID-era grant reductions ($226M, 2025).
+
+            Highest-value problem spaces: (1) interoperability accelerators—FHIR APIs, bulk data export,
+            consent-aware record linkage for outbreak response; (2) equity-by-design metrics and
+            small-area estimation for rural/tribal gaps; (3) grant-impact dashboards that attribute
+            funding cuts to program risk; (4) reusable ETL/quality frameworks so bureaus stop rebuilding
+            pipelines; (5) responsible AI guardrails for internal summarization and coding assistance
+            on sensitive public health data.
+
+            Current pressures: reduced federal IT funding, staffing gaps in informatics, Minnesota
+            Health Information Exchange alignment, litigation and policy shifts affecting data sharing,
+            and Healthy Minnesota Partnership 2025-2029 indicators requiring better cross-program joins.
+        """,
+    },
+    {
         'id': 'director_communications',
         'name': 'Allison Thrash',
         'title': 'Director, Communications',

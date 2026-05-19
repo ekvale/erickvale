@@ -11,6 +11,7 @@ from django.views.decorators.http import require_GET, require_POST
 
 from .agents import LEADERS, leader_by_id
 from .authz import is_mdh_briefings_owner, mdh_briefings_configured
+from .briefing_store import briefing_to_card_context, save_briefing
 from .models import LeaderBriefing
 from . import services
 
@@ -37,34 +38,6 @@ def _require_owner(request):
 
 def _today() -> date:
     return timezone.localdate()
-
-
-def _briefing_to_card_context(briefing: LeaderBriefing) -> dict:
-    return {
-        'leader_id': briefing.leader_id,
-        'error': None,
-        'schedule': briefing.schedule,
-        'core_beliefs': briefing.core_beliefs,
-        'vision': briefing.vision,
-        'top_priorities': briefing.top_priorities,
-        'cached': True,
-    }
-
-
-def _save_briefing(leader: dict, today: date, data: dict) -> LeaderBriefing:
-    return LeaderBriefing.objects.update_or_create(
-        leader_id=leader['id'],
-        date=today,
-        defaults={
-            'name': leader['name'],
-            'title': leader['title'],
-            'bureau': leader['bureau'],
-            'schedule': data.get('schedule') or [],
-            'core_beliefs': data.get('core_beliefs') or '',
-            'vision': data.get('vision') or '',
-            'top_priorities': data.get('top_priorities') or [],
-        },
-    )[0]
 
 
 @login_required
@@ -101,15 +74,15 @@ def generate_briefing(request, leader_id: str):
     today = _today()
     existing = LeaderBriefing.objects.filter(leader_id=leader_id, date=today).first()
     if existing:
-        ctx = _briefing_to_card_context(existing)
+        ctx = briefing_to_card_context(existing)
         return _apply_private_headers(
             render(request, 'mdh_briefings/briefing_card.html', ctx)
         )
 
     try:
         data = services.generate_briefing(leader, today)
-        briefing = _save_briefing(leader, today, data)
-        ctx = _briefing_to_card_context(briefing)
+        briefing = save_briefing(leader, today, data)
+        ctx = briefing_to_card_context(briefing)
         ctx['cached'] = False
         return _apply_private_headers(
             render(request, 'mdh_briefings/briefing_card.html', ctx)
@@ -126,10 +99,12 @@ def generate_briefing(request, leader_id: str):
                     'schedule': [],
                     'core_beliefs': '',
                     'vision': '',
-                    'top_priorities': [],
-                    'cached': False,
-                },
-            )
+                'top_priorities': [],
+                'relevant_news': [],
+                'high_value_projects': [],
+                'cached': False,
+            },
+        )
         )
 
 
@@ -143,7 +118,7 @@ def generate_all(request):
             continue
         try:
             data = services.generate_briefing(leader, today)
-            _save_briefing(leader, today, data)
+            save_briefing(leader, today, data)
         except Exception:
             continue
     count = LeaderBriefing.objects.filter(date=today).count()

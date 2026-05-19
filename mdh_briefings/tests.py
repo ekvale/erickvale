@@ -4,6 +4,7 @@ from unittest.mock import patch
 from django.test import SimpleTestCase, TestCase, override_settings
 
 from mdh_briefings.agents import LEADERS
+from mdh_briefings.briefing_store import save_briefing
 from mdh_briefings.digest import (
     build_digest_context,
     get_digest_recipients,
@@ -20,6 +21,25 @@ class DigestRecipientTests(SimpleTestCase):
             get_digest_recipients(),
             ['ekvale@gmail.com', 'other@example.com'],
         )
+
+
+class ExtendedBriefingTests(TestCase):
+    def test_save_extended_fields(self):
+        leader = next(x for x in LEADERS if x['id'] == 'senior_data_scientist_interop')
+        today = date(2026, 5, 20)
+        data = {
+            'schedule': [],
+            'core_beliefs': 'Beliefs',
+            'vision': 'Vision',
+            'top_priorities': ['P1'],
+            'relevant_news': [{'headline': 'FHIR update', 'summary': 'Details'}],
+            'high_value_projects': [
+                {'title': 'MEDSS FHIR layer', 'impact': 'Faster outbreak response', 'next_step': 'Draft IG'},
+            ],
+        }
+        b = save_briefing(leader, today, data)
+        self.assertEqual(len(b.relevant_news), 1)
+        self.assertEqual(b.high_value_projects[0]['title'], 'MEDSS FHIR layer')
 
 
 class DigestTemplateTests(TestCase):
@@ -47,6 +67,11 @@ class DigestTemplateTests(TestCase):
         self.assertIn('Priority A', html)
         self.assertIn('Test headline', html)
         self.assertIn(leader['name'], html)
+
+    def test_roster_includes_senior_data_scientist(self):
+        self.assertEqual(len(LEADERS), 19)
+        ids = {x['id'] for x in LEADERS}
+        self.assertIn('senior_data_scientist_interop', ids)
 
 
 @override_settings(

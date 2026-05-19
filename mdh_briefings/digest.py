@@ -13,6 +13,7 @@ from django.utils import timezone
 from dream_blue.emailing import DreamBlueEmailConfigError, parse_recipient_list, send_html_digest
 
 from .agents import LEADERS
+from .briefing_store import save_briefing
 from .models import LeaderBriefing
 from . import services
 
@@ -30,22 +31,6 @@ def _digest_base_url() -> str:
         or (getattr(settings, 'DREAM_BLUE_DIGEST_BASE_URL', '') or '').strip()
     )
     return base.rstrip('/')
-
-
-def _save_briefing(leader: dict, today: date, data: dict) -> LeaderBriefing:
-    return LeaderBriefing.objects.update_or_create(
-        leader_id=leader['id'],
-        date=today,
-        defaults={
-            'name': leader['name'],
-            'title': leader['title'],
-            'bureau': leader['bureau'],
-            'schedule': data.get('schedule') or [],
-            'core_beliefs': data.get('core_beliefs') or '',
-            'vision': data.get('vision') or '',
-            'top_priorities': data.get('top_priorities') or [],
-        },
-    )[0]
 
 
 def ensure_briefings_for_date(
@@ -70,7 +55,7 @@ def ensure_briefings_for_date(
             continue
         try:
             data = services.generate_briefing(leader, today)
-            briefings.append(_save_briefing(leader, today, data))
+            briefings.append(save_briefing(leader, today, data))
         except Exception as exc:
             msg = f"{leader['name']}: {exc}"
             errors.append(msg)
@@ -100,6 +85,8 @@ def build_digest_context(
                 'leader': leader,
                 'briefing': b,
                 'priorities': b.top_priorities or [],
+                'relevant_news': b.relevant_news or [],
+                'high_value_projects': b.high_value_projects or [],
             }
         )
 
@@ -134,6 +121,19 @@ def _plain_text_body(ctx: dict) -> str:
         lines.append(f"  {b.bureau}")
         for i, p in enumerate(card.get('priorities') or [], 1):
             lines.append(f"  {i}. {p}")
+        for item in card.get('relevant_news') or []:
+            headline = item.get('headline') if isinstance(item, dict) else str(item)
+            lines.append(f"  News: {headline}")
+            if isinstance(item, dict) and item.get('summary'):
+                lines.append(f"    {item['summary']}")
+        for proj in card.get('high_value_projects') or []:
+            if not isinstance(proj, dict):
+                continue
+            lines.append(f"  Project: {proj.get('title', '')}")
+            if proj.get('impact'):
+                lines.append(f"    Impact: {proj['impact']}")
+            if proj.get('next_step'):
+                lines.append(f"    Next: {proj['next_step']}")
         lines.append('')
 
     news = ctx.get('news_items') or []
