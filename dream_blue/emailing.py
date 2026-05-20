@@ -50,12 +50,15 @@ def send_html_digest(
     *,
     recipients: Sequence[str] | None = None,
     text_body: str = '',
-) -> None:
+) -> dict[str, str]:
     """
     Send one HTML email to all recipients.
 
     Uses Resend when RESEND_API_KEY and RESEND_FROM_EMAIL are set; otherwise
     Django's email backend (configure EMAIL_* and DEFAULT_FROM_EMAIL for SMTP).
+
+    Returns a small dict: backend (resend|smtp), message_id (Resend id when applicable),
+    from_email, recipients (comma-separated).
     """
     to_list = list(recipients) if recipients is not None else get_digest_recipients()
     if not to_list:
@@ -64,8 +67,14 @@ def send_html_digest(
         )
 
     if _resend_configured():
-        _send_via_resend(subject, html_body, to_list)
-        return
+        message_id = _send_via_resend(subject, html_body, to_list, text_body=text_body)
+        from_email = getattr(settings, 'RESEND_FROM_EMAIL', '').strip()
+        return {
+            'backend': 'resend',
+            'message_id': message_id,
+            'from_email': from_email,
+            'recipients': ', '.join(to_list),
+        }
 
     if _smtp_configured():
         from_email = getattr(settings, 'DEFAULT_FROM_EMAIL')
@@ -77,7 +86,12 @@ def send_html_digest(
         )
         msg.attach_alternative(html_body, 'text/html')
         msg.send(fail_silently=False)
-        return
+        return {
+            'backend': 'smtp',
+            'message_id': '',
+            'from_email': str(from_email),
+            'recipients': ', '.join(to_list),
+        }
 
     raise DreamBlueEmailConfigError(
         'Configure either RESEND_API_KEY + RESEND_FROM_EMAIL, or '
@@ -85,7 +99,13 @@ def send_html_digest(
     )
 
 
-def _send_via_resend(subject: str, html_body: str, to_list: list[str]) -> None:
+def _send_via_resend(
+    subject: str,
+    html_body: str,
+    to_list: list[str],
+    *,
+    text_body: str = '',
+) -> str:
     api_key = getattr(settings, 'RESEND_API_KEY', '').strip()
     from_email = getattr(settings, 'RESEND_FROM_EMAIL', '').strip()
     url = getattr(settings, 'RESEND_API_URL', 'https://api.resend.com/emails')
@@ -95,6 +115,8 @@ def _send_via_resend(subject: str, html_body: str, to_list: list[str]) -> None:
         'subject': subject,
         'html': html_body,
     }
+    if text_body.strip():
+        payload['text'] = text_body
     resp = requests.post(
         url,
         json=payload,
@@ -107,3 +129,27 @@ def _send_via_resend(subject: str, html_body: str, to_list: list[str]) -> None:
     if resp.status_code >= 400:
         logger.error('Resend API error %s: %s', resp.status_code, resp.text)
         resp.raise_for_status()
+    try:
+        body = resp.json()
+    except ValueError:
+        body = {}
+    message_id = str(body.get('id') or '')
+    logger.info(
+        'Resend accepted email id=%s subject=%r to=%s from=%s',
+        message_id,
+        subject,
+        to_list,
+        from_email,
+    )
+    return message_id
+
+
+def email_delivery_status() -> dict[str, str | bool]:
+    """Non-secret snapshot of outbound email configuration (for diagnostics)."""
+    return {
+        'resend_configured': _resend_configured(),
+        'smtp_configured': _smtp_configured(),
+        'resend_from': (getattr(settings, 'RESEND_FROM_EMAIL', '') or '').strip(),
+        'smtp_host': (getattr(settings, 'EMAIL_HOST', '') or '').strip(),
+        'default_from': (getattr(settings, 'DEFAULT_FROM_EMAIL', '') or '').strip(),
+    }

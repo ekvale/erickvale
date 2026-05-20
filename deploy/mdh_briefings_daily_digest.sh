@@ -7,6 +7,10 @@
 # Cron example (6:30 AM server time):
 #   30 6 * * * cd /home/erickvale/erickvale && ./deploy/mdh_briefings_daily_digest.sh >> /home/erickvale/logs/mdh_briefings_digest.log 2>&1
 #
+# Test delivery (no Perplexity):
+#   ./deploy/mdh_briefings_daily_digest.sh --email-probe
+#   python manage.py send_mdh_email_probe
+#
 # Optional:
 #   DIGEST_PYTHON=/home/erickvale/erickvale/venv/bin/python
 

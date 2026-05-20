@@ -13,6 +13,7 @@ from datetime import datetime as dt
 from django.core.management.base import BaseCommand, CommandError
 
 from mdh_briefings.digest import run_daily_digest_send
+from mdh_briefings.email_probe import run_email_probe
 
 
 class Command(BaseCommand):
@@ -44,8 +45,20 @@ class Command(BaseCommand):
             action='store_true',
             help='Omit the web news section (still sends leader priorities).',
         )
+        parser.add_argument(
+            '--email-probe',
+            action='store_true',
+            help='Send a tiny test email only (no Perplexity). Use to verify delivery to state.mn.us.',
+        )
 
     def handle(self, *args, **options):
+        if options.get('email_probe'):
+            probe = run_email_probe(send=True)
+            if probe['ok']:
+                self.stdout.write(self.style.SUCCESS(probe['message']))
+                return
+            raise CommandError(probe['message'])
+
         today = None
         raw_date = (options.get('date') or '').strip()
         if raw_date:

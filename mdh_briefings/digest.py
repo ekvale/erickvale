@@ -239,7 +239,7 @@ def run_daily_digest_send(
         }
 
     try:
-        send_html_digest(subject, html, recipients=recipients, text_body=text_body)
+        delivery = send_html_digest(subject, html, recipients=recipients, text_body=text_body)
     except DreamBlueEmailConfigError as exc:
         return {
             'ok': False,
@@ -247,16 +247,19 @@ def run_daily_digest_send(
             **result_base,
         }
 
+    mid = delivery.get('message_id') or ''
     logger.info(
-        'mdh_briefings daily digest sent',
-        extra={
-            'recipient_count': len(recipients),
-            'leader_count': len(ctx['leader_cards']),
-            'news_count': len(news_items),
-        },
+        'mdh_briefings daily digest sent backend=%s id=%s recipients=%s leaders=%s news=%s',
+        delivery.get('backend'),
+        mid,
+        recipients,
+        len(ctx['leader_cards']),
+        len(news_items),
     )
+    extra = f' [{delivery.get("backend")} id={mid}]' if mid else f' [{delivery.get("backend")}]'
     return {
         'ok': True,
-        'message': f'Sent "{subject}" to {len(recipients)} recipient(s).',
+        'message': f'Sent "{subject}" to {", ".join(recipients)}.{extra}',
+        'delivery': delivery,
         **result_base,
     }
