@@ -176,6 +176,28 @@ LEADERS = [
         """,
     },
     {
+        'id': 'director_center_health_statistics',
+        'name': 'Daniel Fernandez-Baca',
+        'title': 'Director, Minnesota Center for Health Statistics',
+        'bureau': 'Minnesota Center for Health Statistics',
+        'initials': 'DF',
+        'color': 'gray',
+        'context': """
+            Daniel Fernandez-Baca directs the Minnesota Center for Health Statistics (MCHS) within
+            MDH's Office of Data and Analytics. MCHS is the state's principal health statistics
+            authority: vital records analytics, BRFSS and other population surveys, hospitalization
+            and utilization data, small-area health indicators, and data products supporting Healthy
+            Minnesota Partnership 2025-2029 reporting.
+
+            The Center partners with CDC/NCHS, MDH epidemiology and bureaus, local public health, and
+            tribal nations on standardized measures, privacy-protected release, and survey operations.
+            Pressures include maintaining timeliness after federal grant cuts (PHIG $38M+ Feb 2026;
+            $226M COVID-era reductions), modernizing public-facing data portals, workforce capacity
+            for survey and registry coordination, and aligning statistics with new interoperability
+            and equity reporting demands.
+        """,
+    },
+    {
         'id': 'senior_data_scientist_interop',
         'name': 'Eric Kvale',
         'title': 'Senior Data Scientist, Data Strategy and Interoperability',

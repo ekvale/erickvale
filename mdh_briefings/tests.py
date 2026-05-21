@@ -68,10 +68,11 @@ class DigestTemplateTests(TestCase):
         self.assertIn('Test headline', html)
         self.assertIn(leader['name'], html)
 
-    def test_roster_includes_senior_data_scientist(self):
-        self.assertEqual(len(LEADERS), 19)
+    def test_roster_includes_key_roles(self):
+        self.assertEqual(len(LEADERS), 20)
         ids = {x['id'] for x in LEADERS}
         self.assertIn('senior_data_scientist_interop', ids)
+        self.assertIn('director_center_health_statistics', ids)
 
 
 @override_settings(

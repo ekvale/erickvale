@@ -18,4 +18,5 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 PYTHON="${DIGEST_PYTHON:-$ROOT/venv/bin/python}"
+echo "==> mdh_briefings_daily_digest $(date -Is 2>/dev/null || date) pid=$$"
 exec "$PYTHON" manage.py send_mdh_briefings_digest "$@"
