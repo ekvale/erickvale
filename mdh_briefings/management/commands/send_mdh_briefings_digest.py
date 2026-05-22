@@ -50,6 +50,11 @@ class Command(BaseCommand):
             action='store_true',
             help='Send a tiny test email only (no Perplexity). Use to verify delivery to state.mn.us.',
         )
+        parser.add_argument(
+            '--force-weekend',
+            action='store_true',
+            help='Send even on Saturday/Sunday (default: skip weekends).',
+        )
 
     def handle(self, *args, **options):
         if options.get('email_probe'):
@@ -74,7 +79,12 @@ class Command(BaseCommand):
             today=today,
             generate_missing=not options['no_generate'],
             include_news=not options['no_news'],
+            force_weekend=bool(options.get('force_weekend')),
         )
+
+        if result.get('skipped'):
+            self.stdout.write(self.style.WARNING(result['message']))
+            return
 
         if out:
             self.stdout.write(self.style.SUCCESS(result['message']))

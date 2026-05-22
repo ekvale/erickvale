@@ -51,15 +51,17 @@ LEADERS = [
     {
         'id': 'ac_health_operations',
         'name': 'Mel Gresczyk',
-        'title': 'Assistant Commissioner',
+        'title': 'Assistant Commissioner, Chief Operating Officer',
         'bureau': 'Health Operations Bureau',
         'initials': 'MG',
         'color': 'gray',
+        'bureau_slug': 'health_operations',
         'context': """
-            Mel Gresczyk leads the Health Operations Bureau: licensing, certification, vital records,
-            health care facilities regulation, and operational backbone services. Current pressures
-            include workforce retention in regulatory programs, modernizing licensing systems, and
-            sustaining operations amid federal funding uncertainty.
+            Mel Gresczyk leads the Health Operations Bureau as Assistant Commissioner and Chief
+            Operating Officer: health regulation, emergency preparedness, HR, financial management,
+            facilities, organizational wellbeing, and public health strategy partnerships.
+            Current pressures include workforce retention, licensing modernization, and sustaining
+            operations amid federal funding uncertainty.
         """,
     },
     {
@@ -69,6 +71,7 @@ LEADERS = [
         'bureau': 'Health Equity Bureau',
         'initials': 'WU',
         'color': 'teal',
+        'bureau_slug': 'health_equity',
         'context': """
             Wendy Underwood is serving in an acting capacity as Assistant Commissioner for the Health
             Equity Bureau while maintaining Deputy Commissioner duties. The bureau advances health equity
@@ -84,6 +87,7 @@ LEADERS = [
         'bureau': 'Health Improvement Bureau',
         'initials': 'RT',
         'color': 'green',
+        'bureau_slug': 'health_improvement',
         'context': """
             Robsan Tura leads the Health Improvement Bureau: chronic disease prevention, maternal and
             child health, oral health, nutrition, and community health improvement. Oversees programs
@@ -98,6 +102,7 @@ LEADERS = [
         'bureau': 'Health Protection Bureau',
         'initials': 'MK',
         'color': 'orange',
+        'bureau_slug': 'health_protection',
         'context': """
             Myra Kunas leads the Health Protection Bureau encompassing infectious disease, environmental
             health, emergency preparedness coordination, and the State Public Health Laboratory. The bureau
@@ -112,6 +117,7 @@ LEADERS = [
         'bureau': 'Health Systems Bureau',
         'initials': 'CB',
         'color': 'purple',
+        'bureau_slug': 'health_systems',
         'context': """
             Carol Backstrom leads the Health Systems Bureau: health policy, Medicaid and state health
             program alignment, hospital and clinic systems, and health care workforce. Priorities include
@@ -134,20 +140,100 @@ LEADERS = [
         """,
     },
     {
-        'id': 'facilities_manager',
+        'id': 'director_data_strategy_interop',
         'name': 'Chris Brueske',
-        'title': 'Facilities Manager',
-        'bureau': 'Facilities Management Division',
+        'title': 'Director, Office of Data Strategy and Interoperability',
+        'bureau': 'Office of Data and Analytics',
         'initials': 'CB',
         'color': 'gray',
         'context': """
-            Chris Brueske leads MDH facilities management: Capitol Complex and agency buildings,
-            space planning, maintenance and custodial services, safety and security coordination,
-            and capital asset stewardship for ~2,075 staff across MDH locations and regional offices.
-            Facilities partners with MNIT on building systems, emergency operations centers, and
-            continuity during public health emergencies. Pressures include aging infrastructure,
-            energy and accessibility upgrades, workplace modernization post-COVID, and aligning
-            physical capacity with bureau restructuring after federal funding cuts.
+            Chris Brueske directs the Office of Data Strategy and Interoperability within the
+            Office of Data and Analytics: FHIR and interoperability programs, the Data Exchange Hub,
+            and cross-bureau informatics alignment with MNIT Health and program areas.
+        """,
+    },
+    {
+        'id': 'facilities_manager',
+        'name': 'Kevin Umidon',
+        'title': 'Facilities Manager',
+        'bureau': 'Facilities Management Division',
+        'initials': 'KU',
+        'color': 'gray',
+        'context': """
+            Kevin Umidon manages MDH facilities: Freeman and Public Health Lab building services,
+            regional offices, facility services, and capital stewardship for agency locations.
+        """,
+    },
+    {
+        'id': 'director_legislative_relations',
+        'name': 'Lisa Thimjon',
+        'title': 'Director, Office of Legislative Relations',
+        'bureau': "Commissioner's Office",
+        'initials': 'LT',
+        'color': 'blue',
+        'context': """
+            Lisa Thimjon leads legislative relations for MDH: bill tracking, committee testimony
+            coordination, and agency positions on health policy at the Capitol.
+        """,
+    },
+    {
+        'id': 'director_public_health_strategy',
+        'name': 'Chelsie Huntley',
+        'title': 'Director, Public Health Strategy and Partnership',
+        'bureau': 'Health Operations Bureau',
+        'initials': 'CH',
+        'color': 'gray',
+        'context': """
+            Chelsie Huntley directs public health strategy and partnership, aligning MDH bureaus
+            with local public health and Healthy Minnesota Partnership implementation.
+        """,
+    },
+    {
+        'id': 'director_american_indian_health',
+        'name': 'Kris Rhodes',
+        'title': 'Director, Office of American Indian Health and Tribal Relations',
+        'bureau': 'Health Equity Bureau',
+        'initials': 'KR',
+        'color': 'teal',
+        'context': """
+            Kris Rhodes leads tribal relations and American Indian health initiatives, government-to-
+            government partnership, and culturally responsive public health programs.
+        """,
+    },
+    {
+        'id': 'director_african_american_health',
+        'name': 'Aisha Ellis',
+        'title': 'Director, Office of African American Health',
+        'bureau': 'Health Equity Bureau',
+        'initials': 'AE',
+        'color': 'teal',
+        'context': """
+            Aisha Ellis directs the Office of African American Health, focused on disparities
+            reduction and community-centered equity programs.
+        """,
+    },
+    {
+        'id': 'director_dibe',
+        'name': 'Shalome Musigñac Jordán',
+        'title': 'Director, Office of Diversity, Inclusion, Belonging, and Equity Strategy',
+        'bureau': 'Health Equity Bureau',
+        'initials': 'SM',
+        'color': 'teal',
+        'context': """
+            Shalome Musigñac Jordán leads DIBE strategy: belonging, inclusion, and equity systems
+            change across MDH workforce and programs.
+        """,
+    },
+    {
+        'id': 'deputy_coo_operations',
+        'name': 'Mike Boettcher',
+        'title': 'Director of Operations, Deputy Chief Operating Officer',
+        'bureau': 'Office of Diversity, Inclusion, Belonging, and Equity Strategy',
+        'initials': 'MB',
+        'color': 'gray',
+        'context': """
+            Mike Boettcher serves as Deputy Chief Operating Officer and Director of Operations,
+            supporting agency-wide operations planning and cross-bureau coordination.
         """,
     },
     {

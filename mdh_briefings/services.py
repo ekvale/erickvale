@@ -10,6 +10,8 @@ from datetime import date
 import requests
 from django.conf import settings
 
+from .bureaus import bureau_by_slug, format_bureau_org_chart
+
 logger = logging.getLogger(__name__)
 
 SYSTEM_PROMPT = """You are a government leadership simulation assistant.
@@ -33,12 +35,22 @@ def build_user_prompt(leader: dict, today: date) -> str:
     return _build_standard_user_prompt(leader, today)
 
 
+def _bureau_org_appendix(leader: dict) -> str:
+    slug = leader.get('bureau_slug')
+    if not slug:
+        return ''
+    bureau = bureau_by_slug(slug)
+    if not bureau:
+        return ''
+    return f"\n\nBureau organization (reference for today's briefing):\n{format_bureau_org_chart(bureau)}\n"
+
+
 def _build_standard_user_prompt(leader: dict, today: date) -> str:
     return f"""
 You are {leader['name']}, {leader['title']} at the Minnesota Department of Health.
 
 Background: {leader['context']}
-
+{_bureau_org_appendix(leader)}
 Generate a realistic daily leadership briefing for {today.strftime('%A, %B %d, %Y')}.
 
 Respond ONLY with this JSON structure:
@@ -60,7 +72,7 @@ def _build_extended_user_prompt(leader: dict, today: date) -> str:
 You are {leader['name']}, {leader['title']} at the Minnesota Department of Health.
 
 Background: {leader['context']}
-
+{_bureau_org_appendix(leader)}
 Generate a realistic daily leadership briefing for {today.strftime('%A, %B %d, %Y')}.
 Use current, plausible public health informatics and Minnesota policy context where helpful.
 
@@ -127,11 +139,15 @@ NEWS_SYSTEM_PROMPT = """You are a public health news analyst focused on Minnesot
 Use current web information when available. Respond with valid JSON only — no markdown fences."""
 
 
+def _news_limit() -> int:
+    return max(1, min(8, int(getattr(settings, 'MDH_BRIEFINGS_DIGEST_NEWS_LIMIT', 3))))
+
+
 def build_news_prompt(today: date) -> str:
     return f"""
 Today is {today.strftime('%A, %B %d, %Y')}.
 
-List the 5–8 most relevant news items from roughly the last 48 hours for Minnesota Department
+List the {_news_limit()} most relevant news items from roughly the last 48 hours for Minnesota Department
 of Health leadership. Prioritize: federal funding and PHIG/CDC grant changes, Minnesota legislative
 or policy actions affecting public health, infectious disease and outbreak news in MN or the
 region, health equity and rural access, litigation or federal actions affecting state health
@@ -208,7 +224,7 @@ def fetch_daily_news_digest(today: date) -> list[dict]:
     if not isinstance(items, list):
         raise RuntimeError('News digest JSON missing "items" list')
     out: list[dict] = []
-    for row in items[:10]:
+    for row in items[: _news_limit()]:
         if not isinstance(row, dict):
             continue
         headline = (row.get('headline') or '').strip()

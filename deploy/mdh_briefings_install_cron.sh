@@ -9,7 +9,8 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 LOG_DIR="${LOG_DIR:-/home/erickvale/logs}"
-CRON_LINE="30 6 * * * cd ${ROOT} && ${ROOT}/deploy/mdh_briefings_daily_digest.sh >> ${LOG_DIR}/mdh_briefings_digest.log 2>&1"
+# Monday–Friday only (field 5 = 1-5)
+CRON_LINE="30 6 * * 1-5 cd ${ROOT} && ${ROOT}/deploy/mdh_briefings_daily_digest.sh >> ${LOG_DIR}/mdh_briefings_digest.log 2>&1"
 
 mkdir -p "${LOG_DIR}"
 chmod +x "${ROOT}/deploy/mdh_briefings_daily_digest.sh"
@@ -22,7 +23,7 @@ if [[ "${1:-}" != "--install" ]]; then
   echo "To install for the current user:"
   echo "  bash deploy/mdh_briefings_install_cron.sh --install"
   echo ""
-  echo "For 6:30 AM America/Chicago on a UTC server, use minute/hour 30 11 (CST) or 30 12 (CDT)."
+  echo "For 6:30 AM America/Chicago on a UTC server, use 30 11 * * 1-5 (CST) or 30 12 * * 1-5 (CDT)."
   exit 0
 fi
 

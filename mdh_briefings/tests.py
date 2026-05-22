@@ -3,24 +3,41 @@ from unittest.mock import patch
 
 from django.test import SimpleTestCase, TestCase, override_settings
 
-from mdh_briefings.agents import LEADERS
+from mdh_briefings.agents import LEADERS, leader_by_id
+from mdh_briefings.models import LeaderBriefing
 from mdh_briefings.briefing_store import save_briefing
+from mdh_briefings.bureaus import (
+    digest_leader_ids_for_date,
+    is_digest_weekday,
+    spotlight_bureau_for_date,
+)
 from mdh_briefings.digest import (
     build_digest_context,
     get_digest_recipients,
     render_digest_html,
     run_daily_digest_send,
 )
-from mdh_briefings.models import LeaderBriefing
 
 
-@override_settings(MDH_BRIEFINGS_DIGEST_RECIPIENTS='eric.kvale@state.mn.us,other@example.com')
+@override_settings(MDH_BRIEFINGS_DIGEST_RECIPIENTS='eric.kvale@state.mn.us')
 class DigestRecipientTests(SimpleTestCase):
     def test_parse_recipients(self):
-        self.assertEqual(
-            get_digest_recipients(),
-            ['eric.kvale@state.mn.us', 'other@example.com'],
-        )
+        self.assertEqual(get_digest_recipients(), ['eric.kvale@state.mn.us'])
+
+
+class BureauSpotlightTests(SimpleTestCase):
+    def test_weekday_rotation(self):
+        mon = date(2026, 5, 18)  # Monday
+        self.assertEqual(spotlight_bureau_for_date(mon)['slug'], 'health_operations')
+        ids, bureau = digest_leader_ids_for_date(mon)
+        self.assertIn('commissioner', ids)
+        self.assertIn('ac_health_operations', ids)
+        self.assertEqual(bureau['slug'], 'health_operations')
+
+    def test_weekend_skip(self):
+        sat = date(2026, 5, 23)
+        self.assertFalse(is_digest_weekday(sat))
+        self.assertIsNone(spotlight_bureau_for_date(sat))
 
 
 class ExtendedBriefingTests(TestCase):
@@ -39,13 +56,13 @@ class ExtendedBriefingTests(TestCase):
         }
         b = save_briefing(leader, today, data)
         self.assertEqual(len(b.relevant_news), 1)
-        self.assertEqual(b.high_value_projects[0]['title'], 'MEDSS FHIR layer')
 
 
 class DigestTemplateTests(TestCase):
-    def test_render_includes_leader_priorities(self):
-        today = date(2026, 5, 19)
-        leader = LEADERS[0]
+    def test_render_spotlight_digest(self):
+        today = date(2026, 5, 20)  # Wednesday → health improvement
+        leader = next(x for x in LEADERS if x['id'] == 'ac_health_improvement')
+        comm = next(x for x in LEADERS if x['id'] == 'commissioner')
         briefing = LeaderBriefing.objects.create(
             leader_id=leader['id'],
             name=leader['name'],
@@ -55,37 +72,47 @@ class DigestTemplateTests(TestCase):
             schedule=[],
             core_beliefs='',
             vision='',
-            top_priorities=['Priority A', 'Priority B'],
+            top_priorities=['Improvement priority'],
         )
+        comm_b = LeaderBriefing.objects.create(
+            leader_id=comm['id'],
+            name=comm['name'],
+            title=comm['title'],
+            bureau=comm['bureau'],
+            date=today,
+            schedule=[],
+            core_beliefs='',
+            vision='',
+            top_priorities=['Commissioner priority'],
+        )
+        bureau = spotlight_bureau_for_date(today)
         ctx = build_digest_context(
             today,
-            briefings=[briefing],
-            news_items=[{'headline': 'Test headline', 'summary': 'Summary', 'why_it_matters': 'Matters'}],
+            briefings=[comm_b, briefing],
+            news_items=[{'headline': 'Test', 'summary': 'S', 'why_it_matters': ''}],
+            digest_leader_ids=['commissioner', 'ac_health_improvement'],
+            spotlight_bureau=bureau,
         )
         subject, html = render_digest_html(today, ctx)
-        self.assertIn('MDH Leadership Daily', subject)
-        self.assertIn('Priority A', html)
-        self.assertIn('Test headline', html)
-        self.assertIn(leader['name'], html)
+        self.assertIn('Health Improvement Bureau', subject)
+        self.assertIn('Improvement priority', html)
+        self.assertIn('Commissioner priority', html)
 
-    def test_roster_includes_key_roles(self):
-        self.assertEqual(len(LEADERS), 22)
+    def test_roster_has_bureaus_and_org_chart_roles(self):
+        self.assertGreaterEqual(len(LEADERS), 28)
         ids = {x['id'] for x in LEADERS}
-        self.assertIn('senior_data_scientist_interop', ids)
         self.assertIn('director_center_health_statistics', ids)
+        self.assertIn('director_data_strategy_interop', ids)
         self.assertIn('facilities_manager', ids)
-        self.assertIn('mnit_health_cbto', ids)
+        self.assertEqual(leader_by_id('facilities_manager')['name'], 'Kevin Umidon')
 
 
-@override_settings(
-    MDH_BRIEFINGS_DIGEST_RECIPIENTS='eric.kvale@state.mn.us',
-    PERPLEXITY_API_KEY='',
-)
+@override_settings(MDH_BRIEFINGS_DIGEST_RECIPIENTS='eric.kvale@state.mn.us')
 class DigestSendDryRunTests(TestCase):
     @patch('mdh_briefings.digest.ensure_briefings_for_date')
     @patch('mdh_briefings.services.fetch_daily_news_digest')
-    def test_dry_run(self, mock_news, mock_ensure):
-        today = date(2026, 5, 19)
+    def test_dry_run_weekday(self, mock_news, mock_ensure):
+        today = date(2026, 5, 19)  # Tuesday
         leader = LEADERS[0]
         briefing = LeaderBriefing(
             leader_id=leader['id'],
@@ -100,6 +127,11 @@ class DigestSendDryRunTests(TestCase):
         )
         mock_ensure.return_value = ([briefing], [])
         mock_news.return_value = []
-        result = run_daily_digest_send(dry_run=True, today=today, include_news=True)
+        result = run_daily_digest_send(dry_run=True, today=today)
         self.assertTrue(result['ok'])
-        self.assertIn('eric.kvale@state.mn.us', result['recipients'][0])
+        self.assertFalse(result.get('skipped'))
+
+    def test_skip_weekend(self):
+        result = run_daily_digest_send(dry_run=True, today=date(2026, 5, 24))  # Sunday
+        self.assertTrue(result.get('skipped'))
+

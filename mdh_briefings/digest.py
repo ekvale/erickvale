@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 from django.conf import settings
@@ -12,8 +12,16 @@ from django.utils import timezone
 
 from dream_blue.emailing import DreamBlueEmailConfigError, parse_recipient_list, send_html_digest
 
-from .agents import LEADERS
+from .agents import LEADERS, leader_by_id
 from .briefing_store import save_briefing
+from .bureaus import (
+    CORE_DIGEST_LEADER_IDS,
+    WEEKDAY_SPOTLIGHT_SLUGS,
+    digest_leader_ids_for_date,
+    format_bureau_org_chart,
+    is_digest_weekday,
+    spotlight_bureau_for_date,
+)
 from .models import LeaderBriefing
 from . import services
 
@@ -37,15 +45,21 @@ def ensure_briefings_for_date(
     today: date,
     *,
     generate_missing: bool = True,
+    leader_ids: list[str] | None = None,
 ) -> tuple[list[LeaderBriefing], list[str]]:
     """
-    Return today's LeaderBriefing rows for all roster leaders (in roster order).
-    Generate missing rows when generate_missing is True.
+    Generate/cache briefings for the given leader ids (default: all LEADERS).
     """
+    if leader_ids is None:
+        targets = LEADERS
+    else:
+        id_set = set(leader_ids)
+        targets = [L for L in LEADERS if L['id'] in id_set]
+
     briefings: list[LeaderBriefing] = []
     errors: list[str] = []
 
-    for leader in LEADERS:
+    for leader in targets:
         existing = LeaderBriefing.objects.filter(leader_id=leader['id'], date=today).first()
         if existing:
             briefings.append(existing)
@@ -64,37 +78,72 @@ def ensure_briefings_for_date(
     return briefings, errors
 
 
+def _card_from_briefing(leader: dict, briefing: LeaderBriefing) -> dict:
+    return {
+        'leader': leader,
+        'briefing': briefing,
+        'priorities': briefing.top_priorities or [],
+        'relevant_news': briefing.relevant_news or [],
+        'high_value_projects': briefing.high_value_projects or [],
+    }
+
+
 def build_digest_context(
     today: date,
     *,
     briefings: list[LeaderBriefing] | None = None,
     news_items: list[dict] | None = None,
     generation_errors: list[str] | None = None,
+    digest_leader_ids: list[str] | None = None,
+    spotlight_bureau: dict | None = None,
 ) -> dict:
-    if briefings is None:
-        briefings, generation_errors = ensure_briefings_for_date(today, generate_missing=True)
+    if digest_leader_ids is None:
+        digest_leader_ids, spotlight_bureau = digest_leader_ids_for_date(today)
 
-    leader_cards = []
-    by_id = {b.leader_id: b for b in briefings}
-    for leader in LEADERS:
-        b = by_id.get(leader['id'])
-        if not b:
-            continue
-        leader_cards.append(
-            {
-                'leader': leader,
-                'briefing': b,
-                'priorities': b.top_priorities or [],
-                'relevant_news': b.relevant_news or [],
-                'high_value_projects': b.high_value_projects or [],
-            }
+    if briefings is None:
+        briefings, generation_errors = ensure_briefings_for_date(
+            today,
+            generate_missing=True,
+            leader_ids=digest_leader_ids,
         )
+
+    by_id = {b.leader_id: b for b in briefings}
+    executive_cards = []
+    spotlight_card = None
+
+    for lid in CORE_DIGEST_LEADER_IDS:
+        leader = leader_by_id(lid)
+        b = by_id.get(lid) if leader else None
+        if leader and b:
+            executive_cards.append(_card_from_briefing(leader, b))
+
+    if spotlight_bureau:
+        ac_id = spotlight_bureau['ac_leader_id']
+        leader = leader_by_id(ac_id)
+        b = by_id.get(ac_id) if leader else None
+        if leader and b:
+            spotlight_card = _card_from_briefing(leader, b)
+
+    next_bureau = None
+    if is_digest_weekday(today):
+        nxt = today + timedelta(days=1)
+        while nxt.weekday() > 4:
+            nxt += timedelta(days=1)
+        nb = spotlight_bureau_for_date(nxt)
+        if nb:
+            next_bureau = nb['name']
 
     base = _digest_base_url()
     return {
         'today': today,
         'today_label': today.strftime('%A, %B %d, %Y'),
-        'leader_cards': leader_cards,
+        'executive_cards': executive_cards,
+        'spotlight_card': spotlight_card,
+        'spotlight_bureau': spotlight_bureau,
+        'spotlight_org_chart': (
+            format_bureau_org_chart(spotlight_bureau) if spotlight_bureau else ''
+        ),
+        'next_spotlight_bureau': next_bureau,
         'news_items': news_items or [],
         'generation_errors': generation_errors or [],
         'dashboard_url': f'{base}/mdh/' if base else '',
@@ -103,7 +152,8 @@ def build_digest_context(
 
 def render_digest_html(today: date, ctx: dict) -> tuple[str, str]:
     html = render_to_string('mdh_briefings/emails/daily_digest.html', ctx)
-    subject = f'MDH Leadership Daily — priorities & news ({today.isoformat()})'
+    bureau_name = (ctx.get('spotlight_bureau') or {}).get('name', 'MDH')
+    subject = f'MDH Daily — {bureau_name} spotlight ({today.strftime("%a %b %d")})'
     return subject, html
 
 
@@ -115,37 +165,32 @@ def _plain_text_body(ctx: dict) -> str:
     if ctx.get('dashboard_url'):
         lines.extend([f"Dashboard: {ctx['dashboard_url']}", ''])
 
-    for card in ctx.get('leader_cards') or []:
+    if ctx.get('spotlight_bureau'):
+        lines.append(f"Bureau spotlight: {ctx['spotlight_bureau']['name']}")
+        lines.append('')
+
+    for card in ctx.get('executive_cards') or []:
         b = card['briefing']
         lines.append(f"{b.name} — {b.title}")
-        lines.append(f"  {b.bureau}")
         for i, p in enumerate(card.get('priorities') or [], 1):
             lines.append(f"  {i}. {p}")
-        for item in card.get('relevant_news') or []:
-            headline = item.get('headline') if isinstance(item, dict) else str(item)
-            lines.append(f"  News: {headline}")
-            if isinstance(item, dict) and item.get('summary'):
-                lines.append(f"    {item['summary']}")
-        for proj in card.get('high_value_projects') or []:
-            if not isinstance(proj, dict):
-                continue
-            lines.append(f"  Project: {proj.get('title', '')}")
-            if proj.get('impact'):
-                lines.append(f"    Impact: {proj['impact']}")
-            if proj.get('next_step'):
-                lines.append(f"    Next: {proj['next_step']}")
+        lines.append('')
+
+    sc = ctx.get('spotlight_card')
+    if sc:
+        b = sc['briefing']
+        lines.append(f"SPOTLIGHT: {b.name} — {b.title}")
+        for i, p in enumerate(sc.get('priorities') or [], 1):
+            lines.append(f"  {i}. {p}")
         lines.append('')
 
     news = ctx.get('news_items') or []
     if news:
         lines.append('Relevant news')
-        lines.append('—' * 40)
         for item in news:
             lines.append(item.get('headline') or 'News item')
             if item.get('summary'):
                 lines.append(f"  {item['summary']}")
-            if item.get('why_it_matters'):
-                lines.append(f"  Why it matters: {item['why_it_matters']}")
             lines.append('')
 
     errs = ctx.get('generation_errors') or []
@@ -164,29 +209,37 @@ def run_daily_digest_send(
     today: date | None = None,
     generate_missing: bool = True,
     include_news: bool = True,
+    force_weekend: bool = False,
 ) -> dict:
-    """
-    Generate briefings (if needed), fetch news, email digest.
-
-    Returns dict with ok, message, subject, recipients, leader_count, news_count.
-    """
     if today is None:
         today = timezone.localdate()
 
+    if not force_weekend and not is_digest_weekday(today):
+        return {
+            'ok': True,
+            'skipped': True,
+            'message': f'Skipped weekend ({today.strftime("%A")}); digest sends Monday–Friday only.',
+            'subject': '',
+            'recipients': get_digest_recipients(),
+            'leader_count': 0,
+            'news_count': 0,
+        }
+
+    digest_ids, spotlight_bureau = digest_leader_ids_for_date(today)
     recipients = get_digest_recipients()
+
     briefings, gen_errors = ensure_briefings_for_date(
         today,
         generate_missing=generate_missing,
+        leader_ids=digest_ids,
     )
 
     news_items: list[dict] = []
-    news_error = ''
     if include_news:
         try:
             news_items = services.fetch_daily_news_digest(today)
         except Exception as exc:
-            news_error = str(exc)
-            gen_errors = list(gen_errors) + [f'News digest: {news_error}']
+            gen_errors = list(gen_errors) + [f'News digest: {exc}']
             logger.warning('mdh_briefings news digest failed: %s', exc)
 
     ctx = build_digest_context(
@@ -194,15 +247,20 @@ def run_daily_digest_send(
         briefings=briefings,
         news_items=news_items,
         generation_errors=gen_errors,
+        digest_leader_ids=digest_ids,
+        spotlight_bureau=spotlight_bureau,
     )
     subject, html = render_digest_html(today, ctx)
     text_body = _plain_text_body(ctx)
 
+    leader_count = len(ctx['executive_cards']) + (1 if ctx.get('spotlight_card') else 0)
     result_base = {
         'subject': subject,
         'recipients': recipients,
-        'leader_count': len(ctx['leader_cards']),
+        'leader_count': leader_count,
         'news_count': len(news_items),
+        'spotlight_bureau': (spotlight_bureau or {}).get('name', ''),
+        'skipped': False,
     }
 
     if output_html_path:
@@ -219,7 +277,7 @@ def run_daily_digest_send(
             'ok': True,
             'message': (
                 f'Dry run: {subject!r} -> {rec_msg}; '
-                f'{len(ctx["leader_cards"])} leader(s), {len(news_items)} news item(s).'
+                f'{leader_count} leader(s) in email, {len(news_items)} news item(s).'
             ),
             **result_base,
         }
@@ -231,7 +289,7 @@ def run_daily_digest_send(
             **result_base,
         }
 
-    if not ctx['leader_cards'] and not news_items:
+    if leader_count == 0 and not news_items:
         return {
             'ok': False,
             'message': 'Nothing to send: no briefings and no news.',
@@ -249,12 +307,10 @@ def run_daily_digest_send(
 
     mid = delivery.get('message_id') or ''
     logger.info(
-        'mdh_briefings daily digest sent backend=%s id=%s recipients=%s leaders=%s news=%s',
+        'mdh_briefings daily digest sent backend=%s id=%s spotlight=%s',
         delivery.get('backend'),
         mid,
-        recipients,
-        len(ctx['leader_cards']),
-        len(news_items),
+        result_base.get('spotlight_bureau'),
     )
     extra = f' [{delivery.get("backend")} id={mid}]' if mid else f' [{delivery.get("backend")}]'
     return {

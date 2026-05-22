@@ -73,6 +73,7 @@ MDH_BRIEFINGS_DIGEST_RECIPIENTS = config(
     default='eric.kvale@state.mn.us',
 ).strip()
 MDH_BRIEFINGS_DIGEST_BASE_URL = config('MDH_BRIEFINGS_DIGEST_BASE_URL', default='').strip()
+MDH_BRIEFINGS_DIGEST_NEWS_LIMIT = config('MDH_BRIEFINGS_DIGEST_NEWS_LIMIT', default=3, cast=int)
 
 # --- Brain dump (personal GTD capture; owner-only) ---
 # Set username OR numeric user id of the single account that may use /apps/braindump/.
