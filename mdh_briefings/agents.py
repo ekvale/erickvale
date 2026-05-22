@@ -134,6 +134,43 @@ LEADERS = [
         """,
     },
     {
+        'id': 'facilities_manager',
+        'name': 'Chris Brueske',
+        'title': 'Facilities Manager',
+        'bureau': 'Facilities Management Division',
+        'initials': 'CB',
+        'color': 'gray',
+        'context': """
+            Chris Brueske leads MDH facilities management: Capitol Complex and agency buildings,
+            space planning, maintenance and custodial services, safety and security coordination,
+            and capital asset stewardship for ~2,075 staff across MDH locations and regional offices.
+            Facilities partners with MNIT on building systems, emergency operations centers, and
+            continuity during public health emergencies. Pressures include aging infrastructure,
+            energy and accessibility upgrades, workplace modernization post-COVID, and aligning
+            physical capacity with bureau restructuring after federal funding cuts.
+        """,
+    },
+    {
+        'id': 'mnit_health_cbto',
+        'name': 'Brenda Gabriel',
+        'title': 'Chief Business Technology Officer (Interim)',
+        'bureau': 'MNIT Health',
+        'initials': 'BG',
+        'color': 'purple',
+        'context': """
+            Brenda Gabriel serves as interim Chief Business Technology Officer for MNIT Health,
+            Minnesota IT Services' partnership with the Minnesota Department of Health. She has
+            decades of state service (since 1991) including MDH since 1998, and recently led
+            migration of many MDH applications to cloud infrastructure.
+
+            Scope spans enterprise applications, hosting, service desk alignment, emergency
+            preparedness systems (Medical PreCheck, POD Locator), and interoperable data exchange
+            with external partners during outbreaks. Priorities: cloud cost and security governance,
+            MEDSS and program system reliability amid grant cuts, FHIR-ready interfaces with MDH
+            analytics teams, and surge capacity for epidemiology and operations during incidents.
+        """,
+    },
+    {
         'id': 'general_counsel',
         'name': 'Robin C. Benson',
         'title': 'General Counsel',
