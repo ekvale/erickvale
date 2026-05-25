@@ -250,6 +250,14 @@ def calendar_month(request, year: int, month: int):
         )
     if ics_subscribe_url_slug and not ics_subscribe_url:
         ics_subscribe_url = ics_subscribe_url_slug
+
+    def _ics_tasks_only_url(base: str | None) -> str | None:
+        if not base:
+            return None
+        return f'{base}{"&" if "?" in base else "?"}no_office=1'
+
+    ics_tasks_url = _ics_tasks_only_url(ics_subscribe_url or ics_subscribe_url_slug)
+
     return render(
         request,
         'braindump/calendar.html',
@@ -261,6 +269,7 @@ def calendar_month(request, year: int, month: int):
             'next_month': nm,
             'ics_subscribe_url': ics_subscribe_url,
             'ics_subscribe_url_slug': ics_subscribe_url_slug,
+            'ics_tasks_url': ics_tasks_url,
             'ics_feed_path': reverse('braindump:calendar_ics'),
         },
     )
