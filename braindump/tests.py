@@ -423,7 +423,7 @@ class BraindumpOwnerTests(TestCase):
         BRAINDUMP_ICS_LOOKBACK_DAYS=365,
         BRAINDUMP_ICS_INCLUDE_UNDATED=True,
     )
-    def test_calendar_ics_includes_undated_on_created_day(self):
+    def test_calendar_ics_includes_undated_open_tasks(self):
         from braindump.ics_feed import build_braindump_calendar_ics
         from django.test import RequestFactory
 
@@ -436,6 +436,46 @@ class BraindumpOwnerTests(TestCase):
         rf = RequestFactory()
         body = build_braindump_calendar_ics(owner=self.owner, request=rf.get('/'))
         self.assertIn(b'[Task] Inbox task', body)
+
+    @override_settings(
+        BRAINDUMP_ICS_SECRET='test-ics-secret',
+        BRAINDUMP_ICS_LOOKBACK_DAYS=365,
+        BRAINDUMP_ICS_UNDATED_ON_TODAY=True,
+    )
+    def test_calendar_ics_undated_old_capture_shows_on_today(self):
+        from datetime import timedelta
+
+        from braindump.ics_feed import build_braindump_calendar_ics
+        from django.test import RequestFactory
+        from django.utils import timezone
+
+        old = timezone.now() - timedelta(days=90)
+        item = CaptureItem.objects.create(
+            user=self.owner,
+            body='stale inbox',
+            title='Stale inbox',
+            is_actionable=True,
+        )
+        CaptureItem.objects.filter(pk=item.pk).update(created_at=old)
+        rf = RequestFactory()
+        body = build_braindump_calendar_ics(owner=self.owner, request=rf.get('/'))
+        self.assertIn(b'[Task] Stale inbox', body)
+
+    @override_settings(BRAINDUMP_ICS_SECRET='test-ics-secret')
+    def test_calendar_ics_excludes_done_captures(self):
+        from braindump.ics_feed import build_braindump_calendar_ics
+        from django.test import RequestFactory
+
+        CaptureItem.objects.create(
+            user=self.owner,
+            body='done',
+            title='Finished task',
+            calendar_date=date(2026, 6, 15),
+            status=CaptureStatus.DONE,
+        )
+        rf = RequestFactory()
+        body = build_braindump_calendar_ics(owner=self.owner, request=rf.get('/'))
+        self.assertNotIn(b'Finished task', body)
 
     @override_settings(
         BRAINDUMP_ICS_SECRET='test-ics-secret',

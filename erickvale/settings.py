@@ -116,6 +116,9 @@ _ics_undated_raw = config('BRAINDUMP_ICS_INCLUDE_UNDATED', default='true').strip
 BRAINDUMP_ICS_INCLUDE_UNDATED = (
     not _ics_undated_raw or _ics_undated_raw in ('1', 'true', 'yes', 'on')
 )
+# Show open tasks without a Date as [Task] on today (not only on capture day).
+_ics_undated_today_raw = config('BRAINDUMP_ICS_UNDATED_ON_TODAY', default='true').strip().lower()
+BRAINDUMP_ICS_UNDATED_ON_TODAY = _ics_undated_today_raw in ('1', 'true', 'yes', 'on')
 # IANA zone for ICS date windows and MDH office days (server TIME_ZONE is often UTC).
 BRAINDUMP_ICS_TIMEZONE = config('BRAINDUMP_ICS_TIMEZONE', default='America/Chicago').strip()
 
@@ -304,6 +307,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'nomoar.context_processors.nomoar_banner',
                 'nomoar.context_processors.nomoar_engagement',
+                'nomoar.context_processors.nomoar_site_links',
                 'projects.context_processors.notification_count',
             ],
         },

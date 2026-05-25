@@ -354,26 +354,31 @@ def build_braindump_calendar_ics(
             lines.append(f'DESCRIPTION:{desc}')
         lines.append('END:VEVENT')
 
-    event_budget = 500
-    captures = CaptureItem.objects.filter(
-        user=owner,
-        archived=False,
-        calendar_date__gte=d0,
-        calendar_date__lte=d1,
-    ).exclude(calendar_date__isnull=True)
+    task_limit = 400
+    office_limit = 300
+    captures = (
+        CaptureItem.objects.filter(
+            user=owner,
+            archived=False,
+            calendar_date__gte=d0,
+            calendar_date__lte=d1,
+        )
+        .exclude(calendar_date__isnull=True)
+        .exclude(status=CaptureStatus.DONE)
+    )
     if _hard_dates_only(request):
         captures = captures.filter(calendar_is_hard_date=True)
     captures = captures.order_by('calendar_date', '-created_at')
 
-    for item in captures[:event_budget]:
+    for item in captures[:task_limit]:
         _append_capture_event(item, item.calendar_date)
-        event_budget -= 1
-        if event_budget <= 0:
-            break
 
-    if _include_undated_captures(request) and event_budget > 0:
+    if _include_undated_captures(request):
         from .models import NonActionableDisposition
 
+        undated_on_today = bool(
+            getattr(settings, 'BRAINDUMP_ICS_UNDATED_ON_TODAY', True)
+        )
         undated = (
             CaptureItem.objects.filter(
                 user=owner,
@@ -381,21 +386,23 @@ def build_braindump_calendar_ics(
                 calendar_date__isnull=True,
                 is_actionable=True,
             )
+            .exclude(status=CaptureStatus.DONE)
             .exclude(non_actionable_disposition=NonActionableDisposition.TRASH)
             .order_by('-created_at')
         )
-        for item in undated[: min(event_budget, 80)]:
-            created = timezone.localtime(item.created_at, tz).date()
-            if created < d0 or created > d1:
-                continue
-            _append_capture_event(item, created, undated=True)
-            event_budget -= 1
-            if event_budget <= 0:
-                break
+        for item in undated[:80]:
+            if undated_on_today:
+                display_d = today
+            else:
+                display_d = timezone.localtime(item.created_at, tz).date()
+                if display_d < d0 or display_d > d1:
+                    continue
+            _append_capture_event(item, display_d, undated=True)
 
     if include_office:
+        office_count = 0
         for d in iter_mdh_office_days(d0, d1):
-            if event_budget <= 0:
+            if office_count >= office_limit:
                 break
             uid = f'braindump-mdh-office-{d.isoformat()}@erickvale'
             summary = _ics_escape('MDH in office')
@@ -420,17 +427,18 @@ def build_braindump_calendar_ics(
             lines.append(f'DESCRIPTION:{_ics_escape(body)}')
             lines.append('TRANSP:OPAQUE')
             lines.append('END:VEVENT')
-            event_budget -= 1
+            office_count += 1
 
     if _include_birthdays(request):
         contacts = PersonalContact.objects.filter(
             user=owner,
             birth_date__isnull=False,
         ).order_by('display_name', 'pk')
+        birthday_count = 0
         d = d0
         while d <= d1:
             for contact in contacts:
-                if event_budget <= 0:
+                if birthday_count >= 120:
                     break
                 if not birthday_falls_on_date(contact.birth_date, d):
                     continue
@@ -446,7 +454,7 @@ def build_braindump_calendar_ics(
                 lines.append(f'DTEND;VALUE=DATE:{_fmt_date(d + timedelta(days=1))}')
                 lines.append(f'SUMMARY:{summary}')
                 lines.append('END:VEVENT')
-                event_budget -= 1
+                birthday_count += 1
             d += timedelta(days=1)
 
     lines.append('END:VCALENDAR')
