@@ -217,6 +217,30 @@ class BraindumpOwnerTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'Clarify queue')
 
+    @override_settings(BRAINDUMP_ICS_SECRET='test-ics-secret')
+    def test_ics_physical_lines_within_75_octets(self):
+        from braindump.ics_feed import build_braindump_calendar_ics
+        from django.test import RequestFactory
+
+        CaptureItem.objects.create(
+            user=self.owner,
+            body='x' * 200,
+            title='Long title ' + 'y' * 80,
+            calendar_date=date(2026, 5, 25),
+            calendar_is_hard_date=True,
+            next_action='next ' * 40,
+        )
+        rf = RequestFactory()
+        body = build_braindump_calendar_ics(owner=self.owner, request=rf.get('/'))
+        for line in body.decode('utf-8').split('\r\n'):
+            if not line:
+                continue
+            self.assertLessEqual(
+                len(line.encode('utf-8')),
+                75,
+                msg=f'ICS line too long ({len(line.encode("utf-8"))} B): {line[:60]}…',
+            )
+
     @override_settings(BRAINDUMP_ICS_SECRET='test-ics-secret', BRAINDUMP_MDH_OFFICE_ENABLED=True)
     def test_calendar_ics_includes_mdh_office_all_day(self):
         from braindump.ics_feed import build_braindump_calendar_ics

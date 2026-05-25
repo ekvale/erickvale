@@ -26,6 +26,39 @@ def _ics_escape(text: str) -> str:
     )
 
 
+def _fold_ics_line(line: str) -> list[str]:
+    """RFC 5545 §3.1 — physical lines must be ≤75 octets (Google/Outlook require this)."""
+    encoded = line.encode('utf-8')
+    if len(encoded) <= 75:
+        return [line]
+    physical: list[str] = []
+    pos = 0
+    first = True
+    while pos < len(encoded):
+        limit = 75 if first else 74
+        piece = encoded[pos : pos + limit]
+        while piece and (piece[-1] & 0xC0) == 0x80:
+            piece = piece[:-1]
+        if not piece:
+            piece = encoded[pos : pos + 1]
+        text = piece.decode('utf-8')
+        physical.append(text if first else f' {text}')
+        pos += len(piece)
+        first = False
+    return physical
+
+
+def _emit(out: list[str], line: str) -> None:
+    out.extend(_fold_ics_line(line))
+
+
+def _ics_bytes(logical_lines: list[str]) -> bytes:
+    physical: list[str] = []
+    for line in logical_lines:
+        _emit(physical, line)
+    return ('\r\n'.join(physical) + '\r\n').encode('utf-8')
+
+
 def _fmt_date(d: date) -> str:
     return d.strftime('%Y%m%d')
 
@@ -112,7 +145,7 @@ def _capture_summary(item: CaptureItem) -> str:
         label = f'{item.category_label}: {label}'
     if item.calendar_date and not item.calendar_is_hard_date:
         label = f'[Flex] {label}'
-    return label[:180]
+    return label[:70]
 
 
 def build_braindump_calendar_ics(
@@ -130,7 +163,7 @@ def build_braindump_calendar_ics(
     now = timezone.now()
     win = mdh_office_time_window_label()
 
-    lines = [
+    lines: list[str] = [
         'BEGIN:VCALENDAR',
         'VERSION:2.0',
         'PRODID:-//Brain dump//GTD calendar//EN',
@@ -158,27 +191,26 @@ def build_braindump_calendar_ics(
         summary = _ics_escape(_capture_summary(item))
         desc_bits = []
         if item.body and item.body != (item.title or ''):
-            desc_bits.append(item.body[:800])
+            desc_bits.append(item.body[:120])
         if item.next_action:
-            desc_bits.append(f'Next: {item.next_action[:400]}')
+            desc_bits.append(f'Next: {item.next_action[:80]}')
         if item.waiting_for:
-            desc_bits.append(f'Waiting: {item.waiting_for[:200]}')
+            desc_bits.append(f'Waiting: {item.waiting_for[:60]}')
         if not item.calendar_is_hard_date:
-            desc_bits.append('Soft date (next-action list); check Hard date in brain dump for landscape.')
+            desc_bits.append('Soft date — check Hard date in brain dump.')
         if item.status == CaptureStatus.DONE:
-            desc_bits.append('(Done in brain dump)')
-        desc = _ics_escape(' | '.join(desc_bits)) if desc_bits else ''
+            desc_bits.append('Done in brain dump.')
+        desc = _ics_escape(' | '.join(desc_bits)[:200]) if desc_bits else ''
 
         lines.append('BEGIN:VEVENT')
         lines.append(f'UID:{uid}')
         lines.append(f'DTSTAMP:{_fmt_datetime_utc(now)}')
+        lines.append('STATUS:CONFIRMED')
         lines.append(f'DTSTART;VALUE=DATE:{_fmt_date(d)}')
         lines.append(f'DTEND;VALUE=DATE:{_fmt_date(d + timedelta(days=1))}')
         lines.append(f'SUMMARY:{summary}')
         if desc:
             lines.append(f'DESCRIPTION:{desc}')
-        if item.status == CaptureStatus.DONE:
-            lines.append('TRANSP:TRANSPARENT')
         lines.append('END:VEVENT')
 
     if _include_office_holds(request):
@@ -192,11 +224,11 @@ def build_braindump_calendar_ics(
             lines.append('BEGIN:VEVENT')
             lines.append(f'UID:{uid}')
             lines.append(f'DTSTAMP:{_fmt_datetime_utc(now)}')
+            lines.append('STATUS:CONFIRMED')
             lines.append(f'DTSTART;VALUE=DATE:{_fmt_date(d)}')
             lines.append(f'DTEND;VALUE=DATE:{_fmt_date(d + timedelta(days=1))}')
             lines.append(f'SUMMARY:{summary}')
             lines.append(f'DESCRIPTION:{_ics_escape(body)}')
-            lines.append('TRANSP:OPAQUE')
             lines.append('END:VEVENT')
 
     if _include_birthdays(request):
@@ -211,19 +243,20 @@ def build_braindump_calendar_ics(
                     continue
                 entry = make_birthday_entry(contact, d)
                 uid = f'braindump-birthday-{contact.pk}-{d.isoformat()}@erickvale'
-                summary = _ics_escape(entry.title[:180])
+                bday_title = entry.title.replace('\U0001f382 ', '').strip()
+                summary = _ics_escape(f'Birthday: {bday_title}'[:70])
                 lines.append('BEGIN:VEVENT')
                 lines.append(f'UID:{uid}')
                 lines.append(f'DTSTAMP:{_fmt_datetime_utc(now)}')
+                lines.append('STATUS:CONFIRMED')
                 lines.append(f'DTSTART;VALUE=DATE:{_fmt_date(d)}')
                 lines.append(f'DTEND;VALUE=DATE:{_fmt_date(d + timedelta(days=1))}')
                 lines.append(f'SUMMARY:{summary}')
-                lines.append('TRANSP:TRANSPARENT')
                 lines.append('END:VEVENT')
             d += timedelta(days=1)
 
     lines.append('END:VCALENDAR')
-    return ('\r\n'.join(lines) + '\r\n').encode('utf-8')
+    return _ics_bytes(lines)
 
 
 def build_braindump_calendar_ics_for_owner(owner, request) -> bytes:
