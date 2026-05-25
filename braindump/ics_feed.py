@@ -1,0 +1,237 @@
+"""ICS (iCalendar) export for brain dump — subscribe in Google Calendar via URL."""
+
+from __future__ import annotations
+
+import secrets
+from datetime import date, datetime, time, timedelta
+from datetime import timezone as dt_timezone
+
+from django.conf import settings
+from django.utils import timezone
+
+from .contact_calendar import birthday_falls_on_date, make_birthday_entry
+from .email_common import get_braindump_owner
+from .models import CaptureItem, CaptureStatus, PersonalContact
+from .office_mdh_schedule import iter_mdh_office_days, mdh_office_time_window_label
+
+
+def _ics_escape(text: str) -> str:
+    return (
+        text.replace('\\', '\\\\')
+        .replace(';', '\\;')
+        .replace(',', '\\,')
+        .replace('\n', '\\n')
+        .replace('\r', '')
+    )
+
+
+def _fmt_date(d: date) -> str:
+    return d.strftime('%Y%m%d')
+
+
+def _fmt_datetime_utc(dt: datetime) -> str:
+    if timezone.is_naive(dt):
+        dt = timezone.make_aware(dt, timezone.get_current_timezone())
+    dt = dt.astimezone(dt_timezone.utc)
+    return dt.strftime('%Y%m%dT%H%M%SZ')
+
+
+def _fmt_local_datetime(dt: datetime) -> str:
+    if timezone.is_naive(dt):
+        dt = timezone.make_aware(dt, timezone.get_current_timezone())
+    return dt.strftime('%Y%m%dT%H%M%S')
+
+
+def _parse_hhmm(raw: str, *, default_h: int, default_m: int) -> tuple[int, int]:
+    s = (raw or '').strip()
+    if not s:
+        return default_h, default_m
+    parts = s.split(':', 1)
+    try:
+        h = int(parts[0])
+        m = int(parts[1]) if len(parts) > 1 else 0
+        return max(0, min(23, h)), max(0, min(59, m))
+    except (TypeError, ValueError):
+        return default_h, default_m
+
+
+def ics_feed_authorized(request) -> bool:
+    """
+    Google Calendar fetches feeds without cookies — allow ``?token=`` when
+    ``BRAINDUMP_ICS_SECRET`` is set, or the logged-in brain dump owner.
+    """
+    secret = (getattr(settings, 'BRAINDUMP_ICS_SECRET', '') or '').strip()
+    if secret:
+        token = (request.GET.get('token') or '').strip()
+        if token and secrets.compare_digest(token, secret):
+            return True
+    user = getattr(request, 'user', None)
+    if user is not None and user.is_authenticated:
+        from .authz import is_braindump_owner
+
+        return is_braindump_owner(user)
+    return False
+
+
+def _lookahead_days() -> int:
+    try:
+        return max(1, int(getattr(settings, 'BRAINDUMP_ICS_LOOKAHEAD_DAYS', 120)))
+    except (TypeError, ValueError):
+        return 120
+
+
+def _lookback_days() -> int:
+    try:
+        return max(0, int(getattr(settings, 'BRAINDUMP_ICS_LOOKBACK_DAYS', 14)))
+    except (TypeError, ValueError):
+        return 14
+
+
+def _include_office_holds(request) -> bool:
+    if (request.GET.get('no_office') or '').lower() in ('1', 'true', 'yes'):
+        return False
+    return bool(getattr(settings, 'BRAINDUMP_MDH_OFFICE_ENABLED', True))
+
+
+def _include_birthdays(request) -> bool:
+    return (request.GET.get('no_birthdays') or '').lower() not in ('1', 'true', 'yes')
+
+
+def _capture_summary(item: CaptureItem) -> str:
+    label = (item.title or item.body or 'Brain dump').strip()
+    if item.category_label:
+        return f'{item.category_label}: {label}'[:180]
+    return label[:180]
+
+
+def build_braindump_calendar_ics(
+    *,
+    owner,
+    request,
+    lookahead_days: int | None = None,
+    lookback_days: int | None = None,
+) -> bytes:
+    today = timezone.localdate()
+    la = lookahead_days if lookahead_days is not None else _lookahead_days()
+    lb = lookback_days if lookback_days is not None else _lookback_days()
+    d0 = today - timedelta(days=lb)
+    d1 = today + timedelta(days=max(1, la))
+    now = timezone.now()
+    tz_name = timezone.get_current_timezone_name()
+
+    start_h, start_m = _parse_hhmm(
+        getattr(settings, 'BRAINDUMP_MDH_OFFICE_START', '08:00'),
+        default_h=8,
+        default_m=0,
+    )
+    end_h, end_m = _parse_hhmm(
+        getattr(settings, 'BRAINDUMP_MDH_OFFICE_END', '17:00'),
+        default_h=17,
+        default_m=0,
+    )
+
+    lines = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Brain dump//GTD calendar//EN',
+        'CALSCALE:GREGORIAN',
+        'METHOD:PUBLISH',
+        f'DTSTAMP:{_fmt_datetime_utc(now)}',
+        f'X-WR-CALNAME:{_ics_escape("Brain dump")}',
+    ]
+
+    captures = (
+        CaptureItem.objects.filter(
+            user=owner,
+            calendar_is_hard_date=True,
+            calendar_date__gte=d0,
+            calendar_date__lte=d1,
+        )
+        .exclude(calendar_date__isnull=True)
+        .order_by('calendar_date', '-created_at')
+    )
+    for item in captures[:500]:
+        d = item.calendar_date
+        uid = f'braindump-capture-{item.pk}@erickvale'
+        summary = _ics_escape(_capture_summary(item))
+        desc_bits = []
+        if item.body and item.body != (item.title or ''):
+            desc_bits.append(item.body[:800])
+        if item.next_action:
+            desc_bits.append(f'Next: {item.next_action[:400]}')
+        if item.waiting_for:
+            desc_bits.append(f'Waiting: {item.waiting_for[:200]}')
+        if item.status == CaptureStatus.DONE:
+            desc_bits.append('(Done in brain dump)')
+        desc = _ics_escape(' | '.join(desc_bits)) if desc_bits else ''
+
+        lines.append('BEGIN:VEVENT')
+        lines.append(f'UID:{uid}')
+        lines.append(f'DTSTAMP:{_fmt_datetime_utc(now)}')
+        lines.append(f'DTSTART;VALUE=DATE:{_fmt_date(d)}')
+        lines.append(f'DTEND;VALUE=DATE:{_fmt_date(d + timedelta(days=1))}')
+        lines.append(f'SUMMARY:{summary}')
+        if desc:
+            lines.append(f'DESCRIPTION:{desc}')
+        if item.status == CaptureStatus.DONE:
+            lines.append('TRANSP:TRANSPARENT')
+        lines.append('END:VEVENT')
+
+    if _include_office_holds(request):
+        for d in iter_mdh_office_days(d0, d1):
+            uid = f'braindump-mdh-office-{d.isoformat()}@erickvale'
+            win = mdh_office_time_window_label()
+            summary = _ics_escape(f'MDH in office ({win})')
+            body = (
+                'Standing availability block (not a task). '
+                'Unavailable for other daytime commitments unless noted.'
+            )
+            start_dt = timezone.make_aware(datetime.combine(d, time(start_h, start_m)))
+            end_dt = timezone.make_aware(datetime.combine(d, time(end_h, end_m)))
+            lines.append('BEGIN:VEVENT')
+            lines.append(f'UID:{uid}')
+            lines.append(f'DTSTAMP:{_fmt_datetime_utc(now)}')
+            lines.append(f'DTSTART;TZID={tz_name}:{_fmt_local_datetime(start_dt)}')
+            lines.append(f'DTEND;TZID={tz_name}:{_fmt_local_datetime(end_dt)}')
+            lines.append(f'SUMMARY:{summary}')
+            lines.append(f'DESCRIPTION:{_ics_escape(body)}')
+            lines.append('TRANSP:OPAQUE')
+            lines.append('END:VEVENT')
+
+    if _include_birthdays(request):
+        contacts = PersonalContact.objects.filter(
+            user=owner,
+            birth_date__isnull=False,
+        ).order_by('display_name', 'pk')
+        d = d0
+        while d <= d1:
+            for contact in contacts:
+                if not birthday_falls_on_date(contact.birth_date, d):
+                    continue
+                entry = make_birthday_entry(contact, d)
+                uid = f'braindump-birthday-{contact.pk}-{d.isoformat()}@erickvale'
+                summary = _ics_escape(entry.title[:180])
+                lines.append('BEGIN:VEVENT')
+                lines.append(f'UID:{uid}')
+                lines.append(f'DTSTAMP:{_fmt_datetime_utc(now)}')
+                lines.append(f'DTSTART;VALUE=DATE:{_fmt_date(d)}')
+                lines.append(f'DTEND;VALUE=DATE:{_fmt_date(d + timedelta(days=1))}')
+                lines.append(f'SUMMARY:{summary}')
+                lines.append('TRANSP:TRANSPARENT')
+                lines.append('END:VEVENT')
+            d += timedelta(days=1)
+
+    lines.append('END:VCALENDAR')
+    return ('\r\n'.join(lines) + '\r\n').encode('utf-8')
+
+
+def build_braindump_calendar_ics_for_owner(owner, request) -> bytes:
+    return build_braindump_calendar_ics(owner=owner, request=request)
+
+
+def build_braindump_calendar_ics_from_request(request) -> bytes | None:
+    """Return ICS bytes or None if owner is not configured."""
+    owner = get_braindump_owner()
+    if not owner:
+        return None
+    return build_braindump_calendar_ics_for_owner(owner, request)

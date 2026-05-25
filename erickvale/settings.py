@@ -104,6 +104,11 @@ BRAINDUMP_MDH_OFFICE_LONG_WEEK_ANCHOR = config(
 ).strip()
 BRAINDUMP_MDH_OFFICE_START = config('BRAINDUMP_MDH_OFFICE_START', default='08:00').strip()
 BRAINDUMP_MDH_OFFICE_END = config('BRAINDUMP_MDH_OFFICE_END', default='17:00').strip()
+# ICS feed for Google Calendar subscribe-by-URL (``/apps/braindump/calendar.ics?token=…``).
+# Generate a long random string; required for Google (no session cookies on fetch).
+BRAINDUMP_ICS_SECRET = config('BRAINDUMP_ICS_SECRET', default='').strip()
+BRAINDUMP_ICS_LOOKAHEAD_DAYS = config('BRAINDUMP_ICS_LOOKAHEAD_DAYS', default=120, cast=int)
+BRAINDUMP_ICS_LOOKBACK_DAYS = config('BRAINDUMP_ICS_LOOKBACK_DAYS', default=14, cast=int)
 
 # --- Dream Blue (internal BI / digests) ---
 # Comma-separated recipient emails; no defaults — must be set in env for sends.

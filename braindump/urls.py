@@ -7,6 +7,7 @@ app_name = 'braindump'
 urlpatterns = [
     path('', views.dashboard, name='dashboard'),
     path('calendar/', views.calendar_redirect, name='calendar'),
+    path('calendar.ics', views.calendar_ics_feed, name='calendar_ics'),
     path(
         'calendar/<int:year>/<int:month>/',
         views.calendar_month,

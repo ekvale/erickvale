@@ -217,6 +217,40 @@ class BraindumpOwnerTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'Clarify queue')
 
+    @override_settings(BRAINDUMP_ICS_SECRET='test-ics-secret')
+    def test_calendar_ics_owner_and_token(self):
+        CaptureItem.objects.create(
+            user=self.owner,
+            body='dentist',
+            title='Dentist',
+            calendar_date=date(2026, 5, 20),
+            calendar_is_hard_date=True,
+        )
+        url = reverse('braindump:calendar_ics')
+        c = Client()
+        r = c.get(url)
+        self.assertEqual(r.status_code, 403)
+        c.login(username='owner1', password='pw')
+        r = c.get(url)
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(b'BEGIN:VCALENDAR', r.content)
+        self.assertIn(b'Dentist', r.content)
+        c.logout()
+        r = c.get(f'{url}?token=test-ics-secret')
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(b'Dentist', r.content)
+        r = c.get(f'{url}?token=wrong')
+        self.assertEqual(r.status_code, 403)
+
+    @override_settings(BRAINDUMP_ICS_SECRET='test-ics-secret')
+    def test_calendar_page_shows_google_subscribe_when_secret_set(self):
+        c = Client()
+        c.login(username='owner1', password='pw')
+        r = c.get(reverse('braindump:calendar_month', args=[2026, 4]))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Google Calendar')
+        self.assertContains(r, 'token=test-ics-secret')
+
     def test_calendar_month_shows_mdh_office_chip(self):
         c = Client()
         c.login(username='owner1', password='pw')
