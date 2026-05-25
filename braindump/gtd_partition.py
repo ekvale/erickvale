@@ -39,7 +39,7 @@ def partition_active_items(items: list[CaptureItem]) -> dict[str, list[CaptureIt
             else:
                 someday.append(it)
             continue
-        if it.calendar_is_hard_date and it.calendar_date:
+        if it.calendar_date:
             calendar_hard.append(it)
             continue
         if it.status == CaptureStatus.WAITING or it.gtd_bucket == GTDBucket.WAITING:

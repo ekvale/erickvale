@@ -46,10 +46,7 @@ def build_month_calendar_context(
 
     for item in qs:
         if item.calendar_date and item.calendar_date.year == year and item.calendar_date.month == month:
-            if item.calendar_is_hard_date:
-                by_day[item.calendar_date].append(item)
-            else:
-                soft_dated.append(item)
+            by_day[item.calendar_date].append(item)
             continue
         created = timezone.localtime(item.created_at).date()
         if created.year == year and created.month == month:

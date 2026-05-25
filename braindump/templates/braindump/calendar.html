@@ -64,6 +64,7 @@
         {% elif ics_subscribe_url and not ics_subscribe_url_slug %}
         <br><code style="display:block;margin-top:8px;padding:8px;font-size:0.75rem;word-break:break-all;color:#c9d1d9;">{{ ics_subscribe_url }}</code>
         {% endif %}
+        <br><span style="display:block;margin-top:10px;font-size:0.8rem;color:#8b949e;line-height:1.45;">Syncs: <strong>MDH in office</strong> (8–5), <strong>dated active tasks</strong>, <strong>[Task]</strong> items without a date (on the day you captured them), and birthdays. Set a <strong>Date</strong> on a task for a specific day. Re-subscribe after deploy if tasks were missing (feed now looks back 365 days). Append <code>?no_undated=1</code> to hide undated tasks.</span>
     </p>
     {% else %}
     <p class="section-note" style="margin-top:12px;color:#d29922;">Set <code>BRAINDUMP_ICS_SECRET</code> in your environment to enable a Google Calendar subscribe URL (token auth — Google cannot use login cookies).</p>

@@ -342,6 +342,44 @@ class BraindumpOwnerTests(TestCase):
         office_block = body.split(b'UID:braindump-mdh-office-')[1].split(b'END:VEVENT')[0]
         self.assertNotIn(b'VALUE=DATE', office_block)
 
+    @override_settings(
+        BRAINDUMP_ICS_SECRET='test-ics-secret',
+        BRAINDUMP_ICS_LOOKBACK_DAYS=365,
+        BRAINDUMP_ICS_INCLUDE_UNDATED=True,
+    )
+    def test_calendar_ics_includes_undated_on_created_day(self):
+        from braindump.ics_feed import build_braindump_calendar_ics
+        from django.test import RequestFactory
+
+        CaptureItem.objects.create(
+            user=self.owner,
+            body='no date yet',
+            title='Inbox task',
+            is_actionable=True,
+        )
+        rf = RequestFactory()
+        body = build_braindump_calendar_ics(owner=self.owner, request=rf.get('/'))
+        self.assertIn(b'[Task] Inbox task', body)
+
+    @override_settings(
+        BRAINDUMP_ICS_SECRET='test-ics-secret',
+        BRAINDUMP_ICS_LOOKBACK_DAYS=365,
+    )
+    def test_calendar_ics_includes_old_dated_capture(self):
+        from braindump.ics_feed import build_braindump_calendar_ics
+        from django.test import RequestFactory
+
+        CaptureItem.objects.create(
+            user=self.owner,
+            body='old',
+            title='Old dated',
+            calendar_date=date(2025, 8, 1),
+            calendar_is_hard_date=True,
+        )
+        rf = RequestFactory()
+        body = build_braindump_calendar_ics(owner=self.owner, request=rf.get('/'))
+        self.assertIn(b'Old dated', body)
+
     @override_settings(BRAINDUMP_ICS_SECRET='test-ics-secret')
     def test_calendar_ics_includes_dated_capture(self):
         from braindump.ics_feed import build_braindump_calendar_ics

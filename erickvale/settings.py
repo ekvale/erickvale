@@ -109,8 +109,13 @@ BRAINDUMP_MDH_OFFICE_END = config('BRAINDUMP_MDH_OFFICE_END', default='17:00').s
 BRAINDUMP_ICS_SECRET = config('BRAINDUMP_ICS_SECRET', default='').strip()
 # Optional URL-safe slug for ``/apps/braindump/feed/<slug>.ics`` (no ``?token=``; best for Google).
 BRAINDUMP_ICS_FEED_SLUG = config('BRAINDUMP_ICS_FEED_SLUG', default='').strip()
-BRAINDUMP_ICS_LOOKAHEAD_DAYS = config('BRAINDUMP_ICS_LOOKAHEAD_DAYS', default=120, cast=int)
-BRAINDUMP_ICS_LOOKBACK_DAYS = config('BRAINDUMP_ICS_LOOKBACK_DAYS', default=14, cast=int)
+BRAINDUMP_ICS_LOOKAHEAD_DAYS = config('BRAINDUMP_ICS_LOOKAHEAD_DAYS', default=365, cast=int)
+BRAINDUMP_ICS_LOOKBACK_DAYS = config('BRAINDUMP_ICS_LOOKBACK_DAYS', default=365, cast=int)
+# Export active captures without a calendar date (all-day on capture-created date).
+_ics_undated_raw = config('BRAINDUMP_ICS_INCLUDE_UNDATED', default='true').strip().lower()
+BRAINDUMP_ICS_INCLUDE_UNDATED = (
+    not _ics_undated_raw or _ics_undated_raw in ('1', 'true', 'yes', 'on')
+)
 # IANA zone for ICS date windows and MDH office days (server TIME_ZONE is often UTC).
 BRAINDUMP_ICS_TIMEZONE = config('BRAINDUMP_ICS_TIMEZONE', default='America/Chicago').strip()
 
