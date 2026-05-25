@@ -196,6 +196,7 @@ def calendar_ics_feed(request):
         raise PermissionDenied('Brain dump owner user not found.')
     resp = HttpResponse(body, content_type='text/calendar; charset=utf-8')
     resp['Content-Disposition'] = 'inline; filename="braindump.ics"'
+    resp['Cache-Control'] = 'no-cache, max-age=300'
     return resp
 
 
@@ -489,6 +490,9 @@ def item_calendar_date(request, pk: int):
     item.save(
         update_fields=['calendar_date', 'calendar_is_hard_date', 'updated_at']
     )
+    jr = _json_capture_response(request, item, removed=False)
+    if jr:
+        return jr
     return _dashboard_redirect(request)
 
 

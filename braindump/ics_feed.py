@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import secrets
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, timedelta
 from datetime import timezone as dt_timezone
+from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.utils import timezone
@@ -36,23 +37,17 @@ def _fmt_datetime_utc(dt: datetime) -> str:
     return dt.strftime('%Y%m%dT%H%M%SZ')
 
 
-def _fmt_local_datetime(dt: datetime) -> str:
-    if timezone.is_naive(dt):
-        dt = timezone.make_aware(dt, timezone.get_current_timezone())
-    return dt.strftime('%Y%m%dT%H%M%S')
-
-
-def _parse_hhmm(raw: str, *, default_h: int, default_m: int) -> tuple[int, int]:
-    s = (raw or '').strip()
-    if not s:
-        return default_h, default_m
-    parts = s.split(':', 1)
+def _ics_timezone() -> ZoneInfo:
+    """Calendar dates/times for the feed (default Central — server TIME_ZONE may be UTC)."""
+    name = (getattr(settings, 'BRAINDUMP_ICS_TIMEZONE', '') or 'America/Chicago').strip()
     try:
-        h = int(parts[0])
-        m = int(parts[1]) if len(parts) > 1 else 0
-        return max(0, min(23, h)), max(0, min(59, m))
-    except (TypeError, ValueError):
-        return default_h, default_m
+        return ZoneInfo(name)
+    except Exception:
+        return ZoneInfo('America/Chicago')
+
+
+def _ics_today() -> date:
+    return datetime.now(_ics_timezone()).date()
 
 
 def ics_feed_authorized(request) -> bool:
@@ -71,6 +66,16 @@ def ics_feed_authorized(request) -> bool:
 
         return is_braindump_owner(user)
     return False
+
+
+def resolve_ics_owner(request):
+    """Items belong to the owner account; prefer the logged-in owner when applicable."""
+    from .authz import is_braindump_owner
+
+    user = getattr(request, 'user', None)
+    if user is not None and user.is_authenticated and is_braindump_owner(user):
+        return user
+    return get_braindump_owner()
 
 
 def _lookahead_days() -> int:
@@ -97,10 +102,16 @@ def _include_birthdays(request) -> bool:
     return (request.GET.get('no_birthdays') or '').lower() not in ('1', 'true', 'yes')
 
 
+def _hard_dates_only(request) -> bool:
+    return (request.GET.get('hard_only') or '').lower() in ('1', 'true', 'yes')
+
+
 def _capture_summary(item: CaptureItem) -> str:
     label = (item.title or item.body or 'Brain dump').strip()
     if item.category_label:
-        return f'{item.category_label}: {label}'[:180]
+        label = f'{item.category_label}: {label}'
+    if item.calendar_date and not item.calendar_is_hard_date:
+        label = f'[Flex] {label}'
     return label[:180]
 
 
@@ -111,24 +122,13 @@ def build_braindump_calendar_ics(
     lookahead_days: int | None = None,
     lookback_days: int | None = None,
 ) -> bytes:
-    today = timezone.localdate()
+    today = _ics_today()
     la = lookahead_days if lookahead_days is not None else _lookahead_days()
     lb = lookback_days if lookback_days is not None else _lookback_days()
     d0 = today - timedelta(days=lb)
     d1 = today + timedelta(days=max(1, la))
     now = timezone.now()
-    tz_name = timezone.get_current_timezone_name()
-
-    start_h, start_m = _parse_hhmm(
-        getattr(settings, 'BRAINDUMP_MDH_OFFICE_START', '08:00'),
-        default_h=8,
-        default_m=0,
-    )
-    end_h, end_m = _parse_hhmm(
-        getattr(settings, 'BRAINDUMP_MDH_OFFICE_END', '17:00'),
-        default_h=17,
-        default_m=0,
-    )
+    win = mdh_office_time_window_label()
 
     lines = [
         'BEGIN:VCALENDAR',
@@ -137,19 +137,21 @@ def build_braindump_calendar_ics(
         'CALSCALE:GREGORIAN',
         'METHOD:PUBLISH',
         f'DTSTAMP:{_fmt_datetime_utc(now)}',
-        f'X-WR-CALNAME:{_ics_escape("Brain dump")}',
+        'REFRESH-INTERVAL;VALUE=DURATION:PT2H',
+        'X-PUBLISHED-TTL:PT2H',
+        'X-WR-CALNAME:Brain dump',
+        f'X-WR-TIMEZONE:{_ics_timezone().key}',
     ]
 
-    captures = (
-        CaptureItem.objects.filter(
-            user=owner,
-            calendar_is_hard_date=True,
-            calendar_date__gte=d0,
-            calendar_date__lte=d1,
-        )
-        .exclude(calendar_date__isnull=True)
-        .order_by('calendar_date', '-created_at')
-    )
+    captures = CaptureItem.objects.filter(
+        user=owner,
+        calendar_date__gte=d0,
+        calendar_date__lte=d1,
+    ).exclude(calendar_date__isnull=True)
+    if _hard_dates_only(request):
+        captures = captures.filter(calendar_is_hard_date=True)
+    captures = captures.order_by('calendar_date', '-created_at')
+
     for item in captures[:500]:
         d = item.calendar_date
         uid = f'braindump-capture-{item.pk}@erickvale'
@@ -161,6 +163,8 @@ def build_braindump_calendar_ics(
             desc_bits.append(f'Next: {item.next_action[:400]}')
         if item.waiting_for:
             desc_bits.append(f'Waiting: {item.waiting_for[:200]}')
+        if not item.calendar_is_hard_date:
+            desc_bits.append('Soft date (next-action list); check Hard date in brain dump for landscape.')
         if item.status == CaptureStatus.DONE:
             desc_bits.append('(Done in brain dump)')
         desc = _ics_escape(' | '.join(desc_bits)) if desc_bits else ''
@@ -180,19 +184,16 @@ def build_braindump_calendar_ics(
     if _include_office_holds(request):
         for d in iter_mdh_office_days(d0, d1):
             uid = f'braindump-mdh-office-{d.isoformat()}@erickvale'
-            win = mdh_office_time_window_label()
             summary = _ics_escape(f'MDH in office ({win})')
             body = (
-                'Standing availability block (not a task). '
+                f'Standing availability block (not a task), {win}. '
                 'Unavailable for other daytime commitments unless noted.'
             )
-            start_dt = timezone.make_aware(datetime.combine(d, time(start_h, start_m)))
-            end_dt = timezone.make_aware(datetime.combine(d, time(end_h, end_m)))
             lines.append('BEGIN:VEVENT')
             lines.append(f'UID:{uid}')
             lines.append(f'DTSTAMP:{_fmt_datetime_utc(now)}')
-            lines.append(f'DTSTART;TZID={tz_name}:{_fmt_local_datetime(start_dt)}')
-            lines.append(f'DTEND;TZID={tz_name}:{_fmt_local_datetime(end_dt)}')
+            lines.append(f'DTSTART;VALUE=DATE:{_fmt_date(d)}')
+            lines.append(f'DTEND;VALUE=DATE:{_fmt_date(d + timedelta(days=1))}')
             lines.append(f'SUMMARY:{summary}')
             lines.append(f'DESCRIPTION:{_ics_escape(body)}')
             lines.append('TRANSP:OPAQUE')
@@ -231,7 +232,11 @@ def build_braindump_calendar_ics_for_owner(owner, request) -> bytes:
 
 def build_braindump_calendar_ics_from_request(request) -> bytes | None:
     """Return ICS bytes or None if owner is not configured."""
-    owner = get_braindump_owner()
+    owner = resolve_ics_owner(request)
     if not owner:
         return None
     return build_braindump_calendar_ics_for_owner(owner, request)
+
+
+def count_ics_events(body: bytes) -> int:
+    return body.count(b'BEGIN:VEVENT')

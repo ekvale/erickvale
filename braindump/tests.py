@@ -217,6 +217,34 @@ class BraindumpOwnerTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'Clarify queue')
 
+    @override_settings(BRAINDUMP_ICS_SECRET='test-ics-secret', BRAINDUMP_MDH_OFFICE_ENABLED=True)
+    def test_calendar_ics_includes_mdh_office_all_day(self):
+        from braindump.ics_feed import build_braindump_calendar_ics
+        from django.test import RequestFactory
+
+        rf = RequestFactory()
+        req = rf.get('/calendar.ics')
+        body = build_braindump_calendar_ics(owner=self.owner, request=req)
+        self.assertIn(b'MDH in office', body)
+        self.assertIn(b'DTSTART;VALUE=DATE:', body)
+
+    @override_settings(BRAINDUMP_ICS_SECRET='test-ics-secret')
+    def test_calendar_ics_includes_soft_dated_capture(self):
+        from braindump.ics_feed import build_braindump_calendar_ics
+        from django.test import RequestFactory
+
+        CaptureItem.objects.create(
+            user=self.owner,
+            body='flex task',
+            title='Flex task',
+            calendar_date=date(2026, 6, 12),
+            calendar_is_hard_date=False,
+        )
+        rf = RequestFactory()
+        req = rf.get('/calendar.ics')
+        body = build_braindump_calendar_ics(owner=self.owner, request=req)
+        self.assertIn(b'[Flex] Flex task', body)
+
     @override_settings(BRAINDUMP_ICS_SECRET='test-ics-secret')
     def test_calendar_ics_owner_and_token(self):
         CaptureItem.objects.create(
