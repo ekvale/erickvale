@@ -1,0 +1,50 @@
+{% extends "base_site.html" %}
+{% block title %}{{ contact }} — Contacts{% endblock %}
+{% block content %}
+  <div class="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-wide text-htac-teal"><a href="{% url 'contacts:list' %}">Unified contacts</a></p>
+      <h1 class="mt-1 text-2xl font-semibold tracking-tight text-slate-900">{{ contact }}</h1>
+      <p class="mt-2 text-sm text-slate-600">{{ contact.get_source_display }}{% if contact.company %} · {{ contact.company }}{% endif %}</p>
+    </div>
+    <div class="flex gap-2">
+      <a href="{% url 'contacts:update' pk=contact.pk %}" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50">Edit</a>
+      <a href="{% url 'contacts:delete' pk=contact.pk %}" class="rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-medium text-rose-800 hover:bg-rose-100">Delete</a>
+    </div>
+  </div>
+  <div class="mt-8 grid gap-8 lg:grid-cols-2">
+    <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <h2 class="text-sm font-semibold uppercase tracking-wide text-htac-teal">Details</h2>
+      <dl class="mt-4 space-y-3 text-sm">
+        {% if contact.title %}<div><dt class="text-slate-500">Title</dt><dd class="font-medium text-slate-900">{{ contact.title }}</dd></div>{% endif %}
+        {% if contact.email %}<div><dt class="text-slate-500">Email</dt><dd class="font-medium text-slate-900"><a href="mailto:{{ contact.email }}" class="text-htac-teal hover:underline">{{ contact.email }}</a></dd></div>{% endif %}
+        {% if contact.phone %}<div><dt class="text-slate-500">Phone</dt><dd class="font-medium text-slate-900">{{ contact.phone }}</dd></div>{% endif %}
+        {% if contact.birthday %}<div><dt class="text-slate-500">Birthday</dt><dd class="font-medium text-slate-900">{{ contact.birthday }}</dd></div>{% endif %}
+        {% if contact.avatar_url %}<div><dt class="text-slate-500">Avatar</dt><dd><a href="{{ contact.avatar_url }}" class="text-htac-teal hover:underline break-all" target="_blank" rel="noopener">Link</a></dd></div>{% endif %}
+        {% if contact.notes %}<div><dt class="text-slate-500">Notes</dt><dd class="whitespace-pre-wrap text-slate-800">{{ contact.notes }}</dd></div>{% endif %}
+      </dl>
+    </div>
+    <div class="space-y-6">
+      <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 class="text-sm font-semibold uppercase tracking-wide text-htac-teal">Linked projects</h2>
+        <ul class="mt-3 space-y-2 text-sm">
+          {% for p in contact.projects.all %}
+            <li><a href="{% url 'projects:project_detail' pk=p.pk %}" class="font-medium text-htac-teal hover:underline">{{ p.name }}</a></li>
+          {% empty %}
+            <li class="text-slate-500">None linked.</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 class="text-sm font-semibold uppercase tracking-wide text-htac-teal">Linked tasks</h2>
+        <ul class="mt-3 space-y-2 text-sm">
+          {% for t in contact.tasks.all %}
+            <li><a href="{% url 'projects:task_detail' pk=t.project_id task_pk=t.pk %}" class="font-medium text-htac-teal hover:underline">{{ t.title }}</a> <span class="text-slate-500">({{ t.project.name }})</span></li>
+          {% empty %}
+            <li class="text-slate-500">None linked.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+{% endblock %}

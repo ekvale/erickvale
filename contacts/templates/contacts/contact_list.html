@@ -1,0 +1,84 @@
+{% extends "base_site.html" %}
+{% block title %}Unified contacts — Eric Kvale{% endblock %}
+{% block content %}
+  {% if messages %}
+    <div class="mb-6 space-y-2">
+      {% for message in messages %}
+        <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+  <div class="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Unified contacts</h1>
+      <p class="mt-1 text-sm text-slate-600">Gmail, LinkedIn, Facebook, phone imports — linked to projects and tasks.</p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <a href="{% url 'contacts:import' %}" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50">Import</a>
+      <a href="{% url 'contacts:create' %}" class="rounded-lg bg-htac-navy px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-htac-teal">New contact</a>
+    </div>
+  </div>
+  <form method="get" class="mt-6 flex flex-wrap items-end gap-3">
+    <div>
+      <label for="q" class="block text-xs font-medium uppercase tracking-wide text-slate-500">Search</label>
+      <input type="search" name="q" id="q" value="{{ q }}" placeholder="Name, email, company" class="mt-1 block w-64 rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-htac-teal focus:outline-none focus:ring-1 focus:ring-htac-teal">
+    </div>
+    <div>
+      <label for="source" class="block text-xs font-medium uppercase tracking-wide text-slate-500">Source</label>
+      <select name="source" id="source" class="mt-1 block rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-htac-teal focus:outline-none focus:ring-1 focus:ring-htac-teal">
+        <option value="">All sources</option>
+        {% for value, label in source_choices %}
+          <option value="{{ value }}" {% if source == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50">Filter</button>
+  </form>
+  <div class="mt-4 flex flex-wrap gap-2 text-sm">
+    <a href="{% url 'contacts:list' %}" class="rounded-full px-3 py-1 {% if not source %}bg-htac-navy text-white{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">All</a>
+    {% for value, label in source_choices %}
+      <a href="?source={{ value }}{% if q %}&amp;q={{ q|urlencode }}{% endif %}" class="rounded-full px-3 py-1 {% if source == value %}bg-htac-navy text-white{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">{{ label }}</a>
+    {% endfor %}
+  </div>
+  <div class="mt-8 overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+    <table class="min-w-full divide-y divide-slate-200 text-sm">
+      <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+        <tr>
+          <th class="px-4 py-3">Name</th>
+          <th class="px-4 py-3">Email</th>
+          <th class="px-4 py-3">Company</th>
+          <th class="px-4 py-3">Source</th>
+          <th class="px-4 py-3">Projects</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for c in contacts %}
+          <tr class="hover:bg-slate-50">
+            <td class="px-4 py-3"><a href="{% url 'contacts:detail' pk=c.pk %}" class="font-medium text-htac-teal hover:underline">{{ c }}</a></td>
+            <td class="px-4 py-3 text-slate-600">{{ c.email|default:"—" }}</td>
+            <td class="px-4 py-3 text-slate-600">{{ c.company|default:"—" }}</td>
+            <td class="px-4 py-3 text-slate-600">{{ c.get_source_display }}</td>
+            <td class="px-4 py-3 text-slate-600">
+              {% for p in c.projects.all %}
+                <span class="mr-1 inline-block rounded bg-slate-100 px-2 py-0.5 text-xs">{{ p.name }}</span>
+              {% empty %}—{% endfor %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" class="px-4 py-8 text-center text-slate-500">No contacts yet. <a href="{% url 'contacts:import' %}" class="text-htac-teal hover:underline">Import</a> or <a href="{% url 'contacts:create' %}" class="text-htac-teal hover:underline">add one</a>.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page_obj.has_other_pages %}
+    <div class="mt-6 flex justify-center gap-2 text-sm">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% if q %}&amp;q={{ q|urlencode }}{% endif %}{% if source %}&amp;source={{ source }}{% endif %}" class="text-htac-teal hover:underline">Previous</a>
+      {% endif %}
+      <span class="text-slate-600">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if q %}&amp;q={{ q|urlencode }}{% endif %}{% if source %}&amp;source={{ source }}{% endif %}" class="text-htac-teal hover:underline">Next</a>
+      {% endif %}
+    </div>
+  {% endif %}
+{% endblock %}

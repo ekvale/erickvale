@@ -1,0 +1,33 @@
+{% extends "base_site.html" %}
+{% block title %}{% if object %}Edit contact{% else %}New contact{% endif %} — Eric Kvale{% endblock %}
+{% block content %}
+  {% if messages %}
+    <div class="mb-6 space-y-2">
+      {% for message in messages %}
+        <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+  <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% if object %}Edit contact{% else %}New contact{% endif %}</h1>
+  <form method="post" class="mt-8 max-w-2xl space-y-5">
+    {% csrf_token %}
+    {% for field in form %}
+      <div>
+        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-slate-700">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<p class="mt-1 text-xs text-slate-500">{{ field.help_text }}</p>{% endif %}
+        {% if field.errors %}
+          <ul class="mt-1 list-none text-sm text-rose-600">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+    {% endfor %}
+    <div class="flex gap-3">
+      <button type="submit" class="rounded-lg bg-htac-navy px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-htac-teal">Save</button>
+      {% if object %}
+        <a href="{% url 'contacts:detail' pk=object.pk %}" class="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">Cancel</a>
+      {% else %}
+        <a href="{% url 'contacts:list' %}" class="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">Cancel</a>
+      {% endif %}
+    </div>
+  </form>
+{% endblock %}

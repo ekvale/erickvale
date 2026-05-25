@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'braindump',
     'mdh_briefings',
     'projects.apps.ProjectsConfig',
+    'contacts.apps.ContactsConfig',
 ]
 
 # --- MDH Leadership Briefings (Eric-only; Perplexity API) ---
@@ -121,6 +122,11 @@ _ics_undated_today_raw = config('BRAINDUMP_ICS_UNDATED_ON_TODAY', default='true'
 BRAINDUMP_ICS_UNDATED_ON_TODAY = _ics_undated_today_raw in ('1', 'true', 'yes', 'on')
 # IANA zone for ICS date windows and MDH office days (server TIME_ZONE is often UTC).
 BRAINDUMP_ICS_TIMEZONE = config('BRAINDUMP_ICS_TIMEZONE', default='America/Chicago').strip()
+
+# --- Unified contacts (Gmail / file import) ---
+GMAIL_CREDENTIALS_PATH = config('GMAIL_CREDENTIALS_PATH', default='').strip()
+GMAIL_TOKEN_PATH = config('GMAIL_TOKEN_PATH', default='').strip()
+GMAIL_SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 
 # --- Dream Blue (internal BI / digests) ---
 # Comma-separated recipient emails; no defaults — must be set in env for sends.

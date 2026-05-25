@@ -13,7 +13,8 @@
         <a href="{% url 'projects:project_list' %}" class="{% if '/projects/' in p and '/projects/calendar' not in p and '/projects/dashboard' not in p and '/projects/contacts' not in p and '/projects/notifications' not in p %}is-active{% endif %}">Projects</a>
         <a href="{% url 'projects:dashboard' %}" class="{% if '/projects/dashboard' in p %}is-active{% endif %}">Dashboard</a>
         <a href="{% url 'projects:calendar' %}" class="{% if '/projects/calendar' in p %}is-active{% endif %}">Calendar</a>
-        <a href="{% url 'projects:contact_list' %}" class="{% if '/projects/contacts' in p %}is-active{% endif %}">Contacts</a>
+        <a href="{% url 'projects:contact_list' %}" class="{% if '/contacts/' in p and '/apps/contacts' not in p %}is-active{% endif %}">Network</a>
+        <a href="{% url 'contacts:list' %}" class="{% if '/apps/contacts' in p %}is-active{% endif %}">Contacts</a>
         <a href="{% url 'projects:notification_list' %}" class="relative inline-flex items-center {% if '/projects/notifications' in p %}is-active{% endif %}" title="Notifications">
           <span class="sr-only">Notifications</span>
           <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">

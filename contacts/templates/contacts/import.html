@@ -1,0 +1,41 @@
+{% extends "base_site.html" %}
+{% block title %}Import contacts — Eric Kvale{% endblock %}
+{% block content %}
+  {% if messages %}
+    <div class="mb-6 space-y-2">
+      {% for message in messages %}
+        <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+  <p class="text-xs font-semibold uppercase tracking-wide text-htac-teal"><a href="{% url 'contacts:list' %}">Unified contacts</a></p>
+  <h1 class="mt-1 text-2xl font-semibold tracking-tight text-slate-900">Import contacts</h1>
+  <p class="mt-2 max-w-2xl text-sm text-slate-600">Import from Gmail (sent-message addresses), LinkedIn CSV, Facebook JSON export, or phone vCard (.vcf). Duplicates are skipped by email, then by name.</p>
+
+  <div class="mt-10 grid gap-8 lg:grid-cols-2">
+    <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <h2 class="text-sm font-semibold uppercase tracking-wide text-htac-teal">Gmail</h2>
+      <p class="mt-3 text-sm text-slate-600">Scans up to 500 sent messages for To/From/Cc addresses and creates contacts with source Gmail.</p>
+      {% if gmail_configured %}
+        <a href="{% url 'contacts:import_gmail' %}" class="mt-4 inline-flex rounded-lg bg-htac-navy px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-htac-teal">Import from Gmail</a>
+      {% else %}
+        <p class="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          Gmail OAuth is not configured. Set <code>GMAIL_CREDENTIALS_PATH</code> and <code>GMAIL_TOKEN_PATH</code> in your environment, or run <code>python manage.py import_gmail_contacts --max 500</code> on the server after setup.
+        </p>
+      {% endif %}
+    </section>
+
+    <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <h2 class="text-sm font-semibold uppercase tracking-wide text-htac-teal">Upload a file</h2>
+      <p class="mt-3 text-sm text-slate-600">Accepts <strong>.vcf</strong> (phone), <strong>.csv</strong> (LinkedIn), or <strong>.json</strong> (Facebook).</p>
+      <form method="post" action="{% url 'contacts:import_file' %}" enctype="multipart/form-data" class="mt-4 space-y-4">
+        {% csrf_token %}
+        <div>
+          <label for="id_file" class="block text-sm font-medium text-slate-700">{{ file_form.file.label }}</label>
+          <input type="file" name="file" id="id_file" accept=".vcf,.vcard,.csv,.json" required class="mt-1 block w-full text-sm text-slate-700">
+        </div>
+        <button type="submit" class="rounded-lg bg-htac-navy px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-htac-teal">Upload and import</button>
+      </form>
+    </section>
+  </div>
+{% endblock %}
