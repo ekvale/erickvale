@@ -277,16 +277,28 @@ class BraindumpOwnerTests(TestCase):
                 msg=f'ICS line too long ({len(line.encode("utf-8"))} B): {line[:60]}…',
             )
 
-    @override_settings(BRAINDUMP_ICS_SECRET='test-ics-secret', BRAINDUMP_MDH_OFFICE_ENABLED=True)
-    def test_calendar_ics_includes_mdh_office_all_day(self):
+    @override_settings(
+        BRAINDUMP_ICS_SECRET='test-ics-secret',
+        BRAINDUMP_MDH_OFFICE_ENABLED=True,
+        BRAINDUMP_ICS_TIMEZONE='America/Chicago',
+        BRAINDUMP_MDH_OFFICE_START='08:00',
+        BRAINDUMP_MDH_OFFICE_END='17:00',
+    )
+    def test_calendar_ics_mdh_office_timed_not_all_day(self):
         from braindump.ics_feed import build_braindump_calendar_ics
         from django.test import RequestFactory
 
         rf = RequestFactory()
         req = rf.get('/calendar.ics')
         body = build_braindump_calendar_ics(owner=self.owner, request=req)
+        self.assertIn(b'BEGIN:VTIMEZONE', body)
+        self.assertIn(b'TZID:America/Chicago', body)
         self.assertIn(b'MDH in office', body)
-        self.assertIn(b'DTSTART;VALUE=DATE:', body)
+        self.assertIn(b'DTSTART;TZID=America/Chicago:', body)
+        self.assertIn(b'T080000', body)
+        self.assertIn(b'T170000', body)
+        office_block = body.split(b'UID:braindump-mdh-office-')[1].split(b'END:VEVENT')[0]
+        self.assertNotIn(b'VALUE=DATE', office_block)
 
     @override_settings(BRAINDUMP_ICS_SECRET='test-ics-secret')
     def test_calendar_ics_includes_soft_dated_capture(self):

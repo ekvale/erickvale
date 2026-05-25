@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import secrets
-from datetime import date, datetime, timedelta
-from urllib.parse import unquote, unquote_plus
+from datetime import date, datetime, time, timedelta
 from datetime import timezone as dt_timezone
+from urllib.parse import unquote, unquote_plus
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
@@ -82,6 +82,71 @@ def _ics_timezone() -> ZoneInfo:
 
 def _ics_today() -> date:
     return datetime.now(_ics_timezone()).date()
+
+
+def _parse_hhmm(raw: str, *, default_h: int, default_m: int) -> tuple[int, int]:
+    s = (raw or '').strip()
+    if not s:
+        return default_h, default_m
+    parts = s.split(':', 1)
+    try:
+        h = int(parts[0])
+        m = int(parts[1]) if len(parts) > 1 else 0
+        return max(0, min(23, h)), max(0, min(59, m))
+    except (TypeError, ValueError):
+        return default_h, default_m
+
+
+def _mdh_office_hour_parts() -> tuple[int, int, int, int]:
+    return (
+        *_parse_hhmm(
+            getattr(settings, 'BRAINDUMP_MDH_OFFICE_START', '08:00'),
+            default_h=8,
+            default_m=0,
+        ),
+        *_parse_hhmm(
+            getattr(settings, 'BRAINDUMP_MDH_OFFICE_END', '17:00'),
+            default_h=17,
+            default_m=0,
+        ),
+    )
+
+
+def _fmt_local_wall(dt: datetime) -> str:
+    """Local wall time for DTSTART;TZID= (no Z suffix)."""
+    return dt.strftime('%Y%m%dT%H%M%S')
+
+
+def _vtimezone_lines(tz_key: str) -> list[str]:
+    """VTIMEZONE blocks Google needs to interpret TZID timed events."""
+    if tz_key == 'America/Chicago':
+        return [
+            'BEGIN:VTIMEZONE',
+            'TZID:America/Chicago',
+            'BEGIN:DAYLIGHT',
+            'TZOFFSETFROM:-0600',
+            'TZOFFSETTO:-0500',
+            'TZNAME:CDT',
+            'DTSTART:19700308T020000',
+            'RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU',
+            'END:DAYLIGHT',
+            'BEGIN:STANDARD',
+            'TZOFFSETFROM:-0500',
+            'TZOFFSETTO:-0600',
+            'TZNAME:CST',
+            'DTSTART:19701101T020000',
+            'RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU',
+            'END:STANDARD',
+            'END:VTIMEZONE',
+        ]
+    return []
+
+
+def _office_hold_datetimes(d: date, tz: ZoneInfo) -> tuple[datetime, datetime]:
+    sh, sm, eh, em = _mdh_office_hour_parts()
+    start = datetime.combine(d, time(sh, sm), tzinfo=tz)
+    end = datetime.combine(d, time(eh, em), tzinfo=tz)
+    return start, end
 
 
 def _ics_token_candidates(request) -> list[str]:
@@ -207,6 +272,10 @@ def build_braindump_calendar_ics(
     d1 = today + timedelta(days=max(1, la))
     now = timezone.now()
     win = mdh_office_time_window_label()
+    tz = _ics_timezone()
+    tz_key = tz.key
+    include_office = _include_office_holds(request)
+    vtz = _vtimezone_lines(tz_key) if include_office else []
 
     lines: list[str] = [
         'BEGIN:VCALENDAR',
@@ -218,8 +287,9 @@ def build_braindump_calendar_ics(
         'REFRESH-INTERVAL;VALUE=DURATION:PT2H',
         'X-PUBLISHED-TTL:PT2H',
         'X-WR-CALNAME:Brain dump',
-        f'X-WR-TIMEZONE:{_ics_timezone().key}',
+        f'X-WR-TIMEZONE:{tz_key}',
     ]
+    lines.extend(vtz)
 
     captures = CaptureItem.objects.filter(
         user=owner,
@@ -258,22 +328,30 @@ def build_braindump_calendar_ics(
             lines.append(f'DESCRIPTION:{desc}')
         lines.append('END:VEVENT')
 
-    if _include_office_holds(request):
+    if include_office:
         for d in iter_mdh_office_days(d0, d1):
             uid = f'braindump-mdh-office-{d.isoformat()}@erickvale'
-            summary = _ics_escape(f'MDH in office ({win})')
+            summary = _ics_escape('MDH in office')
             body = (
                 f'Standing availability block (not a task), {win}. '
                 'Unavailable for other daytime commitments unless noted.'
             )
+            start_dt, end_dt = _office_hold_datetimes(d, tz)
             lines.append('BEGIN:VEVENT')
             lines.append(f'UID:{uid}')
             lines.append(f'DTSTAMP:{_fmt_datetime_utc(now)}')
             lines.append('STATUS:CONFIRMED')
-            lines.append(f'DTSTART;VALUE=DATE:{_fmt_date(d)}')
-            lines.append(f'DTEND;VALUE=DATE:{_fmt_date(d + timedelta(days=1))}')
+            if vtz:
+                lines.append(
+                    f'DTSTART;TZID={tz_key}:{_fmt_local_wall(start_dt)}'
+                )
+                lines.append(f'DTEND;TZID={tz_key}:{_fmt_local_wall(end_dt)}')
+            else:
+                lines.append(f'DTSTART:{_fmt_datetime_utc(start_dt)}')
+                lines.append(f'DTEND:{_fmt_datetime_utc(end_dt)}')
             lines.append(f'SUMMARY:{summary}')
             lines.append(f'DESCRIPTION:{_ics_escape(body)}')
+            lines.append('TRANSP:OPAQUE')
             lines.append('END:VEVENT')
 
     if _include_birthdays(request):
