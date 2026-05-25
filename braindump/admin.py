@@ -89,6 +89,8 @@ class CaptureItemAdmin(admin.ModelAdmin):
                     'status',
                     'waiting_for',
                     'calendar_date',
+                    'calendar_time',
+                    'calendar_end_time',
                     'calendar_is_hard_date',
                     'spawned_from_recurring',
                     'archived',

@@ -157,6 +157,82 @@ class BraindumpOwnerTests(TestCase):
         self.assertEqual(it.calendar_date, date(2026, 7, 4))
         self.assertTrue(it.calendar_is_hard_date)
 
+    def test_item_calendar_time_saved(self):
+        c = Client()
+        c.login(username='owner1', password='pw')
+        it = CaptureItem.objects.create(
+            user=self.owner,
+            body='Dentist',
+            title='Dentist',
+        )
+        c.post(
+            reverse('braindump:item_calendar_date', args=[it.pk]),
+            {
+                'calendar_date': '2026-06-10',
+                'calendar_time': '14:30',
+                'calendar_end_time': '15:30',
+            },
+            HTTP_ACCEPT='application/json',
+        )
+        it.refresh_from_db()
+        from datetime import time
+
+        self.assertEqual(it.calendar_date, date(2026, 6, 10))
+        self.assertEqual(it.calendar_time, time(14, 30))
+        self.assertEqual(it.calendar_end_time, time(15, 30))
+
+    def test_item_calendar_clear_date_clears_times(self):
+        c = Client()
+        c.login(username='owner1', password='pw')
+        from datetime import time
+
+        it = CaptureItem.objects.create(
+            user=self.owner,
+            body='x',
+            title='t',
+            calendar_date=date(2026, 6, 10),
+            calendar_time=time(9, 0),
+            calendar_end_time=time(10, 0),
+        )
+        c.post(
+            reverse('braindump:item_calendar_date', args=[it.pk]),
+            {'calendar_date': ''},
+        )
+        it.refresh_from_db()
+        self.assertIsNone(it.calendar_date)
+        self.assertIsNone(it.calendar_time)
+        self.assertIsNone(it.calendar_end_time)
+
+    @override_settings(
+        BRAINDUMP_ICS_SECRET='test-ics-secret',
+        BRAINDUMP_ICS_TIMEZONE='America/Chicago',
+        BRAINDUMP_ICS_LOOKBACK_DAYS=365,
+        BRAINDUMP_ICS_LOOKAHEAD_DAYS=365,
+        BRAINDUMP_MDH_OFFICE_ENABLED=False,
+    )
+    def test_calendar_ics_timed_capture(self):
+        from datetime import time
+
+        from braindump.ics_feed import build_braindump_calendar_ics
+        from django.test import RequestFactory
+
+        it = CaptureItem.objects.create(
+            user=self.owner,
+            body='Happy hour',
+            title='Connections HH',
+            calendar_date=date(2026, 6, 4),
+            calendar_time=time(16, 30),
+            calendar_end_time=time(18, 0),
+            calendar_is_hard_date=True,
+        )
+        rf = RequestFactory()
+        body = build_braindump_calendar_ics(owner=self.owner, request=rf.get('/'))
+        block = body.split(f'UID:braindump-capture-{it.pk}@erickvale'.encode())[1]
+        block = block.split(b'END:VEVENT')[0]
+        self.assertIn(b'DTSTART;TZID=America/Chicago:20260604T163000', block)
+        self.assertIn(b'DTEND;TZID=America/Chicago:20260604T180000', block)
+        self.assertNotIn(b'VALUE=DATE', block)
+
     def test_item_update_meta(self):
         c = Client()
         c.login(username='owner1', password='pw')

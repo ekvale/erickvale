@@ -66,6 +66,8 @@ _SYSTEM = (
     'specific day. Do NOT use true for vague "this week" tasks — those belong on next-action lists, not the calendar.\n'
     '- calendar_date (ISO YYYY-MM-DD): include ONLY when time_specific_calendar is true; pick the actual day '
     'mentioned or a sensible deadline day; omit this key entirely if not time-specific.\n'
+    '- calendar_time (HH:MM, 24-hour): include ONLY with calendar_date when a specific clock time is mentioned '
+    '(appointment, meeting); omit if only a day is given.\n'
     '- scheduling_note (string, optional): If the capture implies a meeting, appointment, travel, medical visit, '
     'or other daytime obligation that conflicts with the owner\'s recurring MDH office blocks listed below '
     '(same calendar day, typical work hours), set a short warning. Omit if no conflict or not applicable.\n'
@@ -349,6 +351,8 @@ def _apply_parsed_to_item(item: CaptureItem, parsed: dict, today: date) -> None:
             cds = parsed.get('calendar_date')
             if cds is None or (isinstance(cds, str) and not str(cds).strip()):
                 item.calendar_date = None
+                item.calendar_time = None
+                item.calendar_end_time = None
                 item.calendar_is_hard_date = False
             else:
                 cds = str(cds).strip()
@@ -379,6 +383,24 @@ def _apply_parsed_to_item(item: CaptureItem, parsed: dict, today: date) -> None:
             item.calendar_is_hard_date = True
         else:
             item.calendar_is_hard_date = False
+            item.calendar_time = None
+            item.calendar_end_time = None
+
+        if 'calendar_time' in parsed:
+            cts = parsed.get('calendar_time')
+            if cts is None or (isinstance(cts, str) and not str(cts).strip()):
+                item.calendar_time = None
+                item.calendar_end_time = None
+            elif item.calendar_date:
+                from datetime import datetime as dt
+
+                try:
+                    item.calendar_time = dt.strptime(
+                        str(cts).strip()[:5], '%H:%M'
+                    ).time()
+                except ValueError:
+                    item.calendar_time = None
+                    item.calendar_end_time = None
 
         _apply_priority_field(item, parsed, actionable=True)
 
@@ -400,6 +422,8 @@ def _apply_parsed_to_item(item: CaptureItem, parsed: dict, today: date) -> None:
             'status',
             'waiting_for',
             'calendar_date',
+            'calendar_time',
+            'calendar_end_time',
             'calendar_is_hard_date',
             'is_actionable',
             'non_actionable_disposition',

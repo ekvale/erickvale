@@ -149,6 +149,22 @@ def _office_hold_datetimes(d: date, tz: ZoneInfo) -> tuple[datetime, datetime]:
     return start, end
 
 
+def _capture_timed_window(
+    item: CaptureItem, d: date, tz: ZoneInfo
+) -> tuple[datetime, datetime] | None:
+    """Local start/end for a timed capture, or None for all-day."""
+    t0 = item.calendar_time
+    if not t0:
+        return None
+    start = datetime.combine(d, t0, tzinfo=tz)
+    t1 = item.calendar_end_time
+    if t1 and t1 > t0:
+        end = datetime.combine(d, t1, tzinfo=tz)
+    else:
+        end = start + timedelta(hours=1)
+    return start, end
+
+
 def _ics_token_candidates(request) -> list[str]:
     """Query tokens may arrive encoded; ``+`` is often decoded as space."""
     raw = (request.GET.get('token') or request.GET.get('t') or '').strip()
@@ -283,7 +299,7 @@ def build_braindump_calendar_ics(
     tz = _ics_timezone()
     tz_key = tz.key
     include_office = _include_office_holds(request)
-    vtz = _vtimezone_lines(tz_key) if include_office else []
+    vtz = _vtimezone_lines(tz_key)
 
     lines: list[str] = [
         'BEGIN:VCALENDAR',
@@ -314,13 +330,25 @@ def build_braindump_calendar_ics(
         if item.status == CaptureStatus.DONE:
             desc_bits.append('Done in brain dump.')
         desc = _ics_escape(' | '.join(desc_bits)[:200]) if desc_bits else ''
+        timed = None if undated else _capture_timed_window(item, d, tz)
 
         lines.append('BEGIN:VEVENT')
         lines.append(f'UID:{uid}')
         lines.append(f'DTSTAMP:{_fmt_datetime_utc(now)}')
         lines.append('STATUS:CONFIRMED')
-        lines.append(f'DTSTART;VALUE=DATE:{_fmt_date(d)}')
-        lines.append(f'DTEND;VALUE=DATE:{_fmt_date(d + timedelta(days=1))}')
+        if timed and vtz:
+            start_dt, end_dt = timed
+            lines.append(
+                f'DTSTART;TZID={tz_key}:{_fmt_local_wall(start_dt)}'
+            )
+            lines.append(f'DTEND;TZID={tz_key}:{_fmt_local_wall(end_dt)}')
+        elif timed:
+            start_dt, end_dt = timed
+            lines.append(f'DTSTART:{_fmt_datetime_utc(start_dt)}')
+            lines.append(f'DTEND:{_fmt_datetime_utc(end_dt)}')
+        else:
+            lines.append(f'DTSTART;VALUE=DATE:{_fmt_date(d)}')
+            lines.append(f'DTEND;VALUE=DATE:{_fmt_date(d + timedelta(days=1))}')
         lines.append(f'SUMMARY:{summary}')
         if desc:
             lines.append(f'DESCRIPTION:{desc}')

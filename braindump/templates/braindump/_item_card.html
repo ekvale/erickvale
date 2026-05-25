@@ -7,7 +7,7 @@
         {{ it.get_gtd_bucket_display }}{% if it.category_label %} · <span class="tag-cat">{{ it.category_label }}</span>{% endif %}
         · <span class="tag-pri pri-{{ it.priority }}">{{ it.get_priority_display }}</span>
         {% if it.is_actionable != False %}
-        · Calendar: {% if it.calendar_date %}{{ it.calendar_date }}{% else %}—{% endif %}
+        · Calendar: {% if it.calendar_date %}{{ it.calendar_date }}{% if it.calendar_time %} {{ it.calendar_time|time:"g:i A" }}{% if it.calendar_end_time %}–{{ it.calendar_end_time|time:"g:i A" }}{% endif %}{% endif %}{% else %}—{% endif %}
         · <span class="status-{{ it.status }}">{{ it.get_status_display }}</span>
         {% if it.waiting_for %} · Waiting: {{ it.waiting_for }}{% endif %}
         {% if it.next_action %} · Next: {{ it.next_action|truncatechars:120 }}{% endif %}
@@ -54,6 +54,8 @@
             {% csrf_token %}
             <input type="hidden" name="source_list" value="{{ list_id }}">
             <label class="chk" style="margin:0;">Date <input class="date" type="date" name="calendar_date" value="{{ it.calendar_date|date:'Y-m-d' }}"></label>
+            <label class="chk" style="margin:0;">Start <input type="time" name="calendar_time" value="{% if it.calendar_time %}{{ it.calendar_time|time:'H:i' }}{% endif %}" title="Optional — shows at this time in Google Calendar"></label>
+            <label class="chk" style="margin:0;">End <input type="time" name="calendar_end_time" value="{% if it.calendar_end_time %}{{ it.calendar_end_time|time:'H:i' }}{% endif %}" title="Optional — defaults to 1 hour after start"></label>
         </form>
         <form class="inline bd-ajax" method="post" action="{% url 'braindump:recategorize' it.pk %}">
             {% csrf_token %}

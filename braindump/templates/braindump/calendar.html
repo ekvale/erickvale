@@ -69,7 +69,7 @@
         <br><span style="display:block;margin-top:8px;font-size:0.8rem;color:#8b949e;">Full feed:</span>
         <code style="display:block;margin-top:4px;padding:8px;font-size:0.75rem;word-break:break-all;color:#c9d1d9;">{{ ics_subscribe_url }}</code>
         {% endif %}
-        <br><span style="display:block;margin-top:10px;font-size:0.8rem;color:#8b949e;line-height:1.45;">Done tasks are not exported. <code>[Task]</code> = no date (on capture day). Google caches feeds — remove and re-add the calendar to refresh.</span>
+        <br><span style="display:block;margin-top:10px;font-size:0.8rem;color:#8b949e;line-height:1.45;">Set optional <strong>Start</strong> / <strong>End</strong> times on each task for timed Google events (1-hour default if end is blank). Done tasks are not exported. Google caches feeds — remove and re-add the calendar to refresh.</span>
     </p>
     {% else %}
     <p class="section-note" style="margin-top:12px;color:#d29922;">Set <code>BRAINDUMP_ICS_SECRET</code> in your environment to enable a Google Calendar subscribe URL (token auth — Google cannot use login cookies).</p>
@@ -95,7 +95,7 @@
                         <div class="cal-chip cal-chip-bday"><span>Birthday</span>{{ it.title|truncatechars:52 }}</div>
                         {% else %}
                         <a class="cal-chip{% if it.status == 'done' %} done{% endif %}" href="{% url 'braindump:dashboard' %}#capture-{{ it.pk }}">
-                            {% if it.status == 'done' %}✓ {% endif %}{{ it.title|default:it.body|truncatechars:48 }}
+                            {% if it.status == 'done' %}✓ {% endif %}{% if it.calendar_time %}<span style="opacity:0.85;font-size:0.72rem;">{{ it.calendar_time|time:"g:i" }}</span> {% endif %}{{ it.title|default:it.body|truncatechars:48 }}
                         </a>
                         {% endif %}
                     {% endfor %}

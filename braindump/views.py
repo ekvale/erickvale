@@ -496,6 +496,18 @@ def item_status(request, pk: int):
     return _dashboard_redirect(request)
 
 
+def _parse_optional_time(raw: str):
+    from datetime import datetime as dt
+
+    s = (raw or '').strip()
+    if not s:
+        return None
+    try:
+        return dt.strptime(s[:5], '%H:%M').time()
+    except ValueError:
+        return None
+
+
 @login_required
 @require_http_methods(['POST'])
 def item_calendar_date(request, pk: int):
@@ -511,9 +523,25 @@ def item_calendar_date(request, pk: int):
             pass
     else:
         item.calendar_date = None
+        item.calendar_time = None
+        item.calendar_end_time = None
+    if item.calendar_date:
+        t_start = _parse_optional_time(request.POST.get('calendar_time') or '')
+        t_end = _parse_optional_time(request.POST.get('calendar_end_time') or '')
+        item.calendar_time = t_start
+        if t_start and t_end and t_end > t_start:
+            item.calendar_end_time = t_end
+        else:
+            item.calendar_end_time = None
     item.calendar_is_hard_date = bool(item.calendar_date)
     item.save(
-        update_fields=['calendar_date', 'calendar_is_hard_date', 'updated_at']
+        update_fields=[
+            'calendar_date',
+            'calendar_time',
+            'calendar_end_time',
+            'calendar_is_hard_date',
+            'updated_at',
+        ]
     )
     jr = _json_capture_response(request, item, removed=False)
     if jr:

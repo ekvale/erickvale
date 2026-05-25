@@ -100,6 +100,16 @@ class CaptureItem(models.Model):
         db_index=True,
         help_text='True = belongs on calendar landscape; False = next-action list only',
     )
+    calendar_time = models.TimeField(
+        null=True,
+        blank=True,
+        help_text='Optional start time on calendar_date (timed event in ICS/Google).',
+    )
+    calendar_end_time = models.TimeField(
+        null=True,
+        blank=True,
+        help_text='Optional end time; ICS defaults to one hour after start if unset.',
+    )
     is_actionable = models.BooleanField(
         null=True,
         blank=True,
