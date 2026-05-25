@@ -333,9 +333,13 @@
     <h2>Recently completed (archived)</h2>
     <ul class="items">
         {% for it in done_recent %}
-        <li class="item done">
+        <li class="item done" id="capture-{{ it.pk }}">
             <div class="title status-done">✓ {{ it.title|default:"(untitled)" }}</div>
             <div class="meta">Done {{ it.completed_at|date:"M j, Y" }}{% if it.calendar_date %} · was on {{ it.calendar_date }}{% endif %}</div>
+            <form class="inline bd-ajax" method="post" action="{% url 'braindump:item_delete' it.pk %}" onsubmit="return confirm('Permanently delete this task?');" style="margin-top:8px;">
+                {% csrf_token %}
+                <button type="submit" class="sm danger">Delete</button>
+            </form>
         </li>
         {% empty %}
         <li style="color:var(--muted);list-style:none;">None yet.</li>
@@ -388,22 +392,23 @@
     });
     rows.forEach(function (el) { ul.appendChild(el); });
   }
-  var wrap = document.querySelector('.wrap');
-  if (!wrap) return;
-  wrap.addEventListener('submit', function (ev) {
-    var form = ev.target;
-    if (!(form instanceof HTMLFormElement) || form.method.toLowerCase() !== 'post') return;
-    if (!form.classList.contains('bd-ajax')) return;
-    ev.preventDefault();
+  function submitBdAjax(form, opts) {
+    opts = opts || {};
+    if (!form || !form.classList.contains('bd-ajax')) return;
+    if (form._bdSaving) return;
+    form._bdSaving = true;
     var token = getCookie('csrftoken');
     if (!token) {
       var hid = form.querySelector('[name=csrfmiddlewaretoken]');
       token = hid ? hid.value : '';
     }
-    if (!token) return;
+    if (!token) {
+      form._bdSaving = false;
+      return;
+    }
     var btn = form.querySelector('button[type="submit"]');
     var prevText = btn ? btn.textContent : '';
-    if (btn) { btn.disabled = true; btn.textContent = '…'; }
+    if (btn && !opts.silent) { btn.disabled = true; btn.textContent = '…'; }
     var fd = new FormData(form);
     fetch(form.action, {
       method: 'POST',
@@ -434,7 +439,7 @@
         }
         var li = document.getElementById('capture-' + data.pk);
         if (li) li.remove();
-        showToast('Updated.');
+        if (!opts.silent) showToast('Updated.');
         return;
       }
       if (data.html) {
@@ -446,15 +451,55 @@
           if (newLi) {
             oldLi.replaceWith(newLi);
             reorderCaptureCard(newLi);
+            bindAutosave(newLi);
           }
         }
-        showToast('Saved.');
+        if (!opts.silent) showToast('Saved.');
       }
     }).catch(function () {
       showToast('Network error — try again.', 'err');
     }).finally(function () {
-      if (btn) { btn.disabled = false; btn.textContent = prevText; }
+      form._bdSaving = false;
+      if (btn && !opts.silent) { btn.disabled = false; btn.textContent = prevText; }
     });
+  }
+  function bindAutosave(root) {
+    if (!root) return;
+    root.querySelectorAll('form.bd-autosave').forEach(function (form) {
+      if (form._bdAutosaveBound) return;
+      form._bdAutosaveBound = true;
+      var debounceMs = 700;
+      form.querySelectorAll('input, textarea, select').forEach(function (el) {
+        if (el.name === 'csrfmiddlewaretoken') return;
+        if (el.type === 'date' || el.tagName === 'SELECT') {
+          el.addEventListener('change', function () {
+            submitBdAjax(form, { silent: true });
+          });
+          return;
+        }
+        if (el.type === 'hidden') return;
+        el.addEventListener('input', function () {
+          clearTimeout(form._bdSaveTimer);
+          form._bdSaveTimer = setTimeout(function () {
+            submitBdAjax(form, { silent: true });
+          }, debounceMs);
+        });
+        el.addEventListener('blur', function () {
+          clearTimeout(form._bdSaveTimer);
+          submitBdAjax(form, { silent: true });
+        });
+      });
+    });
+  }
+  var wrap = document.querySelector('.wrap');
+  if (!wrap) return;
+  bindAutosave(wrap);
+  wrap.addEventListener('submit', function (ev) {
+    var form = ev.target;
+    if (!(form instanceof HTMLFormElement) || form.method.toLowerCase() !== 'post') return;
+    if (!form.classList.contains('bd-ajax')) return;
+    ev.preventDefault();
+    submitBdAjax(form, { silent: false });
   });
 })();
 </script>

@@ -26,13 +26,13 @@ def _spawn_single_rule(rule: RecurringCaptureRule) -> None:
         body=rule.body,
         title=(rule.title or rule.body)[:200],
         calendar_date=run_day,
-        calendar_is_hard_date=False,
+        calendar_is_hard_date=True,
         spawned_from_recurring=rule,
     )
     categorize_capture_item(item)
     item.refresh_from_db()
     item.calendar_date = run_day
-    item.calendar_is_hard_date = False
+    item.calendar_is_hard_date = True
     item.save(update_fields=['calendar_date', 'calendar_is_hard_date', 'updated_at'])
 
     nxt = advance_after_spawn(

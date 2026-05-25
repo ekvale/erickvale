@@ -502,12 +502,7 @@ def item_calendar_date(request, pk: int):
             pass
     else:
         item.calendar_date = None
-        item.calendar_is_hard_date = False
-    hard = (request.POST.get('calendar_is_hard_date') or '').strip()
-    if item.calendar_date:
-        item.calendar_is_hard_date = hard in ('1', 'on', 'true', 'yes')
-    else:
-        item.calendar_is_hard_date = False
+    item.calendar_is_hard_date = bool(item.calendar_date)
     item.save(
         update_fields=['calendar_date', 'calendar_is_hard_date', 'updated_at']
     )
@@ -551,6 +546,18 @@ def item_archive(request, pk: int):
     item.save(update_fields=['archived', 'updated_at'])
     if _accepts_json(request):
         return JsonResponse({'ok': True, 'removed': True, 'pk': item.pk})
+    return _dashboard_redirect(request)
+
+
+@login_required
+@require_http_methods(['POST'])
+def item_delete(request, pk: int):
+    _require_owner(request)
+    item = get_object_or_404(CaptureItem, pk=pk, user=request.user)
+    item_pk = item.pk
+    item.delete()
+    if _accepts_json(request):
+        return JsonResponse({'ok': True, 'removed': True, 'pk': item_pk})
     return _dashboard_redirect(request)
 
 

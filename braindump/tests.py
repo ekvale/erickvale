@@ -115,6 +115,48 @@ class BraindumpOwnerTests(TestCase):
         it.refresh_from_db()
         self.assertTrue(it.archived)
 
+    def test_item_delete(self):
+        c = Client()
+        c.login(username='owner1', password='pw')
+        it = CaptureItem.objects.create(user=self.owner, body='gone', title='t')
+        pk = it.pk
+        r = c.post(
+            reverse('braindump:item_delete', args=[pk]),
+            HTTP_ACCEPT='application/json',
+        )
+        self.assertEqual(r.status_code, 200)
+        data = r.json()
+        self.assertTrue(data['ok'])
+        self.assertTrue(data['removed'])
+        self.assertEqual(data['pk'], pk)
+        self.assertFalse(CaptureItem.objects.filter(pk=pk).exists())
+
+    def test_item_delete_forbidden_for_other_user(self):
+        it = CaptureItem.objects.create(user=self.owner, body='x', title='t')
+        c = Client()
+        c.login(username='other', password='pw')
+        r = c.post(reverse('braindump:item_delete', args=[it.pk]))
+        self.assertEqual(r.status_code, 403)
+        self.assertTrue(CaptureItem.objects.filter(pk=it.pk).exists())
+
+    def test_calendar_date_always_hard(self):
+        c = Client()
+        c.login(username='owner1', password='pw')
+        it = CaptureItem.objects.create(
+            user=self.owner,
+            body='x',
+            title='t',
+            calendar_is_hard_date=False,
+        )
+        c.post(
+            reverse('braindump:item_calendar_date', args=[it.pk]),
+            {'calendar_date': '2026-07-04'},
+            HTTP_ACCEPT='application/json',
+        )
+        it.refresh_from_db()
+        self.assertEqual(it.calendar_date, date(2026, 7, 4))
+        self.assertTrue(it.calendar_is_hard_date)
+
     def test_item_update_meta(self):
         c = Client()
         c.login(username='owner1', password='pw')
@@ -301,21 +343,21 @@ class BraindumpOwnerTests(TestCase):
         self.assertNotIn(b'VALUE=DATE', office_block)
 
     @override_settings(BRAINDUMP_ICS_SECRET='test-ics-secret')
-    def test_calendar_ics_includes_soft_dated_capture(self):
+    def test_calendar_ics_includes_dated_capture(self):
         from braindump.ics_feed import build_braindump_calendar_ics
         from django.test import RequestFactory
 
         CaptureItem.objects.create(
             user=self.owner,
-            body='flex task',
-            title='Flex task',
+            body='dated task',
+            title='Dated task',
             calendar_date=date(2026, 6, 12),
-            calendar_is_hard_date=False,
+            calendar_is_hard_date=True,
         )
         rf = RequestFactory()
         req = rf.get('/calendar.ics')
         body = build_braindump_calendar_ics(owner=self.owner, request=req)
-        self.assertIn(b'[Flex] Flex task', body)
+        self.assertIn(b'Dated task', body)
 
     @override_settings(BRAINDUMP_ICS_SECRET='test-ics-secret')
     def test_calendar_ics_owner_and_token(self):

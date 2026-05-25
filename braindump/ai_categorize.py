@@ -375,6 +375,10 @@ def _apply_parsed_to_item(item: CaptureItem, parsed: dict, today: date) -> None:
 
         if item.gtd_bucket == GTDBucket.CALENDAR and item.calendar_date:
             item.calendar_is_hard_date = True
+        if item.calendar_date:
+            item.calendar_is_hard_date = True
+        else:
+            item.calendar_is_hard_date = False
 
         _apply_priority_field(item, parsed, actionable=True)
 
