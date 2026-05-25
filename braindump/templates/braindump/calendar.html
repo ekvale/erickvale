@@ -51,11 +51,19 @@
         <a href="{% url 'braindump:calendar_month' next_year next_month %}">{{ next_month }}/{{ next_year }} →</a>
     </div>
     <p class="section-note">Hard dates appear in the grid. <strong class="cal-chip-hold" style="display:inline;padding:2px 6px;">MDH office</strong> chips are standing availability (not tasks). Capture links jump to the item on the brain dump page.</p>
-    {% if ics_subscribe_url %}
+    {% if ics_subscribe_url or ics_subscribe_url_slug %}
     <p class="section-note" style="margin-top:12px;padding:12px 14px;background:#1a2332;border:1px solid #30363d;border-radius:8px;">
-        <strong style="color:var(--ink);">Google Calendar</strong> — In Google Calendar: <em>Settings → Add calendar → From URL</em>, paste this subscribe link exactly (token is URL-encoded; read-only sync). After subscribing, enable <strong>Brain dump</strong> under Other calendars in the left sidebar:
+        <strong style="color:var(--ink);">Google Calendar</strong> — <em>Settings → Add calendar → From URL</em>. Use a link below (logged-out access requires the <strong>full</strong> URL with token or slug — <code>/calendar.ics</code> alone is always 403). Enable <strong>Brain dump</strong> under Other calendars after subscribing.
+        {% if ics_subscribe_url_slug %}
+        <br><span style="display:block;margin-top:8px;font-size:0.8rem;color:#8b949e;">Recommended (URL-safe, no query string):</span>
+        <code style="display:block;margin-top:4px;padding:8px;font-size:0.75rem;word-break:break-all;color:#c9d1d9;">{{ ics_subscribe_url_slug }}</code>
+        {% endif %}
+        {% if ics_subscribe_url and ics_subscribe_url_slug and ics_subscribe_url != ics_subscribe_url_slug %}
+        <br><span style="display:block;margin-top:8px;font-size:0.8rem;color:#8b949e;">Or token URL (must be copied exactly, URL-encoded):</span>
+        <code style="display:block;margin-top:4px;padding:8px;font-size:0.75rem;word-break:break-all;color:#c9d1d9;">{{ ics_subscribe_url }}</code>
+        {% elif ics_subscribe_url and not ics_subscribe_url_slug %}
         <br><code style="display:block;margin-top:8px;padding:8px;font-size:0.75rem;word-break:break-all;color:#c9d1d9;">{{ ics_subscribe_url }}</code>
-        While logged in you can also open <a href="{% url 'braindump:calendar_ics' %}" style="color:var(--accent);">calendar.ics</a> directly (search for <code>BEGIN:VEVENT</code> — you should see MDH office days and any dated captures). Google may take a few hours to refresh; remove and re-add the calendar to force an update. Append <code>?hard_only=1</code> to omit soft-dated items; <code>?no_office=1</code> or <code>?no_birthdays=1</code> to omit those blocks.
+        {% endif %}
     </p>
     {% else %}
     <p class="section-note" style="margin-top:12px;color:#d29922;">Set <code>BRAINDUMP_ICS_SECRET</code> in your environment to enable a Google Calendar subscribe URL (token auth — Google cannot use login cookies).</p>

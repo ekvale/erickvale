@@ -217,6 +217,29 @@ class BraindumpOwnerTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'Clarify queue')
 
+    @override_settings(
+        BRAINDUMP_ICS_SECRET='a+b/c',
+        BRAINDUMP_ICS_FEED_SLUG='eric-feed-test',
+    )
+    def test_ics_feed_slug_path_and_plus_token(self):
+        slug_url = reverse(
+            'braindump:calendar_ics_slug',
+            kwargs={'feed_slug': 'eric-feed-test'},
+        )
+        r = Client().get(slug_url)
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(b'BEGIN:VCALENDAR', r.content)
+
+        from urllib.parse import quote
+
+        token_url = reverse('braindump:calendar_ics') + '?token=' + quote('a+b/c', safe='')
+        r2 = Client().get(token_url)
+        self.assertEqual(r2.status_code, 200)
+
+        r3 = Client().get(reverse('braindump:calendar_ics'))
+        self.assertEqual(r3.status_code, 403)
+        self.assertIn(b'subscribe', r3.content.lower())
+
     @override_settings(BRAINDUMP_ICS_SECRET='test-ics-secret', SITE_COMING_SOON=True)
     def test_ics_feed_not_blocked_by_coming_soon_curtain(self):
         """Google fetches the feed anonymously; coming-soon must not return HTML."""

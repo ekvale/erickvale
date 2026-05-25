@@ -9,6 +9,11 @@ urlpatterns = [
     path('calendar/', views.calendar_redirect, name='calendar'),
     path('calendar.ics', views.calendar_ics_feed, name='calendar_ics'),
     path(
+        'feed/<slug:feed_slug>.ics',
+        views.calendar_ics_feed,
+        name='calendar_ics_slug',
+    ),
+    path(
         'calendar/<int:year>/<int:month>/',
         views.calendar_month,
         name='calendar_month',

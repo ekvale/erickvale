@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import secrets
 from datetime import date, datetime, timedelta
+from urllib.parse import unquote, unquote_plus
 from datetime import timezone as dt_timezone
 from zoneinfo import ZoneInfo
 
@@ -83,22 +84,66 @@ def _ics_today() -> date:
     return datetime.now(_ics_timezone()).date()
 
 
+def _ics_token_candidates(request) -> list[str]:
+    """Query tokens may arrive encoded; ``+`` is often decoded as space."""
+    raw = (request.GET.get('token') or request.GET.get('t') or '').strip()
+    if not raw:
+        return []
+    out: list[str] = []
+    for val in (raw, unquote(raw), unquote_plus(raw)):
+        if not val:
+            continue
+        for cand in (val, val.replace(' ', '+')):
+            if cand not in out:
+                out.append(cand)
+    return out
+
+
+def _ics_feed_slug_from_request(request) -> str:
+    match = getattr(request, 'resolver_match', None)
+    if match is None:
+        return ''
+    return (match.kwargs.get('feed_slug') or '').strip()
+
+
 def ics_feed_authorized(request) -> bool:
     """
     Google Calendar fetches feeds without cookies — allow ``?token=`` when
-    ``BRAINDUMP_ICS_SECRET`` is set, or the logged-in brain dump owner.
+    ``BRAINDUMP_ICS_SECRET`` is set, ``/feed/<slug>.ics`` when
+    ``BRAINDUMP_ICS_FEED_SLUG`` is set, or the logged-in brain dump owner.
     """
+    slug_cfg = (getattr(settings, 'BRAINDUMP_ICS_FEED_SLUG', '') or '').strip()
+    path_slug = _ics_feed_slug_from_request(request)
+    if slug_cfg and path_slug and secrets.compare_digest(path_slug, slug_cfg):
+        return True
+
     secret = (getattr(settings, 'BRAINDUMP_ICS_SECRET', '') or '').strip()
     if secret:
-        token = (request.GET.get('token') or '').strip()
-        if token and secrets.compare_digest(token, secret):
-            return True
+        for token in _ics_token_candidates(request):
+            if secrets.compare_digest(token, secret):
+                return True
     user = getattr(request, 'user', None)
     if user is not None and user.is_authenticated:
         from .authz import is_braindump_owner
 
         return is_braindump_owner(user)
     return False
+
+
+def ics_feed_auth_hint(request) -> str:
+    """Plain-text hint when anonymous access is denied."""
+    if _ics_feed_slug_from_request(request) or _ics_token_candidates(request):
+        return (
+            'Invalid calendar feed credentials. Use the full subscribe URL from '
+            'Brain dump → Calendar (token must be URL-encoded), or set '
+            'BRAINDUMP_ICS_FEED_SLUG and use /apps/braindump/feed/<slug>.ics .'
+        )
+    return (
+        'Brain dump calendar feed requires authentication. While logged out, use the '
+        'subscribe URL from Brain dump → Calendar (?token=…, URL-encoded) or '
+        '/apps/braindump/feed/<slug>.ics if BRAINDUMP_ICS_FEED_SLUG is set. '
+        'Opening /calendar.ics alone always returns 403.'
+    )
 
 
 def resolve_ics_owner(request):

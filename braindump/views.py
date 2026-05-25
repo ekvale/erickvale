@@ -20,7 +20,11 @@ from .dashboard_filters import (
     work_type_filter_choices,
 )
 from .calendar_build import build_month_calendar_context
-from .ics_feed import build_braindump_calendar_ics_from_request, ics_feed_authorized
+from .ics_feed import (
+    build_braindump_calendar_ics_from_request,
+    ics_feed_auth_hint,
+    ics_feed_authorized,
+)
 from .gtd_partition import partition_active_items
 from .models import (
     CaptureItem,
@@ -182,7 +186,7 @@ def calendar_redirect(request):
 
 
 @require_GET
-def calendar_ics_feed(request):
+def calendar_ics_feed(request, feed_slug=None):
     """
     ICS feed for Google Calendar / Outlook (subscribe by URL).
     Set BRAINDUMP_ICS_SECRET and use ``?token=`` — Google cannot send session cookies.
@@ -190,7 +194,11 @@ def calendar_ics_feed(request):
     if not braindump_configured():
         raise PermissionDenied('Brain dump is not configured (set BRAINDUMP_OWNER_USERNAME or ID).')
     if not ics_feed_authorized(request):
-        raise PermissionDenied()
+        return HttpResponse(
+            ics_feed_auth_hint(request),
+            status=403,
+            content_type='text/plain; charset=utf-8',
+        )
     body = build_braindump_calendar_ics_from_request(request)
     if body is None:
         raise PermissionDenied('Brain dump owner user not found.')
@@ -225,7 +233,13 @@ def calendar_month(request, year: int, month: int):
     from django.conf import settings as django_settings
 
     ics_secret = (getattr(django_settings, 'BRAINDUMP_ICS_SECRET', '') or '').strip()
+    ics_feed_slug = (getattr(django_settings, 'BRAINDUMP_ICS_FEED_SLUG', '') or '').strip()
     ics_subscribe_url = None
+    ics_subscribe_url_slug = None
+    if ics_feed_slug:
+        ics_subscribe_url_slug = request.build_absolute_uri(
+            reverse('braindump:calendar_ics_slug', kwargs={'feed_slug': ics_feed_slug})
+        )
     if ics_secret:
         from urllib.parse import quote
 
@@ -234,6 +248,8 @@ def calendar_month(request, year: int, month: int):
             request.build_absolute_uri(reverse('braindump:calendar_ics'))
             + f'?token={q}'
         )
+    if ics_subscribe_url_slug and not ics_subscribe_url:
+        ics_subscribe_url = ics_subscribe_url_slug
     return render(
         request,
         'braindump/calendar.html',
@@ -244,6 +260,7 @@ def calendar_month(request, year: int, month: int):
             'next_year': ny,
             'next_month': nm,
             'ics_subscribe_url': ics_subscribe_url,
+            'ics_subscribe_url_slug': ics_subscribe_url_slug,
             'ics_feed_path': reverse('braindump:calendar_ics'),
         },
     )

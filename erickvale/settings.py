@@ -107,6 +107,8 @@ BRAINDUMP_MDH_OFFICE_END = config('BRAINDUMP_MDH_OFFICE_END', default='17:00').s
 # ICS feed for Google Calendar subscribe-by-URL (``/apps/braindump/calendar.ics?token=…``).
 # Generate a long random string; required for Google (no session cookies on fetch).
 BRAINDUMP_ICS_SECRET = config('BRAINDUMP_ICS_SECRET', default='').strip()
+# Optional URL-safe slug for ``/apps/braindump/feed/<slug>.ics`` (no ``?token=``; best for Google).
+BRAINDUMP_ICS_FEED_SLUG = config('BRAINDUMP_ICS_FEED_SLUG', default='').strip()
 BRAINDUMP_ICS_LOOKAHEAD_DAYS = config('BRAINDUMP_ICS_LOOKAHEAD_DAYS', default=120, cast=int)
 BRAINDUMP_ICS_LOOKBACK_DAYS = config('BRAINDUMP_ICS_LOOKBACK_DAYS', default=14, cast=int)
 # IANA zone for ICS date windows and MDH office days (server TIME_ZONE is often UTC).
