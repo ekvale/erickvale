@@ -28,7 +28,12 @@ def _path_allowed(path: str) -> bool:
         "/media/",
         "/ckeditor/",
     )
-    return any(path.startswith(p) for p in prefixes)
+    if any(path.startswith(p) for p in prefixes):
+        return True
+    # Calendar feeds (Google/Outlook subscribe by URL — no session cookies).
+    if path.endswith(".ics"):
+        return True
+    return False
 
 
 class SiteComingSoonMiddleware:

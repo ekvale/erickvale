@@ -227,9 +227,13 @@ def calendar_month(request, year: int, month: int):
     ics_secret = (getattr(django_settings, 'BRAINDUMP_ICS_SECRET', '') or '').strip()
     ics_subscribe_url = None
     if ics_secret:
-        ics_subscribe_url = request.build_absolute_uri(
-            reverse('braindump:calendar_ics')
-        ) + f'?token={ics_secret}'
+        from urllib.parse import quote
+
+        q = quote(ics_secret, safe='')
+        ics_subscribe_url = (
+            request.build_absolute_uri(reverse('braindump:calendar_ics'))
+            + f'?token={q}'
+        )
     return render(
         request,
         'braindump/calendar.html',

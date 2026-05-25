@@ -53,7 +53,7 @@
     <p class="section-note">Hard dates appear in the grid. <strong class="cal-chip-hold" style="display:inline;padding:2px 6px;">MDH office</strong> chips are standing availability (not tasks). Capture links jump to the item on the brain dump page.</p>
     {% if ics_subscribe_url %}
     <p class="section-note" style="margin-top:12px;padding:12px 14px;background:#1a2332;border:1px solid #30363d;border-radius:8px;">
-        <strong style="color:var(--ink);">Google Calendar</strong> — In Google Calendar: <em>Settings → Add calendar → From URL</em>, paste this subscribe link (read-only sync; updates every few hours):
+        <strong style="color:var(--ink);">Google Calendar</strong> — In Google Calendar: <em>Settings → Add calendar → From URL</em>, paste this subscribe link exactly (token is URL-encoded; read-only sync). After subscribing, enable <strong>Brain dump</strong> under Other calendars in the left sidebar:
         <br><code style="display:block;margin-top:8px;padding:8px;font-size:0.75rem;word-break:break-all;color:#c9d1d9;">{{ ics_subscribe_url }}</code>
         While logged in you can also open <a href="{% url 'braindump:calendar_ics' %}" style="color:var(--accent);">calendar.ics</a> directly (search for <code>BEGIN:VEVENT</code> — you should see MDH office days and any dated captures). Google may take a few hours to refresh; remove and re-add the calendar to force an update. Append <code>?hard_only=1</code> to omit soft-dated items; <code>?no_office=1</code> or <code>?no_birthdays=1</code> to omit those blocks.
     </p>

@@ -217,6 +217,19 @@ class BraindumpOwnerTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'Clarify queue')
 
+    @override_settings(BRAINDUMP_ICS_SECRET='test-ics-secret', SITE_COMING_SOON=True)
+    def test_ics_feed_not_blocked_by_coming_soon_curtain(self):
+        """Google fetches the feed anonymously; coming-soon must not return HTML."""
+        from urllib.parse import quote
+
+        url = reverse('braindump:calendar_ics') + '?token=' + quote(
+            'test-ics-secret', safe=''
+        )
+        r = Client().get(url)
+        self.assertNotEqual(r.status_code, 302)
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(b'BEGIN:VCALENDAR', r.content)
+
     @override_settings(BRAINDUMP_ICS_SECRET='test-ics-secret')
     def test_ics_physical_lines_within_75_octets(self):
         from braindump.ics_feed import build_braindump_calendar_ics
@@ -293,6 +306,13 @@ class BraindumpOwnerTests(TestCase):
         self.assertIn(b'Dentist', r.content)
         r = c.get(f'{url}?token=wrong')
         self.assertEqual(r.status_code, 403)
+
+    @override_settings(BRAINDUMP_ICS_SECRET='slash/plus+eq=')
+    def test_calendar_subscribe_url_encodes_token(self):
+        c = Client()
+        c.login(username='owner1', password='pw')
+        r = c.get(reverse('braindump:calendar_month', args=[2026, 4]))
+        self.assertContains(r, 'token=slash%2Fplus%2Beq%3D')
 
     @override_settings(BRAINDUMP_ICS_SECRET='test-ics-secret')
     def test_calendar_page_shows_google_subscribe_when_secret_set(self):
