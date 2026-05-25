@@ -125,6 +125,7 @@ def _facebook_friend_row(obj: dict, index: int) -> ParsedContactRow | None:
     first, last = _split_name(name)
     email = (obj.get('email') or obj.get('contact_email') or '').strip()
     phone = (obj.get('phone') or obj.get('contact_phone_number') or '').strip()
+    slug = re.sub(r'\W+', '-', name.lower())[:80]
     return ParsedContactRow(
         first_name=first,
         last_name=last,
@@ -132,7 +133,7 @@ def _facebook_friend_row(obj: dict, index: int) -> ParsedContactRow | None:
         email=email,
         phone=phone,
         source=ContactSource.FACEBOOK,
-        source_id=email or f'facebook-{index}-{re.sub(r"\\W+", "-", name.lower())[:80]}',
+        source_id=email or f'facebook-{index}-{slug}',
     )
 
 
