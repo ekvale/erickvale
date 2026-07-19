@@ -2,7 +2,7 @@
 {% load static %}
 {% block title %}Eric Kvale — Population health data infrastructure{% endblock %}
 {% block extra_head %}
-  <link rel="stylesheet" href="{% static 'math_bastion/css/game.css' %}?v=1">
+  <link rel="stylesheet" href="{% static 'math_bastion/css/game.css' %}?v=2">
 {% endblock %}
 {% block main_inner %}
   <section class="hero-dark w-full py-20 sm:py-28">
@@ -55,11 +55,11 @@
   <section class="relative overflow-hidden bg-navy-800 py-16 text-white sm:py-20" aria-labelledby="math-bastion-heading">
     <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
       <p class="eyebrow">Playable — right here on the front page</p>
-      <h2 id="math-bastion-heading" class="mt-2 font-display text-white">Math Bastion: The History of Ideas</h2>
+      <h2 id="math-bastion-heading" class="mt-2 font-display text-white">Math Bastion</h2>
       <p class="mt-4 max-w-2xl text-base font-light leading-relaxed text-white/[0.85]">
-        A tower defense game where every tower is a mathematical idea — counting, fractions, primes, zero,
-        algebra, coordinates, probability, calculus — each discovered, like the originals, because somebody
-        needed it. Defend civilization from prehistory to the scientific revolution. No downloads, no login.
+        An idle tower defense through the history of mathematics. One bastion, endless waves from every
+        direction, live upgrades — and the only way into each new age of history is to pass its Math Trial,
+        set by the people who actually discovered the ideas. No downloads, no login.
       </p>
       <div class="mt-8">
         {% include "math_bastion/_game.html" %}

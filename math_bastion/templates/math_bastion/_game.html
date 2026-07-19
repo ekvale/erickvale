@@ -2,31 +2,39 @@
 <div id="mb-game"
      data-leaderboard-url="{% url 'math_bastion:leaderboard' %}"
      data-score-url="{% url 'math_bastion:submit_score' %}"
+     data-store-url="{% url 'math_bastion:store_catalog' %}"
+     data-wallet-url="{% url 'math_bastion:wallet_sync' %}"
+     data-purchase-url="{% url 'math_bastion:purchase_intent' %}"
      data-csrf="{{ csrf_token }}">
   <div class="mb-hud">
-    <span class="mb-era-name">Math Bastion</span>
-    <span class="mb-stat">❤️ <b class="mb-lives">20</b></span>
-    <span class="mb-stat">🪙 <b class="mb-gold">220</b></span>
-    <span class="mb-stat">🌊 <b class="mb-wave">1/6</b></span>
-    <span class="mb-stat">★ <b class="mb-score">0</b></span>
-    <button type="button" class="mb-wave-btn">Send Wave 1</button>
-    <button type="button" class="mb-speed-btn" title="Toggle game speed">▶ 1×</button>
-    <button type="button" class="mb-pause-btn" title="Pause">⏸</button>
-    <button type="button" class="mb-codex-btn" title="Discovery Codex">📖</button>
-    <button type="button" class="mb-lb-hud-btn" title="Leaderboard">🏆</button>
-    <button type="button" class="mb-mute-btn" title="Sound on/off">🔊</button>
+    <div class="mb-hud-left">
+      <span class="mb-era-name">Math Bastion</span>
+      <span class="mb-wave">—</span>
+    </div>
+    <div class="mb-hpwrap" title="Bastion health">
+      <div class="mb-hpbar"><div class="mb-hpbar-fill" style="width:100%"></div></div>
+      <span class="mb-hptext">100 / 100</span>
+    </div>
+    <div class="mb-hud-right">
+      <span class="mb-stat" title="Coins (this run)">🪙 <b class="mb-coins">0</b></span>
+      <span class="mb-stat" title="Gems (yours forever)">💎 <b class="mb-gems">0</b></span>
+      <span class="mb-stat" title="Score">★ <b class="mb-score">0</b></span>
+      <button type="button" class="mb-speed-btn" title="Game speed">▶ 1×</button>
+      <button type="button" class="mb-pause-btn" title="Pause">⏸</button>
+      <button type="button" class="mb-store-hud-btn" title="Gem Store">💎</button>
+      <button type="button" class="mb-codex-hud-btn" title="Discovery Codex">📖</button>
+      <button type="button" class="mb-mute-btn" title="Sound on/off">🔊</button>
+    </div>
   </div>
-  <div class="mb-preview"></div>
   <div class="mb-body">
     <div class="mb-stage">
-      <canvas width="960" height="540"></canvas>
+      <canvas width="960" height="600"></canvas>
       <div class="mb-overlay"></div>
     </div>
     <aside class="mb-side">
-      <h5>Discovered Towers</h5>
-      <div class="mb-shop"></div>
-      <div class="mb-info"></div>
+      <div class="mb-tabs"></div>
+      <div class="mb-upgrades"></div>
     </aside>
   </div>
 </div>
-<script src="{% static 'math_bastion/js/game.js' %}?v=1" defer></script>
+<script src="{% static 'math_bastion/js/game.js' %}?v=2" defer></script>
