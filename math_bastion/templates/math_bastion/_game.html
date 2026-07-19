@@ -1,0 +1,32 @@
+{% load static %}
+<div id="mb-game"
+     data-leaderboard-url="{% url 'math_bastion:leaderboard' %}"
+     data-score-url="{% url 'math_bastion:submit_score' %}"
+     data-csrf="{{ csrf_token }}">
+  <div class="mb-hud">
+    <span class="mb-era-name">Math Bastion</span>
+    <span class="mb-stat">❤️ <b class="mb-lives">20</b></span>
+    <span class="mb-stat">🪙 <b class="mb-gold">220</b></span>
+    <span class="mb-stat">🌊 <b class="mb-wave">1/6</b></span>
+    <span class="mb-stat">★ <b class="mb-score">0</b></span>
+    <button type="button" class="mb-wave-btn">Send Wave 1</button>
+    <button type="button" class="mb-speed-btn" title="Toggle game speed">▶ 1×</button>
+    <button type="button" class="mb-pause-btn" title="Pause">⏸</button>
+    <button type="button" class="mb-codex-btn" title="Discovery Codex">📖</button>
+    <button type="button" class="mb-lb-hud-btn" title="Leaderboard">🏆</button>
+    <button type="button" class="mb-mute-btn" title="Sound on/off">🔊</button>
+  </div>
+  <div class="mb-preview"></div>
+  <div class="mb-body">
+    <div class="mb-stage">
+      <canvas width="960" height="540"></canvas>
+      <div class="mb-overlay"></div>
+    </div>
+    <aside class="mb-side">
+      <h5>Discovered Towers</h5>
+      <div class="mb-shop"></div>
+      <div class="mb-info"></div>
+    </aside>
+  </div>
+</div>
+<script src="{% static 'math_bastion/js/game.js' %}?v=1" defer></script>

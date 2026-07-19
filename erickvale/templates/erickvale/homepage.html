@@ -1,5 +1,9 @@
 {% extends "base_site.html" %}
+{% load static %}
 {% block title %}Eric Kvale — Population health data infrastructure{% endblock %}
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'math_bastion/css/game.css' %}?v=1">
+{% endblock %}
 {% block main_inner %}
   <section class="hero-dark w-full py-20 sm:py-28">
     <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -45,6 +49,25 @@
           <p class="mt-2 text-sm font-medium uppercase tracking-wider text-white/70">health conditions tracked in HTAC</p>
         </div>
       </div>
+    </div>
+  </section>
+
+  <section class="relative overflow-hidden bg-navy-800 py-16 text-white sm:py-20" aria-labelledby="math-bastion-heading">
+    <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      <p class="eyebrow">Playable — right here on the front page</p>
+      <h2 id="math-bastion-heading" class="mt-2 font-display text-white">Math Bastion: The History of Ideas</h2>
+      <p class="mt-4 max-w-2xl text-base font-light leading-relaxed text-white/[0.85]">
+        A tower defense game where every tower is a mathematical idea — counting, fractions, primes, zero,
+        algebra, coordinates, probability, calculus — each discovered, like the originals, because somebody
+        needed it. Defend civilization from prehistory to the scientific revolution. No downloads, no login.
+      </p>
+      <div class="mt-8">
+        {% include "math_bastion/_game.html" %}
+      </div>
+      <p class="mt-6 text-sm text-white/70">
+        Prefer a bigger board and the how-to-play notes?
+        <a href="{% url 'math_bastion:play' %}" class="font-semibold text-teal-400 underline-offset-4 hover:underline">Open the full game page →</a>
+      </p>
     </div>
   </section>
 

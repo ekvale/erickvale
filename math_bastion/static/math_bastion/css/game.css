@@ -1,0 +1,273 @@
+/* Math Bastion — game shell styles */
+#mb-game {
+  --mb-ink: #1d2433;
+  --mb-panel: #232a3a;
+  --mb-panel-2: #2c3447;
+  --mb-gold: #f5d76e;
+  --mb-teal: #4fd1b5;
+  --mb-edge: rgba(255, 255, 255, 0.12);
+  position: relative;
+  max-width: 1180px;
+  margin: 0 auto;
+  font-family: "Source Sans 3", system-ui, sans-serif;
+  color: #e9edf5;
+  background: var(--mb-ink);
+  border: 1px solid var(--mb-edge);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(10, 14, 24, 0.45);
+}
+
+/* HUD bar */
+.mb-hud {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1.1rem;
+  padding: 0.6rem 1rem;
+  background: var(--mb-panel);
+  border-bottom: 1px solid var(--mb-edge);
+  font-size: 0.9rem;
+}
+.mb-hud .mb-stat { display: inline-flex; align-items: center; gap: 0.35rem; white-space: nowrap; }
+.mb-hud .mb-stat b { color: var(--mb-gold); font-variant-numeric: tabular-nums; }
+.mb-era-name {
+  font-family: "Fraunces", serif;
+  font-size: 0.95rem;
+  color: var(--mb-teal);
+  margin-right: auto;
+}
+.mb-hud button {
+  background: var(--mb-panel-2);
+  color: #e9edf5;
+  border: 1px solid var(--mb-edge);
+  border-radius: 6px;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.mb-hud button:hover:not(:disabled) { background: #38415a; }
+.mb-hud button:disabled { opacity: 0.45; cursor: default; }
+.mb-wave-btn {
+  background: #2e7d5b !important;
+  border-color: #3fa576 !important;
+  font-weight: 600;
+}
+.mb-wave-btn:hover:not(:disabled) { background: #37946c !important; }
+
+/* Layout: canvas + sidebar */
+.mb-body { display: flex; align-items: stretch; }
+.mb-stage { position: relative; flex: 1 1 auto; min-width: 0; background: #11141c; }
+.mb-stage canvas { display: block; width: 100%; height: auto; cursor: crosshair; }
+
+.mb-side {
+  flex: 0 0 240px;
+  display: flex;
+  flex-direction: column;
+  background: var(--mb-panel);
+  border-left: 1px solid var(--mb-edge);
+}
+.mb-side h5 {
+  margin: 0;
+  padding: 0.55rem 0.85rem 0.3rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #93a0ba;
+}
+.mb-shop { display: flex; flex-direction: column; gap: 2px; padding: 0 0.5rem; }
+.mb-shop button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: #e9edf5;
+  padding: 0.32rem 0.4rem;
+  font-size: 0.82rem;
+  cursor: pointer;
+  text-align: left;
+}
+.mb-shop button:hover { background: var(--mb-panel-2); }
+.mb-shop button.mb-selected { border-color: var(--mb-teal); background: var(--mb-panel-2); }
+.mb-shop button.mb-poor { opacity: 0.45; }
+.mb-shop-sym {
+  flex: 0 0 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-family: "Fraunces", serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+.mb-shop-name { flex: 1 1 auto; line-height: 1.15; }
+.mb-shop-cost { color: var(--mb-gold); font-variant-numeric: tabular-nums; }
+
+.mb-info {
+  margin-top: auto;
+  padding: 0.7rem 0.85rem 0.85rem;
+  border-top: 1px solid var(--mb-edge);
+  font-size: 0.8rem;
+  line-height: 1.4;
+  min-height: 9.5rem;
+}
+.mb-info h4 { margin: 0 0 0.3rem; font-family: "Fraunces", serif; font-size: 0.95rem; }
+.mb-info p { margin: 0 0 0.4rem; color: #c6cede; }
+.mb-info .mb-lv { color: var(--mb-gold); font-size: 0.75rem; }
+.mb-hist { color: #93a0ba !important; font-style: italic; }
+.mb-hint { color: #93a0ba !important; }
+.mb-info-btns { display: flex; gap: 0.4rem; margin-top: 0.5rem; }
+.mb-info-btns button {
+  flex: 1;
+  background: var(--mb-panel-2);
+  color: #e9edf5;
+  border: 1px solid var(--mb-edge);
+  border-radius: 6px;
+  padding: 0.35rem 0.4rem;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+.mb-info-btns .mb-upg { background: #2e7d5b; border-color: #3fa576; }
+.mb-info-btns .mb-sell { background: #7d2e2e; border-color: #a53f3f; }
+.mb-info-btns button:disabled { opacity: 0.5; cursor: default; }
+
+.mb-preview {
+  padding: 0.35rem 1rem;
+  font-size: 0.78rem;
+  color: #93a0ba;
+  background: #1a2030;
+  border-bottom: 1px solid var(--mb-edge);
+  min-height: 1.7rem;
+}
+
+/* Overlay + cards */
+.mb-overlay {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 13, 22, 0.78);
+  backdrop-filter: blur(3px);
+  z-index: 5;
+  padding: 1rem;
+}
+.mb-overlay.mb-show { display: flex; }
+.mb-card {
+  max-width: 560px;
+  max-height: 92%;
+  overflow-y: auto;
+  background: var(--mb-panel);
+  border: 1px solid var(--mb-edge);
+  border-radius: 12px;
+  padding: 1.4rem 1.6rem;
+  text-align: center;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.5);
+}
+.mb-card h3 {
+  margin: 0.2rem 0 0.6rem;
+  font-family: "Fraunces", serif;
+  font-size: 1.7rem;
+  color: #fff;
+}
+.mb-card p { margin: 0 0 0.7rem; font-size: 0.92rem; line-height: 1.5; color: #c6cede; }
+.mb-kicker {
+  font-size: 0.7rem !important;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mb-teal) !important;
+  margin-bottom: 0 !important;
+}
+.mb-menu .mb-sub {
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  color: var(--mb-gold);
+  margin-top: -0.5rem;
+}
+.mb-btn {
+  display: inline-block;
+  margin: 0.3rem 0.25rem 0;
+  background: #2e7d5b;
+  color: #fff;
+  border: 1px solid #3fa576;
+  border-radius: 8px;
+  padding: 0.55rem 1.3rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.1s, background 0.15s;
+}
+.mb-btn:hover { background: #37946c; transform: translateY(-1px); }
+.mb-btn.mb-ghost { background: transparent; border-color: var(--mb-edge); color: #c6cede; }
+.mb-btn.mb-ghost:hover { background: var(--mb-panel-2); }
+
+/* Mentor dialog */
+.mb-mentor { text-align: left; }
+.mb-mentor-head { display: flex; align-items: center; gap: 0.7rem; margin: 0.4rem 0 0.8rem; }
+.mb-mentor-head h3 { margin: 0; font-size: 1.25rem; }
+.mb-portrait {
+  flex: 0 0 52px; height: 52px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 1.7rem;
+  background: var(--mb-panel-2);
+  border: 2px solid var(--mb-teal);
+  border-radius: 50%;
+}
+.mb-quote { font-style: italic; }
+.mb-discovery {
+  margin: 0.9rem 0;
+  padding: 0.7rem 0.9rem;
+  background: rgba(79, 209, 181, 0.08);
+  border: 1px solid rgba(79, 209, 181, 0.35);
+  border-radius: 8px;
+  font-size: 0.88rem;
+  color: #d9f4ec;
+}
+.mb-discovery span { display: block; margin-top: 0.3rem; font-size: 0.8rem; color: #93c9bb; }
+.mb-mentor .mb-btn { display: block; width: 100%; margin: 0.4rem 0 0; }
+
+/* Codex */
+.mb-codex { text-align: left; max-width: 620px; }
+.mb-codex h3 { text-align: center; }
+.mb-codex-row {
+  padding: 0.6rem 0.2rem;
+  border-bottom: 1px solid var(--mb-edge);
+}
+.mb-codex-row h4 { margin: 0 0 0.2rem; font-size: 0.95rem; color: var(--mb-gold); font-family: "Fraunces", serif; }
+.mb-codex-row h4 span { float: right; font-family: "Source Sans 3", sans-serif; font-size: 0.72rem; color: #93a0ba; font-weight: 400; }
+.mb-codex-row p { margin: 0; font-size: 0.83rem; }
+.mb-codex-row.mb-locked { opacity: 0.45; }
+.mb-codex .mb-btn { display: block; margin: 1rem auto 0; }
+
+/* Leaderboard table */
+.mb-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin: 0.5rem 0 0.8rem; }
+.mb-table th, .mb-table td { padding: 0.35rem 0.5rem; text-align: left; border-bottom: 1px solid var(--mb-edge); }
+.mb-table th { color: #93a0ba; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; }
+.mb-table td:nth-child(3) { color: var(--mb-gold); font-variant-numeric: tabular-nums; }
+
+/* Score submit */
+.mb-submit { display: flex; gap: 0.5rem; justify-content: center; margin: 0.6rem 0; }
+.mb-name {
+  background: var(--mb-panel-2);
+  border: 1px solid var(--mb-edge);
+  border-radius: 8px;
+  color: #fff;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.9rem;
+  width: 12rem;
+}
+
+/* Responsive: sidebar drops below the canvas on small screens */
+@media (max-width: 900px) {
+  .mb-body { flex-direction: column; }
+  .mb-side { flex: 1 1 auto; border-left: 0; border-top: 1px solid var(--mb-edge); }
+  .mb-shop { flex-direction: row; flex-wrap: wrap; padding-bottom: 0.5rem; }
+  .mb-shop button { flex: 1 1 45%; }
+  .mb-info { min-height: 0; }
+}

@@ -56,6 +56,7 @@ urlpatterns = [
     path('apps/nomoar/', include('nomoar.urls')),
     path('apps/dream-blue/', include('dream_blue.urls')),
     path('apps/braindump/', include('braindump.urls')),
+    path('apps/math-bastion/', include('math_bastion.urls', namespace='math_bastion')),
     path('apps/contacts/', include('contacts.urls', namespace='contacts')),
     path('mdh/', include('mdh_briefings.urls')),
     path('htac/about/', HTACAboutView.as_view(), name='htac_public_about'),
