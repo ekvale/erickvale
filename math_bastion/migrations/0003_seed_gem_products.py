@@ -7,7 +7,7 @@ GEM_PACKS = [
          gems=550, bonus_gems=50, price_cents=499, sort_order=2),
     dict(sku='gems-chest', name='Chest of Gems', description='Enough to fund a small academy.',
          gems=1200, bonus_gems=200, price_cents=999, sort_order=3),
-    dict(sku='gems-vault', name='House of Wisdom Vault', description='Best value — Baghdad approved.',
+    dict(sku='gems-vault', name='House of Wisdom Vault', description='Best value. Baghdad approved.',
          gems=2600, bonus_gems=600, price_cents=1999, sort_order=4),
 ]
 

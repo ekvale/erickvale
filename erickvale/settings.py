@@ -28,6 +28,23 @@ DEBUG = config('DEBUG', default='True') == 'True'
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
+# --- Production security hardening (no-ops under DEBUG / local dev) -------
+# nginx terminates TLS and forwards the original scheme; without this header
+# Django can't tell HTTPS requests from HTTP ones behind the proxy, and
+# SECURE_SSL_REDIRECT below would redirect-loop.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+# HSTS: only takes effect once HTTPS is confirmed working end-to-end in prod
+# (see deploy/DEPLOYMENT.md). Ramp SECURE_HSTS_SECONDS down to 0 first if a
+# rollback to plain HTTP is ever needed — browsers cache this for a year.
+SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
+SECURE_HSTS_PRELOAD = not DEBUG
+
 
 # Application definition
 
@@ -38,6 +55,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sitemaps',
     'django.contrib.postgres',
     'django.contrib.humanize',  # For intcomma filter
     'rest_framework',

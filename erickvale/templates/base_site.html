@@ -1,19 +1,78 @@
-{% load static %}
-<!DOCTYPE html>
+{% load static %}<!DOCTYPE html>
 <html lang="en" class="h-full scroll-smooth">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Eric Kvale{% endblock %}</title>
+  <title>{% block title %}Eric Kvale, Data Scientist & Developer{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Eric Kvale is a data scientist and developer in Minneapolis who builds things: health data infrastructure, browser games, civic history archives, and a handful of other projects.{% endblock %}">
+  <link rel="canonical" href="https://erickvale.com{{ request.path }}">
+  <meta name="robots" content="{% block meta_robots %}index, follow{% endblock %}">
+  <meta name="author" content="Eric Kvale">
+  <meta name="theme-color" content="#0b0b0e">
+
+  {% block extra_meta %}{% endblock %}
+
+  <!-- Open Graph / social sharing. Twitter/X and LinkedIn both fall back to
+       these og: tags when a twitter:-prefixed one is absent, so only
+       twitter:card (which has no OG equivalent) needs its own tag. -->
+  <meta property="og:site_name" content="Eric Kvale">
+  <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+  <meta property="og:url" content="https://erickvale.com{{ request.path }}">
+  <meta property="og:title" content="{% block og_title %}Eric Kvale, Data Scientist & Developer{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}Eric Kvale is a data scientist and developer in Minneapolis who builds things: health data infrastructure, browser games, civic history archives, and a handful of other projects.{% endblock %}">
+  <meta property="og:image" content="{% block og_image %}https://erickvale.com{% static 'erickvale/img/og-default.png' %}{% endblock %}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <!-- Icons -->
+  <link rel="icon" href="{% static 'erickvale/img/favicon.svg' %}" type="image/svg+xml">
+  <link rel="icon" href="{% static 'erickvale/img/favicon.ico' %}" sizes="any">
+  <link rel="apple-touch-icon" href="{% static 'erickvale/img/apple-touch-icon.png' %}">
+  <link rel="manifest" href="{% static 'erickvale/site.webmanifest' %}">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=Source+Sans+3:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'erickvale/css/tw.css' %}?v=5">
+  <link rel="stylesheet" href="{% static 'erickvale/css/tw.css' %}?v=7">
+
+  {% block structured_data %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Eric Kvale",
+    "url": "https://erickvale.com/",
+    "image": "https://erickvale.com{% static 'erickvale/img/og-default.png' %}",
+    "jobTitle": "Data Scientist & Full-Stack Developer",
+    "description": "Data scientist and developer in Minneapolis, Minnesota building federated health data infrastructure, browser games, and civic education tools.",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Minneapolis",
+      "addressRegion": "MN",
+      "addressCountry": "US"
+    },
+    "email": "eric@erickvale.com",
+    "makesOffer": {
+      "@type": "Offer",
+      "itemOffered": {
+        "@type": "Service",
+        "name": "Population Health Data Infrastructure Consulting",
+        "description": "Federated OMOP data infrastructure, privacy-preserving record linkage, and population health prevalence estimation for public health agencies, health system research consortia, and community organizations.",
+        "url": "https://erickvale.com/services/"
+      }
+    }
+  }
+  </script>
+  {% endblock %}
+
   {% block extra_head %}{% endblock %}
 </head>
 <body class="flex min-h-full flex-col bg-parchment-100 font-sans text-navy-800 antialiased">
+  <a href="#main-content" class="skip-link">Skip to content</a>
   {% include "includes/site_nav.html" %}
-  <main class="flex-1">
+  <main id="main-content" class="flex-1">
     {% block main_inner %}
     <div class="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
       {% block content %}{% endblock %}

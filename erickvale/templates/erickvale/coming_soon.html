@@ -1,5 +1,6 @@
 {% extends "base_site.html" %}
-{% block title %}Coming soon — Eric Kvale{% endblock %}
+{% block title %}Coming soon, Eric Kvale{% endblock %}
+{% block meta_robots %}noindex, nofollow{% endblock %}
 {% block main_inner %}
   <section class="hero-dark w-full py-24 sm:py-32">
     <div class="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
@@ -8,7 +9,7 @@
         COMING SOON!
       </h1>
       <p class="mt-6 text-lg font-light leading-relaxed text-white/[0.88] sm:text-xl">
-        A new public site for population health data infrastructure is almost ready. Sign in to access the full site — homepage, services, HTAC pipeline, and the rest.
+        The new site is almost ready. Sign in to see everything: the projects, the consulting work, all of it.
       </p>
       <div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6">
         <a href="{{ login_url }}" class="btn-hero-primary px-8 py-3 text-base">

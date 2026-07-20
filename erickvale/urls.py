@@ -15,10 +15,12 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.contrib.sitemaps.views import sitemap
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import about, contact, coming_soon, homepage, login_view, logout_view, services
+from .sitemaps import StaticViewSitemap
+from .views import about, contact, coming_soon, homepage, login_view, logout_view, robots_txt, services
 
 from htac.views_admin import about as htac_admin_about
 from htac.views_public import (
@@ -76,10 +78,12 @@ urlpatterns = [
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
     path('coming-soon/', coming_soon, name='coming_soon'),
+    path('robots.txt', robots_txt, name='robots_txt'),
+    path('sitemap.xml', sitemap, {'sitemaps': {'static': StaticViewSitemap()}}, name='sitemap'),
     path('about/', about, name='about'),
     path('contact/', contact, name='contact'),
     path('services/', services, name='services'),
-    # Project management (projects, contacts, calendar, notifications — see projects.urls)
+    # Project management (projects, contacts, calendar, notifications: see projects.urls)
     path('', include('projects.urls')),
     path('', homepage, name='homepage'),
 ]

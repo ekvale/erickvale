@@ -1,17 +1,22 @@
 {% extends "base_site.html" %}
-{% block title %}Contact — Eric Kvale{% endblock %}
+{% block title %}Contact, Eric Kvale{% endblock %}
+{% block meta_description %}Start a conversation about population health data infrastructure, OMOP implementation, federated networks, administrative data linkage, or grant technical assistance.{% endblock %}
+{% block og_title %}Contact, Eric Kvale{% endblock %}
+{% block og_description %}Start a conversation about population health data infrastructure, OMOP implementation, federated networks, administrative data linkage, or grant technical assistance.{% endblock %}
 {% block main_inner %}
+  <section class="masthead w-full py-16 sm:py-20">
+    <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      <p class="eyebrow kicker-tick">Get in Touch</p>
+      <h1 class="mt-4 font-display text-white">Start a Conversation</h1>
+      <p class="mt-5 max-w-2xl text-base font-light leading-relaxed text-white/[0.85]">
+        Whether you're designing new data infrastructure, operationalizing a funded project, preparing a
+        grant application, or just curious what linked EHR and administrative data could tell you about the
+        populations you serve, use this form to start a conversation.
+      </p>
+    </div>
+  </section>
   <div class="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
   <div class="mx-auto max-w-2xl pb-8 pt-4">
-    <header class="mb-10">
-      <p class="eyebrow">Get in Touch</p>
-      <h1 class="mt-2 font-display text-3xl font-semibold text-navy-800">Start a Conversation</h1>
-      <p class="mt-4 text-sm leading-relaxed text-slate-600 sm:text-base">
-        Whether you are designing new data infrastructure, operationalizing a funded project, preparing a grant
-        application, or exploring what linked EHR and administrative data could tell you about the populations you serve —
-        use this form to start a conversation.
-      </p>
-    </header>
 
     {% if messages %}
       <div class="mb-8 space-y-2">

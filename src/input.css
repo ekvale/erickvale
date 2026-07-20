@@ -142,7 +142,7 @@
     @apply rounded-md border border-parchment-300 bg-white px-8 py-6;
   }
 
-  /* Site chrome (scoped — avoids styling every <nav> in the DOM) */
+  /* Site chrome (scoped: avoids styling every <nav> in the DOM) */
   .site-header {
     @apply sticky top-0 z-50 border-b border-white/[0.08] bg-navy-800;
   }
@@ -202,5 +202,130 @@
     background-color: #111d2e;
     color: rgba(255, 255, 255, 0.55);
     border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .skip-link {
+    @apply absolute left-4 top-4 z-[100] -translate-y-20 rounded bg-navy-800 px-4 py-2 text-sm font-medium text-white transition-transform focus:translate-y-0;
+  }
+
+  /* Full-bleed textured band for sub-page headers (about/services/contact):
+     sharp-edged sibling of .hero-dark, sized for a one-line masthead. */
+  .masthead {
+    @apply relative overflow-hidden bg-navy-800 text-white;
+    background-image: url('../img/topo-pattern.svg');
+    background-size: 600px 600px;
+    background-repeat: repeat;
+  }
+  .masthead .eyebrow {
+    color: #2db89e;
+  }
+
+  /* Dispatch-style kicker: a small square tick + tracked caps. */
+  .kicker-tick {
+    @apply inline-flex items-center gap-2;
+  }
+  .kicker-tick::before {
+    content: '';
+    @apply inline-block h-[7px] w-[7px] bg-amber-600;
+  }
+
+  /* Citation strip: a row of figures separated by thin vertical rules,
+     captioned like footnotes. Used sparingly (project detail pages), not
+     as a homepage stat band. */
+  .citation-strip {
+    @apply flex flex-col divide-y divide-white/[0.12] sm:flex-row sm:divide-x sm:divide-y-0;
+  }
+  .citation {
+    @apply flex-1 py-4 first:pt-0 sm:px-8 sm:py-0 sm:first:pl-0 sm:last:pr-0;
+  }
+  .citation-figure {
+    @apply font-display text-3xl font-medium tabular-nums text-teal-400 sm:text-4xl;
+  }
+  .citation-label {
+    @apply mt-1 text-xs font-medium uppercase tracking-[0.1em] text-white/65;
+  }
+
+  /* Pull-quote / field note: italic serif set off by a rule, no box. */
+  .field-note {
+    @apply border-l-2 border-amber-600 pl-5 font-display text-lg italic leading-relaxed text-navy-800/90 sm:text-xl;
+  }
+
+  /* ------------------------------------------------------------------
+   * Personal portfolio system: the erickvale.com homepage / work page.
+   * Dark, warm-neutral (ink), one signature accent (amber), flat bento
+   * tiles with hover-lift instead of shadowed cards or numbered sections.
+   * ------------------------------------------------------------------ */
+
+  .hero-personal {
+    @apply relative overflow-hidden bg-ink-950 text-ink-200;
+  }
+  .hero-personal::before {
+    content: '';
+    @apply pointer-events-none absolute -right-40 -top-40 h-[32rem] w-[32rem] rounded-full;
+    background: radial-gradient(circle, rgba(212, 136, 42, 0.16), transparent 70%);
+  }
+  .hero-personal::after {
+    content: '';
+    @apply pointer-events-none absolute -bottom-52 -left-32 h-[28rem] w-[28rem] rounded-full;
+    background: radial-gradient(circle, rgba(124, 92, 255, 0.12), transparent 70%);
+  }
+
+  .status-line {
+    @apply inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.14em] text-ink-400;
+  }
+  .status-line::before {
+    content: '';
+    @apply inline-block h-[7px] w-[7px] rounded-full bg-amber-500;
+  }
+
+  /* Bento project grid */
+  .bento-grid {
+    @apply grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4;
+    grid-auto-flow: dense;
+  }
+  .tile {
+    @apply relative flex flex-col justify-between gap-4 rounded-xl border border-ink-700 bg-ink-900 p-6 no-underline transition;
+  }
+  .tile:hover {
+    @apply border-amber-500/60 bg-ink-800;
+    transform: translateY(-2px);
+  }
+  .tile-large {
+    @apply sm:col-span-2 lg:col-span-2 lg:row-span-2;
+  }
+  .tile-icon {
+    @apply text-3xl;
+  }
+  .tile-name {
+    @apply font-display text-lg font-medium text-white;
+  }
+  .tile-large .tile-name {
+    @apply text-2xl;
+  }
+  .tile-tagline {
+    @apply text-sm leading-relaxed text-ink-400;
+  }
+  .tile-foot {
+    @apply flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.08em];
+  }
+
+  /* Category color coding: used for the tile-foot dot + filter chips */
+  .cat-dot {
+    @apply inline-block h-2 w-2 rounded-full;
+  }
+  .cat-data { @apply text-teal-400; }
+  .cat-data .cat-dot { @apply bg-teal-400; }
+  .cat-games { @apply text-amber-500; }
+  .cat-games .cat-dot { @apply bg-amber-500; }
+  .cat-tools { @apply text-violet-500; }
+  .cat-tools .cat-dot { @apply bg-violet-500; }
+  .cat-research { @apply text-coral-500; }
+  .cat-research .cat-dot { @apply bg-coral-500; }
+
+  .filter-chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-ink-700 px-3 py-1.5 font-mono text-xs text-ink-400 no-underline transition hover:border-ink-600 hover:text-ink-200;
+  }
+  .filter-chip.is-active {
+    @apply border-amber-500/60 bg-ink-800 text-amber-400;
   }
 }

@@ -41,6 +41,27 @@ module.exports = {
           200: '#EEECEA',
           300: '#E2E0DA',
         },
+        /* Personal-site dark neutrals — distinct from the cooler "navy"
+           scale used by the health-data work; warmer, near-black. */
+        ink: {
+          950: '#0b0b0e',
+          900: '#131318',
+          800: '#1c1c24',
+          700: '#28282f',
+          600: '#38383f',
+          400: '#8b8b96',
+          200: '#d6d6dc',
+        },
+        violet: {
+          600: '#7c5cff',
+          500: '#9179ff',
+          400: '#ab9bff',
+        },
+        coral: {
+          600: '#ff6b5b',
+          500: '#ff8674',
+          400: '#ffa599',
+        },
       },
       fontFamily: {
         display: ['Fraunces', 'Georgia', 'serif'],

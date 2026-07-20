@@ -5,11 +5,34 @@ from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.core.mail import send_mail
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 
 from .forms import SiteContactForm
+from .models import FeaturedApp
+
+ROBOTS_TXT = """User-agent: *
+Disallow: /admin/
+Disallow: /ckeditor/
+Disallow: /projects/
+Disallow: /apps/contacts/
+Disallow: /mdh/
+Disallow: /login/
+Disallow: /logout/
+Disallow: /coming-soon/
+Disallow: /api/
+Disallow: /htac/demo/run/
+Disallow: /htac/demo/status/
+Disallow: /htac/demo/reset/
+
+Sitemap: https://erickvale.com/sitemap.xml
+"""
+
+
+def robots_txt(request):
+    return HttpResponse(ROBOTS_TXT, content_type="text/plain")
 
 
 def _safe_next_path(request):
@@ -50,8 +73,10 @@ def coming_soon(request):
 
 
 def homepage(request):
-    """Public landing page (HTAC-focused)."""
-    return render(request, 'erickvale/homepage.html')
+    """Public landing page: personal portfolio grid of every showcased project."""
+    return render(request, 'erickvale/homepage.html', {
+        'projects': FeaturedApp.objects.filter(is_published=True),
+    })
 
 
 def about(request):
@@ -60,7 +85,7 @@ def about(request):
 
 
 def services(request):
-    """Professional services page."""
+    """Professional services page (the HTAC / population-health consulting practice)."""
     return render(request, 'erickvale/services.html')
 
 
@@ -70,7 +95,7 @@ def contact(request):
         form = SiteContactForm(request.POST)
         if form.is_valid():
             data = form.cleaned_data
-            subject = f"New Contact Form Submission — {data['inquiry_type']}"
+            subject = f"New Contact Form Submission: {data['inquiry_type']}"
             org = data.get('organization') or '(not provided)'
             body = (
                 f"Name: {data['name']}\n"

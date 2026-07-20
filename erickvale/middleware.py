@@ -16,7 +16,7 @@ from django.shortcuts import redirect
 
 def _path_allowed(path: str) -> bool:
     """Paths that anonymous users may hit while the curtain is up."""
-    if path in ("/favicon.ico", "/robots.txt"):
+    if path in ("/favicon.ico", "/robots.txt", "/sitemap.xml"):
         return True
     if path == "/coming-soon" or path.startswith("/coming-soon/"):
         return True
@@ -30,7 +30,7 @@ def _path_allowed(path: str) -> bool:
     )
     if any(path.startswith(p) for p in prefixes):
         return True
-    # Calendar feeds (Google/Outlook subscribe by URL — no session cookies).
+    # Calendar feeds (Google/Outlook subscribe by URL, no session cookies).
     if path.endswith(".ics"):
         return True
     return False

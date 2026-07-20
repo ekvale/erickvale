@@ -18,7 +18,7 @@ class HighScore(models.Model):
         indexes = [models.Index(fields=['-score'])]
 
     def __str__(self):
-        return f'{self.name} — {self.score}'
+        return f'{self.name}: {self.score}'
 
 
 class PlayerWallet(models.Model):
@@ -36,7 +36,7 @@ class PlayerWallet(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f'Wallet {self.device_key} — {self.gems} gems'
+        return f'Wallet {self.device_key}: {self.gems} gems'
 
 
 class GemProduct(models.Model):

@@ -3,12 +3,28 @@ from django.urls import reverse
 
 
 class FeaturedApp(models.Model):
-    """Model for featured monthly applications."""
+    """A project in the personal portfolio showcase (erickvale.com homepage / work page)."""
+
+    CATEGORY_CHOICES = [
+        ('data', 'Data & Analytics'),
+        ('games', 'Games & Play'),
+        ('tools', 'Tools & Utilities'),
+        ('research', 'Writing & Research'),
+    ]
+
     name = models.CharField(max_length=200)
     slug = models.SlugField(unique=True, help_text="URL-friendly version of the name")
+    tagline = models.CharField(max_length=140, blank=True, default='', help_text="Short one-line hook shown on the project tile")
     description = models.TextField(help_text="Description shown on the homepage")
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='tools')
     icon = models.CharField(max_length=10, default='📱', help_text="Emoji icon")
     url = models.CharField(max_length=200, help_text="URL path to the app (e.g., /apps/cards/)")
+    featured_size = models.CharField(
+        max_length=10,
+        choices=[('large', 'Large tile'), ('normal', 'Normal tile')],
+        default='normal',
+        help_text="Large tiles get a bigger spot in the bento grid. Reserve for flagship projects.",
+    )
     cover_image = models.CharField(
         max_length=200, 
         blank=True, 
@@ -19,11 +35,6 @@ class FeaturedApp(models.Model):
         default=list,
         blank=True,
         help_text="List of features (e.g., ['Feature 1', 'Feature 2'])"
-    )
-    month = models.CharField(max_length=50, help_text="Month/year (e.g., 'January 2025')")
-    is_current_month = models.BooleanField(
-        default=False,
-        help_text="Is this the current month's featured app?"
     )
     is_published = models.BooleanField(
         default=True,
@@ -43,8 +54,7 @@ class FeaturedApp(models.Model):
 
     def __str__(self):
         status = "Published" if self.is_published else "Unpublished"
-        current = " (Current)" if self.is_current_month else ""
-        return f"{self.name} - {status}{current}"
+        return f"{self.name} - {status}"
 
     def get_absolute_url(self):
         return self.url

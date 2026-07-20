@@ -144,7 +144,7 @@ def purchase_intent(request):
             'purchase_token': str(purchase.token),
             'status': purchase.status,
             'checkout': None,
-            'message': 'Payments are not enabled yet — this purchase was recorded as an intent only.',
+            'message': 'Payments are not enabled yet. This purchase was recorded as an intent only.',
         })
 
     # TODO(payments): branch per provider and return a checkout session.

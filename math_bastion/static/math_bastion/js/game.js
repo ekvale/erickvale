@@ -1,8 +1,8 @@
 /*
- * Math Bastion — an idle tower defense through the history of mathematics.
+ * Math Bastion: an idle tower defense through the history of mathematics.
  * One bastion, attacked from every direction. Inspired by the idle-TD genre
  * ("The Tower"): a single auto-firing tower, live upgrade tabs, endless
- * scaling waves — but every era of the campaign is a chapter in the real
+ * scaling waves. Every era of the campaign is a chapter in the real
  * history of math, and advancing eras requires passing a short Math Trial
  * taught by a historical mentor.
  *
@@ -40,7 +40,7 @@
   const GEMS_ERA_CLEAR = 15;
 
   // ================================================================
-  // Eras — the historical spine of the campaign.
+  // Eras: the historical spine of the campaign.
   // ================================================================
   const ERAS = [
     {
@@ -48,10 +48,10 @@
       pal: { sky0: '#191512', sky1: '#2e2721', glow: '#e8b04a', deco: '#8a7355', star: '#e8d5b5' },
       mentor: {
         name: 'Onna, Keeper of the Tally Bone', emoji: '🦴',
-        intro: 'The herds come at night, and no one remembers how many we drove off before. I cut a notch in this bone for each one — one notch, one beast. Counting is how we stop being surprised.',
+        intro: 'The herds come at night, and no one remembers how many we drove off before. I cut a notch in this bone for each one. One notch, one beast. Counting is how we stop being surprised.',
         trial: 'Show me you can keep the tally. The tribe is watching.',
         discovery: 'Counting & Tally Marks',
-        blurb: 'The Ishango bone (c. 20,000 BCE) carries some of the oldest known tally marks. Before numerals existed, humans matched one mark to one thing — the root idea of all arithmetic.',
+        blurb: 'The Ishango bone (c. 20,000 BCE) carries some of the oldest known tally marks. Before numerals existed, humans matched one mark to one thing: the root idea of all arithmetic.',
       },
     },
     {
@@ -59,10 +59,10 @@
       pal: { sky0: '#241a0e', sky1: '#4a3418', glow: '#ffb84d', deco: '#c9a76a', star: '#ffe1a1' },
       mentor: {
         name: 'Ahmes, Scribe of the Rhind Papyrus', emoji: '📜',
-        intro: 'The Nile flood erases every field boundary, every year — and the tax collector still comes. We survey with ropes and split grain into parts. Whoever masters fractions masters the harvest.',
+        intro: 'The Nile flood erases every field boundary, every year, and the tax collector still comes. We survey with ropes and split grain into parts. Whoever masters fractions masters the harvest.',
         trial: 'The granary ledgers must balance. Compute as a scribe computes.',
         discovery: 'Fractions & Multiplication',
-        blurb: 'Egyptian scribes like Ahmes (c. 1550 BCE) computed with unit fractions to divide bread and land; Babylonians pressed multiplication tables into clay in base 60 — their 60s survive in our minutes and degrees.',
+        blurb: 'Egyptian scribes like Ahmes (c. 1550 BCE) computed with unit fractions to divide bread and land; Babylonians pressed multiplication tables into clay in base 60, and their 60s survive in our minutes and degrees.',
       },
     },
     {
@@ -73,7 +73,7 @@
         intro: 'Anyone can see that a fact is true. The Greeks asked a harder question: can you prove it must be? From five simple postulates we will build defenses no chaos can argue with.',
         trial: 'A proof is a wall that cannot be breached. Lay your stones carefully.',
         discovery: 'Geometry, Proof & Primes',
-        blurb: 'Euclid’s Elements (c. 300 BCE) organized geometry into proofs from axioms and showed there are infinitely many primes — numbers divisible only by 1 and themselves, the atoms of arithmetic.',
+        blurb: 'Euclid’s Elements (c. 300 BCE) organized geometry into proofs from axioms and showed there are infinitely many primes: numbers divisible only by 1 and themselves, the atoms of arithmetic.',
       },
     },
     {
@@ -81,7 +81,7 @@
       pal: { sky0: '#12102b', sky1: '#251d4d', glow: '#c9a4ff', deco: '#9d8fd0', star: '#efe6ff' },
       mentor: {
         name: 'Al-Khwarizmi of the House of Wisdom', emoji: '⭐',
-        intro: 'In Baghdad we gathered every book we could find — Greek, Indian, Persian — and read them all. From India came a gift: a symbol for nothing. Zero. With it, and with al-jabr, the unknown itself becomes a thing you can hunt.',
+        intro: 'In Baghdad we gathered every book we could find, Greek, Indian, Persian, and read them all. From India came a gift: a symbol for nothing. Zero. With it, and with al-jabr, the unknown itself becomes a thing you can hunt.',
         trial: 'Restore the balance. Solve for what is hidden.',
         discovery: 'Zero & Algebra',
         blurb: 'Brahmagupta (628 CE) gave rules for zero and negatives; Al-Khwarizmi’s book on al-jabr (c. 820 CE) named algebra, and Latin translations of his name gave us the word "algorithm."',
@@ -92,10 +92,10 @@
       pal: { sky0: '#0d1a16', sky1: '#173229', glow: '#7dffb0', deco: '#d9cdae', star: '#eaffe8' },
       mentor: {
         name: 'Isaac Newton', emoji: '🍎',
-        intro: 'Descartes taught us to give every point an address — two numbers, and geometry becomes algebra. I needed more: the mathematics of change itself. If I have seen further, it is by standing on the shoulders of giants.',
+        intro: 'Descartes taught us to give every point an address, two numbers, and geometry becomes algebra. I needed more: the mathematics of change itself. If I have seen further, it is by standing on the shoulders of giants.',
         trial: 'Measure the world in motion. Rates, points, chances.',
         discovery: 'Coordinates, Probability & Calculus',
-        blurb: 'Descartes’ coordinates (1637) fused algebra with geometry; Pascal and Fermat founded probability (1654); Newton and Leibniz independently invented calculus — the mathematics of motion and change.',
+        blurb: 'Descartes’ coordinates (1637) fused algebra with geometry; Pascal and Fermat founded probability (1654); Newton and Leibniz independently invented calculus, the mathematics of motion and change.',
       },
     },
     {
@@ -112,7 +112,7 @@
   ];
 
   // ================================================================
-  // Upgrades — bought live during a run, The-Tower style.
+  // Upgrades: bought live during a run, The-Tower style.
   // era: trials that must be passed before it appears in the shop.
   // ================================================================
   const UPGRADES = [
@@ -203,7 +203,7 @@
   ];
 
   // ================================================================
-  // Math Trials — procedural question generators per era.
+  // Math Trials: procedural question generators per era.
   // ================================================================
   function ri(a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }
   function shuffle(arr) {
@@ -219,14 +219,14 @@
   }
 
   const QUESTION_GENS = [
-    // Era 0 — counting, addition, subtraction
+    // Era 0: counting, addition, subtraction
     () => {
       const kind = ri(0, 2);
       if (kind === 0) {
         const a = ri(4, 9), b = ri(3, 9);
         return mcq('Onna cut ' + a + ' notches at dusk and ' + b + ' more at dawn. How many beasts in all?',
           a + b, [a + b + 1, a + b - 1, a + b + 2],
-          a + ' + ' + b + ' = ' + (a + b) + '. One notch for one beast — matching marks to things is the oldest arithmetic.');
+          a + ' + ' + b + ' = ' + (a + b) + '. One notch for one beast: matching marks to things is the oldest arithmetic.');
       }
       if (kind === 1) {
         const a = ri(9, 16), b = ri(2, 7);
@@ -239,7 +239,7 @@
         g * n, [g * n + g, g * n - g, g * n + 1],
         n + ' groups of ' + g + ' is ' + g * n + '. Grouping tallies was the first step toward multiplication.');
     },
-    // Era 1 — fractions & multiplication
+    // Era 1: fractions & multiplication
     () => {
       const kind = ri(0, 2);
       if (kind === 0) {
@@ -260,14 +260,14 @@
         '1/' + d1, ['1/' + d2, 'equal shares', 'cannot be known'],
         'Cutting a loaf into fewer pieces makes bigger pieces: 1/' + d1 + ' > 1/' + d2 + '.');
     },
-    // Era 2 — primes & geometry
+    // Era 2: primes & geometry
     () => {
       const kind = ri(0, 2);
       if (kind === 0) {
         const primes = [5, 7, 11, 13, 17, 19];
         const comps = shuffle([4, 6, 8, 9, 10, 12, 14, 15, 16, 18].slice());
         const p = primes[ri(0, primes.length - 1)];
-        return mcq('Which of these numbers is prime — divisible only by 1 and itself?',
+        return mcq('Which of these numbers is prime, divisible only by 1 and itself?',
           p, [comps[0], comps[1], comps[2]],
           p + ' has no divisors besides 1 and ' + p + '. Euclid proved the primes never run out.');
       }
@@ -280,9 +280,9 @@
       const f = [2, 3, 5][ri(0, 2)], m = [7, 11, 13][ri(0, 2)], n = f * m;
       return mcq('The golem is the number ' + n + '. Which prime divides it evenly?',
         f, [f === 2 ? 3 : 2, f === 5 ? 3 : 5, 17],
-        n + ' = ' + f + ' × ' + m + '. Every whole number breaks into prime factors — its atoms.');
+        n + ' = ' + f + ' × ' + m + '. Every whole number breaks into prime factors, its atoms.');
     },
-    // Era 3 — zero, negatives, algebra
+    // Era 3: zero, negatives, algebra
     () => {
       const kind = ri(0, 2);
       if (kind === 0) {
@@ -300,16 +300,16 @@
       const n = ri(3, 99);
       return mcq('What is ' + n + ' × 0?',
         0, [n, 1, -n],
-        'Anything times zero is zero — one of Brahmagupta’s rules that made zero a true number.');
+        'Anything times zero is zero, one of Brahmagupta’s rules that made zero a true number.');
     },
-    // Era 4 — coordinates, rates, probability
+    // Era 4: coordinates, rates, probability
     () => {
       const kind = ri(0, 2);
       if (kind === 0) {
         const t = ri(2, 6), v = ri(6, 12);
         return mcq('A cannonball travels ' + (v * t) + ' leagues in ' + t + ' hours. What is its speed?',
           v + ' per hour', [(v + 1) + ' per hour', (v - 1) + ' per hour', (v * t) + ' per hour'],
-          (v * t) + ' ÷ ' + t + ' = ' + v + ' leagues per hour. A rate of change — the seed of calculus.');
+          (v * t) + ' ÷ ' + t + ' = ' + v + ' leagues per hour. A rate of change: the seed of calculus.');
       }
       if (kind === 1) {
         const triples = [[3, 4, 5], [6, 8, 10], [5, 12, 13]], tr = triples[ri(0, 2)];
@@ -359,7 +359,7 @@
   if (URLS.wallet) api(URLS.wallet, { device_key: META.deviceKey }).catch(() => {});
 
   // ================================================================
-  // Audio — tiny synthesizer
+  // Audio: tiny synthesizer
   // ================================================================
   const AudioSys = (() => {
     let ctx = null, muted = !!META.muted;
@@ -592,7 +592,7 @@
   }
 
   // ================================================================
-  // Waves — continuous, endless scaling.
+  // Waves: continuous, endless scaling.
   // ================================================================
   function waveComposition(w) {
     // w is 1-based wave number
@@ -636,7 +636,7 @@
     META.bestWave = Math.max(META.bestWave, G.wave);
     saveMeta();
 
-    // Era gate: after each era's boss wave a Math Trial is required —
+    // Era gate: after each era's boss wave a Math Trial is required,
     // until the endless frontier, which has no more gates.
     const targetEra = eraForWave(G.wave);
     if (targetEra > G.trialsPassed && G.trialsPassed < QUESTION_GENS.length) {
@@ -811,10 +811,10 @@
     const m = ERAS[G.trialsPassed].mentor;
     showModal(
       '<div class="mb-mentor"><span class="mb-mentor-emoji">' + m.emoji + '</span>' +
-      '<div><h3>Math Trial — ' + esc(ERAS[G.trialsPassed].name) + '</h3>' +
+      '<div><h3>Math Trial: ' + esc(ERAS[G.trialsPassed].name) + '</h3>' +
       '<p class="mb-mentor-name">' + esc(m.name) + '</p></div></div>' +
       '<p class="mb-modal-text">' + esc(m.trial) + '</p>' +
-      '<p class="mb-modal-sub">Answer ' + TRIAL_PASS + ' of ' + TRIAL_QUESTIONS + ' correctly to advance to the next age. Waves are held while you think — no timer, no pressure.</p>' +
+      '<p class="mb-modal-sub">Answer ' + TRIAL_PASS + ' of ' + TRIAL_QUESTIONS + ' correctly to advance to the next age. Waves are held while you think. No timer, no pressure.</p>' +
       '<button class="mb-btn mb-btn-primary" data-act="trial-start">Begin the trial</button>'
     );
   }
@@ -867,14 +867,14 @@
     if (!META.erasCleared.includes(clearedEra.id)) {
       META.erasCleared.push(clearedEra.id);
       META.gems += GEMS_ERA_CLEAR;
-      gemLine = '<p class="mb-reward-gems">💎 +' + GEMS_ERA_CLEAR + ' gems — first time clearing this age!</p>';
+      gemLine = '<p class="mb-reward-gems">💎 +' + GEMS_ERA_CLEAR + ' gems, first time clearing this age!</p>';
       AudioSys.gem();
     }
     saveMeta();
     AudioSys.fanfare();
     showModal(
       '<div class="mb-mentor"><span class="mb-mentor-emoji">' + newEra.mentor.emoji + '</span>' +
-      '<div><h3>' + esc(newEra.name) + '</h3><p class="mb-mentor-name">' + esc(newEra.years) + ' — ' + esc(newEra.mentor.name) + '</p></div></div>' +
+      '<div><h3>' + esc(newEra.name) + '</h3><p class="mb-mentor-name">' + esc(newEra.years) + ', ' + esc(newEra.mentor.name) + '</p></div></div>' +
       '<p class="mb-modal-text">' + esc(newEra.mentor.intro) + '</p>' +
       '<p class="mb-reward">🏆 Trial passed (' + Trial.correct + '/' + TRIAL_QUESTIONS + ') · +' + coinReward + ' coins · new discoveries unlocked in the shop</p>' +
       gemLine +
@@ -887,9 +887,9 @@
     const m = ERAS[G.trialsPassed].mentor;
     showModal(
       '<div class="mb-mentor"><span class="mb-mentor-emoji">' + m.emoji + '</span>' +
-      '<div><h3>Not yet — study and retry</h3><p class="mb-mentor-name">' + esc(m.name) + '</p></div></div>' +
+      '<div><h3>Not yet, study and retry</h3><p class="mb-mentor-name">' + esc(m.name) + '</p></div></div>' +
       '<p class="mb-modal-text">You answered ' + Trial.correct + ' of ' + TRIAL_QUESTIONS + '. ' +
-      'History waited for these ideas too. Read the explanations, take a breath, and try a fresh set of questions — there is no penalty.</p>' +
+      'History waited for these ideas too. Read the explanations, take a breath, and try a fresh set of questions. There is no penalty.</p>' +
       '<p class="mb-modal-sub">' + esc(m.blurb) + '</p>' +
       '<button class="mb-btn mb-btn-primary" data-act="trial-retry">Try a new set</button>'
     );
@@ -1141,7 +1141,7 @@
     ctx.shadowBlur = 0;
     ctx.stroke();
 
-    // Number / label — enemies wear their mathematics.
+    // Number / label: enemies wear their mathematics.
     const label = e.label !== null ? e.label : (e.num !== null ? String(e.num) : '');
     if (label) {
       ctx.fillStyle = '#fff';
@@ -1230,7 +1230,7 @@
     if (!force && hudTimer > 0) return;
     hudTimer = 6; // ~10 Hz at 60 fps
     hud.era.textContent = era().name;
-    hud.wave.textContent = G.state === 'menu' ? '—' : 'Wave ' + (G.awaitTrial ? G.wave : G.wave + 1);
+    hud.wave.textContent = G.state === 'menu' ? '-' : 'Wave ' + (G.awaitTrial ? G.wave : G.wave + 1);
     const frac = G.hpMax ? Math.max(0, G.hp / G.hpMax) : 1;
     hud.hpbar.style.width = (frac * 100).toFixed(1) + '%';
     hud.hpbar.className = 'mb-hpbar-fill' + (frac < 0.25 ? ' is-low' : frac < 0.5 ? ' is-mid' : '');
@@ -1269,7 +1269,7 @@
       const cost = upgCost(u);
       btn.querySelector('.mb-upg-lv').textContent = 'lv ' + level + (maxed ? ' MAX' : '');
       btn.querySelector('.mb-upg-desc').textContent = u.desc(level);
-      btn.querySelector('.mb-upg-cost').textContent = maxed ? '—' : fmt(cost) + ' 🪙';
+      btn.querySelector('.mb-upg-cost').textContent = maxed ? '-' : fmt(cost) + ' 🪙';
       btn.disabled = maxed || G.coins < cost || G.state !== 'run';
       btn.classList.toggle('is-affordable', !maxed && G.coins >= cost && G.state === 'run');
     });
@@ -1308,7 +1308,7 @@
     showModal(
       '<h2 class="mb-title">Math Bastion</h2>' +
       '<p class="mb-modal-sub mb-title-sub">An idle tower defense through the history of mathematics</p>' +
-      '<p class="mb-modal-text">One bastion. Endless waves from every direction. Upgrade in real time, and pass each age’s <strong>Math Trial</strong> — set by the people who actually discovered the ideas — to reach the next era of history.</p>' +
+      '<p class="mb-modal-text">One bastion. Endless waves from every direction. Upgrade in real time, and pass each age’s <strong>Math Trial</strong>, set by the people who actually discovered the ideas, to reach the next era of history.</p>' +
       (META.bestWave ? '<p class="mb-reward">Best run: wave ' + META.bestWave + ' · Wisdom: ' + fmt(META.wisdom) + ' · 💎 ' + fmt(META.gems) + '</p>' : '') +
       '<div class="mb-btn-row">' +
       '<button class="mb-btn mb-btn-primary" data-act="start">▶ Begin the campaign</button>' +
@@ -1333,7 +1333,7 @@
       esc(era().name) + '</strong>. Score: <strong>' + fmt(G.score) + '</strong> · Kills: ' + fmt(G.kills) + '</p>' +
       '<p class="mb-reward">🧠 +' + G.wisdomGain + ' Wisdom for the Workshop</p>' +
       '<div class="mb-btn-row">' +
-      (reviveOk ? '<button class="mb-btn mb-btn-gem" data-act="revive">💎 Second Wind — revive (' + GEM_COST_REVIVE + ' gems)</button>' : '') +
+      (reviveOk ? '<button class="mb-btn mb-btn-gem" data-act="revive">💎 Second Wind: revive (' + GEM_COST_REVIVE + ' gems)</button>' : '') +
       '<button class="mb-btn mb-btn-primary" data-act="start">↻ New run</button>' +
       '<button class="mb-btn" data-act="workshop">🏗 Workshop</button>' +
       '</div>' +
@@ -1352,7 +1352,7 @@
       html += '<button class="mb-upg" data-work="' + w.id + '" ' + (maxed || META.wisdom < cost ? 'disabled' : '') + '>' +
         '<span class="mb-upg-main"><span class="mb-upg-name">' + esc(w.name) + ' <em class="mb-upg-lv">lv ' + level + (maxed ? ' MAX' : '') + '</em></span>' +
         '<span class="mb-upg-desc">' + esc(w.desc) + '</span></span>' +
-        '<span class="mb-upg-cost">' + (maxed ? '—' : fmt(cost) + ' 🧠') + '</span></button>';
+        '<span class="mb-upg-cost">' + (maxed ? '-' : fmt(cost) + ' 🧠') + '</span></button>';
     });
     html += '</div><button class="mb-btn" data-act="' + back + '">← Back</button>';
     showModal(html, true);
@@ -1366,7 +1366,7 @@
       html += '<div class="mb-codex-item' + (open ? '' : ' is-locked') + '">' +
         '<h4>' + e.mentor.emoji + ' ' + esc(e.name) + ' <span>' + esc(e.years) + '</span></h4>' +
         (open ? '<p><strong>' + esc(e.mentor.discovery) + '.</strong> ' + esc(e.mentor.blurb) + '</p>'
-              : '<p>Locked — reach this age to read its story.</p>') +
+              : '<p>Locked. Reach this age to read its story.</p>') +
         '</div>';
     });
     html += '</div><button class="mb-btn" data-act="' + back + '">← Back</button>';
@@ -1401,7 +1401,7 @@
       ).join('') || '<p class="mb-upg-empty">No gem packs configured.</p>';
       note.textContent = data.payments_enabled
         ? 'Purchases are processed securely by our payment provider.'
-        : 'Checkout is coming soon — purchases are not yet enabled, and no card details are collected.';
+        : 'Checkout is coming soon. Purchases are not yet enabled, and no card details are collected.';
     };
     if (storeCache) render(storeCache);
     else if (URLS.store) {
@@ -1420,7 +1420,7 @@
           // TODO(payments): redirect to res.checkout when a provider is live.
           window.location = res.checkout;
         } else {
-          note.textContent = res.message || 'Checkout is not available yet — your interest was recorded. Payments arrive with the app release!';
+          note.textContent = res.message || 'Checkout is not available yet. Your interest was recorded. Payments arrive with the app release!';
         }
       })
       .catch(() => { note.textContent = 'Could not reach the store. Try again later.'; });
@@ -1445,7 +1445,7 @@
       if (!el) return;
       el.innerHTML = data.scores.length
         ? '<ol>' + data.scores.map(s =>
-            '<li><strong>' + esc(s.name) + '</strong> — ' + fmt(s.score) + ' pts · wave ' + s.waves + ' · ' + esc(s.era) + '</li>'
+            '<li><strong>' + esc(s.name) + '</strong>: ' + fmt(s.score) + ' pts · wave ' + s.waves + ' · ' + esc(s.era) + '</li>'
           ).join('') + '</ol>'
         : '<p>No scores yet. Be the first!</p>';
     }).catch(() => {});
