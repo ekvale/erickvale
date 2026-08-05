@@ -444,6 +444,28 @@ class LibraryChromeTests(TestCase):
         response = self.client.get(reverse("mdh_publications:publication_list"))
         self.assertNotIn("erickvale/css/tw.css", response.content.decode())
 
+
+    def test_pages_do_not_leak_template_comments(self):
+        """Django's {# #} comment is single-line only.
+
+        Wrapping one across lines makes it render as literal text; that is
+        exactly how a note about the mdh-app body class ended up printed at
+        the top of every page, above the banner.
+        """
+        for url in (
+            reverse("mdh_publications:publication_landing"),
+            reverse("mdh_publications:publication_list"),
+            reverse("mdh_publications:publication_taxonomy"),
+            reverse("mdh_publications:publication_about"),
+            reverse(
+                "mdh_publications:publication_detail",
+                kwargs={"slug": self.publication.slug},
+            ),
+        ):
+            body = self.client.get(url).content.decode()
+            for marker in ("{#", "#}", "{% comment", "{% endcomment"):
+                self.assertNotIn(marker, body, f"{url} leaked {marker!r}")
+
     def test_every_page_template_extends_the_app_base(self):
         """One template left on base_site.html would silently lose Bootstrap."""
         from pathlib import Path
