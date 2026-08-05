@@ -15,18 +15,11 @@ reproduce real Minnesota Department of Health publications, and the figures
 in the abstracts are invented.
 """
 
-import shutil
 from datetime import date
 
-from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
-from mdh_publications.models import (
-    DocumentType,
-    LandingImage,
-    Publication,
-    Tag,
-)
+from mdh_publications.models import DocumentType, Publication, Tag
 
 # (title, document type, ISO date, status, featured, summary, abstract, tag slugs)
 DEMO_PUBLICATIONS = [
@@ -278,36 +271,16 @@ DEMO_PUBLICATIONS = [
     ),
 ]
 
-# (slot, source file shipped in the app's static dir, title, alt text)
-DEMO_LANDING_IMAGES = [
-    ("hero", "BB_Library.webp", "Library reading room",
-     "Readers at tables in a library reading room."),
-    ("hero", "book_shelf.jpg", "Collection shelves",
-     "Shelves of bound reports and volumes."),
-    ("hero", "haunted_book.jpg", "Archive volume",
-     "An open archival volume on a desk."),
-    ("browse_topic", "old_timey_cover_your_cough.webp", "Browse by topic",
-     "Historical public health poster."),
-    ("browse_contributor", "come_work_at_the_library.jfif", "Browse by contributor",
-     "Library staff at work."),
-    ("browse_format", "dazed_in_library.jfif", "Browse by format",
-     "A reader among library stacks."),
-]
 
 
 class Command(BaseCommand):
-    help = "Populate the library with realistic demo publications and landing images."
+    help = "Populate the library with realistic demo publications."
 
     def add_arguments(self, parser):
         parser.add_argument(
             "--reset",
             action="store_true",
             help="Delete all existing publications and landing images first.",
-        )
-        parser.add_argument(
-            "--skip-images",
-            action="store_true",
-            help="Do not create landing images or copy files into MEDIA_ROOT.",
         )
 
     def handle(self, *args, **options):
@@ -318,11 +291,8 @@ class Command(BaseCommand):
 
         if options["reset"]:
             pub_count, _ = Publication.objects.all().delete()
-            img_count, _ = LandingImage.objects.all().delete()
             self.stdout.write(
-                self.style.WARNING(
-                    f"Deleted {pub_count} publication rows and {img_count} landing images."
-                )
+                self.style.WARNING(f"Deleted {pub_count} publication rows.")
             )
 
         created, updated, missing_tags = 0, 0, set()
@@ -365,57 +335,12 @@ class Command(BaseCommand):
                 )
             )
 
-        image_note = ""
-        if not options["skip_images"]:
-            image_note = " " + self._create_landing_images()
-
         self.stdout.write(
             self.style.SUCCESS(
                 f"Demo content ready. Created {created}, updated {updated}, "
                 f"{Publication.objects.count()} publications total "
                 f"({Publication.objects.filter(status='published').count()} published, "
                 f"{Publication.objects.filter(is_featured=True).count()} featured)."
-                + image_note
             )
         )
 
-    def _create_landing_images(self):
-        """Copy shipped images into MEDIA_ROOT and point LandingImage rows at them.
-
-        The landing hero and the three browse cards read from LandingImage, so
-        without rows here the page falls back to a single static background and
-        the browse cards render flat.
-        """
-        source_dir = (
-            settings.BASE_DIR / "mdh_publications" / "static" / "mdh_publications" / "images"
-        )
-        target_dir = settings.MEDIA_ROOT / "landing_images"
-        target_dir.mkdir(parents=True, exist_ok=True)
-
-        made, skipped = 0, []
-        for order, (slot, filename, title, alt_text) in enumerate(DEMO_LANDING_IMAGES, start=1):
-            source = source_dir / filename
-            if not source.exists():
-                skipped.append(filename)
-                continue
-
-            target = target_dir / filename
-            if not target.exists():
-                shutil.copyfile(source, target)
-
-            LandingImage.objects.update_or_create(
-                slot=slot,
-                title=title,
-                defaults={
-                    "image": f"landing_images/{filename}",
-                    "alt_text": alt_text,
-                    "sort_order": order,
-                    "is_active": True,
-                },
-            )
-            made += 1
-
-        note = f"Landing images: {made}."
-        if skipped:
-            note += " Missing source files: " + ", ".join(skipped) + "."
-        return note

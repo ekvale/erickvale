@@ -51,7 +51,9 @@
 }
 .pub-hero-static {
   height: 400px;
-  background-image: url("{% static 'mdh_publications/images/BB_Library.webp' %}");
+  /* Neutral gradient rather than a shipped photo. Administrators set real
+     hero imagery through the landing image manager; this is the fallback. */
+  background: linear-gradient(135deg, #00243f 0%, #003865 55%, #005082 100%);
   background-size: cover;
   background-position: center;
   filter: brightness(0.38);

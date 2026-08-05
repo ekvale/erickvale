@@ -80,32 +80,100 @@
   color: #fff;
 }
 
-.pub-body .btn-primary {
+/* Link colour must never touch .btn.
+
+   Bootstrap colours button text with a single class (.btn-primary is 0-1-0).
+   A bare `.pub-body a` is 0-1-1 and beats it, so every <a class="btn
+   btn-primary"> was painted navy on the navy fill -- an invisible label,
+   while <button class="btn btn-primary"> was fine. Hence :not(.btn) here,
+   and the explicit fills below rather than relying on Bootstrap's own.
+
+   Scoped to main for the same reason: `.pub-body a:not(.btn)` is 0-2-1 and
+   outranks `.pub-nav a` (0-1-1) and `.pub-brand` (0-1-0), which painted the
+   masthead links navy on the navy bar and left only the .is-active one
+   visible. The masthead and footer style their own links. */
+.pub-body main a:not(.btn) {
+  color: var(--pub-navy);
+}
+
+.pub-body main a:not(.btn):hover {
+  color: var(--pub-teal);
+}
+
+/* .btn-light sits on a pale fill, but the landing page forces every hero CTA
+   to #fff !important, so "Browse All" was white on white. Outrank it. */
+.pub-body .pub-hero-ctas .btn-light,
+.pub-body .pub-hero-ctas .btn-light:link,
+.pub-body .pub-hero-ctas .btn-light:visited,
+.pub-body .pub-hero-ctas .btn-light:hover,
+.pub-body .pub-hero-ctas .btn-light:focus {
+  color: var(--pub-navy) !important;
+}
+
+/* Filled buttons: state the text colour outright so no later rule can win. */
+.pub-body .btn-primary,
+.pub-body .btn-primary:hover,
+.pub-body .btn-primary:focus,
+.pub-body .btn-primary:active {
   background: var(--pub-navy);
   border-color: var(--pub-navy);
+  color: #fff;
 }
 
 .pub-body .btn-primary:hover,
-.pub-body .btn-primary:focus {
+.pub-body .btn-primary:focus,
+.pub-body .btn-primary:active {
   background: #002a4d;
   border-color: #002a4d;
 }
 
+.pub-body .btn-danger,
+.pub-body .btn-danger:hover,
+.pub-body .btn-danger:focus {
+  color: #fff;
+}
+
+.pub-body .btn-secondary,
+.pub-body .btn-secondary:hover,
+.pub-body .btn-secondary:focus {
+  color: #fff;
+}
+
+/* Outline buttons sit on white, so their text takes the border colour. */
 .pub-body .btn-outline-primary {
   color: var(--pub-navy);
   border-color: var(--pub-navy);
 }
 
-.pub-body .btn-outline-primary:hover {
+.pub-body .btn-outline-primary:hover,
+.pub-body .btn-outline-primary:focus {
   background: var(--pub-navy);
+  border-color: var(--pub-navy);
   color: #fff;
 }
 
-.pub-body a {
+.pub-body .btn-outline-secondary {
+  color: #445061;
+  border-color: #97a1ad;
+}
+
+.pub-body .btn-outline-secondary:hover,
+.pub-body .btn-outline-secondary:focus {
+  background: #445061;
+  border-color: #445061;
+  color: #fff;
+}
+
+.pub-body .btn-outline-danger:hover,
+.pub-body .btn-outline-danger:focus {
+  color: #fff;
+}
+
+.pub-body .btn-link {
   color: var(--pub-navy);
 }
 
-.pub-body a:hover {
+.pub-body .btn-link:hover {
   color: var(--pub-teal);
 }
 

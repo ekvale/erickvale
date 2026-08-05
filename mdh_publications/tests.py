@@ -466,6 +466,34 @@ class LibraryChromeTests(TestCase):
             for marker in ("{#", "#}", "{% comment", "{% endcomment"):
                 self.assertNotIn(marker, body, f"{url} leaked {marker!r}")
 
+
+    def test_generic_link_colour_stays_scoped_to_main(self):
+        """An unscoped `.pub-body a` rule outranks the component styles.
+
+        At 0-1-1 it beats Bootstrap's .btn-* (0-1-0), painting anchor buttons
+        navy on their navy fill. Adding :not(.btn) lifts it to 0-2-1, which
+        then beats .pub-nav a and .pub-brand and blanks the masthead. Scoping
+        to main is what keeps it clear of both.
+        """
+        from pathlib import Path
+
+        css = (
+            Path(__file__).resolve().parent
+            / "static" / "mdh_publications" / "css" / "library.css"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn(".pub-body main a:not(.btn)", css)
+        for line in css.splitlines():
+            selector = line.strip()
+            self.assertNotEqual(
+                selector, ".pub-body a {", "generic link rule must stay scoped to main"
+            )
+            self.assertNotEqual(
+                selector,
+                ".pub-body a:not(.btn) {",
+                "unscoped :not(.btn) rule blanks the masthead links",
+            )
+
     def test_every_page_template_extends_the_app_base(self):
         """One template left on base_site.html would silently lose Bootstrap."""
         from pathlib import Path
@@ -486,7 +514,7 @@ class DemoContentTests(TestCase):
 
     def test_demo_seeder_creates_publications_with_real_tags(self):
         out = StringIO()
-        call_command("seed_mdh_publications_demo", "--skip-images", stdout=out)
+        call_command("seed_mdh_publications_demo", stdout=out)
 
         # Every curated tag slug must exist in the shipped taxonomy, or the
         # demo silently loses the filtering it is meant to show off.
@@ -509,12 +537,12 @@ class DemoContentTests(TestCase):
             )
 
     def test_demo_seeder_is_idempotent(self):
-        call_command("seed_mdh_publications_demo", "--skip-images", stdout=StringIO())
-        call_command("seed_mdh_publications_demo", "--skip-images", stdout=StringIO())
+        call_command("seed_mdh_publications_demo", stdout=StringIO())
+        call_command("seed_mdh_publications_demo", stdout=StringIO())
         self.assertEqual(Publication.objects.count(), len(DEMO_PUBLICATIONS))
 
     def test_demo_content_drives_search_and_facet_filtering(self):
-        call_command("seed_mdh_publications_demo", "--skip-images", stdout=StringIO())
+        call_command("seed_mdh_publications_demo", stdout=StringIO())
         url = reverse("mdh_publications:publication_list")
 
         hit = self.client.get(url, {"q": "opioid"})
@@ -528,4 +556,4 @@ class DemoContentTests(TestCase):
         Tag.objects.all().delete()
         DocumentType.objects.all().delete()
         with self.assertRaises(CommandError):
-            call_command("seed_mdh_publications_demo", "--skip-images", stdout=StringIO())
+            call_command("seed_mdh_publications_demo", stdout=StringIO())
