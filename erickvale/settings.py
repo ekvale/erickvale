@@ -343,7 +343,10 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'nomoar.context_processors.nomoar_banner',
                 'nomoar.context_processors.nomoar_engagement',
-                'nomoar.context_processors.nomoar_site_links',
+                # 'nomoar.context_processors.nomoar_site_links' belongs here too,
+                # but that function is not committed yet — referencing it raises
+                # on every template render. Re-add it in the same commit that
+                # adds the function to nomoar/context_processors.py.
                 'projects.context_processors.notification_count',
             ],
         },
