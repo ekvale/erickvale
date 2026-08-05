@@ -2,13 +2,18 @@ from io import StringIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
 from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
 
 from .models import DocumentType, Facet, Publication, Tag, TopicGroup
-from .permissions import ADMINISTRATOR_GROUP_NAME, EMPLOYEE_GROUP_NAME, bootstrap_publication_groups
+from .permissions import (
+    ADMINISTRATOR_GROUP_NAME,
+    EMPLOYEE_GROUP_NAME,
+    bootstrap_publication_groups,
+    publications_only_group_name,
+)
 
 
 class PublicationPermissionTests(TestCase):
@@ -251,3 +256,103 @@ class PublicationAccessTests(TestCase):
         target_user.refresh_from_db()
         self.assertEqual(update_response.status_code, 200)
         self.assertTrue(target_user.groups.filter(name=EMPLOYEE_GROUP_NAME).exists())
+
+
+class PublicationsOnlyConfinementTests(TestCase):
+    """Accounts like Nan's and Dan's must reach the library and nothing else.
+
+    Most of this site guards views with only ``login_required``, so these
+    assertions are the thing standing between a library account and the
+    owner's projects, contacts, calendar, and business dashboards.
+    """
+
+    def setUp(self):
+        bootstrap_publication_groups()
+        out = StringIO()
+        call_command(
+            "create_publications_user",
+            "nan",
+            "--email", "nan@example.com",
+            "--password", "library-pw-9137",
+            stdout=out,
+        )
+        self.nan = User.objects.get(username="nan")
+
+    def test_command_creates_confined_employee(self):
+        group_names = set(self.nan.groups.values_list("name", flat=True))
+        self.assertEqual(
+            group_names,
+            {EMPLOYEE_GROUP_NAME, publications_only_group_name()},
+        )
+        self.assertFalse(self.nan.is_staff)
+        self.assertFalse(self.nan.is_superuser)
+        self.assertTrue(self.nan.check_password("library-pw-9137"))
+
+    def test_command_admin_role_and_rerun_replaces_role(self):
+        call_command(
+            "create_publications_user",
+            "dan",
+            "--role", "admin",
+            "--password", "library-pw-4471",
+            stdout=StringIO(),
+        )
+        dan = User.objects.get(username="dan")
+        self.assertEqual(
+            set(dan.groups.values_list("name", flat=True)),
+            {ADMINISTRATOR_GROUP_NAME, publications_only_group_name()},
+        )
+
+        # Re-running with a different role must move, not accumulate.
+        call_command(
+            "create_publications_user",
+            "dan",
+            "--role", "employee",
+            "--password", "library-pw-4471",
+            stdout=StringIO(),
+        )
+        dan.refresh_from_db()
+        self.assertEqual(
+            set(dan.groups.values_list("name", flat=True)),
+            {EMPLOYEE_GROUP_NAME, publications_only_group_name()},
+        )
+
+    def test_confined_user_reaches_the_library(self):
+        self.client.force_login(self.nan)
+        for name in ("publication_landing", "publication_list", "publication_taxonomy"):
+            response = self.client.get(reverse(f"mdh_publications:{name}"))
+            self.assertEqual(response.status_code, 200, name)
+
+    def test_confined_user_is_redirected_away_from_the_rest_of_the_site(self):
+        self.client.force_login(self.nan)
+        # Real routes guarded by login_required alone, i.e. exactly what a
+        # logged-in account would otherwise reach.
+        for path in (
+            "/",
+            "/projects/",
+            "/projects/dashboard/",
+            "/contacts/",
+            "/calendar/",
+            "/apps/contacts/",
+            "/apps/dream-blue/",
+            "/apps/braindump/",
+            "/admin/",
+            "/about/",
+        ):
+            response = self.client.get(path)
+            self.assertEqual(response.status_code, 302, f"{path} was not redirected")
+            self.assertEqual(
+                response["Location"], "/apps/mdh-publications/", f"{path} went elsewhere"
+            )
+
+    def test_superuser_is_never_confined(self):
+        """Guards against locking the owner out by mis-assigning the group."""
+        owner = User.objects.create_superuser("owner", "owner@example.com", "pw-8823")
+        owner.groups.add(Group.objects.get(name=publications_only_group_name()))
+        self.client.force_login(owner)
+        self.assertEqual(self.client.get("/projects/").status_code, 200)
+
+    def test_unconfined_user_is_unaffected(self):
+        plain = User.objects.create_user("plain", "plain@example.com", "pw-5512")
+        self.client.force_login(plain)
+        response = self.client.get("/apps/mdh-publications/")
+        self.assertEqual(response.status_code, 200)

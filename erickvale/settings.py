@@ -315,8 +315,18 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'erickvale.middleware.SiteComingSoonMiddleware',
+    # Must follow AuthenticationMiddleware (needs request.user) and the
+    # curtain, so anonymous visitors are handled before group checks.
+    'erickvale.middleware.PublicationsOnlyMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# Accounts in this group may reach only /apps/mdh-publications/ (see
+# erickvale.middleware.PublicationsOnlyMiddleware). Superusers are exempt.
+PUBLICATIONS_ONLY_GROUP = config(
+    'PUBLICATIONS_ONLY_GROUP',
+    default='MDH Publications Only',
+).strip()
 
 ROOT_URLCONF = 'erickvale.urls'
 

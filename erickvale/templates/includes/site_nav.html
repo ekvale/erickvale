@@ -1,6 +1,6 @@
 <header class="site-header">
   <div class="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-    <a href="{% url 'homepage' %}" class="nav-logo inline-flex flex-wrap items-center gap-x-2.5 gap-y-1">
+    <a href="{% if request.publications_only %}{% url 'mdh_publications:publication_landing' %}{% else %}{% url 'homepage' %}{% endif %}" class="nav-logo inline-flex flex-wrap items-center gap-x-2.5 gap-y-1">
       <svg width="22" height="22" viewBox="0 0 64 64" aria-hidden="true" class="shrink-0">
         <line x1="32" y1="18" x2="15" y2="42" stroke="#d4882a" stroke-width="3.4" stroke-opacity="0.85"/>
         <line x1="32" y1="18" x2="49" y2="42" stroke="#d4882a" stroke-width="3.4" stroke-opacity="0.85"/>
@@ -13,6 +13,13 @@
     </a>
     <nav class="flex flex-wrap items-center gap-x-5 gap-y-2" aria-label="Main">
       {% with p=request.path %}
+      {% if request.publications_only %}
+        {# Confined accounts: only the library is reachable, so show only it. #}
+        <a href="{% url 'mdh_publications:publication_landing' %}" class="{% if p == '/apps/mdh-publications/' %}is-active{% endif %}">Library</a>
+        <a href="{% url 'mdh_publications:publication_list' %}" class="{% if '/apps/mdh-publications/search' in p %}is-active{% endif %}">Search</a>
+        <a href="{% url 'mdh_publications:publication_taxonomy' %}" class="{% if '/apps/mdh-publications/taxonomy' in p %}is-active{% endif %}">Topics</a>
+        <a href="{% url 'mdh_publications:publication_dashboard' %}" class="{% if '/apps/mdh-publications/dashboard' in p %}is-active{% endif %}">Dashboard</a>
+      {% else %}
       <a href="{% url 'homepage' %}" class="{% if p == '/' %}is-active{% endif %}">Work</a>
       <a href="{% url 'about' %}" class="{% if p == '/about/' %}is-active{% endif %}">About</a>
       <a href="{% url 'services' %}" class="{% if p == '/services/' %}is-active{% endif %}">Consulting</a>
@@ -32,6 +39,7 @@
             <span class="absolute -right-2 -top-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-rose-600 px-1 text-[10px] font-bold text-white">{{ unread_notification_count }}</span>
           {% endif %}
         </a>
+      {% endif %}
       {% endif %}
       {% if user.is_authenticated %}
         {% if user.is_staff %}
