@@ -1,0 +1,6 @@
+facet_code,facet_name,description
+A,Demographics & Populations,"Who a publication is about: age, race and ethnicity, geography, and populations that experience distinct health needs or barriers."
+B,Health Conditions & Topics,"The health condition, disease, or clinical subject a publication addresses."
+C,Health System & Access,"How care is organized, staffed, financed, and reached, including coverage, cost, workforce, and facilities."
+D,Determinants & Equity,"Social, economic, and community conditions that shape health, and the disparities that result from them."
+E,Public Health Practice,"How public health work itself is carried out: surveillance, programs, policy, preparedness, and partnerships."

@@ -14,6 +14,22 @@ def humanize_slug(value):
     return value.replace("-", " ").replace("_", " ").title()
 
 
+# The taxonomy shipped with the app. Kept out of the project root so the data
+# travels with the app, but the project root still wins if a taxonomy was
+# placed there, preserving the original behaviour of this command.
+APP_DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data"
+
+_TAXONOMY_FILENAMES = ("facets.csv", "tags_by_facet.csv", "tags.csv", "document_types.csv")
+
+
+def _default_base_dir(project_base_dir):
+    if any((project_base_dir / name).exists() for name in _TAXONOMY_FILENAMES):
+        return project_base_dir
+    if (project_base_dir / "mdh_taxonomy_hierarchical.md").exists():
+        return project_base_dir
+    return APP_DATA_DIR
+
+
 class Command(BaseCommand):
     help = "Imports MDH Publications taxonomy facets, topic groups, tags, and document types from CSV files."
 
@@ -22,13 +38,20 @@ class Command(BaseCommand):
             "--base-dir",
             dest="base_dir",
             default=None,
-            help="Directory containing the taxonomy CSV files. Defaults to the Django project base directory.",
+            help=(
+                "Directory containing the taxonomy CSV files. Defaults to "
+                "mdh_publications/data/, falling back to the Django project "
+                "base directory if that has no taxonomy in it."
+            ),
         )
 
     def handle(self, *args, **options):
         from django.conf import settings
 
-        base_dir = Path(options["base_dir"] or settings.BASE_DIR)
+        if options["base_dir"]:
+            base_dir = Path(options["base_dir"])
+        else:
+            base_dir = _default_base_dir(Path(settings.BASE_DIR))
         facets_path = base_dir / "facets.csv"
         tags_by_facet_path = base_dir / "tags_by_facet.csv"
         tags_path = base_dir / "tags.csv"

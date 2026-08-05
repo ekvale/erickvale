@@ -356,3 +356,50 @@ class PublicationsOnlyConfinementTests(TestCase):
         self.client.force_login(plain)
         response = self.client.get("/apps/mdh-publications/")
         self.assertEqual(response.status_code, 200)
+
+
+class ShippedTaxonomyTests(TestCase):
+    """The taxonomy CSVs shipped in mdh_publications/data/ must import cleanly."""
+
+    def test_seed_command_populates_from_shipped_data_by_default(self):
+        call_command("seed_mdh_publications_taxonomy", stdout=StringIO())
+
+        self.assertEqual(Facet.objects.count(), 5)
+        self.assertEqual(TopicGroup.objects.count(), 23)
+        self.assertEqual(Tag.objects.count(), 127)
+        self.assertEqual(DocumentType.objects.count(), 15)
+
+        # Every tag must be wired to both a facet and a topic group, or the
+        # taxonomy browser and the search facet filter render gaps.
+        self.assertFalse(Tag.objects.filter(facet__isnull=True).exists())
+        self.assertFalse(Tag.objects.filter(topic_group__isnull=True).exists())
+        self.assertFalse(Tag.objects.filter(description="").exists())
+        self.assertFalse(Facet.objects.filter(description="").exists())
+
+        # Topic groups must hang off the same facet as their tags.
+        for tag in Tag.objects.select_related("facet", "topic_group__facet"):
+            self.assertEqual(tag.facet_id, tag.topic_group.facet_id, tag.slug)
+
+    def test_reseeding_revises_rather_than_duplicates(self):
+        call_command("seed_mdh_publications_taxonomy", stdout=StringIO())
+        call_command("seed_mdh_publications_taxonomy", stdout=StringIO())
+
+        self.assertEqual(Facet.objects.count(), 5)
+        self.assertEqual(TopicGroup.objects.count(), 23)
+        self.assertEqual(Tag.objects.count(), 127)
+        self.assertEqual(DocumentType.objects.count(), 15)
+
+    def test_taxonomy_browser_renders_the_shipped_taxonomy(self):
+        call_command("seed_mdh_publications_taxonomy", stdout=StringIO())
+        response = self.client.get(reverse("mdh_publications:publication_taxonomy"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Demographics &amp; Populations")
+        self.assertContains(response, "Older Adults")
+
+    def test_sample_seeder_runs_against_the_shipped_taxonomy(self):
+        call_command("seed_mdh_publications_taxonomy", stdout=StringIO())
+        call_command("seed_mdh_publications_samples", "--count", "5", stdout=StringIO())
+
+        self.assertEqual(Publication.objects.count(), 5)
+        self.assertTrue(Publication.objects.filter(tags__isnull=False).exists())

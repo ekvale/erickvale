@@ -1,0 +1,128 @@
+facet_code,facet_name,tag,parent_category,description
+A,Demographics & Populations,infants,Age Groups,Children under one year of age.
+A,Demographics & Populations,children,Age Groups,"Pediatric populations, roughly ages 1 to 12."
+A,Demographics & Populations,adolescents,Age Groups,"Youth and teenagers, roughly ages 13 to 19."
+A,Demographics & Populations,young-adults,Age Groups,Adults roughly ages 20 to 34.
+A,Demographics & Populations,adults,Age Groups,"Working-age adults, roughly ages 35 to 64."
+A,Demographics & Populations,older-adults,Age Groups,Adults age 65 and older.
+A,Demographics & Populations,american-indian,Race & Ethnicity,American Indian and Alaska Native populations.
+A,Demographics & Populations,asian-populations,Race & Ethnicity,Asian and Asian American populations.
+A,Demographics & Populations,black-populations,Race & Ethnicity,Black and African American populations.
+A,Demographics & Populations,hispanic-latino,Race & Ethnicity,Hispanic and Latino populations.
+A,Demographics & Populations,pacific-islander,Race & Ethnicity,Native Hawaiian and Pacific Islander populations.
+A,Demographics & Populations,white-populations,Race & Ethnicity,White populations.
+A,Demographics & Populations,multiracial,Race & Ethnicity,People identifying with two or more races.
+A,Demographics & Populations,statewide,Geography,Statewide figures covering all of Minnesota.
+A,Demographics & Populations,twin-cities-metro,Geography,The seven-county Twin Cities metropolitan area.
+A,Demographics & Populations,greater-minnesota,Geography,Minnesota outside the Twin Cities metro.
+A,Demographics & Populations,rural-communities,Geography,Rural and small-town communities.
+A,Demographics & Populations,tribal-nations,Geography,Tribal nations and reservation communities.
+A,Demographics & Populations,county-level,Geography,Data reported at the county level.
+A,Demographics & Populations,immigrants-refugees,Priority Populations,"Immigrant, refugee, and newcomer communities."
+A,Demographics & Populations,veterans,Priority Populations,Military veterans and their families.
+A,Demographics & Populations,lgbtq-populations,Priority Populations,"Lesbian, gay, bisexual, transgender, and queer people."
+A,Demographics & Populations,people-with-disabilities,Priority Populations,People living with physical or cognitive disabilities.
+A,Demographics & Populations,pregnant-people,Priority Populations,People who are pregnant or postpartum.
+A,Demographics & Populations,uninsured-populations,Priority Populations,People without health insurance coverage.
+A,Demographics & Populations,people-experiencing-homelessness,Priority Populations,People experiencing housing instability or homelessness.
+B,Health Conditions & Topics,cancer,Chronic Disease,"Cancer incidence, screening, treatment, and survivorship."
+B,Health Conditions & Topics,cardiovascular-disease,Chronic Disease,"Heart disease, stroke, and hypertension."
+B,Health Conditions & Topics,diabetes,Chronic Disease,Type 1 and type 2 diabetes and prediabetes.
+B,Health Conditions & Topics,asthma,Chronic Disease,Asthma and chronic respiratory conditions.
+B,Health Conditions & Topics,obesity,Chronic Disease,"Obesity, nutrition, and physical activity."
+B,Health Conditions & Topics,kidney-disease,Chronic Disease,Chronic kidney disease and dialysis care.
+B,Health Conditions & Topics,covid-19,Infectious Disease,"COVID-19 surveillance, response, and long-term effects."
+B,Health Conditions & Topics,influenza,Infectious Disease,Seasonal and pandemic influenza.
+B,Health Conditions & Topics,hiv-aids,Infectious Disease,"HIV and AIDS prevention, testing, and care."
+B,Health Conditions & Topics,sexually-transmitted-infections,Infectious Disease,Sexually transmitted infections and reporting.
+B,Health Conditions & Topics,tuberculosis,Infectious Disease,"Tuberculosis screening, treatment, and contact tracing."
+B,Health Conditions & Topics,vaccine-preventable-disease,Infectious Disease,"Measles, pertussis, and other vaccine-preventable illness."
+B,Health Conditions & Topics,antimicrobial-resistance,Infectious Disease,Antibiotic resistance and stewardship.
+B,Health Conditions & Topics,mental-health,Behavioral Health,"Mental health conditions, treatment, and access."
+B,Health Conditions & Topics,substance-use,Behavioral Health,Substance use disorders and treatment services.
+B,Health Conditions & Topics,opioids,Behavioral Health,"Opioid use, overdose, and harm reduction."
+B,Health Conditions & Topics,tobacco,Behavioral Health,"Tobacco, vaping, and cessation programs."
+B,Health Conditions & Topics,alcohol,Behavioral Health,Alcohol use and related harms.
+B,Health Conditions & Topics,suicide-prevention,Behavioral Health,Suicide surveillance and prevention efforts.
+B,Health Conditions & Topics,prenatal-care,Maternal & Child Health,Access to and quality of prenatal care.
+B,Health Conditions & Topics,birth-outcomes,Maternal & Child Health,"Preterm birth, low birth weight, and delivery outcomes."
+B,Health Conditions & Topics,infant-mortality,Maternal & Child Health,Infant and perinatal mortality.
+B,Health Conditions & Topics,maternal-mortality,Maternal & Child Health,Maternal deaths and severe maternal morbidity.
+B,Health Conditions & Topics,breastfeeding,Maternal & Child Health,"Breastfeeding initiation, duration, and support."
+B,Health Conditions & Topics,child-development,Maternal & Child Health,Early childhood development and screening.
+B,Health Conditions & Topics,unintentional-injury,Injury & Violence,"Falls, poisonings, and other unintentional injuries."
+B,Health Conditions & Topics,motor-vehicle-crashes,Injury & Violence,Traffic-related injuries and deaths.
+B,Health Conditions & Topics,firearm-injury,Injury & Violence,Firearm-related injuries and deaths.
+B,Health Conditions & Topics,domestic-violence,Injury & Violence,Intimate partner and family violence.
+B,Health Conditions & Topics,child-maltreatment,Injury & Violence,Child abuse and neglect.
+B,Health Conditions & Topics,occupational-injury,Injury & Violence,Workplace injuries and illnesses.
+B,Health Conditions & Topics,air-quality,Environmental Health,Outdoor and indoor air quality.
+B,Health Conditions & Topics,water-quality,Environmental Health,"Drinking water, wells, and recreational water."
+B,Health Conditions & Topics,lead-exposure,Environmental Health,Childhood and occupational lead exposure.
+B,Health Conditions & Topics,climate-health,Environmental Health,"Health effects of extreme heat, flooding, and climate change."
+B,Health Conditions & Topics,foodborne-illness,Environmental Health,Food safety and foodborne outbreaks.
+B,Health Conditions & Topics,environmental-contaminants,Environmental Health,Chemical contaminants and hazardous exposures.
+C,Health System & Access,insurance-coverage,Access to Care,Health insurance coverage and enrollment.
+C,Health System & Access,uninsured-rate,Access to Care,Rates and characteristics of the uninsured.
+C,Health System & Access,provider-shortage,Access to Care,Health professional shortage areas and unmet need.
+C,Health System & Access,telehealth,Access to Care,Telehealth and remote care delivery.
+C,Health System & Access,transportation-barriers,Access to Care,Transportation as a barrier to receiving care.
+C,Health System & Access,dental-access,Access to Care,Access to oral and dental health services.
+C,Health System & Access,health-care-spending,Cost & Financing,Total and per capita health care spending.
+C,Health System & Access,prescription-drug-costs,Cost & Financing,Prescription drug pricing and spending.
+C,Health System & Access,affordability,Cost & Financing,"Affordability of premiums, deductibles, and care."
+C,Health System & Access,medical-debt,Cost & Financing,Medical debt and financial hardship.
+C,Health System & Access,public-program-financing,Cost & Financing,"Medicaid, MinnesotaCare, and public program financing."
+C,Health System & Access,primary-care-workforce,Health Care Workforce,"Primary care physicians, NPs, and PAs."
+C,Health System & Access,nursing-workforce,Health Care Workforce,Registered nurses and licensed practical nurses.
+C,Health System & Access,behavioral-health-workforce,Health Care Workforce,Mental health and substance use treatment providers.
+C,Health System & Access,rural-workforce,Health Care Workforce,Workforce supply and retention outside metro areas.
+C,Health System & Access,workforce-training,Health Care Workforce,"Education, residency, and pipeline programs."
+C,Health System & Access,workforce-diversity,Health Care Workforce,Diversity and cultural representation in the workforce.
+C,Health System & Access,hospitals,Facilities & Services,"Hospital capacity, utilization, and finances."
+C,Health System & Access,community-health-centers,Facilities & Services,Federally qualified and community health centers.
+C,Health System & Access,long-term-care,Facilities & Services,Nursing facilities and home and community-based services.
+C,Health System & Access,emergency-services,Facilities & Services,Emergency departments and ambulance services.
+C,Health System & Access,rural-health-clinics,Facilities & Services,Rural clinics and critical access hospitals.
+C,Health System & Access,patient-safety,Quality & Outcomes,Adverse events and patient safety reporting.
+C,Health System & Access,readmissions,Quality & Outcomes,Hospital readmissions and care transitions.
+C,Health System & Access,care-quality,Quality & Outcomes,Clinical quality measurement and performance.
+C,Health System & Access,health-outcomes,Quality & Outcomes,Population-level health outcome measures.
+C,Health System & Access,patient-experience,Quality & Outcomes,Patient-reported experience and satisfaction.
+D,Determinants & Equity,housing,Social Determinants,"Housing quality, cost, and stability."
+D,Determinants & Equity,food-security,Social Determinants,"Food access, insecurity, and nutrition programs."
+D,Determinants & Equity,education,Social Determinants,Educational attainment and school-based health.
+D,Determinants & Equity,employment,Social Determinants,"Employment, working conditions, and job quality."
+D,Determinants & Equity,income-poverty,Social Determinants,"Income, poverty, and economic stability."
+D,Determinants & Equity,child-care-access,Social Determinants,Availability and affordability of child care.
+D,Determinants & Equity,health-disparities,Health Equity,Differences in health outcomes between populations.
+D,Determinants & Equity,structural-racism,Health Equity,Structural and institutional drivers of inequity.
+D,Determinants & Equity,language-access,Health Equity,"Interpretation, translation, and language services."
+D,Determinants & Equity,cultural-responsiveness,Health Equity,Culturally responsive and community-informed care.
+D,Determinants & Equity,disability-equity,Health Equity,Equitable access for people with disabilities.
+D,Determinants & Equity,built-environment,Community Conditions,"Housing stock, transit, parks, and neighborhood design."
+D,Determinants & Equity,community-safety,Community Conditions,Neighborhood safety and violence prevention.
+D,Determinants & Equity,social-connectedness,Community Conditions,"Social support, isolation, and belonging."
+D,Determinants & Equity,broadband-access,Community Conditions,Internet access as a determinant of health care access.
+E,Public Health Practice,vital-statistics,Surveillance & Data,"Births, deaths, and vital records."
+E,Public Health Practice,disease-surveillance,Surveillance & Data,Reportable disease and syndromic surveillance.
+E,Public Health Practice,survey-data,Surveillance & Data,Population surveys such as BRFSS and student surveys.
+E,Public Health Practice,data-quality,Surveillance & Data,"Data completeness, accuracy, and methods."
+E,Public Health Practice,registries,Surveillance & Data,Disease and immunization registries.
+E,Public Health Practice,health-promotion,Programs & Interventions,Health promotion and education campaigns.
+E,Public Health Practice,screening-programs,Programs & Interventions,Population screening and early detection programs.
+E,Public Health Practice,immunization-programs,Programs & Interventions,Vaccination delivery and coverage programs.
+E,Public Health Practice,home-visiting,Programs & Interventions,Family home visiting and early intervention.
+E,Public Health Practice,program-evaluation,Programs & Interventions,Evaluation of program implementation and impact.
+E,Public Health Practice,public-health-policy,Policy & Regulation,Policy analysis and recommendations.
+E,Public Health Practice,licensing-regulation,Policy & Regulation,Facility and professional licensing and oversight.
+E,Public Health Practice,statute-rule,Policy & Regulation,Statutory and rulemaking requirements.
+E,Public Health Practice,legislative-reporting,Policy & Regulation,Reports prepared for the legislature.
+E,Public Health Practice,emergency-response,Emergency Preparedness,Public health emergency response operations.
+E,Public Health Practice,outbreak-investigation,Emergency Preparedness,Outbreak detection and investigation.
+E,Public Health Practice,preparedness-planning,Emergency Preparedness,Preparedness planning and exercises.
+E,Public Health Practice,medical-countermeasures,Emergency Preparedness,Stockpiles and countermeasure distribution.
+E,Public Health Practice,local-public-health,Partnerships,Local public health departments and CHBs.
+E,Public Health Practice,tribal-health-partnerships,Partnerships,Partnerships with tribal health systems.
+E,Public Health Practice,community-partnerships,Partnerships,Community-based organizations and coalitions.
+E,Public Health Practice,academic-partnerships,Partnerships,Research and academic collaborations.
