@@ -1,0 +1,567 @@
+{% extends 'base_site.html' %}
+{% load static %}
+
+{% block title %}MDH Publications Library{% endblock %}
+
+{% block extra_head %}
+<style>
+/* Make main container full-width for this landing page */
+#main-content.container {
+  max-width: 100% !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-top: 0 !important;
+}
+
+/* ── Admin bar ── */
+.pub-admin-bar {
+  background: #fff8e1;
+  border-bottom: 2px solid #ffc107;
+  padding: 0.55rem 0;
+  font-size: 0.875rem;
+}
+.pub-admin-bar .inner {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 15px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.pub-admin-bar strong { color: #856404; }
+
+/* ── Hero ── */
+.pub-hero {
+  position: relative;
+  min-height: 400px;
+  background: #001f3d;
+  overflow: hidden;
+}
+#pub-hero-carousel,
+#pub-hero-carousel .carousel-inner,
+#pub-hero-carousel .carousel-item {
+  height: 400px;
+}
+#pub-hero-carousel .carousel-item img {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+  filter: brightness(0.38);
+}
+.pub-hero-static {
+  height: 400px;
+  background-image: url("{% static 'mdh_publications/images/BB_Library.webp' %}");
+  background-size: cover;
+  background-position: center;
+  filter: brightness(0.38);
+}
+.pub-hero-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  z-index: 10;
+  padding: 2rem 1rem;
+  background: rgba(0, 15, 40, 0.52);
+}
+body.mdh-app .pub-hero-overlay h1,
+body.mdh-app .pub-hero-overlay h2,
+body.mdh-app .pub-hero-overlay h3 {
+  color: #fff !important;
+  font-size: 2.75rem;
+  font-weight: 700;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.65);
+  margin-bottom: 0.6rem;
+}
+body.mdh-app .pub-hero-overlay .pub-hero-tagline {
+  color: #fff !important;
+  font-size: 1.1rem;
+  max-width: 560px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+  margin-bottom: 1.5rem;
+}
+body.mdh-app .pub-hero-ctas a,
+body.mdh-app .pub-hero-ctas a:link,
+body.mdh-app .pub-hero-ctas a:visited,
+body.mdh-app .pub-hero-ctas a:hover,
+body.mdh-app .pub-hero-ctas a:focus {
+  color: #fff !important;
+  text-decoration: none !important;
+}
+.pub-hero-search {
+  max-width: 500px;
+  width: 100%;
+  display: flex;
+  margin-bottom: 1.2rem;
+}
+.pub-hero-search input {
+  flex: 1;
+  border-radius: 3px 0 0 3px;
+  border: none;
+  padding: 0.55rem 1rem;
+  font-size: 0.95rem;
+  outline: none;
+}
+.pub-hero-search button {
+  border-radius: 0 3px 3px 0;
+  padding: 0.55rem 1.3rem;
+  background: #ffc107;
+  border: none;
+  font-weight: 600;
+  color: #212529;
+  cursor: pointer;
+}
+.pub-hero-search button:hover { background: #e0a800; }
+.pub-hero-ctas .btn {
+  margin: 0 0.35rem;
+  padding: 0.5rem 1.4rem;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+/* ── Stats strip ── */
+.pub-stats-strip {
+  background: #003865;
+  color: #fff;
+  padding: 1rem 0;
+}
+.pub-stats-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.pub-stat-item {
+  text-align: center;
+  padding: 0.4rem 2rem;
+  border-right: 1px solid rgba(255,255,255,0.2);
+}
+.pub-stat-item:last-child { border-right: none; }
+.pub-stat-number {
+  display: block;
+  font-size: 1.9rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.pub-stat-label {
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.75;
+}
+
+/* ── Browse cards ── */
+.pub-browse-section {
+  padding: 2.5rem 0;
+  background: #f4f6f8;
+}
+.pub-browse-section .container {
+  max-width: 1140px;
+}
+.pub-browse-heading {
+  font-size: 1.5rem;
+  color: #003865;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+  text-align: center;
+}
+.pub-browse-subheading {
+  color: #6c757d;
+  font-size: 0.92rem;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.pub-browse-card,
+.pub-browse-card:link,
+.pub-browse-card:visited,
+.pub-browse-card:hover,
+.pub-browse-card:focus {
+  display: block;
+  position: relative;
+  border-radius: 6px;
+  overflow: hidden;
+  color: #fff !important;
+  text-decoration: none !important;
+  height: 300px;
+  background: #002244;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.pub-browse-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.22);
+}
+.pub-browse-card-label,
+.pub-browse-card-title,
+.pub-browse-card-desc,
+.pub-browse-card-arrow {
+  color: #fff !important;
+}
+.pub-browse-card-img {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+  filter: brightness(0.55);
+}
+.pub-browse-card:hover .pub-browse-card-img {
+  transform: scale(1.04);
+  filter: brightness(0.45);
+}
+.pub-browse-card-bg {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.3s;
+  filter: brightness(0.55);
+}
+.pub-browse-card:hover .pub-browse-card-bg {
+  transform: scale(1.04);
+  filter: brightness(0.45);
+}
+.pub-browse-card-overlay {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: linear-gradient(to top, rgba(0,20,50,0.88) 0%, rgba(0,20,50,0.3) 60%, transparent 100%);
+  padding: 1.5rem 1.4rem 1.25rem;
+  z-index: 2;
+}
+.pub-browse-card-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  opacity: 0.8;
+  margin-bottom: 0.3rem;
+}
+.pub-browse-card-title {
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 0.4rem;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+.pub-browse-card-desc {
+  font-size: 0.83rem;
+  opacity: 0.85;
+  line-height: 1.45;
+}
+.pub-browse-card-arrow {
+  display: inline-block;
+  margin-top: 0.65rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border: 1px solid rgba(255,255,255,0.55);
+  border-radius: 3px;
+  padding: 0.22rem 0.75rem;
+  transition: background 0.15s;
+}
+.pub-browse-card:hover .pub-browse-card-arrow {
+  background: rgba(255,255,255,0.18);
+}
+
+/* ── Sections ── */
+.pub-section { padding: 2.75rem 0; }
+.pub-section-alt { background: #f4f6f8; padding: 2.75rem 0; }
+.pub-section .container,
+.pub-section-alt .container { max-width: 1140px; }
+.pub-section-title {
+  font-size: 1.45rem;
+  color: #003865;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+}
+.pub-section-subtitle {
+  color: #6c757d;
+  margin-bottom: 1.75rem;
+  font-size: 0.92rem;
+}
+
+/* ── Featured cards ── */
+.pub-featured-card {
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  height: 100%;
+  transition: box-shadow 0.15s;
+  background: #fff;
+}
+.pub-featured-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.09); }
+.pub-featured-card .card-body { padding: 1.1rem 1.15rem; }
+.pub-featured-card .card-title a {
+  color: #003865;
+  font-size: 0.93rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.pub-featured-card .card-title a:hover { text-decoration: underline; }
+
+/* ── Admin gallery strip ── */
+.pub-gallery-strip { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.5rem; }
+.pub-gallery-thumb {
+  position: relative;
+  flex: 0 0 160px;
+  height: 110px;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 2px solid #dee2e6;
+}
+.pub-gallery-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.pub-gallery-thumb-label {
+  position: absolute;
+  top: 4px; left: 4px;
+  background: rgba(0,56,101,0.82);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 5px;
+  border-radius: 2px;
+}
+.pub-gallery-thumb-actions {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: rgba(0,0,0,0.55);
+  padding: 0.25rem 0.4rem;
+  display: flex;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+}
+.pub-gallery-thumb.inactive { opacity: 0.45; }
+.pub-gallery-inactive-badge {
+  position: absolute;
+  top: 4px; right: 4px;
+  background: rgba(220,53,69,0.85);
+  color: #fff;
+  font-size: 0.6rem;
+  padding: 1px 5px;
+  border-radius: 2px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+{# ── Admin bar ── #}
+{% if perms.mdh_publications.manage_publication_roles %}
+<div class="pub-admin-bar">
+  <div class="inner">
+    <strong>Admin:</strong>
+    <a href="{% url 'mdh_publications:landing_image_create' %}" class="btn btn-sm btn-warning">+ Add Image</a>
+    <a href="{% url 'mdh_publications:landing_image_list' %}" class="btn btn-sm btn-outline-secondary">Manage Images</a>
+    <a href="{% url 'mdh_publications:publication_create' %}" class="btn btn-sm btn-outline-secondary">+ Add Publication</a>
+    <a href="{% url 'mdh_publications:publication_admin_dashboard' %}" class="btn btn-sm btn-outline-secondary">Admin Dashboard</a>
+  </div>
+</div>
+{% endif %}
+
+{# ── Hero ── #}
+<div class="pub-hero">
+  {% if hero_images %}
+    <div id="pub-hero-carousel" class="carousel slide" data-ride="carousel" data-interval="6000">
+      <div class="carousel-inner">
+        {% for img in hero_images %}
+        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+          <img src="{{ img.image.url }}" alt="{{ img.alt_text|default:img.title }}">
+        </div>
+        {% endfor %}
+      </div>
+      {% if hero_images|length > 1 %}
+      <a class="carousel-control-prev" href="#pub-hero-carousel" role="button" data-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="sr-only">Previous</span>
+      </a>
+      <a class="carousel-control-next" href="#pub-hero-carousel" role="button" data-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="sr-only">Next</span>
+      </a>
+      {% endif %}
+    </div>
+  {% else %}
+    <div class="pub-hero-static"></div>
+  {% endif %}
+
+  <div class="pub-hero-overlay">
+    <h1>MDH Publications Library</h1>
+    <p class="pub-hero-tagline">Discover data reports, fact sheets, guidelines, and research from the Minnesota Department of Health.</p>
+    <form class="pub-hero-search" action="{% url 'mdh_publications:publication_list' %}" method="get">
+      <input type="text" name="q" placeholder="Search titles, summaries, or PDF content…" aria-label="Search publications">
+      <button type="submit">Search</button>
+    </form>
+    <div class="pub-hero-ctas">
+      <a href="{% url 'mdh_publications:publication_list' %}" class="btn btn-light">Browse All</a>
+      <a href="{% url 'mdh_publications:publication_taxonomy' %}" class="btn btn-outline-light">Explore Topics</a>
+      <a href="{% url 'mdh_publications:publication_about' %}" class="btn btn-outline-light">About &amp; Contact</a>
+    </div>
+  </div>
+</div>
+
+{# ── Stats strip ── #}
+<div class="pub-stats-strip">
+  <div class="container">
+    <div class="pub-stats-row">
+      <div class="pub-stat-item">
+        <span class="pub-stat-number">{{ total_publications }}</span>
+        <span class="pub-stat-label">Published Items</span>
+      </div>
+      <div class="pub-stat-item">
+        <span class="pub-stat-number">{{ total_facets }}</span>
+        <span class="pub-stat-label">Topic Areas</span>
+      </div>
+      <div class="pub-stat-item">
+        <span class="pub-stat-number">{{ total_document_types }}</span>
+        <span class="pub-stat-label">Content Types</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── Three Browse Cards ── #}
+<section class="pub-browse-section">
+  <div class="container">
+    <h2 class="pub-browse-heading">Browse the Collection</h2>
+    <p class="pub-browse-subheading">Explore MDH publications by topic, contributor, or document format.</p>
+
+    <div class="row">
+
+      {# Browse by Topic #}
+      <div class="col-md-4 mb-4">
+        <a href="{% url 'mdh_publications:publication_taxonomy' %}" class="pub-browse-card">
+          {% if img_topic %}
+            <img class="pub-browse-card-img" src="{{ img_topic.image.url }}" alt="{{ img_topic.alt_text|default:'Browse by Topic' }}">
+          {% else %}
+            <div class="pub-browse-card-bg" style="background: linear-gradient(135deg, #003865 0%, #005082 100%);"></div>
+          {% endif %}
+          <div class="pub-browse-card-overlay">
+            <div class="pub-browse-card-label">Explore</div>
+            <div class="pub-browse-card-title">Browse by Topic</div>
+            <div class="pub-browse-card-desc">Find publications organized by {{ total_facets }} health topic area{{ total_facets|pluralize }}.</div>
+            <span class="pub-browse-card-arrow">Explore topics &rarr;</span>
+          </div>
+        </a>
+      </div>
+
+      {# Browse by Contributor #}
+      <div class="col-md-4 mb-4">
+        <a href="{% url 'mdh_publications:publication_list' %}" class="pub-browse-card">
+          {% if img_contributor %}
+            <img class="pub-browse-card-img" src="{{ img_contributor.image.url }}" alt="{{ img_contributor.alt_text|default:'Browse by Contributor' }}">
+          {% else %}
+            <div class="pub-browse-card-bg" style="background: linear-gradient(135deg, #00456b 0%, #003865 100%);"></div>
+          {% endif %}
+          <div class="pub-browse-card-overlay">
+            <div class="pub-browse-card-label">Explore</div>
+            <div class="pub-browse-card-title">Browse by Contributor</div>
+            <div class="pub-browse-card-desc">Discover publications from MDH programs and divisions.</div>
+            <span class="pub-browse-card-arrow">View all &rarr;</span>
+          </div>
+        </a>
+      </div>
+
+      {# Browse by Format #}
+      <div class="col-md-4 mb-4">
+        <a href="{% url 'mdh_publications:publication_list' %}" class="pub-browse-card">
+          {% if img_format %}
+            <img class="pub-browse-card-img" src="{{ img_format.image.url }}" alt="{{ img_format.alt_text|default:'Browse by Format' }}">
+          {% else %}
+            <div class="pub-browse-card-bg" style="background: linear-gradient(135deg, #1a3a5c 0%, #003865 100%);"></div>
+          {% endif %}
+          <div class="pub-browse-card-overlay">
+            <div class="pub-browse-card-label">Explore</div>
+            <div class="pub-browse-card-title">Browse by Format</div>
+            <div class="pub-browse-card-desc">Browse {{ total_document_types }} document type{{ total_document_types|pluralize }} — reports, fact sheets, guidelines, and more.</div>
+            <span class="pub-browse-card-arrow">Browse formats &rarr;</span>
+          </div>
+        </a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{# ── Featured Publications ── #}
+{% if featured_publications %}
+<section class="pub-section">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-end mb-1">
+      <div>
+        <h2 class="pub-section-title">Featured Publications</h2>
+        <p class="pub-section-subtitle mb-0">Highlighted content selected by MDH staff.</p>
+      </div>
+      <a href="{% url 'mdh_publications:publication_list' %}" style="font-size:0.9rem; color:#003865; font-weight:600;">See all &rarr;</a>
+    </div>
+    <div class="row mt-3">
+      {% for pub in featured_publications %}
+      <div class="col-sm-6 col-lg-4 mb-4">
+        <div class="pub-featured-card card">
+          <div class="card-body">
+            <h5 class="card-title mb-1">
+              <a href="{% url 'mdh_publications:publication_detail' pub.slug %}">{{ pub.title }}</a>
+            </h5>
+            <div class="text-muted" style="font-size:0.78rem; margin-bottom:0.5rem;">
+              {% if pub.document_type %}{{ pub.document_type.name }}{% endif %}
+              {% if pub.publication_date %} &middot; {{ pub.publication_date|date:"M Y" }}{% endif %}
+            </div>
+            {% if pub.summary %}
+            <p style="font-size:0.84rem; color:#495057; margin-bottom:0.6rem;">{{ pub.summary|truncatewords:22 }}</p>
+            {% endif %}
+            <div>
+              {% for tag in pub.tags.all|slice:":4" %}
+              <span class="badge badge-secondary" style="font-size:0.68rem;">{{ tag.name }}</span>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{# ── Admin Image Gallery ── #}
+{% if perms.mdh_publications.manage_publication_roles %}
+<section class="pub-section-alt">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h2 class="pub-section-title mb-0">Landing Page Images</h2>
+        <p class="text-muted mb-0" style="font-size:0.85rem;">Manage images for the hero carousel and the three browse cards.</p>
+      </div>
+      <a href="{% url 'mdh_publications:landing_image_create' %}" class="btn btn-sm btn-primary">+ Add Image</a>
+    </div>
+    {% if landing_images %}
+    <div class="pub-gallery-strip">
+      {% for img in landing_images %}
+      <div class="pub-gallery-thumb {% if not img.is_active %}inactive{% endif %}">
+        <img src="{{ img.image.url }}" alt="{{ img.alt_text|default:img.title }}">
+        <span class="pub-gallery-thumb-label">{{ img.get_slot_display }}</span>
+        {% if not img.is_active %}<span class="pub-gallery-inactive-badge">Hidden</span>{% endif %}
+        <div class="pub-gallery-thumb-actions">
+          <a href="{% url 'mdh_publications:landing_image_update' img.pk %}" style="color:#fff; font-size:0.7rem;">Edit</a>
+          <a href="{% url 'mdh_publications:landing_image_delete' img.pk %}" style="color:#f88; font-size:0.7rem;">Del</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-light border text-muted mb-0">
+      No images uploaded yet. <a href="{% url 'mdh_publications:landing_image_create' %}">Upload the first image.</a>
+    </div>
+    {% endif %}
+    <p class="text-muted mt-2 mb-0" style="font-size:0.8rem;">
+      <a href="{% url 'mdh_publications:landing_image_list' %}">Manage all images &rarr;</a>
+    </p>
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}

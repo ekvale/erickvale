@@ -1,0 +1,97 @@
+{% extends 'base_site.html' %}
+{% load static %}
+
+{% block title %}{% if object %}Edit Landing Image{% else %}Add Landing Image{% endif %} — MDH Publications{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+  <a href="{% url 'mdh_publications:landing_image_list' %}" class="text-muted small">&larr; Back to image list</a>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-md-8 col-lg-6">
+    <div class="card">
+      <div class="card-header" style="background:#003865; color:#fff;">
+        <h4 class="mb-0" style="font-size:1.1rem;">
+          {% if object %}Edit Landing Image{% else %}Add Landing Image{% endif %}
+        </h4>
+      </div>
+      <div class="card-body">
+
+        {% if object and object.image %}
+        <div class="mb-3 text-center">
+          <img src="{{ object.image.url }}"
+               alt="{{ object.alt_text|default:object.title }}"
+               style="max-width:100%; max-height:220px; object-fit:cover; border-radius:4px; border:1px solid #dee2e6;">
+          <p class="text-muted small mt-1">Current image — upload a new file to replace it.</p>
+        </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+
+          {% for field in form %}
+          <div class="form-group">
+            <label for="{{ field.id_for_label }}">
+              {{ field.label }}
+              {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+            </label>
+            {{ field }}
+            {% if field.help_text %}
+            <small class="form-text text-muted">{{ field.help_text }}</small>
+            {% endif %}
+            {% for error in field.errors %}
+            <div class="invalid-feedback d-block">{{ error }}</div>
+            {% endfor %}
+          </div>
+          {% endfor %}
+
+          <div class="d-flex justify-content-between mt-4">
+            <a href="{% url 'mdh_publications:landing_image_list' %}" class="btn btn-outline-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">
+              {% if object %}Save Changes{% else %}Upload Image{% endif %}
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+
+    <div class="card mt-3">
+      <div class="card-body text-muted small">
+        <strong>Image slots:</strong>
+        <ul class="mb-0 pl-3 mt-1">
+          <li><strong>Hero Carousel</strong> — large banner at the top; multiple images rotate. Use wide images (1400&times;500 px+).</li>
+          <li><strong>Browse by Topic Card</strong> — the left browse card. One image per slot (lowest sort order wins).</li>
+          <li><strong>Browse by Contributor Card</strong> — the center browse card.</li>
+          <li><strong>Browse by Format Card</strong> — the right browse card. Recommended: 800&times;600 px+.</li>
+        </ul>
+        <div class="mt-2">A dark overlay is applied automatically — images with good contrast or mid-tones work best.</div>
+        <div class="mt-1">Uncheck <em>Active</em> to temporarily hide an image without deleting it.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* Add Bootstrap form-control class to all inputs the generic form renders */
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('#main-content input, #main-content textarea, #main-content select').forEach(function (el) {
+    if (el.type !== 'checkbox' && el.type !== 'file') {
+      el.classList.add('form-control');
+    }
+    if (el.type === 'file') {
+      el.classList.add('form-control-file');
+    }
+    if (el.type === 'checkbox') {
+      el.classList.add('form-check-input');
+    }
+  });
+  /* Wrap checkboxes properly */
+  document.querySelectorAll('input[type="checkbox"]').forEach(function (el) {
+    var wrapper = el.closest('.form-group');
+    if (wrapper) wrapper.classList.add('form-check');
+  });
+});
+</script>
+{% endblock %}

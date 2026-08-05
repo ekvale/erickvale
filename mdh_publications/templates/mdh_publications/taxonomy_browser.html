@@ -1,0 +1,67 @@
+{% extends 'base_site.html' %}
+
+{% block title %}Facet and Tag Reference{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="mdh-eyebrow mb-2">Taxonomy Reference</p>
+        <h1 class="mb-1">Facet and Tag Descriptions</h1>
+        <p class="text-muted mb-0">{{ facet_count }} facets and {{ tag_count }} tags organized by topic group.</p>
+    </div>
+    <a href="{% url 'mdh_publications:publication_list' %}" class="btn btn-outline-secondary">Back to Library</a>
+</div>
+
+{% for facet in facets %}
+<div class="card mb-3">
+    <div class="card-header">
+        <strong>{{ facet.code }}</strong> - {{ facet.name }}
+    </div>
+    <div class="card-body">
+        {% if facet.description %}
+        <p class="text-muted mb-3"><strong>Facet description:</strong> {{ facet.description }}</p>
+        {% else %}
+        <p class="text-muted mb-3"><strong>Facet description:</strong> No description provided.</p>
+        {% endif %}
+        <div class="row">
+            {% for topic_group in facet.topic_groups.all %}
+            <div class="col-lg-6 mb-3">
+                <h3 class="h6">{{ topic_group.name }}</h3>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered bg-white mb-0">
+                        <thead>
+                            <tr>
+                                <th>Tag</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                    {% for tag in topic_group.tags.all %}
+                            <tr>
+                                <td>
+                                    <span style="color:#005b8c; font-weight:600; font-family:'Source Sans Pro', sans-serif;">{{ tag.name }}</span>
+                                    <br><code class="text-muted" style="font-size:0.8em;">{{ tag.slug }}</code>
+                                </td>
+                                <td style="color:#444; font-style:italic; font-family:Georgia, serif; font-size:0.92em;">{{ tag.description|default:"No description provided." }}</td>
+                            </tr>
+                    {% empty %}
+                            <tr>
+                                <td colspan="2" class="text-muted">No tags in this topic group.</td>
+                            </tr>
+                    {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <p class="text-muted mb-0">No topic groups found for this facet.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% empty %}
+<div class="alert alert-secondary">No taxonomy has been loaded yet.</div>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends 'base_site.html' %}
+
+{% block title %}Delete Hero Image — MDH Publications{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card border-danger">
+      <div class="card-header bg-danger text-white">
+        <h4 class="mb-0" style="font-size:1.1rem;">Delete Hero Image</h4>
+      </div>
+      <div class="card-body">
+        {% if object.image %}
+        <div class="text-center mb-3">
+          <img src="{{ object.image.url }}"
+               alt="{{ object.alt_text|default:object.title }}"
+               style="max-width:100%; max-height:200px; object-fit:cover; border-radius:4px; border:1px solid #dee2e6;">
+        </div>
+        {% endif %}
+
+        <p>Are you sure you want to delete <strong>{{ object.title }}</strong>?</p>
+        <p class="text-danger small">This will permanently remove the image from the hero carousel and cannot be undone.</p>
+
+        <form method="post">
+          {% csrf_token %}
+          <div class="d-flex justify-content-between mt-3">
+            <a href="{% url 'mdh_publications:landing_image_list' %}" class="btn btn-outline-secondary">Cancel</a>
+            <button type="submit" class="btn btn-danger">Delete Image</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

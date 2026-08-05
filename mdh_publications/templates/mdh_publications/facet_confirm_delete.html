@@ -1,0 +1,22 @@
+{% extends 'base_site.html' %}
+
+{% block title %}Delete Facet{% endblock %}
+
+{% block content %}
+<section class="mdh-hero mb-4">
+    <p class="mdh-eyebrow mb-2">Taxonomy Management</p>
+    <h1 class="mb-1">Delete Facet: {{ object.code }}</h1>
+</section>
+
+<div class="card">
+    <div class="card-body">
+        <p class="text-danger font-weight-bold">Are you sure you want to delete the facet <strong>{{ object.code }} &mdash; {{ object.name }}</strong>?</p>
+        <p class="text-muted">This will also delete all topic groups and tags belonging to this facet. This action cannot be undone.</p>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Yes, Delete Facet</button>
+            <a href="{% url 'mdh_publications:taxonomy_manage' %}" class="btn btn-outline-secondary ml-2">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

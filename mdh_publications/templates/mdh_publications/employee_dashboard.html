@@ -1,0 +1,74 @@
+{% extends 'base_site.html' %}
+
+{% block title %}Employee Dashboard{% endblock %}
+
+{% block content %}
+<section class="mdh-hero mb-4">
+    <p class="mdh-eyebrow mb-2">MDH Publications</p>
+    <h1 class="mb-1">Employee Dashboard</h1>
+    <p class="mdh-readable-subtext mb-0">Create new publications and track your recent submissions.</p>
+</section>
+
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="mdh-stat-label">Total Publications</h2>
+                <p class="display-4 mdh-stat-value mb-0">{{ total_publications }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="mdh-stat-label">My Publications</h2>
+                <p class="display-4 mdh-stat-value mb-0">{{ my_publication_count }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-body d-flex flex-column justify-content-center">
+                {% if can_add_publication %}
+                <a href="{% url 'mdh_publications:publication_create' %}" class="btn btn-primary mb-2">Add Publication</a>
+                {% else %}
+                <button type="button" class="btn btn-secondary mb-2" disabled>Add Publication (Role Required)</button>
+                {% endif %}
+                <a href="{% url 'mdh_publications:publication_taxonomy' %}" class="btn btn-outline-primary mdh-strong-outline-btn">Facet and Tag Reference</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">My Recent Publications</div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for publication in my_recent_publications %}
+                    <tr>
+                        <td>{{ publication.title }}</td>
+                        <td>{{ publication.get_status_display }}</td>
+                        <td>{{ publication.created_at|date:"Y-m-d" }}</td>
+                        <td><a href="{% url 'mdh_publications:publication_detail' publication.slug %}">Open</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-muted">No publications created by your account yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,183 @@
+{% extends 'base_site.html' %}
+
+{% block title %}MDH Publications Library{% endblock %}
+
+{% block extra_head %}
+<style>
+  .mdh-hero h1 { color: #003865 !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="mdh-hero mb-4">
+<div class="d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="mb-1">MDH Publication Library</h1>
+        <p class="text-muted mb-0">Find content quickly using modern faceted filters and taxonomy navigation.</p>
+    </div>
+    <div class="d-flex align-items-center">
+        <a href="{% url 'mdh_publications:publication_about' %}" class="btn btn-outline-secondary mr-2">About &amp; Contact</a>
+        <a href="{% url 'mdh_publications:publication_taxonomy' %}" class="btn btn-outline-primary mr-2">Facet and Tag Reference</a>
+        {% if perms.mdh_publications.add_publication %}
+        <a href="{% url 'mdh_publications:publication_create' %}" class="btn btn-primary">Add Publication</a>
+        {% endif %}
+    </div>
+</div>
+</section>
+
+<form id="publication-filter-form" method="get" class="card card-body mb-4">
+    <div class="form-row">
+        <div class="form-group col-md-3">
+            <label for="id_q">Search</label>
+            <input type="text" id="id_q" name="q" value="{{ query }}" class="form-control" placeholder="Search titles, summaries, abstracts, tags, or PDF content">
+        </div>
+        <div class="form-group col-md-2">
+            <label for="id_facet">Facet</label>
+            <select id="id_facet" name="facet" class="form-control js-auto-submit-filter">
+                <option value="">All</option>
+                {% for facet in facets %}
+                <option value="{{ facet.code }}" {% if selected_facet == facet.code %}selected{% endif %}>{{ facet.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group col-md-2">
+            <label for="id_tag">Tags <small class="text-muted">(hold Ctrl/Cmd for multiple)</small></label>
+            <select id="id_tag" name="tag" multiple size="6" class="form-control">
+                {% for tag in filter_tags %}
+                <option value="{{ tag.slug }}" {% if tag.slug in selected_tags %}selected{% endif %}>
+                    {{ tag.facet.code }} - {{ tag.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group col-md-1">
+            <label for="id_document_type">Type</label>
+            <select id="id_document_type" name="document_type" class="form-control js-auto-submit-filter">
+                <option value="">All</option>
+                {% for document_type in document_types %}
+                <option value="{{ document_type.id }}" {% if selected_document_type == document_type.id|stringformat:'s' %}selected{% endif %}>{{ document_type.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group col-md-3">
+            <label for="id_pub_date_from">Publication Date From</label>
+            <input type="date" id="id_pub_date_from" name="pub_date_from" value="{{ selected_pub_date_from }}" class="form-control js-auto-submit-filter">
+        </div>
+        <div class="form-group col-md-3">
+            <label for="id_pub_date_to">Publication Date To</label>
+            <input type="date" id="id_pub_date_to" name="pub_date_to" value="{{ selected_pub_date_to }}" class="form-control js-auto-submit-filter">
+        </div>
+    </div>
+    <div class="d-flex justify-content-between align-items-center">
+        <small class="text-muted">Showing {{ publications|length }} result(s){% if query or selected_facet or selected_tags or selected_document_type or selected_pub_date_from or selected_pub_date_to %} with active filters{% endif %}.</small>
+        <div>
+            <button type="submit" class="btn btn-sm btn-primary mr-2">Apply Filters</button>
+            <a href="{% url 'mdh_publications:publication_list' %}" class="btn btn-sm btn-link">Clear filters</a>
+        </div>
+    </div>
+
+    {% if query or selected_facet or selected_tags or selected_document_type or selected_status or selected_pub_date_from or selected_pub_date_to %}
+    <div class="mt-2">
+        <span class="badge badge-light border mr-1">Active filters</span>
+        {% if query %}<span class="badge badge-secondary mr-1">Search: {{ query }}</span>{% endif %}
+        {% if selected_facet %}<span class="badge badge-secondary mr-1">Facet: {{ selected_facet }}</span>{% endif %}
+        {% for slug in selected_tags %}<span class="badge badge-secondary mr-1">Tag: {{ slug }}</span>{% endfor %}
+        {% if selected_document_type %}<span class="badge badge-secondary mr-1">Type selected</span>{% endif %}
+        {% if selected_pub_date_from or selected_pub_date_to %}<span class="badge badge-secondary mr-1">Date: {{ selected_pub_date_from|default:"any" }} to {{ selected_pub_date_to|default:"any" }}</span>{% endif %}
+    </div>
+    {% endif %}
+</form>
+
+<div class="row">
+    <div class="col-lg-3 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Taxonomy</span>
+                <a href="{% url 'mdh_publications:publication_taxonomy' %}" class="small">Browse all</a>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for facet in facets %}
+                <div class="list-group-item">
+                    <strong>{{ facet.name }}</strong>
+                    <div class="mt-2">
+                        {% for topic_group in facet.topic_groups.all %}
+                        <div class="small text-muted mb-1">{{ topic_group.name }}</div>
+                        <div class="mb-2">
+                            {% for tag in topic_group.tags.all|slice:":6" %}
+                            <a href="#" onclick="toggleSidebarTag('{{ tag.slug }}'); return false;" class="badge border {% if tag.slug in selected_tags %}badge-secondary{% else %}badge-light{% endif %}">{{ tag.name }}</a>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="list-group-item text-muted">Run the taxonomy seed command to load facets and tags.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-9">
+        {% for publication in publications %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h3 class="h5 mb-1"><a href="{% url 'mdh_publications:publication_detail' publication.slug %}">{{ publication.title }}</a></h3>
+                        <div class="text-muted small mb-2">
+                            {% if publication.document_type %}{{ publication.document_type.name }}{% endif %}
+                            {% if publication.publication_date %} | {{ publication.publication_date }}{% endif %}
+                            | {{ publication.get_status_display }}
+                        </div>
+                    </div>
+                    {% if publication.is_featured %}
+                    <span class="badge badge-info">Featured</span>
+                    {% endif %}
+                </div>
+                {% if publication.summary %}
+                <p class="mb-2">{{ publication.summary }}</p>
+                {% endif %}
+                <div>
+                    {% for tag in publication.tags.all|slice:":8" %}
+                    <span class="badge badge-secondary">{{ tag.name }}</span>
+                    {% empty %}
+                    <span class="text-muted small">No tags assigned.</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="alert alert-secondary mb-0">No publications matched the current filters.</div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var form = document.getElementById('publication-filter-form');
+    if (!form) {
+        return;
+    }
+
+    var filterControls = form.querySelectorAll('.js-auto-submit-filter');
+    filterControls.forEach(function (control) {
+        control.addEventListener('change', function () {
+            form.submit();
+        });
+    });
+});
+
+function toggleSidebarTag(slug) {
+    var select = document.getElementById('id_tag');
+    if (!select) return;
+    for (var i = 0; i < select.options.length; i++) {
+        if (select.options[i].value === slug) {
+            select.options[i].selected = !select.options[i].selected;
+            break;
+        }
+    }
+    document.getElementById('publication-filter-form').submit();
+}
+</script>
+{% endblock %}

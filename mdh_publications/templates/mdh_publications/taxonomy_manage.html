@@ -1,0 +1,78 @@
+{% extends 'base_site.html' %}
+
+{% block title %}Manage Taxonomy{% endblock %}
+
+{% block content %}
+<section class="mdh-hero mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <p class="mdh-eyebrow mb-2">MDH Publications Admin</p>
+            <h1 class="mb-1">Manage Taxonomy</h1>
+            <p class="text-muted mb-0">Add, edit, and delete facets, topic groups, and tags.</p>
+        </div>
+        <div>
+            <a href="{% url 'mdh_publications:publication_admin_dashboard' %}" class="btn btn-outline-primary mdh-strong-outline-btn mr-2">&larr; Admin Dashboard</a>
+            <a href="{% url 'mdh_publications:facet_create' %}" class="btn btn-primary">Add Facet</a>
+        </div>
+    </div>
+</section>
+
+{% if messages %}
+<div class="mb-3">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% for facet in facets %}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <strong>{{ facet.code }} &mdash; {{ facet.name }}</strong>
+        <div>
+            <a href="{% url 'mdh_publications:topic_group_create' %}?facet={{ facet.pk }}" class="btn btn-sm btn-outline-primary mr-1">+ Topic Group</a>
+            <a href="{% url 'mdh_publications:facet_update' facet.pk %}" class="btn btn-sm btn-outline-secondary mr-1">Edit Facet</a>
+            <a href="{% url 'mdh_publications:facet_delete' facet.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        {% if facet.description %}
+        <p class="text-muted small px-3 pt-2 mb-0">{{ facet.description }}</p>
+        {% endif %}
+        {% for tg in facet.topic_groups.all %}
+        <div class="border-top px-3 py-2">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="font-weight-bold">{{ tg.name }}</span>
+                <div>
+                    <a href="{% url 'mdh_publications:tag_create' %}?topic_group={{ tg.pk }}" class="btn btn-sm btn-outline-primary mr-1">+ Tag</a>
+                    <a href="{% url 'mdh_publications:topic_group_update' tg.pk %}" class="btn btn-sm btn-outline-secondary mr-1">Edit</a>
+                    <a href="{% url 'mdh_publications:topic_group_delete' tg.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                </div>
+            </div>
+            {% for tag in tg.tags.all %}
+            <div class="d-flex justify-content-between align-items-center py-1 border-top">
+                <span>
+                    {{ tag.name }}
+                    <small class="text-muted ml-1">{{ tag.slug }}</small>
+                </span>
+                <div>
+                    <a href="{% url 'mdh_publications:tag_update' tag.pk %}" class="btn btn-sm btn-link p-0 mr-2">Edit</a>
+                    <a href="{% url 'mdh_publications:tag_delete' tag.pk %}" class="btn btn-sm btn-link p-0 text-danger">Delete</a>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-muted small mb-0">No tags in this group. <a href="{% url 'mdh_publications:tag_create' %}?topic_group={{ tg.pk }}">Add one.</a></p>
+            {% endfor %}
+        </div>
+        {% empty %}
+        <p class="text-muted p-3 mb-0">No topic groups yet. <a href="{% url 'mdh_publications:topic_group_create' %}?facet={{ facet.pk }}">Add one.</a></p>
+        {% endfor %}
+    </div>
+</div>
+{% empty %}
+<div class="alert alert-info">No facets defined yet. <a href="{% url 'mdh_publications:facet_create' %}">Add the first facet.</a></div>
+{% endfor %}
+{% endblock %}

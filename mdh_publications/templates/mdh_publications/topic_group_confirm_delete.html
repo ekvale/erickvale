@@ -1,0 +1,22 @@
+{% extends 'base_site.html' %}
+
+{% block title %}Delete Topic Group{% endblock %}
+
+{% block content %}
+<section class="mdh-hero mb-4">
+    <p class="mdh-eyebrow mb-2">Taxonomy Management</p>
+    <h1 class="mb-1">Delete Topic Group: {{ object.name }}</h1>
+</section>
+
+<div class="card">
+    <div class="card-body">
+        <p class="text-danger font-weight-bold">Are you sure you want to delete the topic group <strong>{{ object.name }}</strong> (under {{ object.facet.code }})?</p>
+        <p class="text-muted">This will also delete all tags within this topic group. This action cannot be undone.</p>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Yes, Delete Topic Group</button>
+            <a href="{% url 'mdh_publications:taxonomy_manage' %}" class="btn btn-outline-secondary ml-2">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

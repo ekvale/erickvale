@@ -61,6 +61,7 @@ urlpatterns = [
     path('apps/math-bastion/', include('math_bastion.urls', namespace='math_bastion')),
     path('apps/contacts/', include('contacts.urls', namespace='contacts')),
     path('mdh/', include('mdh_briefings.urls')),
+    path('apps/mdh-publications/', include('mdh_publications.urls', namespace='mdh_publications')),
     path('htac/about/', HTACAboutView.as_view(), name='htac_public_about'),
     path('htac/demo/', pipeline_demo, name='htac_pipeline_demo'),
     path('htac/demo/run/', pipeline_run_start, name='htac_pipeline_run_start'),

@@ -1,0 +1,233 @@
+{% extends 'base_site.html' %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<section class="mdh-hero mb-4">
+    <p class="mdh-eyebrow mb-2">MDH Publications</p>
+    <h1 class="mb-1">Administrator Dashboard</h1>
+    <p class="mdh-readable-subtext mb-0">Manage publications and assign user access roles without using Django Admin.</p>
+</section>
+
+<div class="row mb-4">
+    <div class="col-md-6 mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <p class="text-muted mb-1" style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.08em; font-weight:600;">Total Publications</p>
+                <p class="mdh-stat-value mb-0" style="font-size:4.5rem; font-weight:700; line-height:1; color:#003865;">{{ total_publications }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="card h-100">
+            <div class="card-body d-flex flex-column justify-content-center">
+                <a href="{% url 'mdh_publications:publication_create' %}" class="btn btn-primary mb-2">Add Publication</a>
+                <a href="{% url 'mdh_publications:taxonomy_manage' %}" class="btn btn-primary mb-2">Manage Taxonomy</a>
+                <a href="{% url 'mdh_publications:landing_image_create' %}" class="btn btn-primary mb-2">Add Landing Image</a>
+                <a href="{% url 'mdh_publications:publication_list' %}" class="btn btn-outline-primary mdh-strong-outline-btn">Open Library</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6 mb-3">
+        <div class="card h-100">
+            <div class="card-header">Recently Published</div>
+            <div class="card-body p-0">
+                {% if recently_published %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped mb-0">
+                        <tbody>
+                            {% for pub in recently_published %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'mdh_publications:publication_detail' pub.slug %}" class="mdh-readable-link">{{ pub.title }}</a>
+                                    {% if pub.publication_date %}
+                                    <br><small class="text-muted">{{ pub.publication_date|date:"M d, Y" }}</small>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted p-3 mb-0">No recently published items.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="card h-100">
+            <div class="card-header">Ready for Review</div>
+            <div class="card-body p-0">
+                {% if ready_for_review %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped mb-0">
+                        <tbody>
+                            {% for pub in ready_for_review %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'mdh_publications:publication_detail' pub.slug %}" class="mdh-readable-link">{{ pub.title }}</a>
+                                    <br><small class="text-muted">Submitted {{ pub.created_at|date:"M d, Y" }}</small>
+                                </td>
+                                <td class="text-right">
+                                    <a href="{% url 'mdh_publications:publication_update' pub.slug %}" class="btn btn-sm btn-outline-primary">Review</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted p-3 mb-0">No publications awaiting review.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>
+            Pending Requests
+            {% if access_requests %}
+            <span class="badge badge-warning ml-1">{{ access_requests|length }}</span>
+            {% endif %}
+        </span>
+        <a href="{% url 'mdh_publications:publication_about' %}" class="btn btn-sm btn-outline-secondary">View About Page</a>
+    </div>
+    {% if access_requests %}
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Type</th>
+                        <th>Reason</th>
+                        <th style="width:100px;">Submitted</th>
+                        <th style="width:90px;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in access_requests %}
+                    <tr>
+                        <td>{{ req.name }}</td>
+                        <td>{{ req.email|default:"—" }}</td>
+                        <td><span class="badge badge-info" style="font-size:0.70rem;">{{ req.get_request_type_display }}</span></td>
+                        <td style="max-width:260px; white-space:normal;">{{ req.reason|truncatewords:20 }}</td>
+                        <td class="small text-muted">{{ req.submitted_at|date:"M d, Y" }}</td>
+                        <td>
+                            <form method="post" class="mb-0">
+                                {% csrf_token %}
+                                <input type="hidden" name="resolve_request_id" value="{{ req.pk }}">
+                                <button type="submit" class="btn btn-sm btn-outline-success">Resolve</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="card-body text-muted">No pending requests.</div>
+    {% endif %}
+</div>
+
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Landing Page Images</span>
+        <a href="{% url 'mdh_publications:landing_image_create' %}" class="btn btn-sm btn-primary">+ Add Image</a>
+    </div>
+    {% if landing_images %}
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+                <thead class="thead-light">
+                    <tr>
+                        <th style="width:80px;">Preview</th>
+                        <th>Title</th>
+                        <th>Slot</th>
+                        <th class="text-center" style="width:60px;">Order</th>
+                        <th class="text-center" style="width:70px;">Active</th>
+                        <th style="width:110px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for img in landing_images %}
+                    <tr {% if not img.is_active %}class="text-muted"{% endif %}>
+                        <td>
+                            <img src="{{ img.image.url }}"
+                                 alt="{{ img.alt_text|default:img.title }}"
+                                 style="width:70px; height:46px; object-fit:cover; border-radius:3px; border:1px solid #dee2e6;">
+                        </td>
+                        <td>{{ img.title }}</td>
+                        <td><span class="badge badge-secondary" style="font-size:0.70rem;">{{ img.get_slot_display }}</span></td>
+                        <td class="text-center">{{ img.sort_order }}</td>
+                        <td class="text-center">
+                            {% if img.is_active %}
+                                <span class="badge badge-success">Active</span>
+                            {% else %}
+                                <span class="badge badge-secondary">Hidden</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'mdh_publications:landing_image_update' img.pk %}" class="btn btn-sm btn-outline-primary mr-1">Edit</a>
+                            <a href="{% url 'mdh_publications:landing_image_delete' img.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="card-body text-muted">
+        No landing page images uploaded yet. <a href="{% url 'mdh_publications:landing_image_create' %}">Upload the first image.</a>
+    </div>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-header">User Role Management</div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Current Role</th>
+                        <th>Set Role</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in user_rows %}
+                    <tr>
+                        <td>{{ row.user.username }}</td>
+                        <td>{{ row.user.email|default:"-" }}</td>
+                        <td>{{ row.current_role }}</td>
+                        <td>
+                            <form method="post" class="form-inline mb-0">
+                                {% csrf_token %}
+                                <input type="hidden" name="user_id" value="{{ row.user.id }}">
+                                <select name="role" class="form-control form-control-sm mr-2" aria-label="Set role for {{ row.user.username }}">
+                                    <option value="public" {% if row.selected_role == 'public' %}selected{% endif %}>Public</option>
+                                    <option value="employee" {% if row.selected_role == 'employee' %}selected{% endif %}>Employee</option>
+                                    <option value="admin" {% if row.selected_role == 'admin' %}selected{% endif %}>Administrator</option>
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Update</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

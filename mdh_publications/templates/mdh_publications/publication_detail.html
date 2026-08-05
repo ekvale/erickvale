@@ -1,0 +1,78 @@
+{% extends 'base_site.html' %}
+
+{% block title %}{{ publication.title }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h1 class="mb-2">{{ publication.title }}</h1>
+        <div class="text-muted">
+            {% if publication.document_type %}{{ publication.document_type.name }}{% endif %}
+            {% if publication.publication_date %} | {{ publication.publication_date }}{% endif %}
+            | {{ publication.get_status_display }}
+        </div>
+    </div>
+    <div>
+        {% if perms.mdh_publications.change_publication %}
+        <a href="{% url 'mdh_publications:publication_update' publication.slug %}" class="btn btn-outline-primary mr-2">Edit</a>
+        {% endif %}
+        {% if perms.mdh_publications.delete_publication %}
+        <a href="{% url 'mdh_publications:publication_delete' publication.slug %}" class="btn btn-outline-danger">Delete</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        {% if publication.summary %}
+        <div class="card mb-3">
+            <div class="card-header">Summary</div>
+            <div class="card-body">{{ publication.summary }}</div>
+        </div>
+        {% endif %}
+
+        {% if publication.abstract %}
+        <div class="card mb-3">
+            <div class="card-header">Abstract</div>
+            <div class="card-body">{{ publication.abstract|linebreaks }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card mb-3">
+            <div class="card-header">Publication Details</div>
+            <div class="card-body">
+                <p><strong>Status:</strong> {{ publication.get_status_display }}</p>
+                <p><strong>Document Type:</strong> {{ publication.document_type|default:"Not set" }}</p>
+                <p><strong>Featured:</strong> {{ publication.is_featured|yesno:"Yes,No" }}</p>
+                <p><strong>Created By:</strong> {{ publication.created_by|default:"Unknown" }}</p>
+                <p>
+                    <strong>Facets:</strong>
+                    {% for facet in publication.facets.all %}
+                    <span class="badge badge-light border">{{ facet.code }} - {{ facet.name }}</span>
+                    {% empty %}
+                    <span class="text-muted">No facets assigned.</span>
+                    {% endfor %}
+                </p>
+                {% if publication.source_url %}
+                <p><strong>Source URL:</strong> <a href="{{ publication.source_url }}" target="_blank" rel="noopener noreferrer">Open source</a></p>
+                {% endif %}
+                {% if publication.file_upload %}
+                <p><strong>Attachment:</strong> <a href="{{ publication.file_upload.url }}">Download file</a></p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">Taxonomy Tags</div>
+            <div class="card-body">
+                {% for tag in publication.tags.all %}
+                <span class="badge badge-secondary mb-1">{{ tag.facet.code }} / {{ tag.name }}</span>
+                {% empty %}
+                <span class="text-muted">No tags assigned.</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

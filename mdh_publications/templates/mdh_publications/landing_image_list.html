@@ -1,0 +1,85 @@
+{% extends 'base_site.html' %}
+{% load static %}
+
+{% block title %}Manage Landing Page Images — MDH Publications{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-1" style="color:#003865;">Manage Landing Page Images</h1>
+    <p class="text-muted mb-0">Images for the hero carousel and the three browse cards (Topic, Contributor, Format).</p>
+  </div>
+  <div>
+    <a href="{% url 'mdh_publications:publication_landing' %}" class="btn btn-outline-secondary mr-2">&larr; Back to Landing Page</a>
+    <a href="{% url 'mdh_publications:landing_image_create' %}" class="btn btn-primary">+ Add Image</a>
+  </div>
+</div>
+
+{% if messages %}
+  {% for message in messages %}
+  <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% endfor %}
+{% endif %}
+
+{% if landing_images %}
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="thead-light">
+        <tr>
+          <th style="width:100px;">Preview</th>
+          <th>Title</th>
+          <th>Slot</th>
+          <th class="text-center" style="width:70px;">Order</th>
+          <th class="text-center" style="width:80px;">Active</th>
+          <th style="width:120px;">Added</th>
+          <th style="width:130px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for img in landing_images %}
+        <tr {% if not img.is_active %}class="text-muted"{% endif %}>
+          <td>
+            <img src="{{ img.image.url }}"
+                 alt="{{ img.alt_text|default:img.title }}"
+                 style="width:90px; height:60px; object-fit:cover; border-radius:3px; border:1px solid #dee2e6;">
+          </td>
+          <td>
+            <strong>{{ img.title }}</strong>
+            {% if img.alt_text %}
+            <div class="text-muted small">Alt: {{ img.alt_text }}</div>
+            {% endif %}
+          </td>
+          <td><span class="badge badge-primary" style="font-size:0.72rem;">{{ img.get_slot_display }}</span></td>
+          <td class="text-center">{{ img.sort_order }}</td>
+          <td class="text-center">
+            {% if img.is_active %}
+              <span class="badge badge-success">Active</span>
+            {% else %}
+              <span class="badge badge-secondary">Hidden</span>
+            {% endif %}
+          </td>
+          <td class="small text-muted">{{ img.created_at|date:"M d, Y" }}</td>
+          <td>
+            <a href="{% url 'mdh_publications:landing_image_update' img.pk %}" class="btn btn-sm btn-outline-primary mr-1">Edit</a>
+            <a href="{% url 'mdh_publications:landing_image_delete' img.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<p class="text-muted small mt-2">Images are displayed in order (ascending sort order, then newest first). Lower sort order numbers appear first. For browse cards, only the first active image per slot is used.</p>
+{% else %}
+<div class="card card-body text-center py-5">
+  <p class="text-muted mb-3">No landing page images have been uploaded yet.</p>
+  <a href="{% url 'mdh_publications:landing_image_create' %}" class="btn btn-primary">Upload First Image</a>
+</div>
+{% endif %}
+{% endblock %}

@@ -79,6 +79,7 @@ INSTALLED_APPS = [
     'dream_blue',
     'braindump',
     'mdh_briefings',
+    'mdh_publications.apps.MdhPublicationsConfig',
     'math_bastion',
     'projects.apps.ProjectsConfig',
     'contacts.apps.ContactsConfig',

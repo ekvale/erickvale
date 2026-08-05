@@ -1,0 +1,21 @@
+{% extends 'base_site.html' %}
+
+{% block title %}Delete Publication{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">Confirm Delete</div>
+            <div class="card-body">
+                <p>Are you sure you want to permanently delete <strong>{{ object.title }}</strong>?</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete Publication</button>
+                    <a href="{% url 'mdh_publications:publication_detail' object.slug %}" class="btn btn-outline-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

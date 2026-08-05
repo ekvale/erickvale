@@ -1,0 +1,35 @@
+{% extends 'base_site.html' %}
+
+{% block title %}{% if form.instance.pk %}Edit Topic Group{% else %}New Topic Group{% endif %}{% endblock %}
+
+{% block content %}
+<section class="mdh-hero mb-4">
+    <p class="mdh-eyebrow mb-2">Taxonomy Management</p>
+    <h1 class="mb-1">{% if form.instance.pk %}Edit Topic Group: {{ form.instance.name }}{% else %}New Topic Group{% endif %}</h1>
+</section>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_facet">Facet</label>
+                {{ form.facet }}
+                {% if form.facet.errors %}<div class="text-danger small">{{ form.facet.errors }}</div>{% endif %}
+            </div>
+            <div class="form-group">
+                <label for="id_name">Name</label>
+                {{ form.name }}
+                {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors }}</div>{% endif %}
+            </div>
+            <div class="form-group">
+                <label for="id_description">Description</label>
+                {{ form.description }}
+                {% if form.description.errors %}<div class="text-danger small">{{ form.description.errors }}</div>{% endif %}
+            </div>
+            <button type="submit" class="btn btn-primary">Save Topic Group</button>
+            <a href="{% url 'mdh_publications:taxonomy_manage' %}" class="btn btn-outline-secondary ml-2">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}
