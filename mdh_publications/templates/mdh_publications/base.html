@@ -1,0 +1,93 @@
+{% load static %}<!DOCTYPE html>
+{% comment %}
+Standalone base for the MDH Publications Library.
+
+These templates were authored against Bootstrap 4 (form-row, form-group,
+badge-secondary, mr-/ml- spacing, and a data-ride carousel on the landing
+page). The site-wide base_site.html loads Tailwind only, so none of those
+classes resolved and every page rendered without cards, grid, or buttons.
+
+Bootstrap 4 and Tailwind cannot share a page: both ship a global reset, so
+loading Bootstrap into base_site.html would restyle the site nav and footer.
+Instead this app gets its own shell, the same approach allminnesota already
+uses. Bootstrap 4.6 specifically -- not 5 -- because the class names above
+were renamed in 5 and the markup would still be wrong.
+
+Blocks match base_site.html (title / extra_head / content) so the twenty
+page templates only had to change which base they extend. The content
+wrapper keeps id="main-content" and .container because publication_landing
+overrides "#main-content.container" to go full width behind its hero.
+{% endcomment %}
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}MDH Publications Library{% endblock %}</title>
+  {# Internal library; keep it out of search results. #}
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'mdh_publications/css/library.css' %}?v=1">
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="pub-body">
+  <a href="#main-content" class="pub-skip-link">Skip to content</a>
+
+  <header class="pub-masthead">
+    <div class="container d-flex flex-wrap align-items-center justify-content-between">
+      <a href="{% url 'mdh_publications:publication_landing' %}" class="pub-brand">
+        <span class="pub-brand-mark" aria-hidden="true"></span>
+        MDH Publications Library
+      </a>
+      <nav class="pub-nav" aria-label="Publications">
+        {% with p=request.path %}
+        <a href="{% url 'mdh_publications:publication_landing' %}" class="{% if p == '/apps/mdh-publications/' %}is-active{% endif %}">Home</a>
+        <a href="{% url 'mdh_publications:publication_list' %}" class="{% if '/search' in p %}is-active{% endif %}">Search</a>
+        <a href="{% url 'mdh_publications:publication_taxonomy' %}" class="{% if '/taxonomy' in p %}is-active{% endif %}">Topics</a>
+        <a href="{% url 'mdh_publications:publication_about' %}" class="{% if '/about' in p %}is-active{% endif %}">About</a>
+        {% if user.is_authenticated %}
+          <a href="{% url 'mdh_publications:publication_dashboard' %}" class="{% if '/dashboard' in p %}is-active{% endif %}">Dashboard</a>
+          <a href="{% url 'logout' %}">Log out</a>
+        {% else %}
+          <a href="{% url 'login' %}?next={{ request.path|urlencode }}">Log in</a>
+        {% endif %}
+        {% endwith %}
+      </nav>
+    </div>
+  </header>
+
+  {% if messages %}
+  <div class="container mt-3">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <main id="main-content" class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="pub-footer">
+    <div class="container d-flex flex-wrap justify-content-between align-items-center">
+      <span>MDH Publications Library</span>
+      {% if not request.publications_only %}
+      <a href="/">Back to erickvale.com</a>
+      {% endif %}
+    </div>
+  </footer>
+
+  {# Bootstrap 4 needs jQuery and Popper; the landing page carousel depends on it. #}
+  <script src="https://code.jquery.com/jquery-3.6.4.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

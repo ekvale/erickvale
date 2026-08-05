@@ -1,0 +1,213 @@
+/* MDH Publications Library — chrome around the Bootstrap 4 page templates.
+   Bootstrap supplies cards, grid, buttons, badges and tables; this file only
+   styles the masthead, nav and footer, and tightens a few defaults so the
+   library reads as part of erickvale.com rather than stock Bootstrap. */
+
+:root {
+  --pub-navy: #003865;   /* MDH navy, matches the inline .mdh-hero h1 rule */
+  --pub-teal: #008eaa;
+  --pub-ink: #1b2b44;
+  --pub-parchment: #f7f6f2;
+  --pub-rule: #dfe3e8;
+}
+
+.pub-body {
+  background: var(--pub-parchment);
+  color: var(--pub-ink);
+  font-family: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.pub-body main {
+  flex: 1 0 auto;
+  padding-top: 1.75rem;
+  padding-bottom: 3rem;
+}
+
+/* Readability: Bootstrap's default body colour is a light grey that washes
+   out on the parchment background, and .text-muted more so. */
+.pub-body h1,
+.pub-body h2,
+.pub-body h3,
+.pub-body h4,
+.pub-body h5,
+.pub-body h6 {
+  color: var(--pub-navy);
+  font-weight: 600;
+}
+
+.pub-body .text-muted {
+  color: #56616f !important;
+}
+
+.pub-body .card {
+  border: 1px solid var(--pub-rule);
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(16, 27, 43, 0.04);
+}
+
+.pub-body .card-header {
+  background: #fff;
+  border-bottom: 1px solid var(--pub-rule);
+  font-weight: 600;
+  color: var(--pub-navy);
+}
+
+.pub-body .badge {
+  font-weight: 500;
+  padding: 0.35em 0.6em;
+}
+
+/* Tag chips in the sidebar and result cards are anchors; keep them legible. */
+.pub-body a.badge-light,
+.pub-body .badge-light {
+  background: #eef1f5;
+  color: var(--pub-ink);
+}
+
+.pub-body a.badge-light:hover {
+  background: #dde3ea;
+  color: var(--pub-navy);
+  text-decoration: none;
+}
+
+.pub-body .badge-secondary {
+  background: var(--pub-navy);
+  color: #fff;
+}
+
+.pub-body .btn-primary {
+  background: var(--pub-navy);
+  border-color: var(--pub-navy);
+}
+
+.pub-body .btn-primary:hover,
+.pub-body .btn-primary:focus {
+  background: #002a4d;
+  border-color: #002a4d;
+}
+
+.pub-body .btn-outline-primary {
+  color: var(--pub-navy);
+  border-color: var(--pub-navy);
+}
+
+.pub-body .btn-outline-primary:hover {
+  background: var(--pub-navy);
+  color: #fff;
+}
+
+.pub-body a {
+  color: var(--pub-navy);
+}
+
+.pub-body a:hover {
+  color: var(--pub-teal);
+}
+
+/* Bootstrap 4 has no gap between .form-row columns on small screens. */
+.pub-body .form-row > [class*="col-"] {
+  margin-bottom: 0.75rem;
+}
+
+/* ── Masthead ─────────────────────────────────────────────────────────── */
+
+.pub-masthead {
+  background: var(--pub-navy);
+  color: #fff;
+  padding: 0.85rem 0;
+}
+
+.pub-brand {
+  color: #fff;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.pub-brand:hover,
+.pub-brand:focus {
+  color: #fff;
+  text-decoration: none;
+  opacity: 0.9;
+}
+
+.pub-brand-mark {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: var(--pub-teal);
+  flex: none;
+}
+
+.pub-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.15rem;
+  align-items: center;
+}
+
+.pub-nav a {
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 0.9375rem;
+  padding-bottom: 2px;
+  border-bottom: 2px solid transparent;
+}
+
+.pub-nav a:hover,
+.pub-nav a:focus {
+  color: #fff;
+  text-decoration: none;
+  border-bottom-color: rgba(255, 255, 255, 0.45);
+}
+
+.pub-nav a.is-active {
+  color: #fff;
+  border-bottom-color: var(--pub-teal);
+}
+
+/* ── Footer ───────────────────────────────────────────────────────────── */
+
+.pub-footer {
+  flex: none;
+  border-top: 1px solid var(--pub-rule);
+  background: #fff;
+  padding: 1.1rem 0;
+  font-size: 0.875rem;
+  color: #56616f;
+}
+
+.pub-footer a {
+  color: var(--pub-navy);
+}
+
+/* ── Accessibility ────────────────────────────────────────────────────── */
+
+.pub-skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: #fff;
+  color: var(--pub-navy);
+  padding: 0.6rem 1rem;
+  z-index: 1000;
+}
+
+.pub-skip-link:focus {
+  left: 0.5rem;
+  top: 0.5rem;
+}
+
+@media (max-width: 575.98px) {
+  .pub-masthead .container {
+    gap: 0.6rem;
+  }
+  .pub-nav {
+    gap: 0.85rem;
+  }
+}

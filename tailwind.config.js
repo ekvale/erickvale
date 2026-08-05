@@ -4,9 +4,8 @@ module.exports = {
     './erickvale/templates/**/*.html',
     './htac/templates/**/*.html',
     './projects/templates/**/*.html',
-    // mdh_publications extends base_site.html, so its utility classes must be
-    // scanned here or the library pages render unstyled.
-    './mdh_publications/templates/**/*.html',
+    // mdh_publications is deliberately absent: it ships its own Bootstrap 4
+    // base template and never loads tw.css.
   ],
   theme: {
     extend: {

@@ -403,3 +403,54 @@ class ShippedTaxonomyTests(TestCase):
 
         self.assertEqual(Publication.objects.count(), 5)
         self.assertTrue(Publication.objects.filter(tags__isnull=False).exists())
+
+
+class LibraryChromeTests(TestCase):
+    """Guards the CSS framework the page templates actually depend on.
+
+    Every page 200s whether or not its stylesheet resolves, so the original
+    route check passed while the pages rendered with no cards, grid, or
+    buttons. These assertions pin the specific thing that was broken: the
+    templates are Bootstrap 4, and the base must deliver Bootstrap 4.
+    """
+
+    def setUp(self):
+        self.publication = Publication.objects.create(
+            title="Chrome Test Report",
+            status=Publication.Status.PUBLISHED,
+        )
+
+    def test_pages_load_bootstrap_4_and_the_library_stylesheet(self):
+        for url in (
+            reverse("mdh_publications:publication_landing"),
+            reverse("mdh_publications:publication_list"),
+            reverse("mdh_publications:publication_taxonomy"),
+            reverse("mdh_publications:publication_about"),
+            reverse(
+                "mdh_publications:publication_detail",
+                kwargs={"slug": self.publication.slug},
+            ),
+        ):
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200, url)
+            body = response.content.decode()
+            self.assertIn("bootstrap@4.6", body, f"{url} lost Bootstrap 4")
+            self.assertIn("mdh_publications/css/library.css", body, url)
+
+    def test_pages_do_not_load_tailwind(self):
+        """Bootstrap 4 and Tailwind both reset globally; never ship both."""
+        response = self.client.get(reverse("mdh_publications:publication_list"))
+        self.assertNotIn("erickvale/css/tw.css", response.content.decode())
+
+    def test_every_page_template_extends_the_app_base(self):
+        """One template left on base_site.html would silently lose Bootstrap."""
+        from pathlib import Path
+
+        template_dir = (
+            Path(__file__).resolve().parent / "templates" / "mdh_publications"
+        )
+        for path in sorted(template_dir.glob("*.html")):
+            if path.name == "base.html":
+                continue
+            first_line = path.read_text(encoding="utf-8").splitlines()[0]
+            self.assertIn("mdh_publications/base.html", first_line, path.name)
