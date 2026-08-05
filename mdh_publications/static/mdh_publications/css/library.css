@@ -26,15 +26,17 @@
   padding-bottom: 3rem;
 }
 
-/* Readability: Bootstrap's default body colour is a light grey that washes
-   out on the parchment background, and .text-muted more so. */
+/* Deliberately NO blanket colour on h1-h6 here. An earlier version set them
+   all to --pub-navy, which repainted headings sitting on the landing page's
+   dark hero and card overlays: navy on navy. Headings inherit instead, so
+   light sections get --pub-ink and dark sections inherit their own white.
+   Pages that want the MDH navy accent set it themselves (.pub-section-title). */
 .pub-body h1,
 .pub-body h2,
 .pub-body h3,
 .pub-body h4,
 .pub-body h5,
 .pub-body h6 {
-  color: var(--pub-navy);
   font-weight: 600;
 }
 

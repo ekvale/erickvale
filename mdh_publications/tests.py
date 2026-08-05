@@ -4,10 +4,12 @@ from tempfile import TemporaryDirectory
 
 from django.contrib.auth.models import Group, User
 from django.core.management import call_command
+from django.core.management.base import CommandError
 from django.test import TestCase
 from django.urls import reverse
 
 from .models import DocumentType, Facet, Publication, Tag, TopicGroup
+from .management.commands.seed_mdh_publications_demo import DEMO_PUBLICATIONS
 from .permissions import (
     ADMINISTRATOR_GROUP_NAME,
     EMPLOYEE_GROUP_NAME,
@@ -454,3 +456,54 @@ class LibraryChromeTests(TestCase):
                 continue
             first_line = path.read_text(encoding="utf-8").splitlines()[0]
             self.assertIn("mdh_publications/base.html", first_line, path.name)
+
+
+class DemoContentTests(TestCase):
+    def setUp(self):
+        call_command("seed_mdh_publications_taxonomy", stdout=StringIO())
+
+    def test_demo_seeder_creates_publications_with_real_tags(self):
+        out = StringIO()
+        call_command("seed_mdh_publications_demo", "--skip-images", stdout=out)
+
+        # Every curated tag slug must exist in the shipped taxonomy, or the
+        # demo silently loses the filtering it is meant to show off.
+        self.assertNotIn("Tag slugs not found", out.getvalue())
+
+        self.assertEqual(Publication.objects.count(), len(DEMO_PUBLICATIONS))
+        self.assertTrue(Publication.objects.filter(is_featured=True).exists())
+        self.assertTrue(
+            Publication.objects.filter(status=Publication.Status.PUBLISHED).exists()
+        )
+        for publication in Publication.objects.all():
+            self.assertTrue(publication.tags.exists(), publication.title)
+            self.assertTrue(publication.summary, publication.title)
+            self.assertTrue(publication.abstract, publication.title)
+            # facets are derived from tags, so they must agree
+            self.assertEqual(
+                set(publication.facets.values_list("id", flat=True)),
+                set(publication.tags.values_list("facet_id", flat=True)),
+                publication.title,
+            )
+
+    def test_demo_seeder_is_idempotent(self):
+        call_command("seed_mdh_publications_demo", "--skip-images", stdout=StringIO())
+        call_command("seed_mdh_publications_demo", "--skip-images", stdout=StringIO())
+        self.assertEqual(Publication.objects.count(), len(DEMO_PUBLICATIONS))
+
+    def test_demo_content_drives_search_and_facet_filtering(self):
+        call_command("seed_mdh_publications_demo", "--skip-images", stdout=StringIO())
+        url = reverse("mdh_publications:publication_list")
+
+        hit = self.client.get(url, {"q": "opioid"})
+        self.assertContains(hit, "Opioid Overdose Deaths")
+
+        tagged = self.client.get(url, {"tag": "rural-communities"})
+        self.assertContains(tagged, "Rural Primary Care Workforce Capacity")
+        self.assertNotContains(tagged, "Language Access in Clinical Settings")
+
+    def test_demo_seeder_requires_taxonomy(self):
+        Tag.objects.all().delete()
+        DocumentType.objects.all().delete()
+        with self.assertRaises(CommandError):
+            call_command("seed_mdh_publications_demo", "--skip-images", stdout=StringIO())

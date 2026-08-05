@@ -34,7 +34,10 @@ overrides "#main-content.container" to go full width behind its hero.
 
   {% block extra_head %}{% endblock %}
 </head>
-<body class="pub-body">
+{# mdh-app is required: publication_landing scopes its white-on-dark hero
+   rules to body.mdh-app. Without it the hero headings, tagline and CTA
+   links fall back to dark navy on a dark navy overlay. #}
+<body class="pub-body mdh-app">
   <a href="#main-content" class="pub-skip-link">Skip to content</a>
 
   <header class="pub-masthead">
