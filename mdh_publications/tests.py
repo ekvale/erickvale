@@ -557,3 +557,117 @@ class DemoContentTests(TestCase):
         DocumentType.objects.all().delete()
         with self.assertRaises(CommandError):
             call_command("seed_mdh_publications_demo", stdout=StringIO())
+
+
+class PublicationApprovalTests(TestCase):
+    """The review workflow: submit, approve, send back.
+
+    publish_publication was declared on the model but enforced nowhere, and
+    no view moved a publication out of In Review, so a submission had no
+    route to being published.
+    """
+
+    def setUp(self):
+        employee_group, admin_group = bootstrap_publication_groups()
+        self.employee = User.objects.create_user("emp", "emp@example.com", "pw-1122")
+        self.employee.groups.add(employee_group)
+        self.admin = User.objects.create_user("adm", "adm@example.com", "pw-3344")
+        self.admin.groups.add(admin_group)
+
+        self.publication = Publication.objects.create(
+            title="Draft Awaiting Review",
+            status=Publication.Status.DRAFT,
+            created_by=self.employee,
+        )
+
+    def test_author_can_submit_own_draft_for_review(self):
+        self.client.force_login(self.employee)
+        self.client.post(
+            reverse(
+                "mdh_publications:publication_submit_review",
+                kwargs={"slug": self.publication.slug},
+            )
+        )
+        self.publication.refresh_from_db()
+        self.assertEqual(self.publication.status, Publication.Status.IN_REVIEW)
+
+    def test_other_user_cannot_submit_someone_elses_draft(self):
+        stranger = User.objects.create_user("stranger", "s@example.com", "pw-9911")
+        self.client.force_login(stranger)
+        response = self.client.post(
+            reverse(
+                "mdh_publications:publication_submit_review",
+                kwargs={"slug": self.publication.slug},
+            )
+        )
+        self.assertEqual(response.status_code, 403)
+        self.publication.refresh_from_db()
+        self.assertEqual(self.publication.status, Publication.Status.DRAFT)
+
+    def test_administrator_can_approve_and_send_back(self):
+        self.publication.status = Publication.Status.IN_REVIEW
+        self.publication.save()
+        self.client.force_login(self.admin)
+        url = reverse(
+            "mdh_publications:publication_review_action",
+            kwargs={"slug": self.publication.slug},
+        )
+
+        self.client.post(url, {"action": "publish"})
+        self.publication.refresh_from_db()
+        self.assertEqual(self.publication.status, Publication.Status.PUBLISHED)
+        self.assertEqual(self.publication.updated_by, self.admin)
+
+        self.client.post(url, {"action": "send_back"})
+        self.publication.refresh_from_db()
+        self.assertEqual(self.publication.status, Publication.Status.DRAFT)
+
+    def test_employee_cannot_approve(self):
+        self.publication.status = Publication.Status.IN_REVIEW
+        self.publication.save()
+        self.client.force_login(self.employee)
+        response = self.client.post(
+            reverse(
+                "mdh_publications:publication_review_action",
+                kwargs={"slug": self.publication.slug},
+            ),
+            {"action": "publish"},
+        )
+        self.assertEqual(response.status_code, 403)
+        self.publication.refresh_from_db()
+        self.assertEqual(self.publication.status, Publication.Status.IN_REVIEW)
+
+    def test_employee_cannot_self_publish_through_the_form(self):
+        """add_publication alone used to allow setting status straight to Published."""
+        from mdh_publications.forms import PublicationForm
+
+        form = PublicationForm(
+            data={
+                "title": "Sneaky Self Publish",
+                "status": Publication.Status.PUBLISHED,
+                "summary": "",
+                "abstract": "",
+            },
+            user=self.employee,
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("status", form.errors)
+
+        offered = {value for value, _label in form.fields["status"].choices}
+        self.assertEqual(
+            offered, {Publication.Status.DRAFT, Publication.Status.IN_REVIEW}
+        )
+
+    def test_administrator_may_still_publish_through_the_form(self):
+        from mdh_publications.forms import PublicationForm
+
+        form = PublicationForm(
+            data={
+                "title": "Admin Published",
+                "status": Publication.Status.PUBLISHED,
+                "summary": "",
+                "abstract": "",
+            },
+            user=self.admin,
+        )
+        self.assertTrue(form.is_valid(), form.errors)

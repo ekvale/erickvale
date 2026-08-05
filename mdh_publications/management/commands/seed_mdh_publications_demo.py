@@ -19,7 +19,7 @@ from datetime import date
 
 from django.core.management.base import BaseCommand, CommandError
 
-from mdh_publications.models import DocumentType, Publication, Tag
+from mdh_publications.models import DocumentType, LandingImage, Publication, Tag
 
 # (title, document type, ISO date, status, featured, summary, abstract, tag slugs)
 DEMO_PUBLICATIONS = [
@@ -280,7 +280,10 @@ class Command(BaseCommand):
         parser.add_argument(
             "--reset",
             action="store_true",
-            help="Delete all existing publications and landing images first.",
+            help=(
+                "Delete existing publications and landing images first. Use this "
+                "to clear landing images an earlier seeding created."
+            ),
         )
 
     def handle(self, *args, **options):
@@ -291,8 +294,13 @@ class Command(BaseCommand):
 
         if options["reset"]:
             pub_count, _ = Publication.objects.all().delete()
+            # Landing images too: an earlier version of this command created
+            # rows pointing at bundled images that are no longer shipped.
+            img_count, _ = LandingImage.objects.all().delete()
             self.stdout.write(
-                self.style.WARNING(f"Deleted {pub_count} publication rows.")
+                self.style.WARNING(
+                    f"Deleted {pub_count} publication rows and {img_count} landing images."
+                )
             )
 
         created, updated, missing_tags = 0, 0, set()

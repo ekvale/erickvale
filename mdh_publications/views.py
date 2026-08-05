@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
@@ -182,7 +183,22 @@ class PublicationDetailView(DetailView):
     slug_url_kwarg = "slug"
 
 
-class PublicationCreateView(PublicationSuccessUrlMixin, LoginRequiredMixin, PermissionRequiredMixin, CreateView):
+class PublicationFormUserMixin:
+    """Hand the request user to PublicationForm so it can gate status choices."""
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
+
+class PublicationCreateView(
+    PublicationFormUserMixin,
+    PublicationSuccessUrlMixin,
+    LoginRequiredMixin,
+    PermissionRequiredMixin,
+    CreateView,
+):
     model = Publication
     permission_required = "mdh_publications.add_publication"
     raise_exception = True
@@ -195,7 +211,75 @@ class PublicationCreateView(PublicationSuccessUrlMixin, LoginRequiredMixin, Perm
         return super().form_valid(form)
 
 
-class PublicationUpdateView(PublicationSuccessUrlMixin, LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
+class PublicationReviewActionView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    """Approve, send back, or archive a publication from the admin dashboard.
+
+    The publish_publication permission was declared on the model but never
+    enforced anywhere, and nothing in the UI moved a publication out of
+    In Review, so submissions had no route to being published.
+    """
+
+    permission_required = "mdh_publications.publish_publication"
+    raise_exception = True
+
+    ACTIONS = {
+        "publish": (Publication.Status.PUBLISHED, "published"),
+        "send_back": (Publication.Status.DRAFT, "sent back to the author as a draft"),
+        "archive": (Publication.Status.ARCHIVED, "archived"),
+    }
+
+    def post(self, request, slug, *args, **kwargs):
+        publication = get_object_or_404(Publication, slug=slug)
+        action = request.POST.get("action", "")
+
+        if action not in self.ACTIONS:
+            messages.error(request, "Unknown review action.")
+            return redirect("mdh_publications:publication_admin_dashboard")
+
+        new_status, phrase = self.ACTIONS[action]
+        publication.status = new_status
+        publication.updated_by = request.user
+        publication.save(update_fields=["status", "updated_by", "updated_at"])
+
+        messages.success(request, f"“{publication.title}” was {phrase}.")
+        return redirect(
+            request.POST.get("next")
+            or reverse_lazy("mdh_publications:publication_admin_dashboard")
+        )
+
+
+class PublicationSubmitForReviewView(LoginRequiredMixin, View):
+    """Let an author move their own draft into the review queue."""
+
+    def post(self, request, slug, *args, **kwargs):
+        publication = get_object_or_404(Publication, slug=slug)
+
+        may_submit = publication.created_by_id == request.user.id or request.user.has_perm(
+            "mdh_publications.change_publication"
+        )
+        if not may_submit:
+            raise PermissionDenied("You can only submit publications you created.")
+
+        if publication.status != Publication.Status.DRAFT:
+            messages.info(request, f"“{publication.title}” is not a draft.")
+        else:
+            publication.status = Publication.Status.IN_REVIEW
+            publication.updated_by = request.user
+            publication.save(update_fields=["status", "updated_by", "updated_at"])
+            messages.success(
+                request, f"“{publication.title}” was submitted for review."
+            )
+
+        return redirect("mdh_publications:publication_employee_dashboard")
+
+
+class PublicationUpdateView(
+    PublicationFormUserMixin,
+    PublicationSuccessUrlMixin,
+    LoginRequiredMixin,
+    PermissionRequiredMixin,
+    UpdateView,
+):
     model = Publication
     permission_required = "mdh_publications.change_publication"
     raise_exception = True

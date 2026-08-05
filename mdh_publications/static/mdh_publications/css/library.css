@@ -182,6 +182,61 @@
   margin-bottom: 0.75rem;
 }
 
+/* ── Hooks the page templates expect ──────────────────────────────────────
+   These mdh-* classes are used across the dashboards and page headers but
+   were defined in the original app's base template, which did not come with
+   the app. Undefined, they left stat figures at body size, eyebrow labels
+   indistinguishable from body text, and .mdh-strong-outline-btn -- plainly
+   meant to make an outline button legible -- doing nothing at all. */
+
+.pub-body .mdh-hero {
+  margin-bottom: 1.5rem;
+}
+
+.pub-body .mdh-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--pub-teal);
+}
+
+.pub-body .mdh-readable-subtext {
+  color: #56616f;
+  font-size: 1.02rem;
+}
+
+.pub-body .mdh-readable-link {
+  color: var(--pub-navy);
+  font-weight: 600;
+}
+
+.pub-body .mdh-readable-link:hover {
+  color: var(--pub-teal);
+}
+
+.pub-body .mdh-stat-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #56616f;
+  margin-bottom: 0.35rem;
+}
+
+.pub-body .mdh-stat-value {
+  color: var(--pub-navy);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+/* Bootstrap's outline buttons use a thin 1px border in a mid tone that all
+   but disappears on the parchment background. */
+.pub-body .mdh-strong-outline-btn {
+  border-width: 2px;
+  font-weight: 600;
+}
+
 /* ── Masthead ─────────────────────────────────────────────────────────── */
 
 .pub-masthead {

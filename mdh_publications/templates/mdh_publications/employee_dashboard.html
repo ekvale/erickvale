@@ -59,7 +59,15 @@
                         <td>{{ publication.title }}</td>
                         <td>{{ publication.get_status_display }}</td>
                         <td>{{ publication.created_at|date:"Y-m-d" }}</td>
-                        <td><a href="{% url 'mdh_publications:publication_detail' publication.slug %}">Open</a></td>
+                        <td>
+                            <a href="{% url 'mdh_publications:publication_detail' publication.slug %}" class="mdh-readable-link">Open</a>
+                            {% if publication.status == 'draft' %}
+                            <form method="post" action="{% url 'mdh_publications:publication_submit_review' publication.slug %}" class="d-inline ml-2">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-primary">Submit for review</button>
+                            </form>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>

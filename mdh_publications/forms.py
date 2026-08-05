@@ -38,6 +38,49 @@ class PublicationForm(forms.ModelForm):
             "tags": forms.SelectMultiple(attrs={"class": "form-control", "size": 12}),
         }
 
+    def __init__(self, *args, user=None, **kwargs):
+        """Restrict the status choices to what ``user`` is allowed to set.
+
+        The form exposed the full status list to anyone holding
+        add_publication, so an employee could file a publication straight to
+        Published and skip review entirely. Publishing and archiving now
+        require publish_publication; everyone else can only save a draft or
+        submit for review.
+        """
+        super().__init__(*args, **kwargs)
+        self.user = user
+
+        if user is not None and not user.has_perm("mdh_publications.publish_publication"):
+            allowed = {Publication.Status.DRAFT, Publication.Status.IN_REVIEW}
+            # Keep the current value selectable so editing an already
+            # published record does not silently reset its status.
+            if self.instance and self.instance.pk:
+                allowed.add(self.instance.status)
+            self.fields["status"].choices = [
+                (value, label)
+                for value, label in Publication.Status.choices
+                if value in allowed
+            ]
+            self.fields["status"].help_text = (
+                "Choose In Review to submit this for an administrator to publish."
+            )
+
+    def clean_status(self):
+        status = self.cleaned_data.get("status")
+        user = getattr(self, "user", None)
+        restricted = {Publication.Status.PUBLISHED, Publication.Status.ARCHIVED}
+        if (
+            user is not None
+            and status in restricted
+            and not user.has_perm("mdh_publications.publish_publication")
+            and not (self.instance and self.instance.pk and self.instance.status == status)
+        ):
+            raise forms.ValidationError(
+                "You do not have permission to publish or archive. "
+                "Choose In Review to submit it for approval."
+            )
+        return status
+
     def clean(self):
         cleaned_data = super().clean()
         selected_facets = set(cleaned_data.get("facets") or [])

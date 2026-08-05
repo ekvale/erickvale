@@ -73,7 +73,17 @@
                                     <br><small class="text-muted">Submitted {{ pub.created_at|date:"M d, Y" }}</small>
                                 </td>
                                 <td class="text-right">
-                                    <a href="{% url 'mdh_publications:publication_update' pub.slug %}" class="btn btn-sm btn-outline-primary">Review</a>
+                                    <a href="{% url 'mdh_publications:publication_update' pub.slug %}" class="btn btn-sm btn-outline-primary mdh-strong-outline-btn">Review</a>
+                                    {% if perms.mdh_publications.publish_publication %}
+                                    <form method="post" action="{% url 'mdh_publications:publication_review_action' pub.slug %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" name="action" value="publish" class="btn btn-sm btn-primary">Approve &amp; publish</button>
+                                    </form>
+                                    <form method="post" action="{% url 'mdh_publications:publication_review_action' pub.slug %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" name="action" value="send_back" class="btn btn-sm btn-outline-secondary mdh-strong-outline-btn">Send back</button>
+                                    </form>
+                                    {% endif %}
                                 </td>
                             </tr>
                             {% endfor %}
