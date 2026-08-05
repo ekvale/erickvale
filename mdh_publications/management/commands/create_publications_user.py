@@ -17,6 +17,7 @@ from django.contrib.auth.password_validation import validate_password
 
 from mdh_publications.permissions import (
     ADMINISTRATOR_GROUP_NAME,
+    EDITOR_GROUP_NAME,
     EMPLOYEE_GROUP_NAME,
     bootstrap_publication_groups,
     publications_only_group_name,
@@ -31,11 +32,12 @@ class Command(BaseCommand):
         parser.add_argument("--email", default="")
         parser.add_argument(
             "--role",
-            choices=["employee", "admin"],
+            choices=["employee", "editor", "admin"],
             default="employee",
             help=(
                 "employee (default): may add publications and view taxonomy. "
-                "admin: full control of the library, including user roles."
+                "editor: also approves submissions and edits facets and tags. "
+                "admin: everything, plus assigning roles to other users."
             ),
         )
         parser.add_argument(
@@ -82,11 +84,11 @@ class Command(BaseCommand):
         user.set_password(password)
         user.save()
 
-        role_group_name = (
-            ADMINISTRATOR_GROUP_NAME
-            if options["role"] == "admin"
-            else EMPLOYEE_GROUP_NAME
-        )
+        role_group_name = {
+            "admin": ADMINISTRATOR_GROUP_NAME,
+            "editor": EDITOR_GROUP_NAME,
+            "employee": EMPLOYEE_GROUP_NAME,
+        }[options["role"]]
         role_group = Group.objects.get(name=role_group_name)
         confine_group = Group.objects.get(name=publications_only_group_name())
 

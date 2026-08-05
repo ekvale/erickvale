@@ -314,9 +314,23 @@ class TaxonomyBrowserView(TemplateView):
         return context
 
 
+def can_use_review_dashboard(user):
+    """Editors and administrators both need the review queue.
+
+    Routing on manage_publication_roles alone sent anyone who could approve
+    submissions but not administer users to the employee dashboard, which has
+    no review queue -- so their approval permission was unreachable.
+    """
+    return (
+        user.has_perm("mdh_publications.publish_publication")
+        or user.has_perm("mdh_publications.manage_publication_taxonomy")
+        or user.has_perm("mdh_publications.manage_publication_roles")
+    )
+
+
 class DashboardRouterView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        if request.user.has_perm("mdh_publications.manage_publication_roles"):
+        if can_use_review_dashboard(request.user):
             return redirect("mdh_publications:publication_admin_dashboard")
         return redirect("mdh_publications:publication_employee_dashboard")
 
@@ -334,11 +348,20 @@ class EmployeeDashboardView(LoginRequiredMixin, TemplateView):
 
 
 class AdminDashboardView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
-    permission_required = "mdh_publications.manage_publication_roles"
     raise_exception = True
     template_name = "mdh_publications/admin_dashboard.html"
 
+    def has_permission(self):
+        """Editors reach this page too; the role-management card is hidden
+        from them in the template and refused in post() below."""
+        return can_use_review_dashboard(self.request.user)
+
     def post(self, request, *args, **kwargs):
+        # Everything this handler does -- resolving access requests and moving
+        # users between groups -- is administrator work.
+        if not request.user.has_perm("mdh_publications.manage_publication_roles"):
+            raise PermissionDenied("Managing roles and requests requires an administrator.")
+
         if "resolve_request_id" in request.POST:
             req = get_object_or_404(AccessRequest, id=request.POST["resolve_request_id"])
             req.is_resolved = True

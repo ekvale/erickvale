@@ -12,6 +12,7 @@ from .models import DocumentType, Facet, Publication, Tag, TopicGroup
 from .management.commands.seed_mdh_publications_demo import DEMO_PUBLICATIONS
 from .permissions import (
     ADMINISTRATOR_GROUP_NAME,
+    EDITOR_GROUP_NAME,
     EMPLOYEE_GROUP_NAME,
     bootstrap_publication_groups,
     publications_only_group_name,
@@ -671,3 +672,103 @@ class PublicationApprovalTests(TestCase):
             user=self.admin,
         )
         self.assertTrue(form.is_valid(), form.errors)
+
+
+class EditorRoleTests(TestCase):
+    """Editors approve submissions and curate taxonomy, but not user roles."""
+
+    def setUp(self):
+        bootstrap_publication_groups()
+        call_command(
+            "create_publications_user",
+            "nan",
+            "--role", "editor",
+            "--password", "editor-pw-7781",
+            stdout=StringIO(),
+        )
+        self.nan = User.objects.get(username="nan")
+
+    def test_editor_has_approval_and_taxonomy_but_not_role_management(self):
+        self.assertTrue(self.nan.has_perm("mdh_publications.publish_publication"))
+        self.assertTrue(self.nan.has_perm("mdh_publications.manage_publication_taxonomy"))
+        self.assertTrue(self.nan.has_perm("mdh_publications.change_publication"))
+        self.assertFalse(self.nan.has_perm("mdh_publications.manage_publication_roles"))
+        self.assertEqual(
+            set(self.nan.groups.values_list("name", flat=True)),
+            {EDITOR_GROUP_NAME, publications_only_group_name()},
+        )
+
+    def test_dashboard_routes_editor_to_the_review_queue(self):
+        self.client.force_login(self.nan)
+        response = self.client.get(reverse("mdh_publications:publication_dashboard"))
+        self.assertRedirects(
+            response,
+            reverse("mdh_publications:publication_admin_dashboard"),
+            fetch_redirect_response=False,
+        )
+
+    def test_editor_can_open_dashboard_without_the_role_card(self):
+        self.client.force_login(self.nan)
+        response = self.client.get(
+            reverse("mdh_publications:publication_admin_dashboard")
+        )
+        self.assertEqual(response.status_code, 200)
+        body = response.content.decode()
+        self.assertIn("Editor Dashboard", body)
+        self.assertNotIn("User Role Management", body)
+        self.assertNotIn("Add Landing Image", body)
+
+    def test_editor_cannot_post_role_changes(self):
+        other = User.objects.create_user("other", "other@example.com", "pw-2231")
+        self.client.force_login(self.nan)
+        response = self.client.post(
+            reverse("mdh_publications:publication_admin_dashboard"),
+            {"role": "admin", "user_id": other.pk},
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(other.groups.exists())
+
+    def test_editor_can_approve_and_edit_taxonomy(self):
+        publication = Publication.objects.create(
+            title="Editor Approves This", status=Publication.Status.IN_REVIEW
+        )
+        self.client.force_login(self.nan)
+
+        self.client.post(
+            reverse(
+                "mdh_publications:publication_review_action",
+                kwargs={"slug": publication.slug},
+            ),
+            {"action": "publish"},
+        )
+        publication.refresh_from_db()
+        self.assertEqual(publication.status, Publication.Status.PUBLISHED)
+
+        self.assertEqual(
+            self.client.get(reverse("mdh_publications:taxonomy_manage")).status_code, 200
+        )
+        self.assertEqual(
+            self.client.get(reverse("mdh_publications:facet_create")).status_code, 200
+        )
+        self.assertEqual(
+            self.client.get(reverse("mdh_publications:tag_create")).status_code, 200
+        )
+
+    def test_plain_employee_still_cannot_approve_or_edit_taxonomy(self):
+        call_command(
+            "create_publications_user",
+            "dan_emp",
+            "--password", "employee-pw-6612",
+            stdout=StringIO(),
+        )
+        employee = User.objects.get(username="dan_emp")
+        self.client.force_login(employee)
+
+        self.assertEqual(
+            self.client.get(reverse("mdh_publications:taxonomy_manage")).status_code, 403
+        )
+        self.assertRedirects(
+            self.client.get(reverse("mdh_publications:publication_dashboard")),
+            reverse("mdh_publications:publication_employee_dashboard"),
+            fetch_redirect_response=False,
+        )

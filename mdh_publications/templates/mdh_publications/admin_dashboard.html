@@ -5,8 +5,8 @@
 {% block content %}
 <section class="mdh-hero mb-4">
     <p class="mdh-eyebrow mb-2">MDH Publications</p>
-    <h1 class="mb-1">Administrator Dashboard</h1>
-    <p class="mdh-readable-subtext mb-0">Manage publications and assign user access roles without using Django Admin.</p>
+    <h1 class="mb-1">{% if perms.mdh_publications.manage_publication_roles %}Administrator{% else %}Editor{% endif %} Dashboard</h1>
+    <p class="mdh-readable-subtext mb-0">Review and publish submissions, and curate facets and tags.{% if perms.mdh_publications.manage_publication_roles %} Assign user access roles without using Django Admin.{% endif %}</p>
 </section>
 
 <div class="row mb-4">
@@ -23,7 +23,9 @@
             <div class="card-body d-flex flex-column justify-content-center">
                 <a href="{% url 'mdh_publications:publication_create' %}" class="btn btn-primary mb-2">Add Publication</a>
                 <a href="{% url 'mdh_publications:taxonomy_manage' %}" class="btn btn-primary mb-2">Manage Taxonomy</a>
+                {% if perms.mdh_publications.manage_publication_roles %}
                 <a href="{% url 'mdh_publications:landing_image_create' %}" class="btn btn-primary mb-2">Add Landing Image</a>
+                {% endif %}
                 <a href="{% url 'mdh_publications:publication_list' %}" class="btn btn-outline-primary mdh-strong-outline-btn">Open Library</a>
             </div>
         </div>
@@ -98,6 +100,8 @@
     </div>
 </div>
 
+{% if perms.mdh_publications.manage_publication_roles %}
+{# Administrator-only: the underlying views require manage_publication_roles, so editors would only hit a 403. #}
 <div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
         <span>
@@ -240,4 +244,5 @@
         </div>
     </div>
 </div>
+{% endif %}
 {% endblock %}

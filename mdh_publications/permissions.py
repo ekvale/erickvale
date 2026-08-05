@@ -3,7 +3,14 @@ from django.contrib.auth.models import Group, Permission
 
 
 EMPLOYEE_GROUP_NAME = "MDH Publications Employees"
+EDITOR_GROUP_NAME = "MDH Publications Editors"
 ADMINISTRATOR_GROUP_NAME = "MDH Publications Administrators"
+
+# Editors do the editorial work -- approve submissions, curate the taxonomy --
+# without inheriting manage_publication_roles, which grants control over every
+# site user's access. Keeping that one permission with administrators is the
+# whole point of having a middle role.
+ROLE_MANAGEMENT_PERMISSION = "manage_publication_roles"
 
 
 def publications_only_group_name():
@@ -18,6 +25,7 @@ def publications_only_group_name():
 
 def bootstrap_publication_groups():
     employee_group, _ = Group.objects.get_or_create(name=EMPLOYEE_GROUP_NAME)
+    editor_group, _ = Group.objects.get_or_create(name=EDITOR_GROUP_NAME)
     administrator_group, _ = Group.objects.get_or_create(name=ADMINISTRATOR_GROUP_NAME)
     Group.objects.get_or_create(name=publications_only_group_name())
 
@@ -37,7 +45,13 @@ def bootstrap_publication_groups():
         content_type__app_label="mdh_publications"
     )
 
+    # Everything an administrator has, minus control over user roles.
+    editor_permissions = administrator_permissions.exclude(
+        codename=ROLE_MANAGEMENT_PERMISSION
+    )
+
     employee_group.permissions.set(employee_permissions)
+    editor_group.permissions.set(editor_permissions)
     administrator_group.permissions.set(administrator_permissions)
 
     return employee_group, administrator_group
