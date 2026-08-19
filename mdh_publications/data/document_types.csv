@@ -1,16 +1,12 @@
-document_type
-Report
-Data Brief
-Fact Sheet
-Surveillance Summary
-Dashboard
-Infographic
-Statistical Table
-Program Evaluation
-Legislative Report
-Guidance Document
-Toolkit
-Annual Report
-White Paper
-Presentation
-Newsletter
+document_type,scope_note
+Data Brief,Compact statistical product: figures and tables with limited narrative. Use for short CHS briefs and similar chart-forward products.
+Dictionary or Glossary,Work consisting of definitions of terms in a subject field.
+Fact Sheet,"Short, single-topic briefing for the public or professionals (NLM Fact Sheets)."
+Guidance Document,"Statements, directions, or principles presenting recommended practice or policy. Corresponds to NLM Guideline, not statute itself."
+Infographic,Visual one-pager or pictorial work whose primary content is graphic.
+Journal Article,"Article published in a journal, including peer-reviewed literature."
+Legislation or Policy,"Statute, adopted rule, or official policy text, including reports whose primary purpose is legislative or policy (NLM Legislation)."
+Map,Cartographic work as the primary content (NLM Maps).
+Press Release,News announcement issued for media or public distribution.
+Program Evaluation,"Assessment of program implementation, reach, or impact."
+Report,Substantial narrative with findings or recommendations (NLM Report / Technical Report). Default when no more specific type fits.

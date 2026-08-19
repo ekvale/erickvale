@@ -30,7 +30,7 @@ class TagAdmin(admin.ModelAdmin):
 class DocumentTypeAdmin(admin.ModelAdmin):
     list_display = ("name", "is_active")
     list_filter = ("is_active",)
-    search_fields = ("name", "slug")
+    search_fields = ("name", "slug", "scope_note")
     prepopulated_fields = {"slug": ("name",)}
 
 
@@ -46,7 +46,7 @@ class LandingImageAdmin(admin.ModelAdmin):
 class PublicationAdmin(admin.ModelAdmin):
     list_display = ("title", "document_type", "status", "publication_date", "is_featured")
     list_filter = ("status", "document_type", "is_featured", "facets", "tags__facet")
-    search_fields = ("title", "summary", "abstract", "slug")
+    search_fields = ("title", "description", "slug")
     filter_horizontal = ("facets", "tags")
     prepopulated_fields = {"slug": ("title",)}
     autocomplete_fields = ("document_type", "created_by", "updated_by")

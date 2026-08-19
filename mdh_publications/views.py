@@ -124,14 +124,14 @@ class PublicationListView(ListView):
         facet_code = self.request.GET.get("facet", "").strip()
         tag_slugs = self.request.GET.getlist("tag")
         document_type_id = self.request.GET.get("document_type", "").strip()
+        language = self.request.GET.get("language", "").strip()
         pub_date_from = self.request.GET.get("pub_date_from", "").strip()
         pub_date_to = self.request.GET.get("pub_date_to", "").strip()
 
         if query:
             queryset = queryset.filter(
                 Q(title__icontains=query)
-                | Q(summary__icontains=query)
-                | Q(abstract__icontains=query)
+                | Q(description__icontains=query)
                 | Q(tags__name__icontains=query)
                 | Q(pdf_text__icontains=query)
             )
@@ -144,6 +144,9 @@ class PublicationListView(ListView):
 
         if document_type_id:
             queryset = queryset.filter(document_type_id=document_type_id)
+
+        if language:
+            queryset = queryset.filter(language=language)
 
         if pub_date_from:
             queryset = queryset.filter(publication_date__gte=pub_date_from)
@@ -168,10 +171,12 @@ class PublicationListView(ListView):
         context["selected_facet"] = self.request.GET.get("facet", "")
         context["selected_tags"] = self.request.GET.getlist("tag")
         context["selected_document_type"] = self.request.GET.get("document_type", "")
+        context["selected_language"] = self.request.GET.get("language", "")
         context["selected_pub_date_from"] = self.request.GET.get("pub_date_from", "")
         context["selected_pub_date_to"] = self.request.GET.get("pub_date_to", "")
         context["query"] = self.request.GET.get("q", "")
         context["document_types"] = DocumentType.objects.filter(is_active=True)
+        context["community_languages"] = Publication._meta.get_field("language").choices
         return context
 
 

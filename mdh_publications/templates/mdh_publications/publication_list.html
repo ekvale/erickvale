@@ -27,11 +27,11 @@
 
 <form id="publication-filter-form" method="get" class="card card-body mb-4">
     <div class="form-row">
-        <div class="form-group col-md-3">
+        <div class="form-group col-md-8">
             <label for="id_q">Search</label>
-            <input type="text" id="id_q" name="q" value="{{ query }}" class="form-control" placeholder="Search titles, summaries, abstracts, tags, or PDF content">
+            <input type="text" id="id_q" name="q" value="{{ query }}" class="form-control" placeholder="Search titles, descriptions, tags, or PDF content">
         </div>
-        <div class="form-group col-md-2">
+        <div class="form-group col-md-4">
             <label for="id_facet">Facet</label>
             <select id="id_facet" name="facet" class="form-control js-auto-submit-filter">
                 <option value="">All</option>
@@ -40,17 +40,9 @@
                 {% endfor %}
             </select>
         </div>
-        <div class="form-group col-md-2">
-            <label for="id_tag">Tags <small class="text-muted">(hold Ctrl/Cmd for multiple)</small></label>
-            <select id="id_tag" name="tag" multiple size="6" class="form-control">
-                {% for tag in filter_tags %}
-                <option value="{{ tag.slug }}" {% if tag.slug in selected_tags %}selected{% endif %}>
-                    {{ tag.facet.code }} - {{ tag.name }}
-                </option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="form-group col-md-1">
+    </div>
+    <div class="form-row">
+        <div class="form-group col-md-3">
             <label for="id_document_type">Type</label>
             <select id="id_document_type" name="document_type" class="form-control js-auto-submit-filter">
                 <option value="">All</option>
@@ -59,8 +51,15 @@
                 {% endfor %}
             </select>
         </div>
-    </div>
-    <div class="form-row">
+        <div class="form-group col-md-3">
+            <label for="id_language">Publication language</label>
+            <select id="id_language" name="language" class="form-control js-auto-submit-filter">
+                <option value="">All</option>
+                {% for code, label in community_languages %}
+                <option value="{{ code }}" {% if selected_language == code %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
         <div class="form-group col-md-3">
             <label for="id_pub_date_from">Publication Date From</label>
             <input type="date" id="id_pub_date_from" name="pub_date_from" value="{{ selected_pub_date_from }}" class="form-control js-auto-submit-filter">
@@ -70,21 +69,36 @@
             <input type="date" id="id_pub_date_to" name="pub_date_to" value="{{ selected_pub_date_to }}" class="form-control js-auto-submit-filter">
         </div>
     </div>
+    <div class="form-group mb-2">
+        <label>Tags</label>
+        <p class="small text-muted mb-2">Click a tag to select it; click again to remove it. Matching publications have any of the selected tags.</p>
+        <div class="pub-tag-picker">
+            {% for tag in filter_tags %}
+            <label class="pub-tag-chip{% if tag.slug in selected_tags %} is-selected{% endif %}">
+                <input type="checkbox" name="tag" value="{{ tag.slug }}" {% if tag.slug in selected_tags %}checked{% endif %}>
+                <span>{{ tag.name }}</span>
+            </label>
+            {% empty %}
+            <span class="text-muted small">No tags in this facet.</span>
+            {% endfor %}
+        </div>
+    </div>
     <div class="d-flex justify-content-between align-items-center">
-        <small class="text-muted">Showing {{ publications|length }} result(s){% if query or selected_facet or selected_tags or selected_document_type or selected_pub_date_from or selected_pub_date_to %} with active filters{% endif %}.</small>
+        <small class="text-muted">Showing {{ publications|length }} result(s){% if query or selected_facet or selected_tags or selected_document_type or selected_language or selected_pub_date_from or selected_pub_date_to %} with active filters{% endif %}.</small>
         <div>
             <button type="submit" class="btn btn-sm btn-primary mr-2">Apply Filters</button>
             <a href="{% url 'mdh_publications:publication_list' %}" class="btn btn-sm btn-link">Clear filters</a>
         </div>
     </div>
 
-    {% if query or selected_facet or selected_tags or selected_document_type or selected_status or selected_pub_date_from or selected_pub_date_to %}
+    {% if query or selected_facet or selected_tags or selected_document_type or selected_language or selected_status or selected_pub_date_from or selected_pub_date_to %}
     <div class="mt-2">
         <span class="badge badge-light border mr-1">Active filters</span>
         {% if query %}<span class="badge badge-secondary mr-1">Search: {{ query }}</span>{% endif %}
         {% if selected_facet %}<span class="badge badge-secondary mr-1">Facet: {{ selected_facet }}</span>{% endif %}
         {% for slug in selected_tags %}<span class="badge badge-secondary mr-1">Tag: {{ slug }}</span>{% endfor %}
         {% if selected_document_type %}<span class="badge badge-secondary mr-1">Type selected</span>{% endif %}
+        {% if selected_language %}<span class="badge badge-secondary mr-1">Language: {{ selected_language }}</span>{% endif %}
         {% if selected_pub_date_from or selected_pub_date_to %}<span class="badge badge-secondary mr-1">Date: {{ selected_pub_date_from|default:"any" }} to {{ selected_pub_date_to|default:"any" }}</span>{% endif %}
     </div>
     {% endif %}
@@ -135,8 +149,8 @@
                     <span class="badge badge-info">Featured</span>
                     {% endif %}
                 </div>
-                {% if publication.summary %}
-                <p class="mb-2">{{ publication.summary }}</p>
+                {% if publication.description %}
+                <p class="mb-2">{{ publication.description|truncatewords:40 }}</p>
                 {% endif %}
                 <div>
                     {% for tag in publication.tags.all|slice:":8" %}
@@ -169,15 +183,21 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function toggleSidebarTag(slug) {
-    var select = document.getElementById('id_tag');
-    if (!select) return;
-    for (var i = 0; i < select.options.length; i++) {
-        if (select.options[i].value === slug) {
-            select.options[i].selected = !select.options[i].selected;
-            break;
-        }
+    var form = document.getElementById('publication-filter-form');
+    if (!form) return;
+    var existing = form.querySelector('input[name="tag"][value="' + slug + '"]');
+    if (existing) {
+        existing.checked = !existing.checked;
+    } else {
+        var input = document.createElement('input');
+        input.type = 'checkbox';
+        input.name = 'tag';
+        input.value = slug;
+        input.checked = true;
+        input.className = 'd-none';
+        form.appendChild(input);
     }
-    document.getElementById('publication-filter-form').submit();
+    form.submit();
 }
 </script>
 {% endblock %}

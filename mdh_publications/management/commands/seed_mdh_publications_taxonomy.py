@@ -7,7 +7,12 @@ from pathlib import Path
 from django.core.management.base import BaseCommand, CommandError
 from django.template.defaultfilters import slugify
 
-from mdh_publications.models import DocumentType, Facet, Tag, TopicGroup
+from mdh_publications.data.build_taxonomy import (
+    DOCUMENT_TYPE_REMAP,
+    OBSOLETE_TAG_REASSIGN,
+    TAG_SLUG_RENAMES,
+)
+from mdh_publications.models import DocumentType, Facet, Publication, Tag, TopicGroup
 
 
 def humanize_slug(value):
@@ -60,10 +65,13 @@ class Command(BaseCommand):
 
         required_files = [facets_path, tags_by_facet_path, tags_path, document_types_path]
         if all(path.exists() for path in required_files):
+            self._rename_legacy_tag_slugs()
             facets = self._import_facets(facets_path)
             topic_groups = self._import_topic_groups(tags_by_facet_path)
             tags = self._import_tags(tags_path)
             document_types = self._import_document_types(document_types_path)
+            self._reassign_obsolete_tags()
+            self._remap_document_types()
         elif markdown_path.exists():
             facets, topic_groups, tags, document_types = self._import_from_markdown(markdown_path)
         else:
@@ -122,6 +130,39 @@ class Command(BaseCommand):
 
         return count
 
+    def _rename_legacy_tag_slugs(self):
+        for old_slug, new_slug in TAG_SLUG_RENAMES.items():
+            old_tag = Tag.objects.filter(slug=old_slug).first()
+            if old_tag is None:
+                continue
+            if Tag.objects.filter(slug=new_slug).exclude(pk=old_tag.pk).exists():
+                new_tag = Tag.objects.get(slug=new_slug)
+                new_tag.publications.add(*old_tag.publications.all())
+                old_tag.delete()
+            else:
+                old_tag.slug = new_slug
+                old_tag.save(update_fields=["slug"])
+
+    def _reassign_obsolete_tags(self):
+        for old_slug, new_slug in OBSOLETE_TAG_REASSIGN.items():
+            old_tag = Tag.objects.filter(slug=old_slug).first()
+            if old_tag is None:
+                continue
+            new_tag = Tag.objects.filter(slug=new_slug).first()
+            if new_tag is not None:
+                new_tag.publications.add(*old_tag.publications.all())
+            old_tag.delete()
+
+    def _remap_document_types(self):
+        for old_name, new_name in DOCUMENT_TYPE_REMAP.items():
+            old_type = DocumentType.objects.filter(name=old_name).first()
+            new_type = DocumentType.objects.filter(name=new_name).first()
+            if old_type is None or new_type is None or old_type.pk == new_type.pk:
+                continue
+            Publication.objects.filter(document_type=old_type).update(document_type=new_type)
+            old_type.is_active = False
+            old_type.save(update_fields=["is_active"])
+
     def _import_tags(self, path):
         count = 0
         with path.open(newline="", encoding="utf-8-sig") as csv_file:
@@ -137,12 +178,14 @@ class Command(BaseCommand):
                     },
                 )
 
+                slug = slugify(row["tag"].strip())
+                display_name = (row.get("name") or "").strip() or humanize_slug(row["tag"].strip())
                 Tag.objects.update_or_create(
-                    slug=slugify(row["tag"].strip()),
+                    slug=slug,
                     defaults={
                         "facet": facet,
                         "topic_group": topic_group,
-                        "name": humanize_slug(row["tag"].strip()),
+                        "name": display_name,
                         "description": row.get("description", "").strip(),
                         "examples": self._parse_examples(row.get("examples", "[]")),
                     },
@@ -153,16 +196,23 @@ class Command(BaseCommand):
 
     def _import_document_types(self, path):
         count = 0
+        imported_names = []
         with path.open(newline="", encoding="utf-8-sig") as csv_file:
             reader = csv.DictReader(csv_file)
             for row in reader:
                 name = row["document_type"].strip()
+                imported_names.append(name)
                 DocumentType.objects.update_or_create(
                     slug=slugify(name),
-                    defaults={"name": name, "is_active": True},
+                    defaults={
+                        "name": name,
+                        "scope_note": (row.get("scope_note") or "").strip(),
+                        "is_active": True,
+                    },
                 )
                 count += 1
 
+        DocumentType.objects.exclude(name__in=imported_names).update(is_active=False)
         return count
 
     def _parse_examples(self, raw_examples):

@@ -512,8 +512,8 @@ body.mdh-app .pub-hero-ctas a:focus {
               {% if pub.document_type %}{{ pub.document_type.name }}{% endif %}
               {% if pub.publication_date %} &middot; {{ pub.publication_date|date:"M Y" }}{% endif %}
             </div>
-            {% if pub.summary %}
-            <p style="font-size:0.84rem; color:#495057; margin-bottom:0.6rem;">{{ pub.summary|truncatewords:22 }}</p>
+            {% if pub.description %}
+            <p style="font-size:0.84rem; color:#495057; margin-bottom:0.6rem;">{{ pub.description|truncatewords:22 }}</p>
             {% endif %}
             <div>
               {% for tag in pub.tags.all|slice:":4" %}

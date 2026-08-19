@@ -1,8 +1,22 @@
 import itertools
 
 from django.contrib.auth.models import User
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.template.defaultfilters import slugify
+
+# Minnesota's most commonly supported community languages for MDH materials.
+COMMUNITY_LANGUAGES = [
+    ("en", "English"),
+    ("es", "Spanish"),
+    ("hmn", "Hmong"),
+    ("so", "Somali"),
+    ("ksw", "Karen"),
+    ("vi", "Vietnamese"),
+]
+
+ACCEPTED_UPLOAD_EXTENSIONS = ["pdf", "docx", "xlsx", "csv", "pptx", "png", "jpg", "jpeg"]
+DESCRIPTION_MIN_LENGTH = 150
 
 
 class Facet(models.Model):
@@ -50,6 +64,10 @@ class Tag(models.Model):
 class DocumentType(models.Model):
     name = models.CharField(max_length=255, unique=True)
     slug = models.SlugField(max_length=255, unique=True)
+    scope_note = models.TextField(
+        blank=True,
+        help_text="Short controlled-vocabulary note describing when to use this type.",
+    )
     is_active = models.BooleanField(default=True)
 
     class Meta:
@@ -68,8 +86,10 @@ class Publication(models.Model):
 
     title = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, unique=True, blank=True)
-    summary = models.TextField(blank=True)
-    abstract = models.TextField(blank=True)
+    description = models.TextField(
+        blank=True,
+        help_text="Dublin Core description of the publication (minimum 150 characters on the upload form).",
+    )
     document_type = models.ForeignKey(
         DocumentType,
         on_delete=models.SET_NULL,
@@ -78,11 +98,33 @@ class Publication(models.Model):
         related_name="publications",
     )
     publication_date = models.DateField(null=True, blank=True)
-    source_url = models.URLField(blank=True)
-    file_upload = models.FileField(upload_to="mdh_publications/", blank=True, null=True)
+    language = models.CharField(
+        max_length=8,
+        choices=COMMUNITY_LANGUAGES,
+        default="en",
+        help_text="Language of this document, not the community it is about.",
+    )
+    is_translated = models.BooleanField(
+        default=False,
+        help_text="Check if this file is a translation of another publication.",
+    )
+    source_url = models.URLField(
+        blank=True,
+        help_text="Canonical public page for this publication (for example on health.mn.gov).",
+    )
+    file_upload = models.FileField(
+        upload_to="mdh_publications/",
+        blank=True,
+        null=True,
+        validators=[FileExtensionValidator(allowed_extensions=ACCEPTED_UPLOAD_EXTENSIONS)],
+        help_text="Upload the document file. Accepted types: PDF, DOCX, XLSX, CSV, PPTX, PNG, JPG.",
+    )
     pdf_text = models.TextField(blank=True, default="")
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT)
-    is_featured = models.BooleanField(default=False)
+    is_featured = models.BooleanField(
+        default=False,
+        help_text="Only library stewards should feature publications on the landing page.",
+    )
     facets = models.ManyToManyField(Facet, related_name="publications", blank=True)
     tags = models.ManyToManyField(Tag, related_name="publications", blank=True)
     created_by = models.ForeignKey(

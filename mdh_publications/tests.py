@@ -172,6 +172,23 @@ class PublicationFilterTests(TestCase):
         self.assertContains(response, self.publication_b.title)
         self.assertNotContains(response, self.publication_a.title)
 
+    def test_filter_by_language(self):
+        self.publication_a.language = "hmn"
+        self.publication_a.is_translated = True
+        self.publication_a.save()
+        self.client.force_login(self.user)
+        response = self.client.get(
+            reverse("mdh_publications:publication_list"), {"language": "hmn"}
+        )
+        self.assertContains(response, self.publication_a.title)
+        self.assertNotContains(response, self.publication_b.title)
+
+    def test_search_form_uses_tag_checkboxes(self):
+        response = self.client.get(reverse("mdh_publications:publication_list"))
+        self.assertContains(response, 'type="checkbox"')
+        self.assertContains(response, "Click a tag to select")
+        self.assertNotContains(response, "hold Ctrl/Cmd")
+
 
 class PublicationAccessTests(TestCase):
     def setUp(self):
@@ -368,9 +385,22 @@ class ShippedTaxonomyTests(TestCase):
         call_command("seed_mdh_publications_taxonomy", stdout=StringIO())
 
         self.assertEqual(Facet.objects.count(), 5)
-        self.assertEqual(TopicGroup.objects.count(), 23)
-        self.assertEqual(Tag.objects.count(), 127)
-        self.assertEqual(DocumentType.objects.count(), 15)
+        self.assertEqual(TopicGroup.objects.count(), 24)
+        self.assertEqual(Tag.objects.count(), 128)
+        self.assertEqual(DocumentType.objects.filter(is_active=True).count(), 11)
+        self.assertEqual(DocumentType.objects.count(), 11)
+
+        self.assertEqual(Tag.objects.get(slug="covid-19").name, "COVID-19")
+        self.assertEqual(Tag.objects.get(slug="hiv-aids").name, "HIV/AIDS")
+        self.assertEqual(
+            Tag.objects.get(slug="black-populations").name,
+            "Black and African Populations",
+        )
+        self.assertTrue(Tag.objects.filter(slug="mena").exists())
+        self.assertTrue(Tag.objects.filter(slug="healthcare-provider").exists())
+        self.assertTrue(Tag.objects.filter(slug="barriers-to-care").exists())
+        self.assertFalse(Tag.objects.filter(slug="readmissions").exists())
+        self.assertFalse(Tag.objects.filter(slug="income-poverty").exists())
 
         # Every tag must be wired to both a facet and a topic group, or the
         # taxonomy browser and the search facet filter render gaps.
@@ -388,9 +418,9 @@ class ShippedTaxonomyTests(TestCase):
         call_command("seed_mdh_publications_taxonomy", stdout=StringIO())
 
         self.assertEqual(Facet.objects.count(), 5)
-        self.assertEqual(TopicGroup.objects.count(), 23)
-        self.assertEqual(Tag.objects.count(), 127)
-        self.assertEqual(DocumentType.objects.count(), 15)
+        self.assertEqual(TopicGroup.objects.count(), 24)
+        self.assertEqual(Tag.objects.count(), 128)
+        self.assertEqual(DocumentType.objects.filter(is_active=True).count(), 11)
 
     def test_taxonomy_browser_renders_the_shipped_taxonomy(self):
         call_command("seed_mdh_publications_taxonomy", stdout=StringIO())
@@ -528,8 +558,8 @@ class DemoContentTests(TestCase):
         )
         for publication in Publication.objects.all():
             self.assertTrue(publication.tags.exists(), publication.title)
-            self.assertTrue(publication.summary, publication.title)
-            self.assertTrue(publication.abstract, publication.title)
+            self.assertTrue(publication.description, publication.title)
+            self.assertGreaterEqual(len(publication.description), 150, publication.title)
             # facets are derived from tags, so they must agree
             self.assertEqual(
                 set(publication.facets.values_list("id", flat=True)),
@@ -574,6 +604,13 @@ class PublicationApprovalTests(TestCase):
         self.employee.groups.add(employee_group)
         self.admin = User.objects.create_user("adm", "adm@example.com", "pw-3344")
         self.admin.groups.add(admin_group)
+
+        self.facet = Facet.objects.create(code="A", name="Demographics", sort_order=1)
+        self.group = TopicGroup.objects.create(facet=self.facet, slug="age-groups", name="Age Groups")
+        self.tag = Tag.objects.create(
+            facet=self.facet, topic_group=self.group, slug="adults", name="Adults"
+        )
+        self.doc_type = DocumentType.objects.create(name="Report", slug="report")
 
         self.publication = Publication.objects.create(
             title="Draft Awaiting Review",
@@ -646,8 +683,12 @@ class PublicationApprovalTests(TestCase):
             data={
                 "title": "Sneaky Self Publish",
                 "status": Publication.Status.PUBLISHED,
-                "summary": "",
-                "abstract": "",
+                "description": "A" * 150,
+                "language": "en",
+                "source_url": "https://www.health.state.mn.us/example",
+                "publication_date": "2024-01-15",
+                "document_type": self.doc_type.pk,
+                "tags": [self.tag.pk],
             },
             user=self.employee,
         )
@@ -666,12 +707,20 @@ class PublicationApprovalTests(TestCase):
             data={
                 "title": "Admin Published",
                 "status": Publication.Status.PUBLISHED,
-                "summary": "",
-                "abstract": "",
+                "description": "A" * 150,
+                "language": "en",
+                "source_url": "https://www.health.state.mn.us/example",
+                "publication_date": "2024-01-15",
+                "document_type": self.doc_type.pk,
+                "tags": [self.tag.pk],
             },
             user=self.admin,
         )
         self.assertTrue(form.is_valid(), form.errors)
+        self.assertIn("is_featured", form.fields)
+
+        employee_form = PublicationForm(user=self.employee)
+        self.assertNotIn("is_featured", employee_form.fields)
 
 
 class EditorRoleTests(TestCase):

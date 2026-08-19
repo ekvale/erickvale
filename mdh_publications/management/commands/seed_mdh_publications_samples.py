@@ -73,16 +73,18 @@ class Command(BaseCommand):
             publication, was_created = Publication.objects.update_or_create(
                 title=title,
                 defaults={
-                    "summary": f"Sample summary for {title}.",
-                    "abstract": (
-                        f"This is sample content for {title}. "
-                        "It is generated to populate development data for filtering and search."
+                    "description": (
+                        f"Sample description for {title}. "
+                        "This placeholder text is generated to populate development "
+                        "data for filtering and search. It is long enough to meet the "
+                        "library's Dublin Core description minimum of 150 characters."
                     ),
                     "document_type": random.choice(document_types),
                     "publication_date": publication_date,
                     "status": status,
                     "is_featured": random.choice([True, False]),
-                    "source_url": "",
+                    "language": "en",
+                    "source_url": "https://www.health.state.mn.us/",
                     "created_by": default_user,
                     "updated_by": default_user,
                 },

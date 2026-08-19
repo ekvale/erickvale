@@ -8,15 +8,42 @@
         <div class="card">
             <div class="card-header">{% if form.instance.pk %}Edit Publication{% else %}Add Publication{% endif %}</div>
             <div class="card-body">
+                <div class="alert alert-secondary">
+                    <p class="mb-2"><strong>How to catalog a publication</strong></p>
+                    <ul class="mb-2 pl-3">
+                        <li><strong>Required:</strong> title, description (150+ characters), document type, publication date, language, at least one topic tag, and either a source URL or a file (or both).</li>
+                        <li><strong>Recommended:</strong> translated-document checkbox when the file is a translation; additional tags for population, geography, and program.</li>
+                        <li><strong>Topic vs language:</strong> tag what the document is <em>about</em>. Set <em>Publication language</em> for the language of the file. A TB fact sheet translated into Hmong is tagged Tuberculosis, language Hmong — not a Hmong ethnicity tag unless the content is about that community.</li>
+                        <li><strong>Source URL vs file:</strong> the URL is the canonical public page (for example on health.mn.gov). The file is the document people download from this library. Provide whichever you have; both is fine when MDH hosts a copy of an external page.</li>
+                        <li><strong>File naming (NNLM):</strong> no spaces or special characters; prefer <code>YYYY-MM-DD_short-title_language_v1.pdf</code>. See <a href="https://www.nnlm.gov/" target="_blank" rel="noopener noreferrer">NNLM</a> file naming conventions.</li>
+                        <li>Prefer MDH glossary wording for tags: <a href="https://forms.web.health.state.mn.us/glossary" target="_blank" rel="noopener noreferrer">MDH public health glossary</a>.</li>
+                    </ul>
+                    {% if not perms.mdh_publications.publish_publication %}
+                    <p class="mb-0 small">Status and featuring: save as Draft or In Review. A library steward publishes and decides whether an item is featured.</p>
+                    {% endif %}
+                </div>
+
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     {{ form.non_field_errors }}
+
                     {% for field in form %}
-                    <div class="form-group">
-                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    <div class="form-group{% if field.field.widget.input_type == 'checkbox' %} form-check{% endif %}">
+                        {% if field.field.widget.input_type == 'checkbox' %}
                         {{ field }}
+                        <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {% else %}
+                        <label for="{{ field.id_for_label }}">
+                            {{ field.label }}
+                            {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                        </label>
+                        {{ field }}
+                        {% endif %}
                         {% if field.help_text %}
                         <small class="form-text text-muted">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% if field.name == 'description' %}
+                        <small class="form-text text-muted" id="description-count"></small>
                         {% endif %}
                         {% for error in field.errors %}
                         <div class="text-danger small">{{ error }}</div>
@@ -30,4 +57,18 @@
         </div>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var field = document.getElementById('id_description');
+    var counter = document.getElementById('description-count');
+    if (!field || !counter) return;
+    var min = parseInt(field.getAttribute('data-min-length') || '150', 10);
+    function update() {
+        var n = (field.value || '').trim().length;
+        counter.textContent = n + ' / ' + min + ' characters';
+    }
+    field.addEventListener('input', update);
+    update();
+});
+</script>
 {% endblock %}

@@ -24,17 +24,10 @@
 
 <div class="row">
     <div class="col-lg-8">
-        {% if publication.summary %}
+        {% if publication.description %}
         <div class="card mb-3">
-            <div class="card-header">Summary</div>
-            <div class="card-body">{{ publication.summary }}</div>
-        </div>
-        {% endif %}
-
-        {% if publication.abstract %}
-        <div class="card mb-3">
-            <div class="card-header">Abstract</div>
-            <div class="card-body">{{ publication.abstract|linebreaks }}</div>
+            <div class="card-header">Description</div>
+            <div class="card-body">{{ publication.description|linebreaks }}</div>
         </div>
         {% endif %}
     </div>
@@ -45,6 +38,8 @@
             <div class="card-body">
                 <p><strong>Status:</strong> {{ publication.get_status_display }}</p>
                 <p><strong>Document Type:</strong> {{ publication.document_type|default:"Not set" }}</p>
+                <p><strong>Language:</strong> {{ publication.get_language_display }}</p>
+                <p><strong>Translated document:</strong> {{ publication.is_translated|yesno:"Yes,No" }}</p>
                 <p><strong>Featured:</strong> {{ publication.is_featured|yesno:"Yes,No" }}</p>
                 <p><strong>Created By:</strong> {{ publication.created_by|default:"Unknown" }}</p>
                 <p>
