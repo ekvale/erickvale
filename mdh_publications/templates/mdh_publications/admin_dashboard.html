@@ -23,6 +23,8 @@
             <div class="card-body d-flex flex-column justify-content-center">
                 <a href="{% url 'mdh_publications:publication_create' %}" class="btn btn-primary mb-2">Add Publication</a>
                 <a href="{% url 'mdh_publications:taxonomy_manage' %}" class="btn btn-primary mb-2">Manage Taxonomy</a>
+                <a href="{% url 'mdh_publications:taxonomy_export' %}?format=csv" class="btn btn-outline-primary mdh-strong-outline-btn mb-2">Export facets &amp; tags (CSV)</a>
+                <a href="{% url 'mdh_publications:taxonomy_export' %}?format=xlsx" class="btn btn-outline-primary mdh-strong-outline-btn mb-2">Export facets &amp; tags (Excel)</a>
                 {% if perms.mdh_publications.manage_publication_roles %}
                 <a href="{% url 'mdh_publications:landing_image_create' %}" class="btn btn-primary mb-2">Add Landing Image</a>
                 {% endif %}

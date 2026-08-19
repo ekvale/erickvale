@@ -233,6 +233,52 @@ class PublicationAccessTests(TestCase):
         self.assertEqual(edit_response.status_code, 200)
         self.assertEqual(delete_response.status_code, 200)
 
+    def test_anonymous_user_cannot_export_taxonomy(self):
+        response = self.client.get(reverse("mdh_publications:taxonomy_export"))
+        self.assertEqual(response.status_code, 403)
+
+    def test_employee_can_export_taxonomy_csv_zip(self):
+        import zipfile
+        from io import BytesIO
+
+        self.client.force_login(self.employee)
+        response = self.client.get(
+            reverse("mdh_publications:taxonomy_export"), {"format": "csv"}
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/zip")
+        with zipfile.ZipFile(BytesIO(response.content)) as archive:
+            names = archive.namelist()
+            self.assertTrue(any(name.startswith("mdh-facets-") for name in names))
+            self.assertTrue(any(name.startswith("mdh-tags-") for name in names))
+            tags_csv = archive.read(next(n for n in names if n.startswith("mdh-tags-"))).decode("utf-8-sig")
+        self.assertIn("Adults", tags_csv)
+        self.assertIn("facet_code", tags_csv)
+
+    def test_administrator_can_export_taxonomy_excel(self):
+        import zipfile
+        from io import BytesIO
+
+        self.client.force_login(self.admin_user)
+        response = self.client.get(
+            reverse("mdh_publications:taxonomy_export"), {"format": "xlsx"}
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("spreadsheetml.sheet", response["Content-Type"])
+        self.assertTrue(response.content.startswith(b"PK"))
+        with zipfile.ZipFile(BytesIO(response.content)) as archive:
+            workbook = archive.read("xl/workbook.xml").decode("utf-8")
+            tags_sheet = archive.read("xl/worksheets/sheet2.xml").decode("utf-8")
+        self.assertIn('name="Facets"', workbook)
+        self.assertIn('name="Tags"', workbook)
+        self.assertIn("Adults", tags_sheet)
+
+    def test_plain_user_cannot_export_taxonomy(self):
+        plain = User.objects.create_user("plain_export", "plain@example.com", "pw-5512")
+        self.client.force_login(plain)
+        response = self.client.get(reverse("mdh_publications:taxonomy_export"))
+        self.assertEqual(response.status_code, 403)
+
     def test_dashboard_router_redirects_by_role(self):
         self.client.force_login(self.employee)
         employee_redirect = self.client.get(reverse("mdh_publications:publication_dashboard"))
@@ -802,6 +848,10 @@ class EditorRoleTests(TestCase):
         self.assertEqual(
             self.client.get(reverse("mdh_publications:tag_create")).status_code, 200
         )
+        export = self.client.get(
+            reverse("mdh_publications:taxonomy_export"), {"format": "xlsx"}
+        )
+        self.assertEqual(export.status_code, 200)
 
     def test_plain_employee_still_cannot_approve_or_edit_taxonomy(self):
         call_command(

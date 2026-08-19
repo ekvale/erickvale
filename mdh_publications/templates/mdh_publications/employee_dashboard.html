@@ -34,7 +34,9 @@
                 {% else %}
                 <button type="button" class="btn btn-secondary mb-2" disabled>Add Publication (Role Required)</button>
                 {% endif %}
-                <a href="{% url 'mdh_publications:publication_taxonomy' %}" class="btn btn-outline-primary mdh-strong-outline-btn">Facet and Tag Reference</a>
+                <a href="{% url 'mdh_publications:publication_taxonomy' %}" class="btn btn-outline-primary mdh-strong-outline-btn mb-2">Facet and Tag Reference</a>
+                <a href="{% url 'mdh_publications:taxonomy_export' %}?format=csv" class="btn btn-outline-primary mdh-strong-outline-btn mb-2">Export facets &amp; tags (CSV)</a>
+                <a href="{% url 'mdh_publications:taxonomy_export' %}?format=xlsx" class="btn btn-outline-primary mdh-strong-outline-btn">Export facets &amp; tags (Excel)</a>
             </div>
         </div>
     </div>

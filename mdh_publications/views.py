@@ -1,13 +1,15 @@
 from django.contrib import messages
 from django.contrib.auth.models import User
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
+from django.http import Http404
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, FormView, ListView, TemplateView, UpdateView
 
+from .exports import csv_file_response, csv_zip_response, facet_rows, tag_rows, xlsx_response
 from .forms import AccessRequestForm, FacetForm, PublicationForm, TagForm, TopicGroupForm
 from .models import AccessRequest, DocumentType, Facet, LandingImage, Publication, Tag, TopicGroup
 from .permissions import ADMINISTRATOR_GROUP_NAME, EMPLOYEE_GROUP_NAME
@@ -449,6 +451,35 @@ class AdminDashboardView(LoginRequiredMixin, PermissionRequiredMixin, TemplateVi
 class TaxonomyAdminMixin(LoginRequiredMixin, PermissionRequiredMixin):
     permission_required = "mdh_publications.manage_publication_taxonomy"
     raise_exception = True
+
+
+class StaffTaxonomyExportMixin(LoginRequiredMixin, UserPassesTestMixin):
+    """Employees, editors, and administrators can download the live vocabulary."""
+
+    raise_exception = True
+
+    def test_func(self):
+        user = self.request.user
+        return user.has_perm("mdh_publications.add_publication") or user.has_perm(
+            "mdh_publications.manage_publication_taxonomy"
+        )
+
+
+class TaxonomyExportView(StaffTaxonomyExportMixin, View):
+    """Download facets and tags as CSV (zip of two files) or a two-sheet Excel workbook."""
+
+    def get(self, request, *args, **kwargs):
+        fmt = (request.GET.get("format") or kwargs.get("fmt") or "csv").lower()
+        sheet = (request.GET.get("sheet") or "").lower()
+        if fmt in {"xlsx", "excel", "xls"}:
+            return xlsx_response()
+        if fmt == "csv" and sheet == "facets":
+            return csv_file_response("mdh-facets.csv", facet_rows())
+        if fmt == "csv" and sheet == "tags":
+            return csv_file_response("mdh-tags.csv", tag_rows())
+        if fmt == "csv":
+            return csv_zip_response()
+        raise Http404("Unknown export format.")
 
 
 class TaxonomyManageView(TaxonomyAdminMixin, TemplateView):
