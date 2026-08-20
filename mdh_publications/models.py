@@ -5,13 +5,24 @@ from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.template.defaultfilters import slugify
 
-# Minnesota's most commonly supported community languages for MDH materials.
+# MDH community languages: core set plus Asian-language landing pages from the
+# AAPI constellation example (Chinese, Dari, Gujarati, Hindi, Khmer, Korean,
+# Lao, Nepali, Urdu) alongside existing Spanish, Somali, Hmong, Karen, Vietnamese.
 COMMUNITY_LANGUAGES = [
     ("en", "English"),
     ("es", "Spanish"),
+    ("zh", "Chinese (Simplified)"),
+    ("prs", "Dari"),
+    ("gu", "Gujarati"),
+    ("hi", "Hindi"),
     ("hmn", "Hmong"),
-    ("so", "Somali"),
     ("ksw", "Karen"),
+    ("km", "Khmer"),
+    ("ko", "Korean"),
+    ("lo", "Lao"),
+    ("ne", "Nepali"),
+    ("so", "Somali"),
+    ("ur", "Urdu"),
     ("vi", "Vietnamese"),
 ]
 
@@ -59,6 +70,44 @@ class Tag(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class TagConstellationItem(models.Model):
+    """Related material hanging off a tag (spaces, statutes, groups, pubs).
+
+    The AAPI steward example is the first filled constellation; the model is
+    generic so other tags can gain the same structure later.
+    """
+
+    class Kind(models.TextChoices):
+        MDH_SPACE = "mdh_space", "MDH Space / Product"
+        STATUTE_POLICY = "statute_policy", "Related Statute / Policy"
+        RESOURCE_GROUP = "resource_group", "Resource / Group"
+        PUBLICATION_REF = "publication_ref", "Publication"
+
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE, related_name="constellation_items")
+    kind = models.CharField(max_length=32, choices=Kind.choices)
+    title = models.CharField(max_length=500)
+    note = models.TextField(
+        blank=True,
+        help_text="Optional citation detail, scope note, or steward comment.",
+    )
+    url = models.URLField(blank=True, max_length=500)
+    publication = models.ForeignKey(
+        "Publication",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="constellation_links",
+        help_text="Optional link to a cataloged publication in this library.",
+    )
+    sort_order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["kind", "sort_order", "title"]
+
+    def __str__(self):
+        return f"{self.get_kind_display()}: {self.title}"
 
 
 class DocumentType(models.Model):

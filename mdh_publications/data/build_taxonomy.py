@@ -86,8 +86,10 @@ TAXONOMY = {
                 T(
                     "asian-populations",
                     "People with origins in East Asia, Southeast Asia, or South Asia, "
-                    "including Asian American communities. Aligns with CHS Asian reporting.",
-                    "Asian",
+                    "including Asian American communities. Aligns with CHS Asian / "
+                    "Asian-American reporting. Use alongside Native Hawaiian or Pacific "
+                    "Islander when a publication covers both communities.",
+                    "Asian or Asian American",
                 ),
                 T(
                     "black-populations",
@@ -116,8 +118,9 @@ TAXONOMY = {
                 T(
                     "pacific-islander",
                     "People with origins in Hawaii, Guam, Samoa, or other Pacific Islands. "
-                    "Aligns with CHS Native Hawaiian or Other Pacific Islander reporting.",
-                    "Native Hawaiian and Pacific Islander",
+                    "Aligns with CHS Native Hawaiian or Other Pacific Islander reporting. "
+                    "Use alongside Asian or Asian American when a publication covers both.",
+                    "Native Hawaiian or Pacific Islander",
                 ),
                 T(
                     "white-populations",

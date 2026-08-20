@@ -6,9 +6,14 @@
 <section class="mdh-hero mb-4">
     <p class="mdh-eyebrow mb-2">Taxonomy Management</p>
     <h1 class="mb-1">{% if form.instance.pk %}Edit Tag: {{ form.instance.name }}{% else %}New Tag{% endif %}</h1>
+    {% if form.instance.pk %}
+    <p class="text-muted mb-0">
+        <a href="{% url 'mdh_publications:tag_detail' form.instance.slug %}">View public constellation page</a>
+    </p>
+    {% endif %}
 </section>
 
-<div class="card">
+<div class="card mb-4">
     <div class="card-body">
         <form method="post">
             {% csrf_token %}
@@ -27,6 +32,64 @@
                 {{ form.description }}
                 {% if form.description.errors %}<div class="text-danger small">{{ form.description.errors }}</div>{% endif %}
             </div>
+
+            {% if constellation_formset %}
+            <hr>
+            <h2 class="h5 mb-2">Metadata constellation</h2>
+            <p class="text-muted small mb-3">
+                Related MDH spaces, statutes/policy, community resources, and publications for this tag.
+                Leave a row blank to skip it. Check Delete to remove an existing item.
+            </p>
+            {{ constellation_formset.management_form }}
+            {% if constellation_formset.non_form_errors %}
+            <div class="text-danger small mb-2">{{ constellation_formset.non_form_errors }}</div>
+            {% endif %}
+            {% for item_form in constellation_formset %}
+            <div class="border rounded p-3 mb-3 bg-white">
+                {% for hidden in item_form.hidden_fields %}{{ hidden }}{% endfor %}
+                <div class="form-row">
+                    <div class="form-group col-md-3">
+                        <label>{{ item_form.kind.label }}</label>
+                        {{ item_form.kind }}
+                        {{ item_form.kind.errors }}
+                    </div>
+                    <div class="form-group col-md-7">
+                        <label>{{ item_form.title.label }}</label>
+                        {{ item_form.title }}
+                        {{ item_form.title.errors }}
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label>{{ item_form.sort_order.label }}</label>
+                        {{ item_form.sort_order }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>{{ item_form.note.label }}</label>
+                    {{ item_form.note }}
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label>{{ item_form.url.label }}</label>
+                        {{ item_form.url }}
+                    </div>
+                    <div class="form-group col-md-5">
+                        <label>{{ item_form.publication.label }}</label>
+                        {{ item_form.publication }}
+                    </div>
+                    <div class="form-group col-md-1">
+                        {% if item_form.instance.pk %}
+                        <label class="d-block">{{ item_form.DELETE.label }}</label>
+                        {{ item_form.DELETE }}
+                        {% endif %}
+                    </div>
+                </div>
+                {% if item_form.errors %}
+                <div class="text-danger small">{{ item_form.errors }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            {% endif %}
+
             <button type="submit" class="btn btn-primary">Save Tag</button>
             <a href="{% url 'mdh_publications:taxonomy_manage' %}" class="btn btn-outline-secondary ml-2">Cancel</a>
         </form>

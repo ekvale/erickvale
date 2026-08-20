@@ -1,6 +1,21 @@
 from django.contrib import admin
 
-from .models import DocumentType, Facet, LandingImage, Publication, Tag, TopicGroup
+from .models import (
+    DocumentType,
+    Facet,
+    LandingImage,
+    Publication,
+    Tag,
+    TagConstellationItem,
+    TopicGroup,
+)
+
+
+class TagConstellationItemInline(admin.TabularInline):
+    model = TagConstellationItem
+    extra = 1
+    autocomplete_fields = ("publication",)
+    fields = ("kind", "title", "url", "publication", "sort_order", "note")
 
 
 @admin.register(Facet)
@@ -24,6 +39,15 @@ class TagAdmin(admin.ModelAdmin):
     list_filter = ("facet", "topic_group")
     search_fields = ("name", "slug", "description")
     prepopulated_fields = {"slug": ("name",)}
+    inlines = [TagConstellationItemInline]
+
+
+@admin.register(TagConstellationItem)
+class TagConstellationItemAdmin(admin.ModelAdmin):
+    list_display = ("title", "kind", "tag", "sort_order")
+    list_filter = ("kind", "tag__facet")
+    search_fields = ("title", "note", "url", "tag__name")
+    autocomplete_fields = ("tag", "publication")
 
 
 @admin.register(DocumentType)

@@ -39,8 +39,11 @@
                     {% for tag in topic_group.tags.all %}
                             <tr>
                                 <td>
-                                    <span style="color:#005b8c; font-weight:600; font-family:'Source Sans Pro', sans-serif;">{{ tag.name }}</span>
+                                    <a href="{% url 'mdh_publications:tag_detail' tag.slug %}" style="color:#005b8c; font-weight:600; font-family:'Source Sans Pro', sans-serif;">{{ tag.name }}</a>
                                     <br><code class="text-muted" style="font-size:0.8em;">{{ tag.slug }}</code>
+                                    {% if tag.constellation_items.all %}
+                                    <br><span class="badge badge-info mt-1">{{ tag.constellation_items.all|length }} constellation</span>
+                                    {% endif %}
                                 </td>
                                 <td style="color:#444; font-style:italic; font-family:Georgia, serif; font-size:0.92em;">{{ tag.description|default:"No description provided." }}</td>
                             </tr>

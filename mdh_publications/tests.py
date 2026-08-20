@@ -475,6 +475,7 @@ class ShippedTaxonomyTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Demographics &amp; Populations")
         self.assertContains(response, "Older Adults")
+        self.assertContains(response, "Asian or Asian American")
 
     def test_sample_seeder_runs_against_the_shipped_taxonomy(self):
         call_command("seed_mdh_publications_taxonomy", stdout=StringIO())
@@ -482,6 +483,58 @@ class ShippedTaxonomyTests(TestCase):
 
         self.assertEqual(Publication.objects.count(), 5)
         self.assertTrue(Publication.objects.filter(tags__isnull=False).exists())
+
+
+class AAPIConstellationTests(TestCase):
+    def setUp(self):
+        call_command("seed_mdh_publications_taxonomy", stdout=StringIO())
+        call_command("seed_aapi_constellation", stdout=StringIO())
+
+    def test_seed_attaches_constellation_to_asian_and_nhpi(self):
+        from mdh_publications.models import TagConstellationItem
+
+        asian = Tag.objects.get(slug="asian-populations")
+        nhpi = Tag.objects.get(slug="pacific-islander")
+        self.assertEqual(asian.name, "Asian or Asian American")
+        self.assertEqual(nhpi.name, "Native Hawaiian or Pacific Islander")
+        self.assertGreater(asian.constellation_items.count(), 20)
+        self.assertGreater(nhpi.constellation_items.count(), 20)
+        self.assertTrue(
+            asian.constellation_items.filter(
+                kind=TagConstellationItem.Kind.STATUTE_POLICY
+            ).exists()
+        )
+        self.assertTrue(
+            Publication.objects.filter(
+                title__icontains="Violence Against Asian Women"
+            ).exists()
+        )
+        self.assertTrue(
+            Publication.objects.filter(
+                title__icontains="Native Hawaiian or Other Pacific Islander only"
+            )
+            .filter(tags=nhpi)
+            .exists()
+        )
+        hmong_landing = Publication.objects.get(title__startswith="Hmong (")
+        self.assertEqual(hmong_landing.language, "hmn")
+        self.assertTrue(hmong_landing.is_translated)
+        self.assertFalse(hmong_landing.tags.filter(slug="asian-populations").exists())
+
+    def test_tag_detail_shows_constellation(self):
+        response = self.client.get(
+            reverse("mdh_publications:tag_detail", kwargs={"slug": "asian-populations"})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Council on Asian Pacific Minnesotans")
+        self.assertContains(response, "MDH Space")
+
+    def test_language_choices_include_expanded_asian_languages(self):
+        from mdh_publications.models import COMMUNITY_LANGUAGES
+
+        codes = {code for code, _label in COMMUNITY_LANGUAGES}
+        for code in ("zh", "prs", "gu", "hi", "km", "ko", "lo", "ne", "ur"):
+            self.assertIn(code, codes)
 
 
 class LibraryChromeTests(TestCase):

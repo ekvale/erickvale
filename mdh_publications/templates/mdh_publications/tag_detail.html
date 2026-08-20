@@ -1,0 +1,69 @@
+{% extends 'mdh_publications/base.html' %}
+
+{% block title %}{{ tag.name }} — Tag constellation{% endblock %}
+
+{% block content %}
+<section class="mdh-hero mb-4">
+    <div class="d-flex justify-content-between align-items-start">
+        <div>
+            <p class="mdh-eyebrow mb-2">{{ tag.facet.code }} · {{ tag.topic_group.name }}</p>
+            <h1 class="mb-2">{{ tag.name }}</h1>
+            <p class="text-muted mb-0">{{ tag.description|default:"No description provided." }}</p>
+            <p class="small text-muted mt-2 mb-0"><code>{{ tag.slug }}</code></p>
+        </div>
+        <div>
+            <a href="{% url 'mdh_publications:publication_taxonomy' %}" class="btn btn-outline-secondary mr-2">All tags</a>
+            <a href="{% url 'mdh_publications:publication_list' %}?tag={{ tag.slug }}" class="btn btn-outline-primary mdh-strong-outline-btn">Search library</a>
+            {% if perms.mdh_publications.manage_publication_taxonomy %}
+            <a href="{% url 'mdh_publications:tag_update' tag.pk %}" class="btn btn-primary ml-2">Edit constellation</a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+{% if constellation_by_kind %}
+{% for kind_label, items in constellation_by_kind %}
+<div class="card mb-3">
+    <div class="card-header">{{ kind_label }}</div>
+    <ul class="list-group list-group-flush">
+        {% for item in items %}
+        <li class="list-group-item">
+            {% if item.url %}
+            <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer" class="mdh-readable-link">{{ item.title }}</a>
+            {% elif item.publication %}
+            <a href="{% url 'mdh_publications:publication_detail' item.publication.slug %}" class="mdh-readable-link">{{ item.title }}</a>
+            {% else %}
+            <strong>{{ item.title }}</strong>
+            {% endif %}
+            {% if item.publication and item.url %}
+            <a href="{% url 'mdh_publications:publication_detail' item.publication.slug %}" class="badge badge-light border ml-2">In library</a>
+            {% endif %}
+            {% if item.note %}
+            <div class="small text-muted mt-1">{{ item.note }}</div>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endfor %}
+{% else %}
+<div class="alert alert-secondary">No constellation items are linked to this tag yet.</div>
+{% endif %}
+
+{% if related_publications %}
+<div class="card mb-3">
+    <div class="card-header">Cataloged publications with this tag</div>
+    <ul class="list-group list-group-flush">
+        {% for pub in related_publications %}
+        <li class="list-group-item d-flex justify-content-between">
+            <a href="{% url 'mdh_publications:publication_detail' pub.slug %}" class="mdh-readable-link">{{ pub.title }}</a>
+            <span class="text-muted small">
+                {% if pub.document_type %}{{ pub.document_type.name }}{% endif %}
+                {% if pub.publication_date %} · {{ pub.publication_date|date:"Y" }}{% endif %}
+            </span>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+{% endblock %}

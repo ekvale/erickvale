@@ -12,6 +12,7 @@ from .models import (
     Facet,
     Publication,
     Tag,
+    TagConstellationItem,
     TopicGroup,
 )
 
@@ -265,6 +266,36 @@ class TagForm(forms.ModelForm):
         if commit:
             obj.save()
         return obj
+
+
+class TagConstellationItemForm(forms.ModelForm):
+    class Meta:
+        model = TagConstellationItem
+        fields = ["kind", "title", "note", "url", "publication", "sort_order"]
+        widgets = {
+            "kind": forms.Select(attrs={"class": "form-control"}),
+            "title": forms.TextInput(attrs={"class": "form-control"}),
+            "note": forms.Textarea(attrs={"class": "form-control", "rows": 2}),
+            "url": forms.URLInput(attrs={"class": "form-control"}),
+            "publication": forms.Select(attrs={"class": "form-control"}),
+            "sort_order": forms.NumberInput(attrs={"class": "form-control", "style": "max-width:6rem"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["publication"].queryset = Publication.objects.order_by("title")
+        self.fields["publication"].required = False
+        self.fields["note"].required = False
+        self.fields["url"].required = False
+
+
+TagConstellationItemFormSet = forms.inlineformset_factory(
+    Tag,
+    TagConstellationItem,
+    form=TagConstellationItemForm,
+    extra=3,
+    can_delete=True,
+)
 
 
 class AccessRequestForm(forms.ModelForm):

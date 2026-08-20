@@ -10,8 +10,24 @@ from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, FormView, ListView, TemplateView, UpdateView
 
 from .exports import csv_file_response, csv_zip_response, facet_rows, tag_rows, xlsx_response
-from .forms import AccessRequestForm, FacetForm, PublicationForm, TagForm, TopicGroupForm
-from .models import AccessRequest, DocumentType, Facet, LandingImage, Publication, Tag, TopicGroup
+from .forms import (
+    AccessRequestForm,
+    FacetForm,
+    PublicationForm,
+    TagConstellationItemFormSet,
+    TagForm,
+    TopicGroupForm,
+)
+from .models import (
+    AccessRequest,
+    DocumentType,
+    Facet,
+    LandingImage,
+    Publication,
+    Tag,
+    TagConstellationItem,
+    TopicGroup,
+)
 from .permissions import ADMINISTRATOR_GROUP_NAME, EMPLOYEE_GROUP_NAME
 
 
@@ -315,9 +331,42 @@ class TaxonomyBrowserView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["facets"] = Facet.objects.prefetch_related("topic_groups__tags")
+        context["facets"] = Facet.objects.prefetch_related(
+            "topic_groups__tags__constellation_items"
+        )
         context["facet_count"] = Facet.objects.count()
         context["tag_count"] = Tag.objects.count()
+        return context
+
+
+class TagDetailView(DetailView):
+    """Public constellation page for a single tag."""
+
+    model = Tag
+    template_name = "mdh_publications/tag_detail.html"
+    context_object_name = "tag"
+    slug_field = "slug"
+    slug_url_kwarg = "slug"
+
+    def get_queryset(self):
+        return Tag.objects.select_related("facet", "topic_group").prefetch_related(
+            "constellation_items__publication"
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        items = list(self.object.constellation_items.all())
+        by_kind = []
+        for kind_value, kind_label in TagConstellationItem.Kind.choices:
+            group = [item for item in items if item.kind == kind_value]
+            if group:
+                by_kind.append((kind_label, group))
+        context["constellation_by_kind"] = by_kind
+        context["related_publications"] = (
+            self.object.publications.filter(status=Publication.Status.PUBLISHED)
+            .select_related("document_type")
+            .order_by("-publication_date", "title")[:40]
+        )
         return context
 
 
@@ -488,7 +537,7 @@ class TaxonomyManageView(TaxonomyAdminMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["facets"] = Facet.objects.prefetch_related(
-            "topic_groups__tags"
+            "topic_groups__tags__constellation_items"
         ).order_by("sort_order", "code")
         return context
 
@@ -559,12 +608,37 @@ class TagCreateView(TaxonomyAdminMixin, CreateView):
                 pass
         return initial
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["constellation_formset"] = None
+        return context
+
 
 class TagUpdateView(TaxonomyAdminMixin, UpdateView):
     model = Tag
     form_class = TagForm
     template_name = "mdh_publications/tag_form.html"
     success_url = reverse_lazy("mdh_publications:taxonomy_manage")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.POST:
+            context["constellation_formset"] = TagConstellationItemFormSet(
+                self.request.POST, instance=self.object
+            )
+        else:
+            context["constellation_formset"] = TagConstellationItemFormSet(instance=self.object)
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        formset = context["constellation_formset"]
+        if formset.is_valid():
+            self.object = form.save()
+            formset.instance = self.object
+            formset.save()
+            return redirect(self.get_success_url())
+        return self.render_to_response(self.get_context_data(form=form))
 
 
 class TagDeleteView(TaxonomyAdminMixin, DeleteView):

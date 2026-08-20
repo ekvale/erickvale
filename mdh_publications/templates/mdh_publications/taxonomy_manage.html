@@ -57,8 +57,11 @@
             {% for tag in tg.tags.all %}
             <div class="d-flex justify-content-between align-items-center py-1 border-top">
                 <span>
-                    {{ tag.name }}
+                    <a href="{% url 'mdh_publications:tag_detail' tag.slug %}">{{ tag.name }}</a>
                     <small class="text-muted ml-1">{{ tag.slug }}</small>
+                    {% if tag.constellation_items.exists %}
+                    <span class="badge badge-info ml-1">constellation</span>
+                    {% endif %}
                 </span>
                 <div>
                     <a href="{% url 'mdh_publications:tag_update' tag.pk %}" class="btn btn-sm btn-link p-0 mr-2">Edit</a>
